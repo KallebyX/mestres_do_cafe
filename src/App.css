@@ -1,0 +1,173 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+
+@custom-variant dark (&:is(.dark *));
+
+@theme inline {
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+}
+
+:root {
+  --radius: 0.625rem;
+  /* Mestres do Café Custom Colors */
+  --background: #2B3A42; /* Azul escuro do portfólio */
+  --foreground: #FFFFFF; /* Branco para texto */
+  --card: #C8956D; /* Marrom/dourado claro para cards */
+  --card-foreground: #2B3A42; /* Texto escuro nos cards */
+  --popover: #2B3A42;
+  --popover-foreground: #FFFFFF;
+  --primary: #C8956D; /* Cor de destaque marrom/dourado */
+  --primary-foreground: #2B3A42;
+  --secondary: #F5F5F5; /* Cinza claro */
+  --secondary-foreground: #2B3A42;
+  --muted: #4A5A62; /* Tom mais claro do azul escuro */
+  --muted-foreground: #FFFFFF;
+  --accent: #C8956D;
+  --accent-foreground: #2B3A42;
+  --destructive: oklch(0.577 0.245 27.325);
+  --border: #4A5A62;
+  --input: #4A5A62;
+  --ring: #C8956D;
+  --chart-1: #C8956D;
+  --chart-2: #8B4513;
+  --chart-3: #F5F5F5;
+  --chart-4: #2B3A42;
+  --chart-5: #4A5A62;
+  --sidebar: #2B3A42;
+  --sidebar-foreground: #FFFFFF;
+  --sidebar-primary: #C8956D;
+  --sidebar-primary-foreground: #2B3A42;
+  --sidebar-accent: #4A5A62;
+  --sidebar-accent-foreground: #FFFFFF;
+  --sidebar-border: #4A5A62;
+  --sidebar-ring: #C8956D;
+}
+
+.dark {
+  /* Mantém as mesmas cores para consistência */
+  --background: #2B3A42;
+  --foreground: #FFFFFF;
+  --card: #C8956D;
+  --card-foreground: #2B3A42;
+  --popover: #2B3A42;
+  --popover-foreground: #FFFFFF;
+  --primary: #C8956D;
+  --primary-foreground: #2B3A42;
+  --secondary: #F5F5F5;
+  --secondary-foreground: #2B3A42;
+  --muted: #4A5A62;
+  --muted-foreground: #FFFFFF;
+  --accent: #C8956D;
+  --accent-foreground: #2B3A42;
+  --destructive: oklch(0.704 0.191 22.216);
+  --border: #4A5A62;
+  --input: #4A5A62;
+  --ring: #C8956D;
+  --chart-1: #C8956D;
+  --chart-2: #8B4513;
+  --chart-3: #F5F5F5;
+  --chart-4: #2B3A42;
+  --chart-5: #4A5A62;
+  --sidebar: #2B3A42;
+  --sidebar-foreground: #FFFFFF;
+  --sidebar-primary: #C8956D;
+  --sidebar-primary-foreground: #2B3A42;
+  --sidebar-accent: #4A5A62;
+  --sidebar-accent-foreground: #FFFFFF;
+  --sidebar-border: #4A5A62;
+  --sidebar-ring: #C8956D;
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+}
+
+/* Custom styles for Mestres do Café */
+.coffee-gradient {
+  background: linear-gradient(135deg, #C8956D 0%, #8B4513 100%);
+}
+
+.coffee-card {
+  background: #C8956D;
+  color: #2B3A42;
+  border-radius: 1rem;
+  padding: 2rem;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.coffee-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 10px 25px -3px rgba(0, 0, 0, 0.2);
+}
+
+.hero-section {
+  background: linear-gradient(135deg, #2B3A42 0%, #4A5A62 100%);
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.nav-link {
+  color: #FFFFFF;
+  text-decoration: none;
+  padding: 0.5rem 1rem;
+  border-radius: 0.5rem;
+  transition: background-color 0.3s ease;
+}
+
+.nav-link:hover {
+  background-color: rgba(200, 149, 109, 0.2);
+}
+
+.section-divider {
+  height: 2px;
+  background: #C8956D;
+  width: 4rem;
+  margin: 1rem auto;
+}
+
+.coffee-bean-pattern {
+  background-image: radial-gradient(circle at 20% 80%, rgba(200, 149, 109, 0.1) 0%, transparent 50%),
+                    radial-gradient(circle at 80% 20%, rgba(200, 149, 109, 0.1) 0%, transparent 50%);
+}
