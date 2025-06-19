@@ -1,0 +1,72 @@
+version: '3.8'
+
+services:
+  # Aplicação em modo desenvolvimento
+  mestres-cafe-dev:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    container_name: mestres-cafe-dev
+    ports:
+      - "5173:5173"  # Frontend Vite
+      - "5000:5000"  # Backend Express
+    environment:
+      - NODE_ENV=development
+      - PORT=5000
+      - VITE_API_URL=http://localhost:5000
+      - JWT_SECRET=dev_jwt_secret_mestres_cafe
+      - CORS_ORIGIN=http://localhost:5173
+    volumes:
+      # Mount do código para hot reload
+      - .:/app
+      - /app/node_modules
+      - /app/dist
+      # Persistir dados em desenvolvimento
+      - whatsapp_dev_data:/app/whatsapp-session
+      - server_dev_data:/app/server/data
+    restart: unless-stopped
+    networks:
+      - mestres-dev-network
+
+  # PostgreSQL para desenvolvimento
+  postgres-dev:
+    image: postgres:15-alpine
+    container_name: mestres-cafe-db-dev
+    environment:
+      - POSTGRES_DB=mestres_cafe_dev
+      - POSTGRES_USER=mestres
+      - POSTGRES_PASSWORD=dev123
+    volumes:
+      - postgres_dev_data:/var/lib/postgresql/data
+    ports:
+      - "5433:5432"  # Porta diferente para não conflitar
+    restart: unless-stopped
+    networks:
+      - mestres-dev-network
+
+  # Redis para desenvolvimento
+  redis-dev:
+    image: redis:7-alpine
+    container_name: mestres-cafe-redis-dev
+    ports:
+      - "6380:6379"  # Porta diferente para não conflitar
+    volumes:
+      - redis_dev_data:/data
+    restart: unless-stopped
+    networks:
+      - mestres-dev-network
+
+volumes:
+  postgres_dev_data:
+    driver: local
+  redis_dev_data:
+    driver: local
+  whatsapp_dev_data:
+    driver: local
+  server_dev_data:
+    driver: local
+
+networks:
+  mestres-dev-network:
+    driver: bridge
+    name: mestres-cafe-dev-network 

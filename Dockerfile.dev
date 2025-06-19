@@ -1,0 +1,31 @@
+# 🐳 Dockerfile.dev - Mestres do Café (Desenvolvimento)
+# Frontend React + Backend Express com hot reload
+
+FROM node:20-alpine
+
+# Definir diretório de trabalho
+WORKDIR /app
+
+# Instalar dependências do sistema para desenvolvimento
+RUN apk add --no-cache \
+    git \
+    python3 \
+    make \
+    g++ \
+    curl \
+    ca-certificates
+
+# Instalar dependências globais para desenvolvimento
+RUN npm install -g nodemon concurrently
+
+# Copiar package.json
+COPY package*.json ./
+
+# Instalar TODAS as dependências (dev + prod)
+RUN npm install
+
+# Expor portas
+EXPOSE 5173 5000
+
+# Comando para desenvolvimento com hot reload
+CMD ["npm", "run", "full-dev"] 
