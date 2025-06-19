@@ -13,537 +13,328 @@ import {
   Award,
   Coffee,
   Truck,
-  Shield
+  Shield,
+  Package,
+  Zap,
+  TrendingUp
 } from 'lucide-react';
+import { Header } from '../components/Header';
+import { Footer } from '../components/Footer';
+import { Button } from '../components/ui/button';
+import { Input } from '../components/ui/input';
+import { Card, CardContent, CardFooter, CardHeader, CardTitle, CardDescription } from '../components/ui/card';
+import { Badge } from '../components/ui/badge';
 
-const MarketplacePage = () => {
-  const [products, setProducts] = useState([]);
-  const [filteredProducts, setFilteredProducts] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [viewMode, setViewMode] = useState('grid');
-  const [searchTerm, setSearchTerm] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState('todos');
-  const [sortBy, setSortBy] = useState('nome');
-  const [priceRange, setPriceRange] = useState([0, 200]);
+// Skeleton Loading Component
+const ProductSkeleton = () => (
+  <div className="flex flex-col space-y-3">
+    <div className="h-[200px] w-full rounded-xl bg-brand-brown/10 animate-pulse" />
+    <div className="space-y-2">
+      <div className="h-4 w-3/4 bg-brand-brown/10 animate-pulse rounded" />
+      <div className="h-4 w-1/2 bg-brand-brown/10 animate-pulse rounded" />
+      <div className="h-8 w-full mt-4 bg-brand-brown/10 animate-pulse rounded" />
+    </div>
+  </div>
+);
 
-  // Mock products data
-  const mockProducts = [
-    {
-      id: 1,
-      name: "Bourbon Amarelo Premium",
-      description: "Notas de chocolate e caramelo, corpo encorpado com acidez equilibrada.",
-      price: 45.90,
-      originalPrice: 52.90,
-      category: "especiais",
-      rating: 4.8,
-      reviews: 127,
-      image: "☕",
-      badge: "Mais Vendido",
-      origin: "Montanhas de Minas",
-      altitude: "1200m",
-      process: "Natural",
-      roast: "Médio",
-      score: 85,
-      inStock: true,
-      discount: 13
-    },
-    {
-      id: 2,
-      name: "Geisha Especial",
-      description: "Perfil floral e cítrico excepcional, uma experiência única.",
-      price: 89.90,
-      originalPrice: 89.90,
-      category: "premium",
-      rating: 4.9,
-      reviews: 89,
-      image: "🌟",
-      badge: "Premium",
-      origin: "Fazenda São Benedito",
-      altitude: "1400m",
-      process: "Lavado",
-      roast: "Claro",
-      score: 92,
-      inStock: true,
-      discount: 0
-    },
-    {
-      id: 3,
-      name: "Blend Signature",
-      description: "Equilíbrio perfeito entre doçura natural e corpo cremoso.",
-      price: 39.90,
-      originalPrice: 44.90,
-      category: "blends",
-      rating: 4.7,
-      reviews: 203,
-      image: "🏆",
-      badge: "Novo",
-      origin: "Seleção Especial",
-      altitude: "1000-1300m",
-      process: "Semi-lavado",
-      roast: "Médio-escuro",
-      score: 82,
-      inStock: true,
-      discount: 11
-    },
-    {
-      id: 4,
-      name: "Catuaí Vermelho",
-      description: "Doce natural com notas de frutas vermelhas e chocolate ao leite.",
-      price: 42.90,
-      originalPrice: 42.90,
-      category: "especiais",
-      rating: 4.6,
-      reviews: 156,
-      image: "🔴",
-      badge: "Certificado",
-      origin: "Cerrado Mineiro",
-      altitude: "1100m",
-      process: "Pulped Natural",
-      roast: "Médio",
-      score: 84,
-      inStock: true,
-      discount: 0
-    },
-    {
-      id: 5,
-      name: "Décaféinado Especial",
-      description: "Todo sabor sem cafeína. Processo Swiss Water preserva aromas.",
-      price: 48.90,
-      originalPrice: 55.90,
-      category: "decaf",
-      rating: 4.4,
-      reviews: 78,
-      image: "🌙",
-      badge: "Sem Cafeína",
-      origin: "Sul de Minas",
-      altitude: "1200m",
-      process: "Swiss Water",
-      roast: "Médio",
-      score: 81,
-      inStock: true,
-      discount: 12
-    },
-    {
-      id: 6,
-      name: "Expresso Premium",
-      description: "Blend especial para expresso, crema densa e sabor intenso.",
-      price: 36.90,
-      originalPrice: 41.90,
-      category: "blends",
-      rating: 4.8,
-      reviews: 312,
-      image: "⚡",
-      badge: "Para Expresso",
-      origin: "Blend Especial",
-      altitude: "900-1200m",
-      process: "Misto",
-      roast: "Escuro",
-      score: 83,
-      inStock: false,
-      discount: 12
+// Cafe Card Component
+const CafeCard = ({ cafe }) => {
+  const getAttributeIcon = (attribute) => {
+    switch (attribute) {
+      case 'doçura': return Coffee;
+      case 'acidez': return Zap;
+      case 'intensidade': return TrendingUp;
+      default: return Coffee;
     }
-  ];
+  };
 
-  const categories = [
-    { id: 'todos', name: 'Todos os Cafés', count: 6 },
-    { id: 'especiais', name: 'Cafés Especiais', count: 2 },
-    { id: 'premium', name: 'Premium', count: 1 },
-    { id: 'blends', name: 'Blends', count: 2 },
-    { id: 'decaf', name: 'Descafeinados', count: 1 }
-  ];
-
-  const features = [
-    {
-      icon: Award,
-      title: "Certificação SCA",
-      description: "Pontuação acima de 80"
-    },
-    {
-      icon: Truck,
-      title: "Frete Grátis",
-      description: "Acima de R$ 99"
-    },
-    {
-      icon: Shield,
-      title: "Compra Segura",
-      description: "Proteção total"
-    },
-    {
-      icon: Coffee,
-      title: "Frescor Garantido",
-      description: "Torra sob demanda"
+  const getAttributeColor = (attribute) => {
+    switch (attribute) {
+      case 'doçura': return 'text-brand-brown';
+      case 'acidez': return 'text-yellow-500';
+      case 'intensidade': return 'text-red-500';
+      default: return 'text-brand-brown';
     }
-  ];
+  };
 
-  useEffect(() => {
-    // Simulate API call
-    setTimeout(() => {
-      setProducts(mockProducts);
-      setFilteredProducts(mockProducts);
-      setLoading(false);
-    }, 500);
-  }, []);
-
-  useEffect(() => {
-    let filtered = products;
-
-    // Filter by search term
-    if (searchTerm) {
-      filtered = filtered.filter(product =>
-        product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        product.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        product.origin.toLowerCase().includes(searchTerm.toLowerCase())
-      );
+  const getAttributeBgColor = (attribute) => {
+    switch (attribute) {
+      case 'doçura': return 'bg-brand-brown';
+      case 'acidez': return 'bg-yellow-500';
+      case 'intensidade': return 'bg-red-500';
+      default: return 'bg-brand-brown';
     }
+  };
 
-    // Filter by category
-    if (selectedCategory !== 'todos') {
-      filtered = filtered.filter(product => product.category === selectedCategory);
-    }
+  const AtributoVisual = ({ label, nivel, attribute }) => {
+    const IconComponent = getAttributeIcon(attribute);
+    const iconColorClass = getAttributeColor(attribute);
+    const bgColorClass = getAttributeBgColor(attribute);
 
-    // Filter by price range
-    filtered = filtered.filter(product => 
-      product.price >= priceRange[0] && product.price <= priceRange[1]
-    );
-
-    // Sort products
-    filtered.sort((a, b) => {
-      switch (sortBy) {
-        case 'nome':
-          return a.name.localeCompare(b.name);
-        case 'preco-asc':
-          return a.price - b.price;
-        case 'preco-desc':
-          return b.price - a.price;
-        case 'rating':
-          return b.rating - a.rating;
-        case 'score':
-          return b.score - a.score;
-        default:
-          return 0;
-      }
-    });
-
-    setFilteredProducts(filtered);
-  }, [products, searchTerm, selectedCategory, sortBy, priceRange]);
-
-  const ProductCard = ({ product }) => (
-    <Link 
-      to={`/produto/${product.id}`}
-      className="block group bg-white rounded-3xl p-6 shadow-lg hover:shadow-2xl transition-all duration-500 transform hover:-translate-y-2 border border-slate-100 cursor-pointer"
-    >
-      {/* Product Header */}
-      <div className="relative mb-6">
-        {/* Badge */}
-        <div className="flex justify-between items-start mb-4">
-          <span className={`text-xs font-semibold px-3 py-1 rounded-full ${
-            product.badge === 'Premium' ? 'bg-purple-100 text-purple-800' :
-            product.badge === 'Mais Vendido' ? 'bg-green-100 text-green-800' :
-            product.badge === 'Novo' ? 'bg-blue-100 text-blue-800' :
-            'bg-amber-100 text-amber-800'
-          }`}>
-            {product.badge}
-          </span>
-          
-          {product.discount > 0 && (
-            <span className="bg-red-500 text-white text-xs font-bold px-2 py-1 rounded-full">
-              -{product.discount}%
-            </span>
-          )}
-        </div>
-
-        {/* Product Image */}
-        <div className="text-center mb-4">
-          <div className="text-6xl mb-3">{product.image}</div>
-          <div className="flex items-center justify-center gap-1 mb-2">
-            <Star className="w-4 h-4 text-yellow-400 fill-current" />
-            <span className="text-sm font-medium text-slate-600">{product.rating}</span>
-            <span className="text-xs text-slate-500">({product.reviews})</span>
-          </div>
-        </div>
-
-        {/* Heart Icon */}
-        <button 
-          onClick={(e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            // Handle favorite logic here
-          }}
-          className="absolute top-0 right-0 w-8 h-8 bg-white rounded-full shadow-md flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300"
-        >
-          <Heart className="w-4 h-4 text-slate-400 hover:text-red-500 transition-colors" />
-        </button>
-      </div>
-
-      {/* Product Info */}
-      <div className="space-y-4">
-        <div>
-          <h3 className="text-xl font-bold text-slate-900 mb-2 group-hover:text-amber-600 transition-colors">{product.name}</h3>
-          <p className="text-slate-600 text-sm leading-relaxed">{product.description}</p>
-        </div>
-
-        {/* Product Details */}
-        <div className="grid grid-cols-2 gap-3 text-xs">
-          <div className="bg-slate-50 rounded-lg p-2">
-            <div className="text-slate-500">Origem</div>
-            <div className="font-medium text-slate-700">{product.origin}</div>
-          </div>
-          <div className="bg-slate-50 rounded-lg p-2">
-            <div className="text-slate-500">Pontuação SCA</div>
-            <div className="font-medium text-slate-700">{product.score} pts</div>
-          </div>
-        </div>
-
-        {/* Price */}
-        <div className="flex items-center justify-between">
-          <div className="space-y-1">
-            {product.discount > 0 && (
-              <div className="text-sm text-slate-500 line-through">
-                R$ {product.originalPrice.toFixed(2).replace('.', ',')}
-              </div>
-            )}
-            <div className="text-2xl font-bold text-slate-900">
-              R$ {product.price.toFixed(2).replace('.', ',')}
-            </div>
-          </div>
-          
-          <button
-            onClick={(e) => {
-              e.preventDefault();
-              e.stopPropagation();
-              // Handle add to cart logic here
-              if (product.inStock) {
-                console.log('Adicionando ao carrinho:', product.name);
-              }
-            }}
-            disabled={!product.inStock}
-            className={`flex items-center gap-2 px-6 py-3 rounded-xl font-semibold transition-all duration-300 ${
-              product.inStock
-                ? 'bg-amber-600 hover:bg-amber-700 text-white transform hover:scale-105'
-                : 'bg-slate-200 text-slate-500 cursor-not-allowed'
-            }`}
-          >
-            <ShoppingCart className="w-4 h-4" />
-            {product.inStock ? 'Adicionar' : 'Esgotado'}
-          </button>
-        </div>
-
-        {/* View Details Hint */}
-        <div className="text-center pt-2 border-t border-slate-100">
-          <span className="text-xs text-slate-400 group-hover:text-amber-600 transition-colors">
-            Clique para ver detalhes
-          </span>
-        </div>
-      </div>
-    </Link>
-  );
-
-  if (loading) {
     return (
-      <div className="min-h-screen bg-slate-50 flex items-center justify-center">
-        <div className="text-center">
-          <div className="w-16 h-16 border-4 border-amber-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-          <p className="text-slate-600">Carregando cafés especiais...</p>
+      <div className="flex flex-col items-center">
+        <div className="flex items-center mb-1">
+          <IconComponent className={`w-3.5 h-3.5 mr-1 ${iconColorClass}`} />
+          <span className="text-xs font-medium text-brand-dark/70">{label}</span>
+        </div>
+        <div className="flex space-x-1">
+          {[...Array(5)].map((_, i) => (
+            <div key={i} className={`w-2.5 h-2.5 rounded-full ${i < nivel ? bgColorClass : 'bg-gray-300'}`} />
+          ))}
         </div>
       </div>
     );
-  }
+  };
 
   return (
-    <div className="min-h-screen bg-slate-50">
-      {/* Hero Section */}
-      <section className="bg-gradient-to-br from-slate-900 via-slate-800 to-amber-900 py-20">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center">
-            <div className="inline-flex items-center gap-2 bg-amber-600/20 border border-amber-600/30 rounded-full px-4 py-2 mb-6">
-              <Coffee className="w-4 h-4 text-amber-400" />
-              <span className="text-amber-400 font-medium text-sm">Marketplace Premium</span>
-            </div>
-            
-            <h1 className="text-4xl lg:text-6xl font-bold text-white mb-6">
-              Cafés <span className="text-amber-400">Especiais</span>
-            </h1>
-            
-            <p className="text-xl text-slate-300 max-w-3xl mx-auto mb-8">
-              Descubra nossa seleção exclusiva de cafés com pontuação SCA acima de 80 pontos. 
-              Torrefação artesanal, frescor garantido e entrega em todo o Brasil.
-            </p>
-
-            {/* Features */}
-            <div className="grid md:grid-cols-4 gap-6 max-w-4xl mx-auto">
-              {features.map((feature, index) => (
-                <div key={index} className="text-center">
-                  <div className="w-12 h-12 bg-amber-600/20 rounded-2xl flex items-center justify-center mx-auto mb-3">
-                    <feature.icon className="w-6 h-6 text-amber-400" />
-                  </div>
-                  <div className="text-white font-semibold text-sm">{feature.title}</div>
-                  <div className="text-slate-400 text-xs">{feature.description}</div>
-                </div>
-              ))}
-            </div>
+    <Card className="w-full max-w-sm overflow-hidden shadow-lg hover:shadow-xl transition-shadow duration-300 bg-white rounded-xl border border-brand-brown/10 flex flex-col group">
+      <CardHeader className="p-0">
+        <Link
+          to={`/marketplace/${cafe.slug || cafe.nome.toLowerCase().replace(/\s+/g, '-')}`}
+          className="block relative w-full h-48 overflow-hidden"
+          aria-label={`Ver detalhes do café ${cafe.nome}`}
+        >
+          <div className="w-full h-full bg-gradient-to-br from-brand-brown/10 to-brand-brown/20 flex items-center justify-center group-hover:scale-105 transition-transform duration-300">
+            <Coffee className="w-16 h-16 text-brand-brown" />
+          </div>
+          {cafe.preco && (
+            <Badge className="absolute top-3 right-3 bg-brand-dark text-white px-2.5 py-1 text-sm font-semibold">
+              {cafe.preco}
+            </Badge>
+          )}
+        </Link>
+        <div className="p-4">
+          <div className="flex justify-between items-start mb-1">
+            <CardTitle className="text-lg font-bold text-brand-dark font-serif group-hover:text-brand-brown transition-colors">
+              <Link to={`/marketplace/${cafe.slug || cafe.nome.toLowerCase().replace(/\s+/g, '-')}`}>{cafe.nome}</Link>
+            </CardTitle>
+            <Badge
+              variant="outline"
+              className="border-brand-brown text-brand-brown bg-brand-brown/10 font-semibold text-xs px-2 py-0.5"
+            >
+              SCA {cafe.pontuacao}
+            </Badge>
+          </div>
+          <CardDescription className="text-xs text-brand-dark/80 mb-1 h-10 overflow-hidden text-ellipsis">
+            {cafe.descricaoSensorial}
+          </CardDescription>
+          <CardDescription className="text-xs text-brand-dark/70 font-medium italic">
+            Notas: {cafe.notas}
+          </CardDescription>
+        </div>
+      </CardHeader>
+      <CardContent className="p-4 pt-0 flex-grow">
+        <div className="mb-3">
+          <h4 className="text-xs font-semibold text-brand-dark/90 mb-1.5 text-center">
+            Atributos Sensoriais:
+          </h4>
+          <div className="grid grid-cols-3 gap-2">
+            <AtributoVisual
+              label="Doçura"
+              nivel={cafe.doçura}
+              attribute="doçura"
+            />
+            <AtributoVisual
+              label="Acidez"
+              nivel={cafe.acidez}
+              attribute="acidez"
+            />
+            <AtributoVisual
+              label="Intensidade"
+              nivel={cafe.intensidade}
+              attribute="intensidade"
+            />
           </div>
         </div>
-      </section>
+        <div>
+          <h4 className="text-xs font-semibold text-brand-dark/90 mb-0.5 flex items-center">
+            <Package className="w-3.5 h-3.5 mr-1.5 text-brand-brown" />
+            Embalagens:
+          </h4>
+          <p className="text-xs text-brand-dark/70">{cafe.embalagens.join(' | ')}</p>
+        </div>
+      </CardContent>
+      <CardFooter className="p-3 bg-brand-light/30 border-t border-brand-brown/10 mt-auto">
+        <Link to={`/marketplace/${cafe.slug || cafe.nome.toLowerCase().replace(/\s+/g, '-')}`} className="flex-1">
+          <Button
+            variant="outline"
+            className="w-full text-xs py-2 border-brand-brown text-brand-brown hover:bg-brand-brown hover:text-white bg-white"
+          >
+            Ver Detalhes
+          </Button>
+        </Link>
+      </CardFooter>
+    </Card>
+  );
+};
 
-      {/* Filters Section */}
-      <section className="py-8 bg-white border-b border-slate-200">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex flex-col lg:flex-row gap-6 items-center justify-between">
-            {/* Search */}
-            <div className="relative flex-1 max-w-md">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400 w-5 h-5" />
-              <input
-                type="text"
-                placeholder="Buscar cafés..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-10 pr-4 py-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-amber-500 focus:border-transparent"
-              />
+// Sample Data
+const sampleCafesData = [
+  {
+    nome: "CATUAI AMARELO",
+    pontuacao: "86+",
+    descricaoSensorial: "Corpo cítrico, frutas tropicais, sabor caramelo.",
+    notas: "Retrogosto prolongado e adocicado.",
+    doçura: 4,
+    acidez: 3,
+    intensidade: 4,
+    embalagens: ["100g", "250g", "500g", "1kg"],
+  },
+  {
+    nome: "ARARA",
+    pontuacao: "84+",
+    descricaoSensorial: "Corpo cítrico, sabor de caramelo salgado com pimenta rosa.",
+    notas: "Retrogosto com notas de chocolate meio amargo.",
+    doçura: 3,
+    acidez: 4,
+    intensidade: 3,
+    embalagens: ["100g", "250g", "500g", "1kg"],
+  },
+  {
+    nome: "BOURBON AMARELO",
+    pontuacao: "82+",
+    descricaoSensorial: "Corpo aveludado, frutas amarelas, sabor mel.",
+    notas: "Retrogosto adocicado suave.",
+    doçura: 5,
+    acidez: 2,
+    intensidade: 3,
+    embalagens: ["100g", "250g", "500g", "1kg"],
+  },
+  {
+    nome: "CATUCAÍ AMARELO",
+    pontuacao: "87+",
+    descricaoSensorial: "Corpo cremoso e aveludado, com notas marcantes de pêssego, damasco, baunilha e mel.",
+    notas: "Retrogosto prolongado e floral, que envolve o paladar com suavidade e doçura.",
+    doçura: 5,
+    acidez: 3,
+    intensidade: 4,
+    embalagens: ["100g", "250g", "500g", "1kg"],
+  },
+  {
+    nome: "CATUAÍ VERMELHO",
+    pontuacao: "85+",
+    descricaoSensorial: "Corpo médio e aveludado. Açúcar mascavo, frutas vermelhas e leve toque cítrico.",
+    notas: "Com acidez equilibrada e finalização doce e prolongada.",
+    doçura: 4,
+    acidez: 4,
+    intensidade: 3,
+    embalagens: ["100g", "250g", "500g", "1kg"],
+  },
+  {
+    nome: "MUNDO NOVO",
+    pontuacao: "83+",
+    descricaoSensorial: "Corpo equilibrado, notas de chocolate e nozes.",
+    notas: "Finalização suave e agradável.",
+    doçura: 3,
+    acidez: 3,
+    intensidade: 4,
+    embalagens: ["250g", "500g", "1kg"],
+  },
+];
+
+// Main Marketplace Component
+const MarketplacePage = () => {
+  const [cafes, setCafes] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [sortBy, setSortBy] = useState("relevance");
+
+  useEffect(() => {
+    setIsLoading(true);
+    setTimeout(() => {
+      setCafes(sampleCafesData);
+      setIsLoading(false);
+    }, 1500);
+  }, []);
+
+  const filteredAndSortedCafes = cafes
+    .filter((cafe) => cafe.nome.toLowerCase().includes(searchTerm.toLowerCase()))
+    .sort((a, b) => {
+      if (sortBy === "name-asc") return a.nome.localeCompare(b.nome);
+      if (sortBy === "name-desc") return b.nome.localeCompare(a.nome);
+      if (sortBy === "score-desc") return Number.parseFloat(b.pontuacao) - Number.parseFloat(a.pontuacao);
+      return 0;
+    });
+
+  return (
+    <div className="flex flex-col min-h-screen bg-brand-light">
+      <Header />
+      <main className="flex-grow container mx-auto px-4 py-8 md:py-12">
+        <div className="text-center mb-10 md:mb-16">
+          <h1 className="text-4xl md:text-5xl font-bold font-serif text-brand-dark mb-3">
+            Nosso Marketplace de Cafés Especiais
+          </h1>
+          <p className="text-lg md:text-xl text-brand-dark/80 max-w-2xl mx-auto">
+            Explore nossa seleção exclusiva de grãos artesanais, torrados com paixão para sua melhor experiência.
+          </p>
+        </div>
+
+        <div className="mb-8 md:mb-12 p-6 bg-white rounded-xl shadow-lg border border-brand-brown/10">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 items-end">
+            <div className="md:col-span-1">
+              <label htmlFor="search" className="block text-sm font-medium text-brand-dark mb-1">
+                Buscar por nome
+              </label>
+              <div className="relative">
+                <Input
+                  type="text"
+                  id="search"
+                  placeholder="Ex: Catuai Amarelo"
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="pl-10 border-brand-brown/30 focus:border-brand-brown focus:ring-brand-brown"
+                  aria-label="Buscar café por nome"
+                />
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-brand-brown/70" />
+              </div>
             </div>
-
-            {/* Category Filter */}
-            <div className="relative">
-              <select
-                value={selectedCategory}
-                onChange={(e) => setSelectedCategory(e.target.value)}
-                className="appearance-none bg-white border border-slate-200 rounded-xl px-4 py-3 pr-10 focus:ring-2 focus:ring-amber-500 focus:border-transparent"
-              >
-                {categories.map(category => (
-                  <option key={category.id} value={category.id}>
-                    {category.name} ({category.count})
-                  </option>
-                ))}
-              </select>
-              <ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 text-slate-400 w-5 h-5 pointer-events-none" />
-            </div>
-
-            {/* Sort */}
-            <div className="relative">
+            <div>
+              <label htmlFor="sort" className="block text-sm font-medium text-brand-dark mb-1">
+                Ordenar por
+              </label>
               <select
                 value={sortBy}
                 onChange={(e) => setSortBy(e.target.value)}
-                className="appearance-none bg-white border border-slate-200 rounded-xl px-4 py-3 pr-10 focus:ring-2 focus:ring-amber-500 focus:border-transparent"
+                className="w-full border-brand-brown/30 focus:border-brand-brown focus:ring-brand-brown rounded-md px-3 py-2"
+                aria-label="Ordenar cafés por"
               >
-                <option value="nome">Ordenar por Nome</option>
-                <option value="preco-asc">Menor Preço</option>
-                <option value="preco-desc">Maior Preço</option>
-                <option value="rating">Melhor Avaliado</option>
-                <option value="score">Maior Pontuação</option>
+                <option value="relevance">Relevância</option>
+                <option value="name-asc">Nome (A-Z)</option>
+                <option value="name-desc">Nome (Z-A)</option>
+                <option value="score-desc">Melhor Pontuação</option>
               </select>
-              <ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 text-slate-400 w-5 h-5 pointer-events-none" />
             </div>
-
-            {/* View Mode */}
-            <div className="flex bg-slate-100 rounded-xl p-1">
-              <button
-                onClick={() => setViewMode('grid')}
-                className={`p-2 rounded-lg transition-colors ${
-                  viewMode === 'grid' ? 'bg-white text-amber-600 shadow-sm' : 'text-slate-500'
-                }`}
-              >
-                <Grid className="w-5 h-5" />
-              </button>
-              <button
-                onClick={() => setViewMode('list')}
-                className={`p-2 rounded-lg transition-colors ${
-                  viewMode === 'list' ? 'bg-white text-amber-600 shadow-sm' : 'text-slate-500'
-                }`}
-              >
-                <List className="w-5 h-5" />
-              </button>
-            </div>
+            <Button
+              className="w-full md:w-auto bg-brand-brown hover:bg-brand-brown/90 text-brand-light md:self-end"
+              disabled
+            >
+              <Filter className="w-4 h-4 mr-2" />
+              Mais Filtros (Em breve)
+            </Button>
           </div>
         </div>
-      </section>
 
-      {/* Products Section */}
-      <section className="py-12">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          {/* Results Info */}
-          <div className="flex items-center justify-between mb-8">
-            <div>
-              <h2 className="text-2xl font-bold text-slate-900">
-                {filteredProducts.length} {filteredProducts.length === 1 ? 'café encontrado' : 'cafés encontrados'}
-              </h2>
-              {searchTerm && (
-                <p className="text-slate-600 mt-1">
-                  Resultados para: "{searchTerm}"
-                </p>
-              )}
-            </div>
-
-            <button className="flex items-center gap-2 text-slate-600 hover:text-amber-600 transition-colors">
-              <SlidersHorizontal className="w-4 h-4" />
-              Filtros Avançados
-            </button>
+        {isLoading ? (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 md:gap-8">
+            {[...Array(8)].map((_, i) => (
+              <ProductSkeleton key={i} />
+            ))}
           </div>
-
-          {/* Products Grid */}
-          {filteredProducts.length === 0 ? (
-            <div className="text-center py-16">
-              <div className="text-6xl mb-4">🔍</div>
-              <h3 className="text-2xl font-bold text-slate-900 mb-2">Nenhum café encontrado</h3>
-              <p className="text-slate-600 mb-6">
-                Tente ajustar os filtros ou fazer uma nova busca.
-              </p>
-              <button
-                onClick={() => {
-                  setSearchTerm('');
-                  setSelectedCategory('todos');
-                  setPriceRange([0, 200]);
-                }}
-                className="bg-amber-600 hover:bg-amber-700 text-white font-semibold px-6 py-3 rounded-xl transition-colors"
-              >
-                Limpar Filtros
-              </button>
-            </div>
-          ) : (
-            <div className={`grid gap-8 ${
-              viewMode === 'grid' 
-                ? 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3' 
-                : 'grid-cols-1'
-            }`}>
-              {filteredProducts.map(product => (
-                <ProductCard key={product.id} product={product} />
-              ))}
-            </div>
-          )}
-
-          {/* Load More */}
-          {filteredProducts.length > 0 && (
-            <div className="text-center mt-12">
-              <button className="bg-slate-900 hover:bg-amber-600 text-white font-semibold px-8 py-4 rounded-xl transition-colors">
-                Carregar Mais Cafés
-              </button>
-            </div>
-          )}
-        </div>
-      </section>
-
-      {/* Newsletter CTA */}
-      <section className="py-16 bg-amber-50">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <div className="space-y-6">
-            <div className="text-5xl">📧</div>
-            <h2 className="text-3xl font-bold text-slate-900">
-              Receba Ofertas Exclusivas
-            </h2>
-            <p className="text-xl text-slate-600">
-              Seja o primeiro a saber sobre novos cafés, promoções e conteúdo exclusivo sobre café especial.
-            </p>
-            <div className="flex flex-col sm:flex-row gap-4 max-w-md mx-auto">
-              <input
-                type="email"
-                placeholder="Seu melhor e-mail"
-                className="flex-1 px-4 py-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-amber-500 focus:border-transparent"
-              />
-              <button className="bg-amber-600 hover:bg-amber-700 text-white font-semibold px-6 py-3 rounded-xl transition-colors">
-                Inscrever
-              </button>
-            </div>
+        ) : filteredAndSortedCafes.length > 0 ? (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 md:gap-8">
+            {filteredAndSortedCafes.map((cafe) => (
+              <CafeCard key={cafe.nome} cafe={cafe} />
+            ))}
           </div>
-        </div>
-      </section>
+        ) : (
+          <div className="text-center py-16">
+            <Coffee className="w-16 h-16 text-brand-brown/50 mx-auto mb-4" />
+            <h2 className="text-2xl font-serif text-brand-dark mb-2">Nenhum café encontrado</h2>
+            <p className="text-brand-dark/70">Tente ajustar seus filtros ou termos de busca.</p>
+          </div>
+        )}
+      </main>
+      <Footer />
     </div>
   );
 };

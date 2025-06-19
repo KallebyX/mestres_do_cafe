@@ -1,6 +1,10 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { ArrowRight, Star, Truck, Shield, Award, Coffee, Users, TrendingUp, CheckCircle, PlayCircle } from 'lucide-react';
+import { ArrowRight, Star, Truck, Shield, Award, Coffee, Users, TrendingUp, CheckCircle, PlayCircle, Play, Calendar, Heart, Trophy } from 'lucide-react';
+import { Header } from '../components/Header'
+import { Footer } from '../components/Footer'
+import { Button } from '../components/ui/button'
+import { Badge } from '../components/ui/badge'
 
 const LandingPage = () => {
   const stats = [
@@ -91,306 +95,221 @@ const LandingPage = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-white">
-      {/* Hero Section */}
-      <section className="relative overflow-hidden bg-gradient-to-br from-slate-50 via-white to-amber-50">
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_20%,rgba(139,69,19,0.03),transparent_50%)]"></div>
-        
-        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 lg:py-32">
-          <div className="grid lg:grid-cols-2 gap-12 lg:gap-20 items-center">
-            {/* Left Column - Content */}
-            <div className="space-y-8">
-              {/* Badge */}
-              <div className="inline-flex items-center gap-2 bg-amber-100 border border-amber-200 rounded-full px-4 py-2">
-                <Star className="w-4 h-4 text-amber-600 fill-current" />
-                <span className="text-amber-800 font-medium text-sm">Certificação SCA</span>
-              </div>
+    <div className="min-h-screen bg-gradient-to-b from-amber-50 to-white">
+      <Header />
+      <main>
+        {/* Hero Section */}
+        <section className="relative bg-brand-light overflow-hidden">
+          <div className="absolute inset-0 opacity-50">
+            <div className="absolute inset-0 bg-gradient-to-br from-brand-light via-amber-50 to-transparent"></div>
+          </div>
 
-              {/* Headline */}
-              <div className="space-y-6">
-                <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-slate-900 leading-tight">
-                  Cafés Especiais
-                  <span className="block text-amber-600">
-                    Direto do Produtor
-                  </span>
-                </h1>
-                
-                <p className="text-xl text-slate-600 leading-relaxed max-w-xl">
-                  Descubra sabores únicos dos melhores cafés especiais do Brasil. 
-                  Pontuação SCA acima de 80 pontos, torrefação artesanal e entrega garantida.
-                </p>
-              </div>
+          <div className="relative container mx-auto px-4 py-20 lg:py-32 z-10">
+            <div className="max-w-4xl mx-auto text-center">
+              <Badge
+                variant="outline"
+                className="mb-6 bg-brand-brown/10 text-brand-brown hover:bg-brand-brown/20 px-4 py-2 text-sm font-medium border-brand-brown/30"
+              >
+                <Award className="w-4 h-4 mr-2" />
+                Certificação SCA & Torra Artesanal
+              </Badge>
 
-              {/* CTA Buttons */}
-              <div className="flex flex-col sm:flex-row gap-4">
-                <Link
-                  to="/marketplace"
-                  className="group inline-flex items-center justify-center gap-2 bg-amber-600 hover:bg-amber-700 text-white font-semibold px-8 py-4 rounded-2xl transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-1"
-                >
-                  <Coffee className="w-5 h-5" />
-                  Explorar Cafés
-                  <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+              <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold text-brand-dark font-serif mb-6 leading-tight">
+                Cafés Especiais
+                <span className="block text-transparent bg-clip-text bg-gradient-to-r from-brand-brown via-yellow-600 to-amber-700 mt-1 sm:mt-2">
+                  Direto do Produtor
+                </span>
+              </h1>
+
+              <p className="text-lg sm:text-xl md:text-2xl text-brand-dark/80 mb-10 max-w-3xl mx-auto leading-relaxed">
+                Descubra sabores únicos dos melhores cafés especiais do Brasil. Nossos grãos possuem{' '}
+                <span className="text-brand-brown font-semibold">pontuação SCA acima de 80 pontos</span>, passam por
+                torrefação artesanal e chegam frescos até você.
+              </p>
+
+              <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-12 sm:mb-16">
+                <Link to="/marketplace">
+                  <Button
+                    size="lg"
+                    className="bg-brand-brown hover:bg-brand-brown/90 text-white px-8 py-4 text-lg font-semibold shadow-xl hover:shadow-2xl transform hover:-translate-y-1 transition-all duration-200 w-full sm:w-auto"
+                  >
+                    Explorar Cafés
+                    <ArrowRight className="ml-2 w-5 h-5" />
+                  </Button>
                 </Link>
-                
-                <button className="group inline-flex items-center justify-center gap-2 border-2 border-slate-200 hover:border-amber-600 text-slate-700 hover:text-amber-600 font-semibold px-8 py-4 rounded-2xl transition-all duration-300">
-                  <PlayCircle className="w-5 h-5" />
-                  Ver Processo
-                </button>
+                <Link to="/sobre">
+                  <Button
+                    variant="outline"
+                    size="lg"
+                    className="border-2 border-brand-brown text-brand-brown hover:bg-brand-brown/10 hover:text-brand-brown px-8 py-4 text-lg font-semibold bg-white/80 w-full sm:w-auto"
+                  >
+                    <PlayCircle className="mr-2 w-5 h-5" />
+                    Ver Processo
+                  </Button>
+                </Link>
               </div>
 
-              {/* Stats */}
-              <div className="grid grid-cols-2 lg:grid-cols-4 gap-8 pt-8 border-t border-slate-200">
-                {stats.map((stat, index) => (
-                  <div key={index} className="text-center">
-                    <div className="text-2xl lg:text-3xl font-bold text-slate-900 mb-1">
-                      {stat.number}
+              <div className="relative max-w-xl lg:max-w-2xl mx-auto group">
+                <div className="absolute -inset-2 sm:-inset-4 bg-gradient-to-r from-brand-brown/50 to-yellow-600/50 rounded-3xl blur-xl opacity-25 group-hover:opacity-40 transition-opacity duration-500 transform group-hover:rotate-3"></div>
+                <div className="relative w-full h-auto rounded-2xl sm:rounded-3xl shadow-2xl group-hover:shadow-3xl transition-shadow duration-500 bg-white/10 backdrop-blur-sm border border-brand-brown/20 p-8">
+                  <div className="text-center">
+                    <div className="w-20 h-20 mx-auto mb-4 bg-brand-brown rounded-full flex items-center justify-center">
+                      <Coffee className="w-10 h-10 text-white" />
                     </div>
-                    <div className="text-sm text-slate-600">
-                      {stat.label}
+                    <h3 className="text-xl font-serif text-brand-dark mb-2">Embalagem Premium</h3>
+                    <p className="text-brand-dark/70">Frescor e qualidade garantidos</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* Stats Section */}
+        <section className="py-16 md:py-20 bg-brand-light/70 border-y border-brand-brown/10">
+          <div className="container mx-auto px-4">
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 md:gap-8">
+              {stats.map((stat, index) => (
+                <div
+                  key={index}
+                  className="text-center group p-4 rounded-lg hover:bg-white hover:shadow-xl transition-all duration-300"
+                >
+                  <div className="relative mb-4">
+                    <div
+                      className={`w-16 h-16 mx-auto rounded-2xl bg-gradient-to-br ${
+                        index === 0 || index === 1
+                          ? 'from-brand-brown/10 to-brand-brown/20'
+                          : 'from-brand-dark/5 to-brand-dark/10'
+                      } flex items-center justify-center shadow-lg group-hover:shadow-xl transition-shadow duration-300 group-hover:scale-105 transform`}
+                    >
+                      {index === 0 && <Users className={`w-8 h-8 ${index === 0 ? 'text-brand-brown' : 'text-brand-dark'} transition-transform group-hover:rotate-6`} />}
+                      {index === 1 && <Coffee className={`w-8 h-8 ${index === 1 ? 'text-brand-brown' : 'text-brand-dark'} transition-transform group-hover:rotate-6`} />}
+                      {index === 2 && <Award className={`w-8 h-8 ${index === 2 ? 'text-brand-dark' : 'text-brand-dark'} transition-transform group-hover:rotate-6`} />}
+                      {index === 3 && <Calendar className={`w-8 h-8 ${index === 3 ? 'text-brand-brown' : 'text-brand-dark'} transition-transform group-hover:rotate-6`} />}
                     </div>
                   </div>
+                  <div className="text-3xl lg:text-4xl font-bold text-brand-dark font-serif mb-1.5">{stat.number}</div>
+                  <div className="text-sm md:text-base text-brand-dark/80">{stat.label}</div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        {/* Rating Section */}
+        <section className="py-16 bg-gradient-to-r from-brand-light to-amber-50/30">
+          <div className="container mx-auto px-4 text-center">
+            <div className="max-w-md mx-auto p-6 bg-white rounded-xl shadow-xl border border-brand-brown/10">
+              <div className="w-16 h-16 mx-auto mb-5 bg-brand-brown rounded-full flex items-center justify-center shadow-lg">
+                <Coffee className="w-8 h-8 text-white" />
+              </div>
+
+              <h3 className="text-lg font-semibold text-brand-dark/90 mb-2">Avaliação dos Nossos Clientes</h3>
+
+              <div className="flex justify-center mb-3">
+                {[...Array(5)].map((_, i) => (
+                  <Star className={`w-7 h-7 ${i < 4 || (i === 4 && Math.random() > 0.5) ? 'text-brand-brown' : 'text-gray-300'}`} key={i} />
                 ))}
               </div>
-            </div>
 
-            {/* Right Column - Visual */}
-            <div className="relative">
-              <div className="relative bg-gradient-to-br from-amber-100 to-amber-200 rounded-3xl p-8 lg:p-12 shadow-2xl">
-                <div className="absolute inset-0 bg-gradient-to-br from-transparent to-black/5 rounded-3xl"></div>
-                
-                {/* Coffee Cup Visual */}
-                <div className="relative text-center">
-                  <div className="text-8xl lg:text-9xl mb-4">☕</div>
-                  <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-6 shadow-lg">
-                    <div className="flex items-center justify-center gap-2 mb-3">
-                      {[1,2,3,4,5].map(i => (
-                        <Star key={i} className="w-5 h-5 text-yellow-400 fill-current" />
-                      ))}
-                    </div>
-                    <p className="text-slate-700 font-medium">Avaliação dos Clientes</p>
-                    <p className="text-2xl font-bold text-slate-900">4.9/5</p>
-                  </div>
-                </div>
-
-                {/* Floating Elements */}
-                <div className="absolute -top-6 -right-6 bg-white rounded-2xl p-4 shadow-xl">
-                  <div className="flex items-center gap-2">
-                    <div className="w-3 h-3 bg-green-500 rounded-full"></div>
-                    <span className="text-sm font-medium text-slate-700">Certificado SCA</span>
-                  </div>
-                </div>
-                
-                <div className="absolute -bottom-6 -left-6 bg-white rounded-2xl p-4 shadow-xl">
-                  <div className="flex items-center gap-2">
-                    <Truck className="w-4 h-4 text-amber-600" />
-                    <span className="text-sm font-medium text-slate-700">Entrega Grátis</span>
-                  </div>
-                </div>
+              <div className="text-4xl font-bold text-brand-dark font-serif mb-1">
+                4.9<span className="text-2xl text-brand-dark/70">/5</span>
               </div>
+              <p className="text-sm text-brand-dark/70">Baseado em mais de 500 avaliações verificadas.</p>
             </div>
           </div>
-        </div>
-      </section>
+        </section>
 
-      {/* Features Section */}
-      <section className="py-20 lg:py-32">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          {/* Section Header */}
-          <div className="text-center mb-16 lg:mb-24">
-            <div className="inline-flex items-center gap-2 bg-slate-100 rounded-full px-4 py-2 mb-6">
-              <CheckCircle className="w-4 h-4 text-slate-600" />
-              <span className="text-slate-700 font-medium text-sm">Por que Escolher os Mestres</span>
+        {/* Why Choose Section */}
+        <section className="py-16 md:py-20 bg-brand-light">
+          <div className="container mx-auto px-4">
+            <div className="text-center mb-12 md:mb-16">
+              <h2 className="text-3xl md:text-4xl font-bold text-brand-dark font-serif mb-4">
+                Por Que Escolher os Mestres do Café?
+              </h2>
+              <p className="text-lg md:text-xl text-brand-dark/80 max-w-2xl mx-auto">
+                Há mais de {new Date().getFullYear() - 2019} anos conectando você aos melhores cafés especiais do Brasil,
+                com paixão e expertise.
+              </p>
             </div>
-            
-            <h2 className="text-3xl lg:text-5xl font-bold text-slate-900 mb-6">
-              Qualidade em Cada Detalhe
-            </h2>
-            
-            <p className="text-xl text-slate-600 max-w-3xl mx-auto leading-relaxed">
-              Mais de 5 anos dedicados à perfeição do café especial, com processo artesanal 
-              e tecnologia de ponta para garantir a melhor experiência.
-            </p>
-          </div>
 
-          {/* Features Grid */}
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
-            {features.map((feature, index) => (
-              <div key={index} className="group text-center">
-                <div className="relative mb-8">
-                  <div className="w-20 h-20 bg-gradient-to-br from-amber-100 to-amber-200 rounded-3xl flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform duration-300 shadow-lg">
-                    <feature.icon className="w-10 h-10 text-amber-600" />
+            <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 md:gap-8 mb-12">
+              {features.map((feature, index) => (
+                <div
+                  key={index}
+                  className="text-center p-6 rounded-2xl bg-white hover:bg-amber-50/30 border border-brand-brown/10 hover:border-brand-brown/20 transition-all duration-300 group hover:shadow-lg"
+                >
+                  <div className="w-16 h-16 mx-auto mb-5 bg-gradient-to-br from-brand-brown/10 to-brand-brown/20 rounded-2xl flex items-center justify-center group-hover:from-brand-brown/20 group-hover:to-brand-brown/30 transition-all duration-300 transform group-hover:scale-105">
+                    <feature.icon className="w-8 h-8 text-brand-brown" />
                   </div>
+                  <h3 className="text-lg font-semibold text-brand-dark mb-2 font-serif">{feature.title}</h3>
+                  <p className="text-brand-dark/70 text-sm leading-relaxed">{feature.description}</p>
                 </div>
-                
-                <h3 className="text-xl font-bold text-slate-900 mb-4">
-                  {feature.title}
-                </h3>
-                
-                <p className="text-slate-600 leading-relaxed">
-                  {feature.description}
-                </p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Products Showcase */}
-      <section className="py-20 lg:py-32 bg-slate-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          {/* Section Header */}
-          <div className="text-center mb-16">
-            <div className="inline-flex items-center gap-2 bg-white rounded-full px-4 py-2 mb-6 shadow-sm">
-              <Coffee className="w-4 h-4 text-amber-600" />
-              <span className="text-slate-700 font-medium text-sm">Cafés Premium</span>
+              ))}
             </div>
-            
-            <h2 className="text-3xl lg:text-5xl font-bold text-slate-900 mb-6">
-              Nossos Cafés Especiais
-            </h2>
-            
-            <p className="text-xl text-slate-600 max-w-3xl mx-auto">
-              Seleção exclusiva dos melhores grãos, torrefação artesanal e qualidade certificada SCA
-            </p>
-          </div>
 
-          {/* Products Grid */}
-          <div className="grid md:grid-cols-3 gap-8 mb-12">
-            {products.map((product, index) => (
-              <div key={product.id} className="group bg-white rounded-3xl p-8 shadow-lg hover:shadow-2xl transition-all duration-500 transform hover:-translate-y-2">
-                {/* Badge */}
-                <div className="flex justify-between items-start mb-6">
-                  <span className="bg-amber-100 text-amber-800 text-xs font-semibold px-3 py-1 rounded-full">
-                    {product.badge}
-                  </span>
-                  <div className="flex items-center gap-1">
-                    <Star className="w-4 h-4 text-yellow-400 fill-current" />
-                    <span className="text-sm font-medium text-slate-600">{product.rating}</span>
-                  </div>
-                </div>
-
-                {/* Product Visual */}
-                <div className="text-center mb-6">
-                  <div className="text-6xl mb-4">{product.image}</div>
-                  <h3 className="text-xl font-bold text-slate-900 mb-2">{product.name}</h3>
-                  <p className="text-slate-600 text-sm mb-2">{product.origin}</p>
-                  <p className="text-slate-500 text-sm">{product.description}</p>
-                </div>
-
-                {/* Price & CTA */}
-                <div className="flex items-center justify-between pt-6 border-t border-slate-100">
-                  <div className="text-2xl font-bold text-slate-900">
-                    R$ {product.price.toFixed(2).replace('.', ',')}
-                  </div>
-                  <button className="bg-amber-600 hover:bg-amber-700 text-white font-semibold px-6 py-3 rounded-xl transition-colors duration-300">
-                    Adicionar
-                  </button>
-                </div>
-              </div>
-            ))}
-          </div>
-
-          {/* View All CTA */}
-          <div className="text-center">
-            <Link
-              to="/marketplace"
-              className="inline-flex items-center gap-2 bg-slate-900 hover:bg-amber-600 text-white font-semibold px-8 py-4 rounded-2xl transition-all duration-300 shadow-lg hover:shadow-xl"
-            >
-              Ver Todos os Cafés
-              <ArrowRight className="w-4 h-4" />
-            </Link>
-          </div>
-        </div>
-      </section>
-
-      {/* Testimonials */}
-      <section className="py-20 lg:py-32">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          {/* Section Header */}
-          <div className="text-center mb-16">
-            <div className="inline-flex items-center gap-2 bg-slate-100 rounded-full px-4 py-2 mb-6">
-              <Users className="w-4 h-4 text-slate-600" />
-              <span className="text-slate-700 font-medium text-sm">Depoimentos</span>
-            </div>
-            
-            <h2 className="text-3xl lg:text-5xl font-bold text-slate-900 mb-6">
-              O Que Nossos Clientes Dizem
-            </h2>
-          </div>
-
-          {/* Testimonials Grid */}
-          <div className="grid md:grid-cols-3 gap-8">
-            {testimonials.map((testimonial, index) => (
-              <div key={index} className="bg-white rounded-3xl p-8 shadow-lg border border-slate-100">
-                {/* Rating */}
-                <div className="flex items-center gap-1 mb-6">
-                  {[1,2,3,4,5].map(i => (
-                    <Star key={i} className="w-5 h-5 text-yellow-400 fill-current" />
-                  ))}
-                </div>
-
-                {/* Comment */}
-                <p className="text-slate-700 leading-relaxed mb-6 text-lg">
-                  "{testimonial.comment}"
-                </p>
-
-                {/* Author */}
-                <div className="flex items-center gap-4">
-                  <div className="w-12 h-12 bg-slate-100 rounded-full flex items-center justify-center text-xl">
-                    {testimonial.avatar}
-                  </div>
-                  <div>
-                    <div className="font-semibold text-slate-900">{testimonial.name}</div>
-                    <div className="text-slate-600 text-sm">{testimonial.role}</div>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* CTA Section */}
-      <section className="py-20 lg:py-32 bg-gradient-to-br from-slate-900 via-slate-800 to-amber-900 relative overflow-hidden">
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_70%_30%,rgba(245,158,11,0.1),transparent_70%)]"></div>
-        
-        <div className="relative max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <div className="space-y-8">
-            <div className="inline-flex items-center gap-2 bg-amber-600/20 border border-amber-600/30 rounded-full px-4 py-2">
-              <TrendingUp className="w-4 h-4 text-amber-400" />
-              <span className="text-amber-400 font-medium text-sm">Cadastre-se Agora</span>
-            </div>
-            
-            <h2 className="text-3xl lg:text-5xl font-bold text-white leading-tight">
-              Comece Sua Jornada no
-              <span className="block text-amber-400">Mundo dos Cafés Especiais</span>
-            </h2>
-            
-            <p className="text-xl text-slate-300 max-w-2xl mx-auto leading-relaxed">
-              Ganhe 100 pontos de boas-vindas, acesse descontos exclusivos e descubra 
-              sabores únicos que vão transformar seu momento café.
-            </p>
-            
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Link
-                to="/registro"
-                className="group inline-flex items-center justify-center gap-2 bg-amber-600 hover:bg-amber-500 text-white font-semibold px-8 py-4 rounded-2xl transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-1"
-              >
-                <Star className="w-5 h-5" />
-                Criar Conta Grátis
-                <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-              </Link>
-              
-              <Link
-                to="/marketplace"
-                className="inline-flex items-center justify-center gap-2 border-2 border-white/30 hover:border-amber-400 text-white hover:text-amber-400 font-semibold px-8 py-4 rounded-2xl transition-all duration-300"
-              >
-                Explorar Sem Cadastro
+            <div className="text-center">
+              <Link to="/sobre">
+                <Button
+                  size="lg"
+                  className="bg-brand-brown hover:bg-brand-brown/90 text-white px-8 py-3 text-lg font-semibold shadow-xl hover:shadow-2xl transform hover:-translate-y-1 transition-all duration-200"
+                >
+                  Conhecer Nossa História
+                  <ArrowRight className="ml-2 w-5 h-5" />
+                </Button>
               </Link>
             </div>
           </div>
-        </div>
-      </section>
+        </section>
+
+        {/* Gamification Teaser Section */}
+        <section className="py-16 md:py-24 bg-brand-light border-t border-brand-brown/10">
+          <div className="container mx-auto px-4">
+            <div className="bg-gradient-to-br from-brand-dark via-gray-800 to-slate-900 text-white p-8 md:p-12 rounded-xl shadow-2xl flex flex-col lg:flex-row items-center justify-between overflow-hidden relative">
+              <div className="absolute -top-10 -left-10 w-32 h-32 bg-brand-brown/20 rounded-full filter blur-2xl opacity-50"></div>
+              <div className="absolute -bottom-10 -right-10 w-40 h-40 bg-yellow-500/20 rounded-full filter blur-2xl opacity-50"></div>
+
+              <div className="lg:w-2/3 mb-8 lg:mb-0 text-center lg:text-left relative z-10">
+                <div className="flex items-center justify-center lg:justify-start mb-4">
+                  <Award className="w-10 h-10 text-brand-brown mr-3 flex-shrink-0" />
+                  <h2 className="text-3xl md:text-4xl font-bold font-serif">Entre para o Clube dos Mestres!</h2>
+                </div>
+                <p className="text-lg md:text-xl text-brand-light/80 mb-8 max-w-2xl mx-auto lg:mx-0">
+                  Sua paixão por café agora vale recompensas! Acumule pontos, ganhe descontos exclusivos, acesso antecipado
+                  a produtos e muito mais. Desbloqueie um universo de vantagens.
+                </p>
+                <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
+                  <Link to="/gamificacao">
+                    <Button
+                      size="lg"
+                      className="bg-brand-brown hover:bg-opacity-80 text-white px-8 py-3 text-lg font-semibold shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all duration-200 w-full sm:w-auto"
+                    >
+                      <Trophy className="mr-2 w-5 h-5" />
+                      Conheça o Programa
+                    </Button>
+                  </Link>
+                  <Link to="/registro">
+                    <Button
+                      variant="outline"
+                      size="lg"
+                      className="border-2 border-brand-light text-brand-light hover:bg-brand-light hover:text-brand-dark transition-all duration-200 px-8 py-3 text-lg font-semibold bg-transparent w-full sm:w-auto"
+                    >
+                      Criar Conta Agora
+                      <ArrowRight className="ml-2 w-5 h-5" />
+                    </Button>
+                  </Link>
+                </div>
+              </div>
+              <div className="lg:w-1/3 flex justify-center lg:justify-end relative z-10 mt-8 lg:mt-0">
+                <div className="w-48 h-48 md:w-60 md:h-60 bg-gradient-to-br from-brand-brown/20 to-yellow-500/20 rounded-lg shadow-xl flex items-center justify-center transform lg:rotate-6 hover:rotate-0 transition-transform duration-300">
+                  <Trophy className="w-24 h-24 text-brand-brown" />
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+      </main>
+      <Footer />
     </div>
   );
 };
