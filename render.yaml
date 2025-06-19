@@ -1,24 +1,9 @@
 services:
-  # Frontend - Site Estático
+  # Servidor Unificado - Frontend + Backend em um serviço (Plano Free)
   - type: web
-    name: mestres-cafe-frontend
-    runtime: static
-    buildCommand: npm install && npm run build
-    staticPublishPath: ./dist
-    routes:
-      - type: rewrite
-        source: /*
-        destination: /index.html
-    envVars:
-      - key: NODE_ENV
-        value: production
-
-  # Backend - Web Service
-  - type: web
-    name: mestres-cafe-backend
+    name: mestres-cafe-unified
     runtime: node
-    rootDir: ./server
-    buildCommand: npm install
+    buildCommand: npm install && npm run build
     startCommand: npm start
     envVars:
       - key: NODE_ENV
