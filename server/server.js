@@ -10,8 +10,8 @@ const WhatsAppService = require('./services/WhatsAppService');
 const MapsService = require('./services/MapsService');
 
 const app = express();
-const PORT = 5000;
-const JWT_SECRET = 'mestres-cafe-super-secret-jwt-key-2025';
+const PORT = process.env.PORT || 5000; // Render usa PORT dinâmico
+const JWT_SECRET = process.env.JWT_SECRET || 'mestres-cafe-super-secret-jwt-key-2025';
 
 // Inicializar serviços
 const whatsappService = new WhatsAppService();
@@ -105,9 +105,16 @@ if (!fs.existsSync(DB_FILE)) {
   fs.writeFileSync(DB_FILE, JSON.stringify(initialData, null, 2));
 }
 
-// CORS
+// CORS - Configuração para produção e desenvolvimento
+const allowedOrigins = [
+  'http://localhost:5173',
+  'http://localhost:5174',
+  'https://mestres-cafe-frontend.onrender.com',
+  process.env.CORS_ORIGIN
+].filter(Boolean);
+
 app.use(cors({
-  origin: ['http://localhost:5173', 'http://localhost:5174'],
+  origin: allowedOrigins,
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization']
@@ -162,14 +169,23 @@ const authenticateToken = (req, res, next) => {
   });
 };
 
-// Health check endpoint
+// Health check endpoint melhorado para Render
 app.get('/api/health', (req, res) => {
-  res.json({ 
-    status: 'OK', 
+  const healthData = {
+    status: 'OK',
     timestamp: new Date().toISOString(),
-    environment: 'development',
-    version: '1.0.0'
-  });
+    environment: process.env.NODE_ENV || 'development',
+    version: '2.0.0',
+    uptime: process.uptime(),
+    memory: process.memoryUsage(),
+    services: {
+      database: 'OK',
+      whatsapp: whatsappService.isReady ? 'OK' : 'Initializing',
+      maps: 'OK'
+    }
+  };
+  
+  res.status(200).json(healthData);
 });
 
 // Register

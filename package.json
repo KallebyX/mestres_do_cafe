@@ -1,7 +1,7 @@
 {
   "name": "mestres-do-cafe-frontend",
   "private": true,
-  "version": "1.0.0",
+  "version": "2.0.0",
   "type": "module",
   "description": "Frontend da plataforma Mestres do Café - Torrefação Artesanal",
   "author": "Daniel do Nascimento <mestres@cafe.com.br>",
@@ -29,7 +29,10 @@
     "deploy:frontend": "npm run build:prod && npm run preview",
     "deploy:check": "npm run build && npm run preview",
     "clean": "rm -rf dist node_modules/.vite",
-    "reset": "npm run clean && npm install"
+    "reset": "npm run clean && npm install",
+    "render:build": "npm install && npm run build",
+    "render:start": "npm run preview",
+    "heroku-postbuild": "npm run build"
   },
   "dependencies": {
     "@radix-ui/react-alert-dialog": "^1.1.2",
@@ -75,7 +78,7 @@
     "vitest": "^3.2.4"
   },
   "engines": {
-    "node": ">=16.0.0",
+    "node": ">=18.0.0",
     "npm": ">=8.0.0"
   },
   "keywords": [
@@ -84,6 +87,8 @@
     "cafe",
     "torrefacao",
     "frontend",
-    "javascript"
+    "javascript",
+    "render",
+    "production"
   ]
 }

@@ -1,6 +1,6 @@
 {
   "name": "mestres-do-cafe-server",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "description": "Backend API para a plataforma Mestres do Café",
   "main": "server.js",
   "type": "commonjs",
@@ -11,14 +11,18 @@
     "test": "jest",
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage",
-    "test:ci": "jest --ci --coverage --watchAll=false"
+    "test:ci": "jest --ci --coverage --watchAll=false",
+    "render:build": "npm install",
+    "render:start": "npm start"
   },
   "keywords": [
     "cafe",
     "torrefacao",
     "api",
     "nodejs",
-    "express"
+    "express",
+    "render",
+    "production"
   ],
   "author": "Daniel do Nascimento <mestres@cafe.com.br>",
   "license": "MIT",
@@ -37,6 +41,6 @@
     "supertest": "^7.1.1"
   },
   "engines": {
-    "node": ">=16.0.0"
+    "node": ">=18.0.0"
   }
 }
