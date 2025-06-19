@@ -1,97 +1,167 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { MapPin, Phone, Mail, Instagram, Facebook, Twitter } from 'lucide-react';
 
 const Footer = () => {
   return (
-    <footer className="bg-[#1A2328] border-t border-[#C8956D]/20">
-      <div className="container mx-auto px-4 py-12">
+    <footer className="bg-coffee-intense text-coffee-white">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
           {/* Logo e Descrição */}
-          <div className="col-span-1 md:col-span-2">
-            <div className="flex items-center space-x-2 mb-4">
-              <div className="w-10 h-10 bg-[#C8956D] rounded-full flex items-center justify-center">
-                <span className="text-[#2B3A42] font-bold text-lg">M</span>
+          <div className="md:col-span-1">
+            <Link to="/" className="flex items-center space-x-3 mb-4">
+              <div className="w-12 h-12 bg-gradient-coffee rounded-full flex items-center justify-center">
+                <span className="text-coffee-white font-cormorant font-bold text-xl">M</span>
               </div>
-              <span className="text-xl font-bold text-white">Mestres do Café</span>
-            </div>
-            <p className="text-gray-400 mb-6 max-w-md">
-              Torrefação artesanal de cafés especiais em Santa Maria - RS. 
-              Mais de 5 anos de experiência levando o melhor café até você.
+              <div>
+                <h3 className="font-cormorant font-bold text-xl">Mestres do Café</h3>
+                <span className="text-coffee-gold text-xs">Torrefação Artesanal</span>
+              </div>
+            </Link>
+            <p className="text-coffee-white/80 text-sm leading-relaxed">
+              Há mais de 5 anos dedicados à arte da torrefação, levando o melhor café 
+              especial de Santa Maria para todo o Brasil.
             </p>
-            <div className="flex space-x-4">
-              <a href="#" className="text-gray-400 hover:text-[#C8956D] transition-colors">
-                <Instagram size={20} />
-              </a>
-              <a href="#" className="text-gray-400 hover:text-[#C8956D] transition-colors">
-                <Facebook size={20} />
-              </a>
-              <a href="#" className="text-gray-400 hover:text-[#C8956D] transition-colors">
-                <Twitter size={20} />
-              </a>
-            </div>
           </div>
 
-          {/* Links Rápidos */}
+          {/* Links Principais */}
           <div>
-            <h3 className="text-white font-semibold mb-4">Links Rápidos</h3>
+            <h4 className="font-cormorant font-bold text-lg mb-4 text-coffee-gold">
+              Navegação
+            </h4>
             <ul className="space-y-2">
               <li>
-                <Link to="/" className="text-gray-400 hover:text-[#C8956D] transition-colors">
+                <Link to="/" className="text-coffee-white/80 hover:text-coffee-gold transition-colors text-sm">
                   Início
                 </Link>
               </li>
               <li>
-                <Link to="/marketplace" className="text-gray-400 hover:text-[#C8956D] transition-colors">
+                <Link to="/about" className="text-coffee-white/80 hover:text-coffee-gold transition-colors text-sm">
+                  Sobre Nós
+                </Link>
+              </li>
+              <li>
+                <Link to="/marketplace" className="text-coffee-white/80 hover:text-coffee-gold transition-colors text-sm">
                   Marketplace
                 </Link>
               </li>
               <li>
-                <Link to="/login" className="text-gray-400 hover:text-[#C8956D] transition-colors">
-                  Entrar
+                <Link to="/courses" className="text-coffee-white/80 hover:text-coffee-gold transition-colors text-sm">
+                  Cursos
                 </Link>
               </li>
               <li>
-                <Link to="/register" className="text-gray-400 hover:text-[#C8956D] transition-colors">
-                  Cadastrar
+                <Link to="/blog" className="text-coffee-white/80 hover:text-coffee-gold transition-colors text-sm">
+                  Blog
                 </Link>
+              </li>
+            </ul>
+          </div>
+
+          {/* Suporte */}
+          <div>
+            <h4 className="font-cormorant font-bold text-lg mb-4 text-coffee-gold">
+              Suporte
+            </h4>
+            <ul className="space-y-2">
+              <li>
+                <Link to="/contact" className="text-coffee-white/80 hover:text-coffee-gold transition-colors text-sm">
+                  Contato
+                </Link>
+              </li>
+              <li>
+                <a href="#" className="text-coffee-white/80 hover:text-coffee-gold transition-colors text-sm">
+                  FAQ
+                </a>
+              </li>
+              <li>
+                <a href="#" className="text-coffee-white/80 hover:text-coffee-gold transition-colors text-sm">
+                  Política de Privacidade
+                </a>
+              </li>
+              <li>
+                <a href="#" className="text-coffee-white/80 hover:text-coffee-gold transition-colors text-sm">
+                  Termos de Uso
+                </a>
+              </li>
+              <li>
+                <a href="#" className="text-coffee-white/80 hover:text-coffee-gold transition-colors text-sm">
+                  Trocas e Devoluções
+                </a>
               </li>
             </ul>
           </div>
 
           {/* Contato */}
           <div>
-            <h3 className="text-white font-semibold mb-4">Contato</h3>
-            <ul className="space-y-3">
-              <li className="flex items-center text-gray-400">
-                <MapPin size={16} className="mr-2 text-[#C8956D]" />
-                <span className="text-sm">Santa Maria - RS</span>
-              </li>
-              <li className="flex items-center text-gray-400">
-                <Phone size={16} className="mr-2 text-[#C8956D]" />
-                <span className="text-sm">(55) 99645-8600</span>
-              </li>
-              <li className="flex items-center text-gray-400">
-                <Mail size={16} className="mr-2 text-[#C8956D]" />
-                <span className="text-sm">contato@mestrescafe.com.br</span>
-              </li>
-            </ul>
+            <h4 className="font-cormorant font-bold text-lg mb-4 text-coffee-gold">
+              Contato
+            </h4>
+            <div className="space-y-3">
+              <div className="flex items-center space-x-2">
+                <span className="text-coffee-gold">📍</span>
+                <span className="text-coffee-white/80 text-sm">Santa Maria - RS, Brasil</span>
+              </div>
+              <div className="flex items-center space-x-2">
+                <span className="text-coffee-gold">📱</span>
+                <a 
+                  href="https://wa.me/5555996458600" 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="text-coffee-white/80 hover:text-coffee-gold transition-colors text-sm"
+                >
+                  (55) 99645-8600
+                </a>
+              </div>
+              <div className="flex items-center space-x-2">
+                <span className="text-coffee-gold">✉️</span>
+                <a 
+                  href="mailto:contato@mestrescafe.com.br"
+                  className="text-coffee-white/80 hover:text-coffee-gold transition-colors text-sm"
+                >
+                  contato@mestrescafe.com.br
+                </a>
+              </div>
+            </div>
+
+            {/* Redes Sociais */}
+            <div className="mt-6">
+              <h5 className="font-medium mb-3 text-coffee-gold">Siga-nos</h5>
+              <div className="flex space-x-4">
+                <a 
+                  href="https://instagram.com/mestresdocafe" 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="text-coffee-white/80 hover:text-coffee-gold transition-colors"
+                >
+                  📷
+                </a>
+                <a 
+                  href="https://facebook.com/mestresdocafe" 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="text-coffee-white/80 hover:text-coffee-gold transition-colors"
+                >
+                  📘
+                </a>
+                <a 
+                  href="#" 
+                  className="text-coffee-white/80 hover:text-coffee-gold transition-colors"
+                >
+                  🐦
+                </a>
+              </div>
+            </div>
           </div>
         </div>
 
-        {/* Linha de Separação */}
-        <div className="border-t border-[#C8956D]/20 mt-8 pt-8">
+        {/* Linha Divisória */}
+        <div className="border-t border-coffee-gold/20 mt-12 pt-8">
           <div className="flex flex-col md:flex-row justify-between items-center">
-            <p className="text-gray-400 text-sm mb-4 md:mb-0">
+            <p className="text-coffee-white/60 text-sm">
               © 2024 Mestres do Café. Todos os direitos reservados.
             </p>
-            <div className="flex space-x-6 text-sm">
-              <a href="#" className="text-gray-400 hover:text-[#C8956D] transition-colors">
-                Política de Privacidade
-              </a>
-              <a href="#" className="text-gray-400 hover:text-[#C8956D] transition-colors">
-                Termos de Uso
-              </a>
+            <div className="flex items-center space-x-4 mt-4 md:mt-0">
+              <span className="text-coffee-white/60 text-sm">Desenvolvido com ☕ em Santa Maria</span>
             </div>
           </div>
         </div>

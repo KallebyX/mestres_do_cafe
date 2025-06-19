@@ -1,173 +1,220 @@
-@import "tailwindcss";
-@import "tw-animate-css";
+/* App.css - Estilos customizados do Mestres do Café */
 
-@custom-variant dark (&:is(.dark *));
-
-@theme inline {
-  --radius-sm: calc(var(--radius) - 4px);
-  --radius-md: calc(var(--radius) - 2px);
-  --radius-lg: var(--radius);
-  --radius-xl: calc(var(--radius) + 4px);
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --color-card: var(--card);
-  --color-card-foreground: var(--card-foreground);
-  --color-popover: var(--popover);
-  --color-popover-foreground: var(--popover-foreground);
-  --color-primary: var(--primary);
-  --color-primary-foreground: var(--primary-foreground);
-  --color-secondary: var(--secondary);
-  --color-secondary-foreground: var(--secondary-foreground);
-  --color-muted: var(--muted);
-  --color-muted-foreground: var(--muted-foreground);
-  --color-accent: var(--accent);
-  --color-accent-foreground: var(--accent-foreground);
-  --color-destructive: var(--destructive);
-  --color-border: var(--border);
-  --color-input: var(--input);
-  --color-ring: var(--ring);
-  --color-chart-1: var(--chart-1);
-  --color-chart-2: var(--chart-2);
-  --color-chart-3: var(--chart-3);
-  --color-chart-4: var(--chart-4);
-  --color-chart-5: var(--chart-5);
-  --color-sidebar: var(--sidebar);
-  --color-sidebar-foreground: var(--sidebar-foreground);
-  --color-sidebar-primary: var(--sidebar-primary);
-  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
-  --color-sidebar-accent: var(--sidebar-accent);
-  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
-  --color-sidebar-border: var(--sidebar-border);
-  --color-sidebar-ring: var(--sidebar-ring);
-}
-
+/* Variáveis CSS para cores do projeto */
 :root {
-  --radius: 0.625rem;
-  /* Mestres do Café Custom Colors */
-  --background: #2B3A42; /* Azul escuro do portfólio */
-  --foreground: #FFFFFF; /* Branco para texto */
-  --card: #C8956D; /* Marrom/dourado claro para cards */
-  --card-foreground: #2B3A42; /* Texto escuro nos cards */
-  --popover: #2B3A42;
-  --popover-foreground: #FFFFFF;
-  --primary: #C8956D; /* Cor de destaque marrom/dourado */
-  --primary-foreground: #2B3A42;
-  --secondary: #F5F5F5; /* Cinza claro */
-  --secondary-foreground: #2B3A42;
-  --muted: #4A5A62; /* Tom mais claro do azul escuro */
-  --muted-foreground: #FFFFFF;
-  --accent: #C8956D;
-  --accent-foreground: #2B3A42;
-  --destructive: oklch(0.577 0.245 27.325);
-  --border: #4A5A62;
-  --input: #4A5A62;
-  --ring: #C8956D;
-  --chart-1: #C8956D;
-  --chart-2: #8B4513;
-  --chart-3: #F5F5F5;
-  --chart-4: #2B3A42;
-  --chart-5: #4A5A62;
-  --sidebar: #2B3A42;
-  --sidebar-foreground: #FFFFFF;
-  --sidebar-primary: #C8956D;
-  --sidebar-primary-foreground: #2B3A42;
-  --sidebar-accent: #4A5A62;
-  --sidebar-accent-foreground: #FFFFFF;
-  --sidebar-border: #4A5A62;
-  --sidebar-ring: #C8956D;
+  --coffee-primary: #d97444;
+  --coffee-secondary: #cc5a2e;
+  --coffee-dark: #a84527;
+  --coffee-light: #fdf6f1;
+  --coffee-text: #333;
+  --coffee-card: #ffffff;
+  --coffee-border: #e5e5e5;
+  --shadow-light: 0 2px 4px rgba(0,0,0,0.1);
+  --shadow-medium: 0 4px 6px rgba(0,0,0,0.1);
+  --shadow-heavy: 0 8px 15px rgba(0,0,0,0.15);
+  --radius: 8px;
 }
 
-.dark {
-  /* Mantém as mesmas cores para consistência */
-  --background: #2B3A42;
-  --foreground: #FFFFFF;
-  --card: #C8956D;
-  --card-foreground: #2B3A42;
-  --popover: #2B3A42;
-  --popover-foreground: #FFFFFF;
-  --primary: #C8956D;
-  --primary-foreground: #2B3A42;
-  --secondary: #F5F5F5;
-  --secondary-foreground: #2B3A42;
-  --muted: #4A5A62;
-  --muted-foreground: #FFFFFF;
-  --accent: #C8956D;
-  --accent-foreground: #2B3A42;
-  --destructive: oklch(0.704 0.191 22.216);
-  --border: #4A5A62;
-  --input: #4A5A62;
-  --ring: #C8956D;
-  --chart-1: #C8956D;
-  --chart-2: #8B4513;
-  --chart-3: #F5F5F5;
-  --chart-4: #2B3A42;
-  --chart-5: #4A5A62;
-  --sidebar: #2B3A42;
-  --sidebar-foreground: #FFFFFF;
-  --sidebar-primary: #C8956D;
-  --sidebar-primary-foreground: #2B3A42;
-  --sidebar-accent: #4A5A62;
-  --sidebar-accent-foreground: #FFFFFF;
-  --sidebar-border: #4A5A62;
-  --sidebar-ring: #C8956D;
+/* Estilos específicos do App */
+.app {
+  min-height: 100vh;
+  background-color: var(--coffee-light);
+  color: var(--coffee-text);
 }
 
-@layer base {
-  * {
-    @apply border-border outline-ring/50;
-  }
-  body {
-    @apply bg-background text-foreground;
-  }
-}
-
-/* Custom styles for Mestres do Café */
+/* Gradientes customizados */
 .coffee-gradient {
-  background: linear-gradient(135deg, #C8956D 0%, #8B4513 100%);
+  background: linear-gradient(135deg, var(--coffee-primary) 0%, var(--coffee-secondary) 100%);
 }
 
+.coffee-gradient-reverse {
+  background: linear-gradient(135deg, var(--coffee-secondary) 0%, var(--coffee-dark) 100%);
+}
+
+/* Cards específicos do café */
 .coffee-card {
-  background: #C8956D;
-  color: #2B3A42;
-  border-radius: 1rem;
-  padding: 2rem;
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  background: var(--coffee-card);
+  border-radius: var(--radius);
+  padding: 1.5rem;
+  margin-bottom: 1rem;
+  box-shadow: var(--shadow-medium);
+  transition: all 0.3s ease;
+  border: 1px solid var(--coffee-border);
 }
 
 .coffee-card:hover {
   transform: translateY(-4px);
-  box-shadow: 0 10px 25px -3px rgba(0, 0, 0, 0.2);
+  box-shadow: var(--shadow-heavy);
 }
 
+/* Hero section */
 .hero-section {
-  background: linear-gradient(135deg, #2B3A42 0%, #4A5A62 100%);
-  min-height: 100vh;
+  background: linear-gradient(135deg, var(--coffee-primary) 0%, var(--coffee-secondary) 100%);
+  min-height: 70vh;
   display: flex;
   align-items: center;
   justify-content: center;
+  color: white;
+  text-align: center;
+  padding: 2rem;
 }
 
+/* Navigation links */
 .nav-link {
-  color: #FFFFFF;
+  color: white;
   text-decoration: none;
   padding: 0.5rem 1rem;
-  border-radius: 0.5rem;
-  transition: background-color 0.3s ease;
+  border-radius: var(--radius);
+  transition: all 0.3s ease;
+  font-weight: 500;
 }
 
 .nav-link:hover {
-  background-color: rgba(200, 149, 109, 0.2);
+  background-color: rgba(255, 255, 255, 0.2);
+  transform: translateY(-1px);
 }
 
+/* Section divider */
 .section-divider {
-  height: 2px;
-  background: #C8956D;
+  height: 3px;
+  background: var(--coffee-primary);
   width: 4rem;
-  margin: 1rem auto;
+  margin: 2rem auto;
+  border-radius: 2px;
 }
 
-.coffee-bean-pattern {
-  background-image: radial-gradient(circle at 20% 80%, rgba(200, 149, 109, 0.1) 0%, transparent 50%),
-                    radial-gradient(circle at 80% 20%, rgba(200, 149, 109, 0.1) 0%, transparent 50%);
+/* Product cards */
+.product-card {
+  background: var(--coffee-card);
+  border-radius: var(--radius);
+  overflow: hidden;
+  box-shadow: var(--shadow-medium);
+  transition: all 0.3s ease;
+  border: 1px solid var(--coffee-border);
+}
+
+.product-card:hover {
+  transform: translateY(-5px);
+  box-shadow: var(--shadow-heavy);
+}
+
+.product-image {
+  width: 100%;
+  height: 200px;
+  object-fit: cover;
+}
+
+.product-info {
+  padding: 1.5rem;
+}
+
+.product-title {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--coffee-primary);
+  margin-bottom: 0.5rem;
+}
+
+.product-price {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--coffee-secondary);
+  margin-bottom: 1rem;
+}
+
+/* Buttons específicos */
+.btn-coffee {
+  background: var(--coffee-gradient);
+  color: white;
+  border: none;
+  padding: 0.75rem 1.5rem;
+  border-radius: var(--radius);
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-decoration: none;
+  display: inline-block;
+  text-align: center;
+}
+
+.btn-coffee:hover {
+  background: linear-gradient(135deg, var(--coffee-secondary) 0%, var(--coffee-dark) 100%);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-medium);
+}
+
+.btn-coffee:active {
+  transform: translateY(0);
+}
+
+/* Layout específico */
+.container-coffee {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 1rem;
+}
+
+.grid-coffee {
+  display: grid;
+  gap: 2rem;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+}
+
+/* Responsivo */
+@media (max-width: 768px) {
+  .hero-section {
+    min-height: 50vh;
+    padding: 1rem;
+  }
+  
+  .coffee-card {
+    padding: 1rem;
+  }
+  
+  .grid-coffee {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+}
+
+/* Loading states */
+.loading-spinner {
+  width: 2rem;
+  height: 2rem;
+  border: 3px solid var(--coffee-border);
+  border-top: 3px solid var(--coffee-primary);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin: 2rem auto;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* Form styles */
+.form-coffee {
+  background: var(--coffee-card);
+  padding: 2rem;
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-medium);
+  max-width: 400px;
+  margin: 0 auto;
+}
+
+.input-coffee {
+  width: 100%;
+  padding: 0.75rem;
+  border: 1px solid var(--coffee-border);
+  border-radius: var(--radius);
+  margin-bottom: 1rem;
+  font-size: 1rem;
+  transition: border-color 0.3s ease;
+}
+
+.input-coffee:focus {
+  outline: none;
+  border-color: var(--coffee-primary);
+  box-shadow: 0 0 0 3px rgba(217, 116, 68, 0.1);
 }

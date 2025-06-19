@@ -1,0 +1,1048 @@
+import express from 'express';
+import cors from 'cors';
+import bcrypt from 'bcryptjs';
+import jwt from 'jsonwebtoken';
+import fs from 'fs';
+
+const app = express();
+const PORT = 5000;
+const JWT_SECRET = 'mestres-cafe-super-secret-jwt-key-2025';
+
+// Validação de CPF
+function validateCPF(cpf) {
+  cpf = cpf.replace(/[^\d]/g, '');
+  if (cpf.length !== 11) return false;
+  if (/^(\d)\1{10}$/.test(cpf)) return false;
+  
+  let sum = 0;
+  for (let i = 0; i < 9; i++) {
+    sum += parseInt(cpf.charAt(i)) * (10 - i);
+  }
+  let remainder = 11 - (sum % 11);
+  let digit1 = remainder < 10 ? remainder : 0;
+  
+  if (parseInt(cpf.charAt(9)) !== digit1) return false;
+  
+  sum = 0;
+  for (let i = 0; i < 10; i++) {
+    sum += parseInt(cpf.charAt(i)) * (11 - i);
+  }
+  remainder = 11 - (sum % 11);
+  let digit2 = remainder < 10 ? remainder : 0;
+  
+  return parseInt(cpf.charAt(10)) === digit2;
+}
+
+// Validação de CNPJ
+function validateCNPJ(cnpj) {
+  cnpj = cnpj.replace(/[^\d]/g, '');
+  if (cnpj.length !== 14) return false;
+  if (/^(\d)\1{13}$/.test(cnpj)) return false;
+  
+  let weights = [5, 4, 3, 2, 9, 8, 7, 6, 5, 4, 3, 2];
+  let sum = 0;
+  
+  for (let i = 0; i < 12; i++) {
+    sum += parseInt(cnpj.charAt(i)) * weights[i];
+  }
+  
+  let remainder = sum % 11;
+  let digit1 = remainder < 2 ? 0 : 11 - remainder;
+  
+  if (parseInt(cnpj.charAt(12)) !== digit1) return false;
+  
+  weights = [6, 5, 4, 3, 2, 9, 8, 7, 6, 5, 4, 3, 2];
+  sum = 0;
+  
+  for (let i = 0; i < 13; i++) {
+    sum += parseInt(cnpj.charAt(i)) * weights[i];
+  }
+  
+  remainder = sum % 11;
+  let digit2 = remainder < 2 ? 0 : 11 - remainder;
+  
+  return parseInt(cnpj.charAt(13)) === digit2;
+}
+
+// Validação de email
+function validateEmail(email) {
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  return emailRegex.test(email);
+}
+
+// Database mock (JSON file)
+const DB_FILE = './users.json';
+
+// Initialize users database
+if (!fs.existsSync(DB_FILE)) {
+  const initialData = {
+    users: [
+      {
+        id: 1,
+        name: 'Administrador',
+        email: 'admin@mestrescafe.com.br',
+        password: '$2b$12$RZOiTGstHxg27izW7bRPR.WAjMYPjZv4WopklVPsGNxP2TO3.LUeK', // admin123
+        user_type: 'admin',
+        phone: '(11) 99999-9999',
+        is_active: true,
+        created_at: new Date().toISOString()
+      }
+    ]
+  };
+  fs.writeFileSync(DB_FILE, JSON.stringify(initialData, null, 2));
+}
+
+// CORS
+app.use(cors({
+  origin: ['http://localhost:5173', 'http://localhost:5174'],
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization']
+}));
+
+// Body parsing
+app.use(express.json({ limit: '10mb' }));
+app.use(express.urlencoded({ extended: true, limit: '10mb' }));
+
+// Helper functions
+function readDB() {
+  const data = fs.readFileSync(DB_FILE, 'utf8');
+  return JSON.parse(data);
+}
+
+function writeDB(data) {
+  fs.writeFileSync(DB_FILE, JSON.stringify(data, null, 2));
+}
+
+function findUser(email) {
+  const db = readDB();
+  return db.users.find(user => user.email === email);
+}
+
+function createUser(userData) {
+  const db = readDB();
+  const newUser = {
+    id: db.users.length + 1,
+    ...userData,
+    is_active: true,
+    created_at: new Date().toISOString()
+  };
+  db.users.push(newUser);
+  writeDB(db);
+  return newUser;
+}
+
+const authenticateToken = (req, res, next) => {
+  const authHeader = req.headers['authorization'];
+  const token = authHeader && authHeader.split(' ')[1];
+
+  if (!token) {
+    return res.status(401).json({ error: 'Token de acesso requerido' });
+  }
+
+  jwt.verify(token, JWT_SECRET, (err, user) => {
+    if (err) {
+      return res.status(403).json({ error: 'Token inválido ou expirado' });
+    }
+    req.user = user;
+    next();
+  });
+};
+
+// Health check endpoint
+app.get('/api/health', (req, res) => {
+  res.json({ 
+    status: 'OK', 
+    timestamp: new Date().toISOString(),
+    environment: 'development',
+    version: '1.0.0'
+  });
+});
+
+// Register
+app.post('/api/auth/register', async (req, res) => {
+  try {
+    const { 
+      name, 
+      email, 
+      password, 
+      user_type, 
+      phone, 
+      cpf_cnpj, 
+      address, 
+      city, 
+      state, 
+      zip_code,
+      company_name,
+      company_segment 
+    } = req.body;
+
+    // Validações básicas
+    if (!name || !email || !password) {
+      return res.status(400).json({ error: 'Nome, email e senha são obrigatórios' });
+    }
+
+    if (!validateEmail(email)) {
+      return res.status(400).json({ error: 'Email inválido' });
+    }
+
+    if (password.length < 6) {
+      return res.status(400).json({ error: 'Senha deve ter pelo menos 6 caracteres' });
+    }
+
+    if (!user_type || !['cliente_pf', 'cliente_pj'].includes(user_type)) {
+      return res.status(400).json({ error: 'Tipo de usuário inválido' });
+    }
+
+    // Validação específica por tipo de usuário
+    if (user_type === 'cliente_pf') {
+      if (!cpf_cnpj) {
+        return res.status(400).json({ error: 'CPF é obrigatório para pessoa física' });
+      }
+      if (!validateCPF(cpf_cnpj)) {
+        return res.status(400).json({ error: 'CPF inválido' });
+      }
+    } else if (user_type === 'cliente_pj') {
+      if (!cpf_cnpj) {
+        return res.status(400).json({ error: 'CNPJ é obrigatório para pessoa jurídica' });
+      }
+      if (!validateCNPJ(cpf_cnpj)) {
+        return res.status(400).json({ error: 'CNPJ inválido' });
+      }
+      if (!company_name) {
+        return res.status(400).json({ error: 'Nome da empresa é obrigatório para pessoa jurídica' });
+      }
+    }
+
+    // Check if user exists
+    if (findUser(email)) {
+      return res.status(400).json({ error: 'Email já está em uso' });
+    }
+
+    // Check if CPF/CNPJ is already in use
+    const db = readDB();
+    const existingUserWithDocument = db.users.find(user => 
+      user.cpf_cnpj && user.cpf_cnpj.replace(/[^\d]/g, '') === cpf_cnpj.replace(/[^\d]/g, '')
+    );
+    
+    if (existingUserWithDocument) {
+      const docType = user_type === 'cliente_pf' ? 'CPF' : 'CNPJ';
+      return res.status(400).json({ error: `${docType} já está em uso` });
+    }
+
+    // Hash password
+    const hashedPassword = await bcrypt.hash(password, 12);
+
+    // Create user with welcome points
+    const newUser = createUser({
+      name,
+      email,
+      password: hashedPassword,
+      user_type,
+      phone,
+      cpf_cnpj,
+      address,
+      city,
+      state,
+      zip_code,
+      company_name: user_type === 'cliente_pj' ? company_name : null,
+      company_segment: user_type === 'cliente_pj' ? company_segment : null,
+      points: 100, // Pontos de boas-vindas
+      level: 'aprendiz',
+      total_spent: 0,
+      orders_count: 0
+    });
+
+    // Generate token
+    const token = jwt.sign(
+      { id: newUser.id, email: newUser.email, user_type: newUser.user_type, name: newUser.name },
+      JWT_SECRET,
+      { expiresIn: '7d' }
+    );
+
+    // Return user without password
+    const { password: _, ...userWithoutPassword } = newUser;
+
+    res.status(201).json({
+      message: 'Usuário criado com sucesso! Você ganhou 100 pontos de boas-vindas!',
+      access_token: token,
+      user: userWithoutPassword,
+      welcome_points: 100
+    });
+  } catch (error) {
+    console.error('Register error:', error);
+    res.status(500).json({ error: 'Erro interno do servidor' });
+  }
+});
+
+// Login
+app.post('/api/auth/login', async (req, res) => {
+  try {
+    const { email, password } = req.body;
+
+    if (!email || !password) {
+      return res.status(400).json({ error: 'Email e senha são obrigatórios' });
+    }
+
+    // Find user in database
+    const user = findUser(email);
+    if (!user) {
+      return res.status(401).json({ error: 'Email ou senha incorretos' });
+    }
+
+    // Check password
+    const isValidPassword = await bcrypt.compare(password, user.password);
+    if (!isValidPassword) {
+      return res.status(401).json({ error: 'Email ou senha incorretos' });
+    }
+
+    // Check if user is active
+    if (!user.is_active) {
+      return res.status(401).json({ error: 'Conta desativada. Entre em contato com o suporte.' });
+    }
+
+    // Generate token
+    const token = jwt.sign(
+      { id: user.id, email: user.email, user_type: user.user_type, name: user.name },
+      JWT_SECRET,
+      { expiresIn: '7d' }
+    );
+
+    // Return user without password
+    const { password: _, ...userWithoutPassword } = user;
+
+    res.json({
+      message: 'Login realizado com sucesso',
+      access_token: token,
+      user: userWithoutPassword
+    });
+  } catch (error) {
+    console.error('Login error:', error);
+    res.status(500).json({ error: 'Erro interno do servidor' });
+  }
+});
+
+// Simplified login for demo - TEMPORARY
+app.post('/api/auth/demo-login', async (req, res) => {
+  try {
+    const { email, password } = req.body;
+
+    // Demo credentials
+    const demoUsers = {
+      'admin@mestrescafe.com.br': {
+        id: 1,
+        name: 'Administrador',
+        email: 'admin@mestrescafe.com.br',
+        user_type: 'admin',
+        phone: '(11) 99999-9999',
+        password: 'admin123'
+      },
+      'cliente@teste.com': {
+        id: 2,
+        name: 'Cliente Teste',
+        email: 'cliente@teste.com',
+        user_type: 'cliente_pf',
+        phone: '(11) 99999-0000',
+        password: '123456'
+      }
+    };
+
+    const user = demoUsers[email];
+    if (!user || user.password !== password) {
+      return res.status(401).json({ error: 'Email ou senha incorretos' });
+    }
+
+    // Generate token
+    const token = jwt.sign(
+      { id: user.id, email: user.email, user_type: user.user_type, name: user.name },
+      JWT_SECRET,
+      { expiresIn: '7d' }
+    );
+
+    // Return user without password
+    const { password: _, ...userWithoutPassword } = user;
+
+    res.json({
+      message: 'Login realizado com sucesso',
+      access_token: token,
+      user: userWithoutPassword
+    });
+  } catch (error) {
+    console.error('Demo login error:', error);
+    res.status(500).json({ error: 'Erro interno do servidor' });
+  }
+});
+
+// Verify token
+app.get('/api/auth/verify-token', authenticateToken, (req, res) => {
+  const user = findUser(req.user.email);
+  if (!user) {
+    return res.status(401).json({ valid: false, error: 'Usuário não encontrado' });
+  }
+
+  const { password: _, ...userWithoutPassword } = user;
+
+  res.json({
+    valid: true,
+    user: userWithoutPassword
+  });
+});
+
+// Products endpoint
+app.get('/api/products', (req, res) => {
+  console.log('🔍 Requisição para listar produtos');
+  
+  // Filtrar apenas produtos ativos
+  const activeProducts = mockProducts.filter(product => product.is_active);
+  
+  res.json({ 
+    success: true,
+    products: activeProducts, 
+    total: activeProducts.length 
+  });
+});
+
+// Get single product
+app.get('/api/products/:id', (req, res) => {
+  console.log('🔍 Requisição para produto específico:', req.params.id);
+  
+  const product = mockProducts.find(p => p.id === req.params.id && p.is_active);
+  
+  if (!product) {
+    return res.status(404).json({ 
+      success: false,
+      error: 'Produto não encontrado' 
+    });
+  }
+  
+  res.json({ 
+    success: true,
+    product 
+  });
+});
+
+// Featured products
+app.get('/api/products/featured', (req, res) => {
+  const featuredProducts = [
+    {
+      id: '1',
+      name: 'Café Bourbon Amarelo Premium',
+      description: 'Café especial da região do Cerrado Mineiro com notas intensas de chocolate e caramelo.',
+      price: 45.90,
+      original_price: 52.90,
+      images: ['https://images.unsplash.com/photo-1559056199-641a0ac8b55e?w=400'],
+      is_featured: true
+    },
+    {
+      id: '2',
+      name: 'Café Geisha Especial',
+      description: 'Variedade Geisha cultivada nas montanhas do Sul de Minas com perfil floral único.',
+      price: 89.90,
+      original_price: 105.90,
+      images: ['https://images.unsplash.com/photo-1497935586351-b67a49e012bf?w=400'],
+      is_featured: true
+    }
+  ];
+  
+  res.json({ products: featuredProducts, total: featuredProducts.length });
+});
+
+// 🔐 Middleware para verificar se é admin
+const requireAdmin = (req, res, next) => {
+  const authHeader = req.headers.authorization;
+  if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    return res.status(401).json({ error: 'Token de autorização necessário' });
+  }
+
+  try {
+    const token = authHeader.split(' ')[1];
+    const decoded = jwt.verify(token, JWT_SECRET);
+    
+    // Verificar se é admin
+    if (decoded.user_type !== 'admin') {
+      return res.status(403).json({ error: 'Acesso negado. Apenas administradores.' });
+    }
+
+    req.user = decoded;
+    next();
+  } catch {
+    return res.status(401).json({ error: 'Token inválido' });
+  }
+};
+
+// Mock products storage (in production, this would be a database)
+const mockProducts = [
+  {
+    id: '1',
+    name: 'Café Bourbon Amarelo Premium',
+    description: 'Café especial da região do Cerrado Mineiro com notas intensas de chocolate e caramelo. Cultivado em altitude de 1.200 metros, este café passou por um processo de secagem natural que intensifica seus sabores únicos.',
+    detailed_description: 'O Café Bourbon Amarelo Premium é uma verdadeira obra-prima da cafeicultura brasileira. Cultivado nas terras férteis do Cerrado Mineiro, em altitudes que variam entre 1.000 e 1.200 metros, este café especial representa o que há de melhor na tradição cafeeira nacional.\n\nAs plantas da variedade Bourbon Amarelo, conhecidas por sua baixa produtividade mas alta qualidade, são cultivadas sob condições climáticas ideais. O processo de secagem natural, realizado em terreiros suspensos, permite que os grãos desenvolvam uma complexidade sensorial excepcional.\n\nCom pontuação SCAA de 86 pontos, este café oferece um perfil sensorial rico e equilibrado, perfeito para os amantes de cafés especiais que buscam uma experiência única a cada xícara.',
+    price: 45.90,
+    original_price: 52.90,
+    origin: 'Cerrado Mineiro, MG',
+    roast_level: 'Médio',
+    flavor_notes: 'Chocolate, Caramelo, Nozes',
+    category: 'especial',
+    stock_quantity: 50,
+    rating: 4.8,
+    reviews_count: 127,
+    is_featured: true,
+    is_active: true,
+    weight: '500g',
+    roast_date: '2024-01-15',
+    altitude: '1.000-1.200m',
+    variety: 'Bourbon Amarelo',
+    process: 'Natural',
+    scaa_score: 86,
+    farm: 'Fazenda São Bento',
+    farmer: 'João Carlos Silva',
+    harvest_year: '2023',
+    created_at: new Date().toISOString()
+  },
+  {
+    id: '2',
+    name: 'Café Geisha Especial',
+    description: 'Variedade Geisha cultivada nas montanhas do Sul de Minas com perfil floral único.',
+    detailed_description: 'O Café Geisha Especial é considerado uma das variedades mais nobres do mundo. Originária da Etiópia e cultivada com extremo cuidado nas montanhas do Sul de Minas, esta variedade rara oferece uma experiência sensorial incomparável.',
+    price: 89.90,
+    original_price: 105.90,
+    origin: 'Sul de Minas, MG',
+    roast_level: 'Claro',
+    flavor_notes: 'Floral, Cítrico, Bergamota',
+    category: 'premium',
+    stock_quantity: 25,
+    rating: 4.9,
+    reviews_count: 89,
+    is_featured: true,
+    is_active: true,
+    weight: '250g',
+    scaa_score: 92,
+    created_at: new Date().toISOString()
+  },
+  {
+    id: '3',
+    name: 'Café Arábica Torrado Artesanal',
+    description: 'Blend exclusivo de grãos selecionados com torra artesanal para um sabor equilibrado.',
+    detailed_description: 'Nosso Café Arábica Torrado Artesanal é um blend cuidadosamente elaborado que combina grãos de diferentes regiões para criar uma experiência harmoniosa e equilibrada.',
+    price: 32.90,
+    original_price: 38.90,
+    origin: 'Mogiana, SP',
+    roast_level: 'Médio-Escuro',
+    flavor_notes: 'Chocolate Amargo, Baunilha',
+    category: 'tradicional',
+    stock_quantity: 80,
+    rating: 4.6,
+    reviews_count: 156,
+    is_featured: false,
+    is_active: true,
+    weight: '500g',
+    created_at: new Date().toISOString()
+  },
+  {
+    id: '4',
+    name: 'Café Fazenda Santa Helena',
+    description: 'Café especial com certificação orgânica, cultivado de forma sustentável.',
+    price: 67.90,
+    original_price: 75.90,
+    origin: 'Alta Mogiana, SP',
+    roast_level: 'Médio',
+    flavor_notes: 'Frutas Vermelhas, Chocolate',
+    category: 'especial',
+    stock_quantity: 35,
+    rating: 4.7,
+    reviews_count: 93,
+    is_featured: true,
+    is_active: true,
+    weight: '500g',
+    created_at: new Date().toISOString()
+  },
+  {
+    id: '5',
+    name: 'Café Tradicional Supremo',
+    description: 'Blend tradicional perfeito para o dia a dia, com sabor equilibrado e suave.',
+    price: 28.90,
+    original_price: 32.90,
+    origin: 'Sul de Minas, MG',
+    roast_level: 'Médio-Escuro',
+    flavor_notes: 'Chocolate, Caramelo',
+    category: 'tradicional',
+    stock_quantity: 120,
+    rating: 4.4,
+    reviews_count: 203,
+    is_featured: false,
+    is_active: true,
+    weight: '500g',
+    created_at: new Date().toISOString()
+  },
+  {
+    id: '6',
+    name: 'Café Microlote Especial',
+    description: 'Edição limitada de microlote especial com pontuação SCAA acima de 85 pontos.',
+    price: 120.90,
+    original_price: 135.90,
+    origin: 'Chapada Diamantina, BA',
+    roast_level: 'Claro',
+    flavor_notes: 'Frutas Tropicais, Floral, Mel',
+    category: 'premium',
+    stock_quantity: 15,
+    rating: 4.9,
+    reviews_count: 47,
+    is_featured: true,
+    is_active: true,
+    weight: '250g',
+    created_at: new Date().toISOString()
+  }
+];
+
+// 🛡️ ADMIN ENDPOINTS - CRUD de Produtos
+
+// 📝 POST /api/admin/products - Criar produto (Admin)
+app.post('/api/admin/products', requireAdmin, (req, res) => {
+  console.log('📝 Admin criando produto:', req.body);
+  
+  try {
+    const {
+      name,
+      description,
+      price,
+      original_price,
+      origin,
+      roast_level,
+      flavor_notes,
+      category,
+      stock_quantity,
+      is_featured
+    } = req.body;
+
+    // Validação básica
+    if (!name || !description || !price || !category || stock_quantity === undefined) {
+      return res.status(400).json({ 
+        error: 'Campos obrigatórios: name, description, price, category, stock_quantity' 
+      });
+    }
+
+    const newProduct = {
+      id: Date.now().toString(),
+      name,
+      description,
+      price: parseFloat(price),
+      original_price: original_price ? parseFloat(original_price) : null,
+      origin: origin || null,
+      roast_level: roast_level || 'Médio',
+      flavor_notes: flavor_notes || null,
+      category,
+      stock_quantity: parseInt(stock_quantity),
+      is_featured: Boolean(is_featured),
+      is_active: true,
+      rating: 4.5, // Rating padrão
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString()
+    };
+
+    mockProducts.push(newProduct);
+
+    res.status(201).json({
+      success: true,
+      message: 'Produto criado com sucesso',
+      product: newProduct
+    });
+  } catch (error) {
+    console.error('Erro ao criar produto:', error);
+    res.status(500).json({ error: 'Erro interno do servidor' });
+  }
+});
+
+// ✏️ PUT /api/admin/products/:id - Atualizar produto (Admin)
+app.put('/api/admin/products/:id', requireAdmin, (req, res) => {
+  console.log('✏️ Admin atualizando produto:', req.params.id, req.body);
+  
+  try {
+    const productId = req.params.id;
+    const productIndex = mockProducts.findIndex(p => p.id === productId);
+    
+    if (productIndex === -1) {
+      return res.status(404).json({ error: 'Produto não encontrado' });
+    }
+
+    const {
+      name,
+      description,
+      price,
+      original_price,
+      origin,
+      roast_level,
+      flavor_notes,
+      category,
+      stock_quantity,
+      is_featured
+    } = req.body;
+
+    // Validação básica
+    if (!name || !description || !price || !category || stock_quantity === undefined) {
+      return res.status(400).json({ 
+        error: 'Campos obrigatórios: name, description, price, category, stock_quantity' 
+      });
+    }
+
+    // Atualizar produto
+    mockProducts[productIndex] = {
+      ...mockProducts[productIndex],
+      name,
+      description,
+      price: parseFloat(price),
+      original_price: original_price ? parseFloat(original_price) : null,
+      origin: origin || null,
+      roast_level: roast_level || 'Médio',
+      flavor_notes: flavor_notes || null,
+      category,
+      stock_quantity: parseInt(stock_quantity),
+      is_featured: Boolean(is_featured),
+      updated_at: new Date().toISOString()
+    };
+
+    res.json({
+      success: true,
+      message: 'Produto atualizado com sucesso',
+      product: mockProducts[productIndex]
+    });
+  } catch (error) {
+    console.error('Erro ao atualizar produto:', error);
+    res.status(500).json({ error: 'Erro interno do servidor' });
+  }
+});
+
+// 🗑️ DELETE /api/admin/products/:id - Excluir produto (Admin)
+app.delete('/api/admin/products/:id', requireAdmin, (req, res) => {
+  console.log('🗑️ Admin excluindo produto:', req.params.id);
+  
+  try {
+    const productId = req.params.id;
+    const productIndex = mockProducts.findIndex(p => p.id === productId);
+    
+    if (productIndex === -1) {
+      return res.status(404).json({ error: 'Produto não encontrado' });
+    }
+
+    const deletedProduct = mockProducts.splice(productIndex, 1)[0];
+
+    res.json({
+      success: true,
+      message: 'Produto excluído com sucesso',
+      product: deletedProduct
+    });
+  } catch (error) {
+    console.error('Erro ao excluir produto:', error);
+    res.status(500).json({ error: 'Erro interno do servidor' });
+  }
+});
+
+// 📊 GET /api/admin/products - Listar todos os produtos para admin
+app.get('/api/admin/products', requireAdmin, (req, res) => {
+  console.log('📊 Admin listando produtos');
+  
+  res.json({
+    success: true,
+    products: mockProducts,
+    total: mockProducts.length
+  });
+});
+
+// Cart endpoints
+app.get('/api/cart', authenticateToken, (req, res) => {
+  res.json({
+    items: [],
+    total: 0,
+    discount: 0,
+    final_total: 0
+  });
+});
+
+app.post('/api/cart/add', authenticateToken, (req, res) => {
+  const { product_id, quantity = 1 } = req.body;
+  
+  res.json({
+    message: 'Produto adicionado ao carrinho',
+    cart: {
+      items: [
+        {
+          id: product_id,
+          name: 'Café Bourbon Amarelo Premium',
+          price: 45.90,
+          quantity: quantity,
+          subtotal: 45.90 * quantity
+        }
+      ],
+      total: 45.90 * quantity
+    }
+  });
+});
+
+// Coupon validation
+app.post('/api/coupons/validate', (req, res) => {
+  const { code } = req.body;
+  
+  const coupons = {
+    'BEMVINDO10': { discount: 10, type: 'percentage', description: '10% de desconto' },
+    'CAFE20': { discount: 20, type: 'fixed', description: 'R$ 20 de desconto' }
+  };
+  
+  if (coupons[code]) {
+    res.json({
+      valid: true,
+      coupon: {
+        code,
+        ...coupons[code]
+      }
+    });
+  } else {
+    res.status(400).json({
+      valid: false,
+      error: 'Cupom inválido ou expirado'
+    });
+  }
+});
+
+// Notifications
+app.get('/api/notifications', authenticateToken, (req, res) => {
+  const notifications = [
+    {
+      id: 1,
+      title: 'Bem-vindo aos Mestres do Café!',
+      message: 'Aproveite nossos cafés especiais com 10% de desconto no primeiro pedido.',
+      type: 'welcome',
+      is_read: false,
+      created_at: new Date().toISOString()
+    },
+    {
+      id: 2,
+      title: 'Novo Café Geisha Disponível!',
+      message: 'Experimente nossa nova variedade Geisha com perfil floral exclusivo.',
+      type: 'product',
+      is_read: false,
+      created_at: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString()
+    }
+  ];
+  
+  res.json({ notifications, total: notifications.length });
+});
+
+// Gamification endpoints
+
+// Function to calculate user level based on points
+function calculateLevel(points) {
+  if (points >= 5000) return { name: 'lenda', number: 5, discount: 25 };
+  if (points >= 3000) return { name: 'mestre', number: 4, discount: 20 };
+  if (points >= 1500) return { name: 'especialista', number: 3, discount: 15 };
+  if (points >= 500) return { name: 'conhecedor', number: 2, discount: 10 };
+  return { name: 'aprendiz', number: 1, discount: 5 };
+}
+
+// Add points to user
+function addPointsToUser(userId, points, reason) {
+  const db = readDB();
+  const userIndex = db.users.findIndex(u => u.id === userId);
+  
+  if (userIndex === -1) return null;
+  
+  // Update user points
+  db.users[userIndex].points = (db.users[userIndex].points || 0) + points;
+  
+  // Calculate new level
+  const newLevel = calculateLevel(db.users[userIndex].points);
+  db.users[userIndex].level = newLevel.name;
+  
+  // Add to points history (in a real app, this would be a separate table)
+  if (!db.points_history) db.points_history = [];
+  
+  db.points_history.push({
+    id: Date.now(),
+    user_id: userId,
+    points: points,
+    reason: reason,
+    created_at: new Date().toISOString()
+  });
+  
+  writeDB(db);
+  return db.users[userIndex];
+}
+
+// Get user gamification info
+app.get('/api/gamification/profile', authenticateToken, (req, res) => {
+  const user = findUser(req.user.email);
+  if (!user) {
+    return res.status(404).json({ error: 'Usuário não encontrado' });
+  }
+  
+  const currentLevel = calculateLevel(user.points || 0);
+  const nextLevel = calculateLevel((user.points || 0) + 1);
+  
+  // Calculate points needed for next level
+  let pointsForNext = 0;
+  if (currentLevel.number < 5) {
+    const thresholds = [0, 500, 1500, 3000, 5000];
+    pointsForNext = thresholds[currentLevel.number] - (user.points || 0);
+  }
+  
+  res.json({
+    user_id: user.id,
+    name: user.name,
+    points: user.points || 0,
+    level: {
+      name: currentLevel.name,
+      number: currentLevel.number,
+      discount: currentLevel.discount
+    },
+    next_level: currentLevel.number < 5 ? {
+      name: nextLevel.name,
+      points_needed: pointsForNext
+    } : null,
+    total_spent: user.total_spent || 0,
+    orders_count: user.orders_count || 0
+  });
+});
+
+// Get points history
+app.get('/api/gamification/points-history', authenticateToken, (req, res) => {
+  const db = readDB();
+  const history = (db.points_history || [])
+    .filter(entry => entry.user_id === req.user.id)
+    .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
+    .slice(0, 50); // Last 50 entries
+  
+  res.json({
+    history: history,
+    total: history.length
+  });
+});
+
+// Add points (for admin or system use)
+app.post('/api/gamification/add-points', authenticateToken, (req, res) => {
+  const { points, reason } = req.body;
+  
+  if (!points || points <= 0) {
+    return res.status(400).json({ error: 'Pontos devem ser um número positivo' });
+  }
+  
+  if (!reason) {
+    return res.status(400).json({ error: 'Motivo é obrigatório' });
+  }
+  
+  const updatedUser = addPointsToUser(req.user.id, points, reason);
+  
+  if (!updatedUser) {
+    return res.status(404).json({ error: 'Usuário não encontrado' });
+  }
+  
+  const currentLevel = calculateLevel(updatedUser.points);
+  
+  res.json({
+    message: `${points} pontos adicionados com sucesso!`,
+    user: {
+      points: updatedUser.points,
+      level: currentLevel
+    }
+  });
+});
+
+// Get leaderboard
+app.get('/api/gamification/leaderboard', (req, res) => {
+  const db = readDB();
+  const leaderboard = db.users
+    .filter(user => user.user_type !== 'admin' && user.is_active)
+    .map(user => ({
+      id: user.id,
+      name: user.name.split(' ')[0], // Only first name for privacy
+      points: user.points || 0,
+      level: calculateLevel(user.points || 0)
+    }))
+    .sort((a, b) => b.points - a.points)
+    .slice(0, 10); // Top 10
+  
+  res.json({
+    leaderboard: leaderboard
+  });
+});
+
+// Admin stats
+app.get('/api/admin/stats', authenticateToken, (req, res) => {
+  if (req.user.user_type !== 'admin') {
+    return res.status(403).json({ error: 'Acesso negado' });
+  }
+  
+  const db = readDB();
+  const stats = {
+    total_users: db.users.filter(u => u.user_type !== 'admin').length,
+    total_orders: 42,
+    total_revenue: 1250.80,
+    total_products: mockProducts.length,
+    pending_orders: 3,
+    monthly_growth: 15.5,
+    total_points_distributed: (db.points_history || []).reduce((sum, entry) => sum + entry.points, 0),
+    active_users_with_points: db.users.filter(u => u.points > 0).length
+  };
+  
+  res.json(stats);
+});
+
+// Root endpoint
+app.get('/', (req, res) => {
+  res.json({
+    message: '☕ Mestres do Café API',
+    status: 'Online',
+    version: '1.0.0',
+    endpoints: [
+      '/api/health',
+      '/api/auth/register',
+      '/api/auth/login',
+      '/api/products',
+      '/api/cart',
+      '/api/coupons/validate'
+    ]
+  });
+});
+
+// 404 Handler
+app.use('*', (req, res) => {
+  res.status(404).json({ 
+    error: 'Endpoint não encontrado',
+    path: req.originalUrl 
+  });
+});
+
+// Error handling middleware
+// eslint-disable-next-line no-unused-vars
+app.use((err, req, res, next) => {
+  console.error('Error:', err.stack);
+  
+  if (err.type === 'entity.parse.failed') {
+    return res.status(400).json({ error: 'Dados JSON inválidos' });
+  }
+  
+  if (err.name === 'ValidationError') {
+    return res.status(400).json({ error: err.message });
+  }
+  
+  if (err.name === 'UnauthorizedError') {
+    return res.status(401).json({ error: 'Token inválido' });
+  }
+  
+  res.status(500).json({ 
+    error: 'Erro interno do servidor'
+  });
+});
+
+// Start server
+app.listen(PORT, () => {
+  console.log(`🚀 Servidor Mestres do Café rodando na porta ${PORT}`);
+  console.log(`📍 Health check: http://localhost:${PORT}/api/health`);
+  console.log(`🌍 CORS habilitado para: http://localhost:5173`);
+  console.log(`☕ Endpoints disponíveis:`);
+  console.log(`   GET  / - Info da API`);
+  console.log(`   GET  /api/health - Status do sistema`);
+  console.log(`   POST /api/auth/register - Cadastro`);
+  console.log(`   POST /api/auth/login - Login`);
+  console.log(`   GET  /api/products - Lista de produtos`);
+  console.log(`   GET  /api/products/featured - Produtos em destaque`);
+});
+
+export default app; 

@@ -1,451 +1,659 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Eye, EyeOff, Mail, Lock, User, Phone, MapPin, Building, AlertCircle } from 'lucide-react';
+import { Eye, EyeOff, User, Mail, Lock, Phone, FileText, Building, MapPin } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
-import LoadingSpinner from '../components/LoadingSpinner';
+import { 
+  validateCPF, 
+  validateCNPJ, 
+  validateEmail, 
+  maskCPF, 
+  maskCNPJ, 
+  maskPhone, 
+  maskCEP 
+} from '../lib/validation';
+import Header from '../components/Header';
+import Footer from '../components/Footer';
 
 const RegisterPage = () => {
+  const { register } = useAuth();
+  const navigate = useNavigate();
+  
   const [formData, setFormData] = useState({
     name: '',
     email: '',
+    phone: '',
     password: '',
     confirmPassword: '',
     user_type: 'cliente_pf',
-    phone: '',
     cpf_cnpj: '',
     address: '',
-    city: '',
-    state: '',
-    zip_code: ''
+    city: 'Santa Maria',
+    state: 'RS',
+    zip_code: '',
+    company_name: '',
+    company_segment: ''
   });
+  
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const [errors, setErrors] = useState({});
-  
-  const { register, loading, error } = useAuth();
-  const navigate = useNavigate();
+  const [step, setStep] = useState(1);
 
   const handleChange = (e) => {
-    const { name, value } = e.target;
-    setFormData(prev => ({
-      ...prev,
+    let { name, value } = e.target;
+    
+    // Aplicar máscaras
+    if (name === 'cpf_cnpj') {
+      if (formData.user_type === 'cliente_pf') {
+        value = maskCPF(value);
+      } else {
+        value = maskCNPJ(value);
+      }
+    } else if (name === 'phone') {
+      value = maskPhone(value);
+    } else if (name === 'zip_code') {
+      value = maskCEP(value);
+    }
+
+    setFormData({
+      ...formData,
       [name]: value
-    }));
-    // Limpar erro do campo quando usuário começar a digitar
-    if (errors[name]) {
-      setErrors(prev => ({
-        ...prev,
-        [name]: ''
-      }));
+    });
+    
+    // Limpar erro quando usuário começar a digitar
+    if (error) setError('');
+  };
+
+  const handleUserTypeChange = (type) => {
+    setFormData({
+      ...formData,
+      user_type: type,
+      cpf_cnpj: '' // Limpar campo quando mudar tipo
+    });
+  };
+
+  const validateStep1 = () => {
+    if (!formData.name.trim()) {
+      setError('Nome é obrigatório');
+      return false;
+    }
+    
+    if (!validateEmail(formData.email)) {
+      setError('Email inválido');
+      return false;
+    }
+    
+    if (!formData.cpf_cnpj) {
+      const docType = formData.user_type === 'cliente_pf' ? 'CPF' : 'CNPJ';
+      setError(`${docType} é obrigatório`);
+      return false;
+    }
+    
+    if (formData.user_type === 'cliente_pf' && !validateCPF(formData.cpf_cnpj)) {
+      setError('CPF inválido');
+      return false;
+    }
+    
+    if (formData.user_type === 'cliente_pj' && !validateCNPJ(formData.cpf_cnpj)) {
+      setError('CNPJ inválido');
+      return false;
+    }
+    
+    if (formData.user_type === 'cliente_pj' && !formData.company_name.trim()) {
+      setError('Nome da empresa é obrigatório');
+      return false;
+    }
+    
+    return true;
+  };
+
+  const validateStep2 = () => {
+    if (formData.password.length < 6) {
+      setError('A senha deve ter pelo menos 6 caracteres');
+      return false;
+    }
+    
+    if (formData.password !== formData.confirmPassword) {
+      setError('As senhas não coincidem');
+      return false;
+    }
+    
+    return true;
+  };
+
+  const handleNextStep = () => {
+    setError('');
+    if (step === 1 && validateStep1()) {
+      setStep(2);
     }
   };
 
-  const validateForm = () => {
-    const newErrors = {};
-
-    if (!formData.name) {
-      newErrors.name = 'Nome é obrigatório';
-    }
-
-    if (!formData.email) {
-      newErrors.email = 'Email é obrigatório';
-    } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
-      newErrors.email = 'Email inválido';
-    }
-
-    if (!formData.password) {
-      newErrors.password = 'Senha é obrigatória';
-    } else if (formData.password.length < 6) {
-      newErrors.password = 'Senha deve ter pelo menos 6 caracteres';
-    }
-
-    if (!formData.confirmPassword) {
-      newErrors.confirmPassword = 'Confirmação de senha é obrigatória';
-    } else if (formData.password !== formData.confirmPassword) {
-      newErrors.confirmPassword = 'Senhas não coincidem';
-    }
-
-    if (!formData.phone) {
-      newErrors.phone = 'Telefone é obrigatório';
-    }
-
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
+  const handlePrevStep = () => {
+    setStep(1);
+    setError('');
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
-    if (!validateForm()) return;
+    setIsLoading(true);
+    setError('');
+
+    if (!validateStep2()) {
+      setIsLoading(false);
+      return;
+    }
 
     try {
-      const { confirmPassword, ...registerData } = formData;
-      await register(registerData);
-      navigate('/marketplace');
-    } catch (err) {
-      // Erro já é tratado no contexto
+      const { confirmPassword: _, ...registerData } = formData;
+      const result = await register(registerData);
+      
+      if (result.success) {
+        navigate('/marketplace', {
+          state: { 
+            message: 'Conta criada com sucesso! Você ganhou 100 pontos de boas-vindas!' 
+          }
+        });
+      } else {
+        setError(result.error || 'Erro ao criar conta');
+      }
+    } catch {
+      setError('Erro de conexão. Tente novamente.');
+    } finally {
+      setIsLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-2xl w-full space-y-8">
-        {/* Header */}
-        <div className="text-center">
-          <div className="mx-auto w-16 h-16 bg-[#C8956D] rounded-full flex items-center justify-center mb-4">
-            <span className="text-[#2B3A42] font-bold text-2xl">M</span>
+    <div className="min-h-screen bg-gradient-to-br from-coffee-gold/10 via-coffee-white to-coffee-cream/30 font-montserrat">
+      <Header />
+      
+      <main className="py-20 px-4">
+        <div className="max-w-6xl mx-auto">
+          <div className="grid lg:grid-cols-2 gap-16 items-center">
+            {/* Seção Visual - Esquerda */}
+            <div className="order-2 lg:order-1">
+              <div className="relative">
+                <div className="absolute inset-0 bg-gradient-to-br from-coffee-gold/20 to-coffee-cream/30 rounded-3xl"></div>
+                <div className="relative p-12">
+                  <div className="text-center mb-8">
+                    <div className="w-24 h-24 bg-gradient-coffee rounded-full flex items-center justify-center mx-auto mb-6 shadow-gold">
+                      <span className="text-coffee-white font-cormorant font-bold text-4xl">M</span>
+                    </div>
+                    <h1 className="font-cormorant font-bold text-4xl text-coffee-intense mb-4">
+                      Junte-se aos Mestres
+                    </h1>
+                    <p className="text-coffee-gray text-lg mb-8">
+                      Crie sua conta e descubra o mundo dos cafés especiais com nosso sistema de gamificação exclusivo
+                    </p>
+                  </div>
+
+                  {/* Benefícios */}
+                  <div className="space-y-6">
+                    <div className="flex items-start space-x-4">
+                      <div className="w-14 h-14 bg-coffee-gold rounded-xl flex items-center justify-center flex-shrink-0 shadow-sm">
+                        <span className="text-coffee-white text-xl">🏆</span>
+                      </div>
+                      <div>
+                        <h3 className="font-cormorant font-bold text-xl text-coffee-intense mb-2">
+                          Sistema de Gamificação
+                        </h3>
+                        <p className="text-coffee-gray">
+                          100 pontos de boas-vindas + pontos a cada compra. Evolua pelos níveis e ganhe até 25% de desconto!
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="flex items-start space-x-4">
+                      <div className="w-14 h-14 bg-coffee-gold rounded-xl flex items-center justify-center flex-shrink-0 shadow-sm">
+                        <span className="text-coffee-white text-xl">🚚</span>
+                      </div>
+                      <div>
+                        <h3 className="font-cormorant font-bold text-xl text-coffee-intense mb-2">
+                          Entrega Gratuita
+                        </h3>
+                        <p className="text-coffee-gray">
+                          Frete grátis para Santa Maria em compras acima de R$ 99. Receba seus cafés fresquinhos em casa
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="flex items-start space-x-4">
+                      <div className="w-14 h-14 bg-coffee-gold rounded-xl flex items-center justify-center flex-shrink-0 shadow-sm">
+                        <span className="text-coffee-white text-xl">☕</span>
+                      </div>
+                      <div>
+                        <h3 className="font-cormorant font-bold text-xl text-coffee-intense mb-2">
+                          Cafés Premium SCAA
+                        </h3>
+                        <p className="text-coffee-gray">
+                          Acesso exclusivo aos melhores cafés especiais certificados com pontuação acima de 80 pontos
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="flex items-start space-x-4">
+                      <div className="w-14 h-14 bg-coffee-gold rounded-xl flex items-center justify-center flex-shrink-0 shadow-sm">
+                        <span className="text-coffee-white text-xl">🎯</span>
+                      </div>
+                      <div>
+                        <h3 className="font-cormorant font-bold text-xl text-coffee-intense mb-2">
+                          Benefícios PJ Especiais
+                        </h3>
+                        <p className="text-coffee-gray">
+                          Empresas ganham pontos dobrados, preços especiais e condições diferenciadas para cafeterias
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Formulário - Direita */}
+            <div className="order-1 lg:order-2">
+              <div className="max-w-lg mx-auto">
+                <div className="card border-2 border-coffee-cream/50 shadow-gold">
+                  {/* Progress Bar */}
+                  <div className="mb-8">
+                    <div className="flex items-center justify-center mb-4">
+                      <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold ${
+                        step >= 1 ? 'bg-coffee-gold text-white' : 'bg-coffee-cream text-coffee-gray'
+                      }`}>
+                        1
+                      </div>
+                      <div className={`w-16 h-1 mx-2 ${
+                        step >= 2 ? 'bg-coffee-gold' : 'bg-coffee-cream'
+                      }`}></div>
+                      <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold ${
+                        step >= 2 ? 'bg-coffee-gold text-white' : 'bg-coffee-cream text-coffee-gray'
+                      }`}>
+                        2
+                      </div>
+                    </div>
+                    <p className="text-center text-coffee-gray text-sm">
+                      Etapa {step} de 2: {step === 1 ? 'Informações Pessoais' : 'Senha e Endereço'}
+                    </p>
+                  </div>
+
+                  <h2 className="font-cormorant font-bold text-3xl text-coffee-intense mb-2 text-center">
+                    Criar Conta
+                  </h2>
+                  <p className="text-coffee-gray text-center mb-8">
+                    {step === 1 ? 'Vamos começar com suas informações básicas' : 'Agora vamos definir sua senha e endereço'}
+                  </p>
+
+                  {error && (
+                    <div className="mb-6 p-4 bg-red-50 border-l-4 border-red-400 text-red-700 rounded-lg">
+                      <div className="flex">
+                        <span className="text-red-400 mr-2">⚠️</span>
+                        <span>{error}</span>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* ETAPA 1 - Informações Pessoais */}
+                  {step === 1 && (
+                    <div className="space-y-6">
+                      {/* Tipo de Cliente */}
+                      <div>
+                        <label className="block text-coffee-intense font-medium mb-3">
+                          Tipo de Conta *
+                        </label>
+                        <div className="grid grid-cols-2 gap-3">
+                          <button
+                            type="button"
+                            onClick={() => handleUserTypeChange('cliente_pf')}
+                            className={`p-4 border-2 rounded-xl transition-all text-left ${
+                              formData.user_type === 'cliente_pf'
+                                ? 'border-coffee-gold bg-coffee-gold/10'
+                                : 'border-coffee-cream hover:border-coffee-gold/50'
+                            }`}
+                          >
+                            <div className="font-semibold text-coffee-intense">👤 Pessoa Física</div>
+                            <div className="text-sm text-coffee-gray">Para uso pessoal</div>
+                          </button>
+                          
+                          <button
+                            type="button"
+                            onClick={() => handleUserTypeChange('cliente_pj')}
+                            className={`p-4 border-2 rounded-xl transition-all text-left ${
+                              formData.user_type === 'cliente_pj'
+                                ? 'border-coffee-gold bg-coffee-gold/10'
+                                : 'border-coffee-cream hover:border-coffee-gold/50'
+                            }`}
+                          >
+                            <div className="font-semibold text-coffee-intense">🏢 Pessoa Jurídica</div>
+                            <div className="text-sm text-coffee-gray">Empresa/Cafeteria</div>
+                          </button>
+                        </div>
+                      </div>
+
+                      {/* Nome */}
+                      <div>
+                        <label htmlFor="name" className="block text-coffee-intense font-medium mb-2">
+                          {formData.user_type === 'cliente_pf' ? 'Nome Completo' : 'Nome do Responsável'} *
+                        </label>
+                        <div className="relative">
+                          <input
+                            type="text"
+                            id="name"
+                            name="name"
+                            value={formData.name}
+                            onChange={handleChange}
+                            required
+                            className="w-full p-4 pl-12 border-2 border-coffee-cream rounded-xl focus:border-coffee-gold focus:ring-2 focus:ring-coffee-gold/10 transition-all bg-coffee-white/50"
+                            placeholder={formData.user_type === 'cliente_pf' ? 'Seu nome completo' : 'Nome do responsável'}
+                          />
+                          <User className="absolute left-4 top-1/2 transform -translate-y-1/2 text-coffee-gold w-4 h-4" />
+                        </div>
+                      </div>
+
+                      {/* Email */}
+                      <div>
+                        <label htmlFor="email" className="block text-coffee-intense font-medium mb-2">
+                          E-mail *
+                        </label>
+                        <div className="relative">
+                          <input
+                            type="email"
+                            id="email"
+                            name="email"
+                            value={formData.email}
+                            onChange={handleChange}
+                            required
+                            className="w-full p-4 pl-12 border-2 border-coffee-cream rounded-xl focus:border-coffee-gold focus:ring-2 focus:ring-coffee-gold/10 transition-all bg-coffee-white/50"
+                            placeholder="seu@email.com"
+                          />
+                          <Mail className="absolute left-4 top-1/2 transform -translate-y-1/2 text-coffee-gold w-4 h-4" />
+                        </div>
+                      </div>
+
+                      {/* CPF/CNPJ */}
+                      <div>
+                        <label htmlFor="cpf_cnpj" className="block text-coffee-intense font-medium mb-2">
+                          {formData.user_type === 'cliente_pf' ? 'CPF' : 'CNPJ'} *
+                        </label>
+                        <div className="relative">
+                          <input
+                            type="text"
+                            id="cpf_cnpj"
+                            name="cpf_cnpj"
+                            value={formData.cpf_cnpj}
+                            onChange={handleChange}
+                            required
+                            className="w-full p-4 pl-12 border-2 border-coffee-cream rounded-xl focus:border-coffee-gold focus:ring-2 focus:ring-coffee-gold/10 transition-all bg-coffee-white/50"
+                            placeholder={formData.user_type === 'cliente_pf' ? '000.000.000-00' : '00.000.000/0000-00'}
+                          />
+                          <FileText className="absolute left-4 top-1/2 transform -translate-y-1/2 text-coffee-gold w-4 h-4" />
+                        </div>
+                      </div>
+
+                      {/* Campos específicos para PJ */}
+                      {formData.user_type === 'cliente_pj' && (
+                        <>
+                          <div>
+                            <label htmlFor="company_name" className="block text-coffee-intense font-medium mb-2">
+                              Nome da Empresa *
+                            </label>
+                            <div className="relative">
+                              <input
+                                type="text"
+                                id="company_name"
+                                name="company_name"
+                                value={formData.company_name}
+                                onChange={handleChange}
+                                required
+                                className="w-full p-4 pl-12 border-2 border-coffee-cream rounded-xl focus:border-coffee-gold focus:ring-2 focus:ring-coffee-gold/10 transition-all bg-coffee-white/50"
+                                placeholder="Nome da sua empresa"
+                              />
+                              <Building className="absolute left-4 top-1/2 transform -translate-y-1/2 text-coffee-gold w-4 h-4" />
+                            </div>
+                          </div>
+
+                          <div>
+                            <label htmlFor="company_segment" className="block text-coffee-intense font-medium mb-2">
+                              Segmento
+                            </label>
+                            <select
+                              id="company_segment"
+                              name="company_segment"
+                              value={formData.company_segment}
+                              onChange={handleChange}
+                              className="w-full p-4 border-2 border-coffee-cream rounded-xl focus:border-coffee-gold focus:ring-2 focus:ring-coffee-gold/10 transition-all bg-coffee-white/50"
+                            >
+                              <option value="">Selecione o segmento</option>
+                              <option value="cafeteria">Cafeteria</option>
+                              <option value="restaurante">Restaurante</option>
+                              <option value="padaria">Padaria</option>
+                              <option value="empresa">Empresa</option>
+                              <option value="loja">Loja de conveniência</option>
+                              <option value="outros">Outros</option>
+                            </select>
+                          </div>
+                        </>
+                      )}
+
+                      {/* Telefone */}
+                      <div>
+                        <label htmlFor="phone" className="block text-coffee-intense font-medium mb-2">
+                          Telefone
+                        </label>
+                        <div className="relative">
+                          <input
+                            type="tel"
+                            id="phone"
+                            name="phone"
+                            value={formData.phone}
+                            onChange={handleChange}
+                            className="w-full p-4 pl-12 border-2 border-coffee-cream rounded-xl focus:border-coffee-gold focus:ring-2 focus:ring-coffee-gold/10 transition-all bg-coffee-white/50"
+                            placeholder="(55) 99999-9999"
+                          />
+                          <Phone className="absolute left-4 top-1/2 transform -translate-y-1/2 text-coffee-gold w-4 h-4" />
+                        </div>
+                      </div>
+
+                      <button
+                        type="button"
+                        onClick={handleNextStep}
+                        className="btn-primary w-full py-4 text-lg font-semibold"
+                      >
+                        Continuar →
+                      </button>
+                    </div>
+                  )}
+
+                  {/* ETAPA 2 - Senha e Endereço */}
+                  {step === 2 && (
+                    <form onSubmit={handleSubmit} className="space-y-6">
+                      {/* Senhas */}
+                      <div className="grid grid-cols-1 gap-4">
+                        <div>
+                          <label htmlFor="password" className="block text-coffee-intense font-medium mb-2">
+                            Senha *
+                          </label>
+                          <div className="relative">
+                            <input
+                              type={showPassword ? "text" : "password"}
+                              id="password"
+                              name="password"
+                              value={formData.password}
+                              onChange={handleChange}
+                              required
+                              className="w-full p-4 pl-12 pr-12 border-2 border-coffee-cream rounded-xl focus:border-coffee-gold focus:ring-2 focus:ring-coffee-gold/10 transition-all bg-coffee-white/50"
+                              placeholder="Mínimo 6 caracteres"
+                            />
+                            <Lock className="absolute left-4 top-1/2 transform -translate-y-1/2 text-coffee-gold w-4 h-4" />
+                            <button
+                              type="button"
+                              onClick={() => setShowPassword(!showPassword)}
+                              className="absolute right-4 top-1/2 transform -translate-y-1/2 text-coffee-gray hover:text-coffee-gold transition-colors"
+                            >
+                              {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                            </button>
+                          </div>
+                        </div>
+
+                        <div>
+                          <label htmlFor="confirmPassword" className="block text-coffee-intense font-medium mb-2">
+                            Confirmar Senha *
+                          </label>
+                          <div className="relative">
+                            <input
+                              type={showConfirmPassword ? "text" : "password"}
+                              id="confirmPassword"
+                              name="confirmPassword"
+                              value={formData.confirmPassword}
+                              onChange={handleChange}
+                              required
+                              className="w-full p-4 pl-12 pr-12 border-2 border-coffee-cream rounded-xl focus:border-coffee-gold focus:ring-2 focus:ring-coffee-gold/10 transition-all bg-coffee-white/50"
+                              placeholder="Repita a senha"
+                            />
+                            <Lock className="absolute left-4 top-1/2 transform -translate-y-1/2 text-coffee-gold w-4 h-4" />
+                            <button
+                              type="button"
+                              onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                              className="absolute right-4 top-1/2 transform -translate-y-1/2 text-coffee-gray hover:text-coffee-gold transition-colors"
+                            >
+                              {showConfirmPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Endereço */}
+                      <div className="grid grid-cols-1 gap-4">
+                        <div>
+                          <label htmlFor="zip_code" className="block text-coffee-intense font-medium mb-2">
+                            CEP
+                          </label>
+                          <div className="relative">
+                            <input
+                              type="text"
+                              id="zip_code"
+                              name="zip_code"
+                              value={formData.zip_code}
+                              onChange={handleChange}
+                              className="w-full p-4 pl-12 border-2 border-coffee-cream rounded-xl focus:border-coffee-gold focus:ring-2 focus:ring-coffee-gold/10 transition-all bg-coffee-white/50"
+                              placeholder="00000-000"
+                            />
+                            <MapPin className="absolute left-4 top-1/2 transform -translate-y-1/2 text-coffee-gold w-4 h-4" />
+                          </div>
+                        </div>
+
+                        <div>
+                          <label htmlFor="address" className="block text-coffee-intense font-medium mb-2">
+                            Endereço
+                          </label>
+                          <input
+                            type="text"
+                            id="address"
+                            name="address"
+                            value={formData.address}
+                            onChange={handleChange}
+                            className="w-full p-4 border-2 border-coffee-cream rounded-xl focus:border-coffee-gold focus:ring-2 focus:ring-coffee-gold/10 transition-all bg-coffee-white/50"
+                            placeholder="Rua, número e complemento"
+                          />
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-4">
+                          <div>
+                            <label htmlFor="city" className="block text-coffee-intense font-medium mb-2">
+                              Cidade
+                            </label>
+                            <input
+                              type="text"
+                              id="city"
+                              name="city"
+                              value={formData.city}
+                              onChange={handleChange}
+                              className="w-full p-4 border-2 border-coffee-cream rounded-xl focus:border-coffee-gold focus:ring-2 focus:ring-coffee-gold/10 transition-all bg-coffee-white/50"
+                              placeholder="Santa Maria"
+                            />
+                          </div>
+
+                          <div>
+                            <label htmlFor="state" className="block text-coffee-intense font-medium mb-2">
+                              Estado
+                            </label>
+                            <input
+                              type="text"
+                              id="state"
+                              name="state"
+                              value={formData.state}
+                              onChange={handleChange}
+                              className="w-full p-4 border-2 border-coffee-cream rounded-xl focus:border-coffee-gold focus:ring-2 focus:ring-coffee-gold/10 transition-all bg-coffee-white/50"
+                              placeholder="RS"
+                            />
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Botões */}
+                      <div className="flex gap-4">
+                        <button
+                          type="button"
+                          onClick={handlePrevStep}
+                          className="btn-secondary flex-1 py-4 text-lg font-semibold"
+                        >
+                          ← Voltar
+                        </button>
+                        
+                        <button
+                          type="submit"
+                          disabled={isLoading}
+                          className="btn-primary flex-1 py-4 text-lg font-semibold disabled:opacity-50"
+                        >
+                          {isLoading ? (
+                            <div className="flex items-center justify-center">
+                              <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-coffee-white mr-2"></div>
+                              Criando...
+                            </div>
+                          ) : (
+                            '🚀 Criar Conta'
+                          )}
+                        </button>
+                      </div>
+                    </form>
+                  )}
+
+                  {/* Link para Login */}
+                  <div className="mt-8 text-center space-y-4">
+                    <div className="relative">
+                      <div className="absolute inset-0 flex items-center">
+                        <div className="w-full border-t border-coffee-cream"></div>
+                      </div>
+                      <div className="relative flex justify-center text-sm">
+                        <span className="px-4 bg-coffee-white text-coffee-gray">ou</span>
+                      </div>
+                    </div>
+
+                    <p className="text-coffee-gray">
+                      Já tem uma conta?{' '}
+                      <Link 
+                        to="/login" 
+                        className="text-coffee-gold hover:text-coffee-intense font-semibold transition-colors"
+                      >
+                        Entre aqui
+                      </Link>
+                    </p>
+
+                    <Link
+                      to="/"
+                      className="inline-flex items-center text-coffee-gray hover:text-coffee-gold transition-colors text-sm"
+                    >
+                      <span className="mr-1">←</span>
+                      Voltar ao início
+                    </Link>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
-          <h2 className="text-3xl font-bold text-white">
-            Criar sua conta
-          </h2>
-          <p className="mt-2 text-gray-400">
-            Cadastre-se para começar a comprar nossos cafés especiais
-          </p>
         </div>
+      </main>
 
-        {/* Form */}
-        <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
-          {/* Error Alert */}
-          {error && (
-            <div className="bg-red-500/10 border border-red-500/20 rounded-lg p-4 flex items-center">
-              <AlertCircle className="text-red-400 mr-3" size={20} />
-              <span className="text-red-400 text-sm">{error}</span>
-            </div>
-          )}
-
-          {/* User Type */}
-          <div>
-            <label className="block text-sm font-medium text-gray-300 mb-3">
-              Tipo de Cliente
-            </label>
-            <div className="grid grid-cols-2 gap-4">
-              <label className="relative">
-                <input
-                  type="radio"
-                  name="user_type"
-                  value="cliente_pf"
-                  checked={formData.user_type === 'cliente_pf'}
-                  onChange={handleChange}
-                  className="sr-only"
-                />
-                <div className={`p-4 border-2 rounded-lg cursor-pointer transition-colors ${
-                  formData.user_type === 'cliente_pf' 
-                    ? 'border-[#C8956D] bg-[#C8956D]/10' 
-                    : 'border-gray-600 bg-[#1A2328]'
-                }`}>
-                  <div className="flex items-center">
-                    <User className="mr-3 text-[#C8956D]" size={20} />
-                    <div>
-                      <p className="font-medium text-white">Pessoa Física</p>
-                      <p className="text-sm text-gray-400">1 ponto por R$ gasto</p>
-                    </div>
-                  </div>
-                </div>
-              </label>
-              
-              <label className="relative">
-                <input
-                  type="radio"
-                  name="user_type"
-                  value="cliente_pj"
-                  checked={formData.user_type === 'cliente_pj'}
-                  onChange={handleChange}
-                  className="sr-only"
-                />
-                <div className={`p-4 border-2 rounded-lg cursor-pointer transition-colors ${
-                  formData.user_type === 'cliente_pj' 
-                    ? 'border-[#C8956D] bg-[#C8956D]/10' 
-                    : 'border-gray-600 bg-[#1A2328]'
-                }`}>
-                  <div className="flex items-center">
-                    <Building className="mr-3 text-[#C8956D]" size={20} />
-                    <div>
-                      <p className="font-medium text-white">Pessoa Jurídica</p>
-                      <p className="text-sm text-gray-400">2 pontos por R$ gasto</p>
-                    </div>
-                  </div>
-                </div>
-              </label>
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {/* Name */}
-            <div>
-              <label htmlFor="name" className="block text-sm font-medium text-gray-300 mb-2">
-                Nome Completo *
-              </label>
-              <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <User className="h-5 w-5 text-gray-400" />
-                </div>
-                <input
-                  id="name"
-                  name="name"
-                  type="text"
-                  value={formData.name}
-                  onChange={handleChange}
-                  className={`block w-full pl-10 pr-3 py-3 border rounded-lg bg-[#1A2328] text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#C8956D] focus:border-transparent ${
-                    errors.name ? 'border-red-500' : 'border-gray-600'
-                  }`}
-                  placeholder="Seu nome completo"
-                />
-              </div>
-              {errors.name && (
-                <p className="mt-1 text-sm text-red-400">{errors.name}</p>
-              )}
-            </div>
-
-            {/* Email */}
-            <div>
-              <label htmlFor="email" className="block text-sm font-medium text-gray-300 mb-2">
-                Email *
-              </label>
-              <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <Mail className="h-5 w-5 text-gray-400" />
-                </div>
-                <input
-                  id="email"
-                  name="email"
-                  type="email"
-                  value={formData.email}
-                  onChange={handleChange}
-                  className={`block w-full pl-10 pr-3 py-3 border rounded-lg bg-[#1A2328] text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#C8956D] focus:border-transparent ${
-                    errors.email ? 'border-red-500' : 'border-gray-600'
-                  }`}
-                  placeholder="seu@email.com"
-                />
-              </div>
-              {errors.email && (
-                <p className="mt-1 text-sm text-red-400">{errors.email}</p>
-              )}
-            </div>
-
-            {/* Password */}
-            <div>
-              <label htmlFor="password" className="block text-sm font-medium text-gray-300 mb-2">
-                Senha *
-              </label>
-              <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <Lock className="h-5 w-5 text-gray-400" />
-                </div>
-                <input
-                  id="password"
-                  name="password"
-                  type={showPassword ? 'text' : 'password'}
-                  value={formData.password}
-                  onChange={handleChange}
-                  className={`block w-full pl-10 pr-10 py-3 border rounded-lg bg-[#1A2328] text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#C8956D] focus:border-transparent ${
-                    errors.password ? 'border-red-500' : 'border-gray-600'
-                  }`}
-                  placeholder="Mínimo 6 caracteres"
-                />
-                <button
-                  type="button"
-                  className="absolute inset-y-0 right-0 pr-3 flex items-center"
-                  onClick={() => setShowPassword(!showPassword)}
-                >
-                  {showPassword ? (
-                    <EyeOff className="h-5 w-5 text-gray-400 hover:text-gray-300" />
-                  ) : (
-                    <Eye className="h-5 w-5 text-gray-400 hover:text-gray-300" />
-                  )}
-                </button>
-              </div>
-              {errors.password && (
-                <p className="mt-1 text-sm text-red-400">{errors.password}</p>
-              )}
-            </div>
-
-            {/* Confirm Password */}
-            <div>
-              <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-300 mb-2">
-                Confirmar Senha *
-              </label>
-              <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <Lock className="h-5 w-5 text-gray-400" />
-                </div>
-                <input
-                  id="confirmPassword"
-                  name="confirmPassword"
-                  type={showConfirmPassword ? 'text' : 'password'}
-                  value={formData.confirmPassword}
-                  onChange={handleChange}
-                  className={`block w-full pl-10 pr-10 py-3 border rounded-lg bg-[#1A2328] text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#C8956D] focus:border-transparent ${
-                    errors.confirmPassword ? 'border-red-500' : 'border-gray-600'
-                  }`}
-                  placeholder="Confirme sua senha"
-                />
-                <button
-                  type="button"
-                  className="absolute inset-y-0 right-0 pr-3 flex items-center"
-                  onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                >
-                  {showConfirmPassword ? (
-                    <EyeOff className="h-5 w-5 text-gray-400 hover:text-gray-300" />
-                  ) : (
-                    <Eye className="h-5 w-5 text-gray-400 hover:text-gray-300" />
-                  )}
-                </button>
-              </div>
-              {errors.confirmPassword && (
-                <p className="mt-1 text-sm text-red-400">{errors.confirmPassword}</p>
-              )}
-            </div>
-
-            {/* Phone */}
-            <div>
-              <label htmlFor="phone" className="block text-sm font-medium text-gray-300 mb-2">
-                Telefone *
-              </label>
-              <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <Phone className="h-5 w-5 text-gray-400" />
-                </div>
-                <input
-                  id="phone"
-                  name="phone"
-                  type="tel"
-                  value={formData.phone}
-                  onChange={handleChange}
-                  className={`block w-full pl-10 pr-3 py-3 border rounded-lg bg-[#1A2328] text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#C8956D] focus:border-transparent ${
-                    errors.phone ? 'border-red-500' : 'border-gray-600'
-                  }`}
-                  placeholder="(55) 99999-9999"
-                />
-              </div>
-              {errors.phone && (
-                <p className="mt-1 text-sm text-red-400">{errors.phone}</p>
-              )}
-            </div>
-
-            {/* CPF/CNPJ */}
-            <div>
-              <label htmlFor="cpf_cnpj" className="block text-sm font-medium text-gray-300 mb-2">
-                {formData.user_type === 'cliente_pf' ? 'CPF' : 'CNPJ'}
-              </label>
-              <input
-                id="cpf_cnpj"
-                name="cpf_cnpj"
-                type="text"
-                value={formData.cpf_cnpj}
-                onChange={handleChange}
-                className="block w-full px-3 py-3 border border-gray-600 rounded-lg bg-[#1A2328] text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#C8956D] focus:border-transparent"
-                placeholder={formData.user_type === 'cliente_pf' ? '000.000.000-00' : '00.000.000/0000-00'}
-              />
-            </div>
-          </div>
-
-          {/* Address Fields */}
-          <div className="space-y-4">
-            <h3 className="text-lg font-medium text-white">Endereço (Opcional)</h3>
-            
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div className="md:col-span-2">
-                <label htmlFor="address" className="block text-sm font-medium text-gray-300 mb-2">
-                  Endereço
-                </label>
-                <div className="relative">
-                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    <MapPin className="h-5 w-5 text-gray-400" />
-                  </div>
-                  <input
-                    id="address"
-                    name="address"
-                    type="text"
-                    value={formData.address}
-                    onChange={handleChange}
-                    className="block w-full pl-10 pr-3 py-3 border border-gray-600 rounded-lg bg-[#1A2328] text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#C8956D] focus:border-transparent"
-                    placeholder="Rua, número, complemento"
-                  />
-                </div>
-              </div>
-
-              <div>
-                <label htmlFor="zip_code" className="block text-sm font-medium text-gray-300 mb-2">
-                  CEP
-                </label>
-                <input
-                  id="zip_code"
-                  name="zip_code"
-                  type="text"
-                  value={formData.zip_code}
-                  onChange={handleChange}
-                  className="block w-full px-3 py-3 border border-gray-600 rounded-lg bg-[#1A2328] text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#C8956D] focus:border-transparent"
-                  placeholder="00000-000"
-                />
-              </div>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label htmlFor="city" className="block text-sm font-medium text-gray-300 mb-2">
-                  Cidade
-                </label>
-                <input
-                  id="city"
-                  name="city"
-                  type="text"
-                  value={formData.city}
-                  onChange={handleChange}
-                  className="block w-full px-3 py-3 border border-gray-600 rounded-lg bg-[#1A2328] text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#C8956D] focus:border-transparent"
-                  placeholder="Sua cidade"
-                />
-              </div>
-
-              <div>
-                <label htmlFor="state" className="block text-sm font-medium text-gray-300 mb-2">
-                  Estado
-                </label>
-                <select
-                  id="state"
-                  name="state"
-                  value={formData.state}
-                  onChange={handleChange}
-                  className="block w-full px-3 py-3 border border-gray-600 rounded-lg bg-[#1A2328] text-white focus:outline-none focus:ring-2 focus:ring-[#C8956D] focus:border-transparent"
-                >
-                  <option value="">Selecione</option>
-                  <option value="RS">Rio Grande do Sul</option>
-                  <option value="SC">Santa Catarina</option>
-                  <option value="PR">Paraná</option>
-                  <option value="SP">São Paulo</option>
-                  <option value="RJ">Rio de Janeiro</option>
-                  <option value="MG">Minas Gerais</option>
-                  {/* Adicionar outros estados conforme necessário */}
-                </select>
-              </div>
-            </div>
-          </div>
-
-          {/* Submit Button */}
-          <div>
-            <button
-              type="submit"
-              disabled={loading}
-              className="group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-medium rounded-lg text-[#2B3A42] bg-[#C8956D] hover:bg-[#C8956D]/90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#C8956D] disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-            >
-              {loading ? (
-                <LoadingSpinner size="sm" text="" />
-              ) : (
-                'Criar Conta'
-              )}
-            </button>
-          </div>
-
-          {/* Links */}
-          <div className="text-center">
-            <p className="text-gray-400 text-sm">
-              Já tem uma conta?{' '}
-              <Link to="/login" className="text-[#C8956D] hover:text-[#C8956D]/80 font-medium">
-                Entre aqui
-              </Link>
-            </p>
-          </div>
-        </form>
-      </div>
+      <Footer />
     </div>
   );
 };

@@ -1,309 +1,258 @@
-# ☕ Mestres do Café - Frontend
+# ☕ Mestres do Café - Plataforma Digital
 
-<div align="center">
+> **Torrefação Artesanal Premium em Santa Maria/RS**
 
-![Mestres do Café](https://images.unsplash.com/photo-1559056199-641a0ac8b55e?w=800&h=400&fit=crop&crop=center)
+[![React](https://img.shields.io/badge/React-18.3.1-blue.svg)](https://reactjs.org/)
+[![Node.js](https://img.shields.io/badge/Node.js-16+-green.svg)](https://nodejs.org/)
+[![Vite](https://img.shields.io/badge/Vite-6.0.1-purple.svg)](https://vitejs.dev/)
+[![Express](https://img.shields.io/badge/Express-4.19.2-lightgrey.svg)](https://expressjs.com/)
+[![License](https://img.shields.io/badge/License-MIT-yellow.svg)](./docs/LICENSE)
 
-**Aplicação web responsiva para torrefação artesanal de cafés especiais**
+## 🎯 Sobre o Projeto
 
-[![React](https://img.shields.io/badge/React-19.1.0-61DAFB?style=for-the-badge&logo=react)](https://reactjs.org/)
-[![Vite](https://img.shields.io/badge/Vite-6.3.5-646CFF?style=for-the-badge&logo=vite)](https://vitejs.dev/)
-[![TailwindCSS](https://img.shields.io/badge/Tailwind-4.1.7-38B2AC?style=for-the-badge&logo=tailwind-css)](https://tailwindcss.com/)
-[![TypeScript](https://img.shields.io/badge/TypeScript-Ready-3178C6?style=for-the-badge&logo=typescript)](https://www.typescriptlang.org/)
+A **Mestres do Café** é uma plataforma digital completa para torrefação artesanal, desenvolvida especialmente para conectar produtores, torrefadores e apaixonados por café de qualidade. O projeto combina um marketplace premium com sistema de gamificação único e ferramentas de gestão avançadas.
 
-[🚀 Demo](#demo) • [📦 Instalação](#instalação) • [🎯 Funcionalidades](#funcionalidades) • [🛠️ Tecnologias](#tecnologias)
+### 🏆 Diferenciais Únicos
 
-</div>
+- **🎮 Sistema de Gamificação**: 5 níveis de progressão com descontos de até 25%
+- **🏢 Programa Corporativo**: Parcerias PJ com benefícios exclusivos
+- **🗺️ Mapa Interativo**: Localização de produtores e pontos de venda
+- **🤖 Automação WhatsApp**: Atendimento automatizado 24/7
+- **📊 Dashboard Avançado**: Analytics e gestão completa
 
----
-
-## 📋 Sobre o Projeto
-
-O **Mestres do Café** é uma aplicação web moderna e responsiva desenvolvida para uma torrefação artesanal de cafés especiais localizada em Santa Maria - RS. Com mais de 5 anos de experiência no mercado, a empresa busca oferecer uma experiência digital única para seus clientes.
-
-### 🎯 Objetivos
-
-- ✅ **Interface moderna e responsiva** para todos os dispositivos
-- ✅ **Sistema completo de autenticação** (login/cadastro)
-- ✅ **Catálogo de produtos** com cafés especiais
-- ✅ **Experiência de usuário fluida** e intuitiva
-- ✅ **Performance otimizada** com Vite e React 19
-
----
-
-## 🚀 Demo
-
-### 🌐 Aplicação Online
-> **Em desenvolvimento** - Deploy será disponibilizado em breve
-
-### 💻 Execução Local
-```bash
-# Clone o repositório
-git clone https://github.com/seu-usuario/mestres-do-cafe-frontend.git
-
-# Entre na pasta do projeto
-cd mestres-do-cafe-frontend
-
-# Instale as dependências
-npm install
-
-# Execute em modo desenvolvimento
-npm run dev
-
-# Acesse no navegador
-http://localhost:5173
-```
-
----
-
-## 🎯 Funcionalidades
-
-### 🔐 Sistema de Autenticação
-- [x] **Login completo** com validação em tempo real
-- [x] **Cadastro de usuários** (Pessoa Física/Jurídica)
-- [x] **Validação de dados** (email, senha, campos obrigatórios)
-- [x] **Sessão persistente** com localStorage
-- [x] **Proteção de rotas** baseada em autenticação
-- [x] **Logout funcional** com limpeza de dados
-
-### 🛒 E-commerce (Em desenvolvimento)
-- [ ] Catálogo de produtos
-- [ ] Carrinho de compras
-- [ ] Sistema de pedidos
-- [ ] Painel administrativo
-
-### 🎨 Interface
-- [x] **Design responsivo** para mobile, tablet e desktop
-- [x] **Componentes reutilizáveis** com Radix UI
-- [x] **Animações suaves** com Framer Motion
-- [x] **Tema escuro/claro** (suporte futuro)
-- [x] **Feedback visual** (loading, mensagens)
-
-### 🧪 Sistema Mock para Testes
-- [x] **API simulada** usando localStorage
-- [x] **Dados persistentes** entre sessões
-- [x] **Usuário admin** pré-configurado
-- [x] **Validações completas** de frontend
-
----
-
-## 🛠️ Tecnologias
-
-### Frontend Core
-- **[React 19.1.0](https://reactjs.org/)** - Biblioteca principal
-- **[Vite 6.3.5](https://vitejs.dev/)** - Build tool e dev server
-- **[React Router DOM](https://reactrouter.com/)** - Roteamento
-- **[React Hook Form](https://react-hook-form.com/)** - Gerenciamento de formulários
-
-### UI/UX
-- **[TailwindCSS 4.1.7](https://tailwindcss.com/)** - Framework CSS
-- **[Radix UI](https://www.radix-ui.com/)** - Componentes primitivos
-- **[Lucide React](https://lucide.dev/)** - Ícones
-- **[Framer Motion](https://www.framer.com/motion/)** - Animações
-- **[Sonner](https://sonner.emilkowal.ski/)** - Toast notifications
-
-### Desenvolvimento
-- **[ESLint](https://eslint.org/)** - Linting
-- **[TypeScript](https://www.typescriptlang.org/)** - Tipagem (configurado)
-- **[Zod](https://zod.dev/)** - Validação de schemas
-
----
-
-## 📦 Instalação
+## 🚀 Quick Start
 
 ### Pré-requisitos
-- **Node.js** 18+ 
-- **npm** ou **pnpm**
+- **Node.js** 16+ 
+- **npm** 8+
+- **Git**
 
-### Passo a passo
+### Instalação Rápida
 
-1. **Clone o repositório**
 ```bash
-git clone https://github.com/seu-usuario/mestres-do-cafe-frontend.git
+# Clone o repositório
+git clone https://github.com/usuario/mestres-do-cafe-frontend.git
 cd mestres-do-cafe-frontend
+
+# Instalar dependências de frontend e backend
+npm run setup
+
+# Executar frontend + backend simultaneamente
+npm run full-dev
 ```
 
-2. **Instale as dependências**
-```bash
-npm install
-# ou
-pnpm install
-```
+### URLs de Acesso
+- **Frontend**: http://localhost:5173
+- **Backend API**: http://localhost:5000
+- **Health Check**: http://localhost:5000/api/health
 
-3. **Execute em desenvolvimento**
-```bash
-npm run dev
-# ou
-pnpm dev
-```
-
-4. **Acesse a aplicação**
-```
-http://localhost:5173
-```
-
-### 🔧 Scripts Disponíveis
-
-```bash
-npm run dev      # Executa em modo desenvolvimento
-npm run build    # Build para produção
-npm run preview  # Preview do build
-npm run lint     # Executa o linter
-```
-
----
-
-## 🧪 Como Testar
-
-### 1. Sistema de Autenticação
-
-#### Login com usuário admin:
-```
-Email: admin@mestrescafe.com.br
-Senha: admin123
-```
-
-#### Cadastro de novo usuário:
-1. Acesse `/register`
-2. Preencha o formulário
-3. Teste validações (email duplicado, senhas diferentes, etc.)
-
-### 2. Funcionalidades Testadas
-
-| Funcionalidade | Status | Descrição |
-|----------------|---------|-----------|
-| ✅ Login | Funcionando | Autenticação completa |
-| ✅ Cadastro | Funcionando | Formulário com validações |
-| ✅ Validações | Funcionando | Email, senha, campos obrigatórios |
-| ✅ Persistência | Funcionando | Sessão mantida após reload |
-| ✅ Logout | Funcionando | Limpeza de dados |
-| ✅ Responsividade | Funcionando | Mobile, tablet, desktop |
-
----
-
-## 🏗️ Estrutura do Projeto
+## 📁 Estrutura do Projeto
 
 ```
 mestres-do-cafe-frontend/
-├── public/                 # Arquivos públicos
-├── src/
-│   ├── components/         # Componentes reutilizáveis
-│   │   ├── ui/            # Componentes de UI (Radix)
-│   │   ├── Header.jsx     # Cabeçalho da aplicação
-│   │   ├── Footer.jsx     # Rodapé
-│   │   └── ...
-│   ├── contexts/          # Contextos React
-│   │   ├── AuthContext.jsx   # Gerenciamento de autenticação
-│   │   └── CartContext.jsx   # Carrinho (futuro)
-│   ├── pages/             # Páginas da aplicação
-│   │   ├── LandingPage.jsx   # Página inicial
-│   │   ├── LoginPage.jsx     # Login
-│   │   ├── RegisterPage.jsx  # Cadastro
-│   │   └── ...
-│   ├── lib/               # Bibliotecas e utilitários
-│   │   ├── api.js         # API mock e configuração
-│   │   └── utils.js       # Funções utilitárias
-│   ├── hooks/             # Custom hooks
-│   └── assets/            # Imagens e recursos
-├── COMO_TESTAR.md         # Instruções de teste
-├── TESTE_MANUAL.md        # Relatório de testes
-└── README.md              # Este arquivo
+├── 📂 src/                      # Frontend React
+│   ├── 📂 components/           # Componentes reutilizáveis
+│   │   ├── 📂 ui/              # Componentes UI (shadcn/ui)
+│   │   ├── Header.jsx          # Cabeçalho principal
+│   │   ├── Footer.jsx          # Rodapé
+│   │   └── LoadingSpinner.jsx  # Loading spinner
+│   ├── 📂 pages/               # Páginas da aplicação
+│   │   ├── LandingPage.jsx     # Página inicial
+│   │   ├── MarketplacePage.jsx # Marketplace de cafés
+│   │   ├── ProductPage.jsx     # Página do produto
+│   │   ├── GamificationPage.jsx # Sistema de gamificação
+│   │   ├── AdminDashboard.jsx  # Dashboard administrativo
+│   │   └── ...                 # Outras páginas
+│   ├── 📂 contexts/            # Contextos React
+│   │   ├── AuthContext.jsx     # Autenticação
+│   │   └── CartContext.jsx     # Carrinho de compras
+│   ├── 📂 lib/                 # Utilitários e configurações
+│   │   ├── api.js              # Cliente API
+│   │   ├── utils.js            # Funções utilitárias
+│   │   └── validation.js       # Validações (CPF, CNPJ, etc.)
+│   └── 📂 hooks/               # Custom hooks
+├── 📂 server/                   # Backend Node.js/Express
+│   ├── 📂 routes/              # Rotas da API
+│   │   ├── auth.js             # Autenticação
+│   │   ├── products.js         # Produtos
+│   │   ├── admin.js            # Administração
+│   │   └── orders.js           # Pedidos
+│   ├── 📂 middleware/          # Middlewares
+│   │   └── auth.js             # Middleware de autenticação
+│   ├── 📂 database/            # Scripts de banco
+│   │   └── init.js             # Inicialização
+│   ├── 📂 scripts/             # Scripts utilitários
+│   │   └── seedData.js         # Dados de exemplo
+│   ├── server.js               # Servidor principal
+│   └── package.json            # Dependências do backend
+├── 📂 docs/                    # Documentação
+│   ├── CONTRIBUTING.md         # Guia de contribuição
+│   ├── ROADMAP.md              # Roadmap do projeto
+│   ├── ESPECIFICACOES_TECNICAS.md # Especificações técnicas
+│   └── ...                     # Outros documentos
+├── 📂 public/                  # Assets estáticos
+├── package.json                # Dependências do frontend
+└── README.md                   # Este arquivo
 ```
 
----
+## 🛠️ Scripts Disponíveis
 
-## 🎨 Screenshots
+### Frontend
+```bash
+npm run dev          # Executar frontend em desenvolvimento
+npm run build        # Build para produção
+npm run preview      # Preview do build
+npm run lint         # Linting do código
+```
 
-### 📱 Página Inicial
-![Landing Page](https://via.placeholder.com/800x400/2B3A42/C8956D?text=Landing+Page)
+### Backend
+```bash
+npm run server       # Executar backend em desenvolvimento
+npm run server:start # Executar backend em produção
+npm run server:install # Instalar dependências do backend
+```
 
-### 🔐 Sistema de Login
-![Login](https://via.placeholder.com/800x400/2B3A42/C8956D?text=Login+Page)
+### Ambiente Completo
+```bash
+npm run full-dev     # Frontend + Backend simultaneamente
+npm run setup        # Instalação completa (frontend + backend)
+```
 
-### 📝 Cadastro de Usuário
-![Register](https://via.placeholder.com/800x400/2B3A42/C8956D?text=Register+Page)
+## 🎮 Sistema de Gamificação
 
----
+### Níveis de Progressão
+| Nível | Nome | Pontos Necessários | Desconto |
+|-------|------|-------------------|----------|
+| 1 | 🌱 Aprendiz | 0 - 499 | 5% |
+| 2 | ☕ Conhecedor | 500 - 1.499 | 10% |
+| 3 | 🔥 Especialista | 1.500 - 3.999 | 15% |
+| 4 | 👑 Mestre | 4.000 - 9.999 | 20% |
+| 5 | 🏆 Lenda | 10.000+ | 25% |
 
-## 🚀 Próximas Funcionalidades
+### Como Ganhar Pontos
+- **💰 Compras**: 10 pontos por R$ 10 gastos
+- **⭐ Avaliações**: 50 pontos por avaliação
+- **📱 Compartilhamentos**: 25 pontos por compartilhamento
+- **👥 Indicações**: 200 pontos por amigo indicado
+- **📅 Check-in Diário**: 10 pontos por dia
+- **🎯 Desafios**: 100-500 pontos por desafio
+- **📝 Reviews Detalhadas**: 100 pontos por review
+- **🎂 Bônus de Aniversário**: 500 pontos
 
-### 🛒 E-commerce
-- [ ] Catálogo de produtos completo
-- [ ] Carrinho de compras funcional
-- [ ] Sistema de checkout
-- [ ] Integração com gateway de pagamento
-- [ ] Histórico de pedidos
+## 🔑 Funcionalidades Principais
 
-### 🎛️ Painel Admin
-- [ ] Dashboard administrativo
-- [ ] Gerenciamento de produtos
-- [ ] Controle de estoque
-- [ ] Relatórios de vendas
-- [ ] Gestão de usuários
+### 🛒 Marketplace
+- Catálogo completo de cafés especiais
+- Filtros avançados (origem, torra, notas)
+- Sistema de avaliações e reviews
+- Carrinho de compras otimizado
+- Checkout seguro
 
-### 🔧 Melhorias Técnicas
-- [ ] Testes unitários (Jest + Testing Library)
-- [ ] Testes E2E (Cypress/Playwright)
-- [ ] PWA (Progressive Web App)
-- [ ] SEO otimizado
-- [ ] Performance monitoring
+### 👤 Sistema de Usuários
+- Cadastro PF/PJ com validação de CPF/CNPJ
+- Perfis personalizados
+- Histórico de compras
+- Sistema de pontos e recompensas
 
----
+### 🎯 Gamificação
+- Níveis de progressão
+- Sistema de pontos
+- Desafios e conquistas
+- Leaderboard
+- Programa corporativo
 
-## 🤝 Contribuição
+### 📊 Dashboard Admin
+- Gestão de produtos
+- Relatórios de vendas
+- Controle de usuários
+- Analytics avançados
 
-Contribuições são sempre bem-vindas! Para contribuir:
+## 🔧 Tecnologias Utilizadas
 
-1. **Fork** o projeto
-2. Crie uma **branch** para sua feature (`git checkout -b feature/AmazingFeature`)
-3. **Commit** suas mudanças (`git commit -m 'Add some AmazingFeature'`)
-4. **Push** para a branch (`git push origin feature/AmazingFeature`)
-5. Abra um **Pull Request**
+### Frontend
+- **React** 18.3.1 - Biblioteca principal
+- **Vite** 6.0.1 - Build tool
+- **React Router** 6.28.0 - Roteamento
+- **Tailwind CSS** - Estilização
+- **Radix UI** - Componentes acessíveis
+- **Lucide React** - Ícones
+- **Date-fns** - Manipulação de datas
 
-### 📋 Guidelines
-- Siga os padrões de código existentes
-- Adicione testes para novas funcionalidades
-- Atualize a documentação quando necessário
-- Use commits semânticos
+### Backend
+- **Node.js** 16+ - Runtime
+- **Express** 4.19.2 - Framework web
+- **JWT** 9.0.2 - Autenticação
+- **bcryptjs** 3.0.2 - Hash de senhas
+- **CORS** 2.8.5 - Cross-origin requests
 
----
+### Desenvolvimento
+- **ESLint** - Linting
+- **Concurrently** - Execução simultânea
+- **Nodemon** - Hot reload backend
+
+## 🌟 Próximas Funcionalidades
+
+- [ ] 🗺️ **Mapa Interativo**: Localização de produtores
+- [ ] 🤖 **Automação WhatsApp**: Atendimento automatizado
+- [ ] 🏢 **Sistema PJ Avançado**: Gestão corporativa
+- [ ] 📊 **Integração Egestor**: ERP integrado
+- [ ] 💳 **Gateway de Pagamento**: PIX, cartões, boleto
+- [ ] 📱 **App Mobile**: React Native
+- [ ] 🔔 **Sistema de Notificações**: Push notifications
+- [ ] 📈 **Analytics Avançado**: Dashboard detalhado
+
+## 👨‍💻 Desenvolvimento
+
+### Configuração do Ambiente
+```bash
+# Clonar repositório
+git clone https://github.com/usuario/mestres-do-cafe-frontend.git
+cd mestres-do-cafe-frontend
+
+# Instalar dependências
+npm run setup
+
+# Configurar variáveis de ambiente (opcional)
+cp .env.example .env
+```
+
+### Comandos Úteis
+```bash
+# Instalar nova dependência no frontend
+npm install package-name
+
+# Instalar nova dependência no backend
+cd server && npm install package-name
+
+# Executar apenas frontend
+npm run dev
+
+# Executar apenas backend
+npm run server
+
+# Build para produção
+npm run build
+```
+
+## 📞 Contato e Suporte
+
+**Cliente**: Daniel do Nascimento  
+**Telefone**: (55) 99645-8600  
+**Email**: mestres@cafe.com.br  
+**Localização**: Santa Maria/RS
 
 ## 📄 Licença
 
-Este projeto está sob a licença MIT. Veja o arquivo [LICENSE](LICENSE) para mais detalhes.
+Este projeto está licenciado sob a licença MIT. Veja o arquivo [LICENSE](./docs/LICENSE) para mais detalhes.
 
----
+## 🤝 Contribuição
 
-## 📞 Contato
-
-### 🏢 Mestres do Café
-- **Localização:** Santa Maria - RS, Brasil
-- **Experiência:** 5+ anos no mercado
-- **Especialidade:** Torrefação artesanal de cafés especiais
-
-### 👨‍💻 Desenvolvimento
-- **GitHub:** [@seu-usuario](https://github.com/seu-usuario)
-- **LinkedIn:** [Seu Nome](https://linkedin.com/in/seu-perfil)
-- **Email:** contato@mestrescafe.com.br
-
----
-
-## 🙏 Agradecimentos
-
-- [React Team](https://reactjs.org/) pela excelente biblioteca
-- [Vite Team](https://vitejs.dev/) pela ferramenta de build incrível
-- [Tailwind Team](https://tailwindcss.com/) pelo framework CSS
-- [Radix UI](https://www.radix-ui.com/) pelos componentes acessíveis
-- [Unsplash](https://unsplash.com/) pelas imagens de qualidade
+Contribuições são bem-vindas! Por favor, leia o [CONTRIBUTING.md](./docs/CONTRIBUTING.md) para detalhes sobre nosso código de conduta e processo de contribuição.
 
 ---
 
 <div align="center">
 
-**⭐ Deixe uma estrela se este projeto te ajudou!**
+**☕ Feito com amor e muito café pela equipe Mestres do Café ☕**
 
-[![Made with ❤️](https://img.shields.io/badge/Made%20with-❤️-red?style=for-the-badge)]()
-[![React](https://img.shields.io/badge/React-19.1.0-61DAFB?style=for-the-badge&logo=react)]()
-[![Vite](https://img.shields.io/badge/Vite-6.3.5-646CFF?style=for-the-badge&logo=vite)]()
-
-</div> # mestres_do_cafe
+</div>
