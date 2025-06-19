@@ -17,7 +17,7 @@ const CustomerDashboard = () => {
 
   const loadOrders = async () => {
     try {
-      const data = await ordersAPI.getOrders();
+      const data = await ordersAPI.getUserOrders();
       setOrders(data.orders || []);
     } catch (error) {
       console.error('Erro ao carregar pedidos:', error);

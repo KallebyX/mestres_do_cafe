@@ -2,8 +2,6 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useCart } from '../contexts/CartContext';
 import { useAuth } from '../contexts/AuthContext';
-import Header from '../components/Header';
-import Footer from '../components/Footer';
 
 const CheckoutPage = () => {
   const { cartItems, getTotalPrice, clearCart } = useCart();
@@ -67,8 +65,6 @@ const CheckoutPage = () => {
 
   return (
     <div className="min-h-screen bg-coffee-white font-montserrat">
-      <Header />
-      
       <main className="py-20 px-4">
         <div className="max-w-4xl mx-auto">
           <div className="text-center mb-12">
@@ -273,8 +269,6 @@ const CheckoutPage = () => {
           </div>
         </div>
       </main>
-
-      <Footer />
     </div>
   );
 };

@@ -1,763 +1,549 @@
-import React, { useState, useEffect, useCallback } from 'react';
-import { Search, Filter, Plus, Edit3, Trash2, ShoppingCart, Star, Coffee } from 'lucide-react';
-import { useAuth } from '../contexts/AuthContext';
-import { useCart } from '../contexts/CartContext';
-import { useLocation, Link } from 'react-router-dom';
-import Header from '../components/Header';
-import Footer from '../components/Footer';
+import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
+import { 
+  Star, 
+  Search, 
+  Filter, 
+  ShoppingCart, 
+  Heart,
+  Grid,
+  List,
+  SlidersHorizontal,
+  ChevronDown,
+  Award,
+  Coffee,
+  Truck,
+  Shield
+} from 'lucide-react';
 
 const MarketplacePage = () => {
-  const { user } = useAuth();
-  const { addToCart } = useCart();
-  const location = useLocation();
   const [products, setProducts] = useState([]);
   const [filteredProducts, setFilteredProducts] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [viewMode, setViewMode] = useState('grid');
   const [searchTerm, setSearchTerm] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState('all');
-  const [sortBy, setSortBy] = useState('name');
-  const [showAdminModal, setShowAdminModal] = useState(false);
-  const [editingProduct, setEditingProduct] = useState(null);
+  const [selectedCategory, setSelectedCategory] = useState('todos');
+  const [sortBy, setSortBy] = useState('nome');
+  const [priceRange, setPriceRange] = useState([0, 200]);
 
-  // Carregar produtos e parâmetros de busca da URL
-  useEffect(() => {
-    loadProducts();
-    
-    // Verificar se há parâmetros de busca na URL
-    const searchParams = new URLSearchParams(location.search);
-    const searchQuery = searchParams.get('search');
-    if (searchQuery) {
-      setSearchTerm(searchQuery);
-    }
-  }, [location, loadProducts]);
-
-  // Filtrar produtos quando houver mudanças
-  useEffect(() => {
-    filterProducts();
-  }, [filterProducts]);
-
-  const loadProducts = useCallback(async () => {
-    try {
-      const response = await fetch('http://localhost:5000/api/products');
-      const data = await response.json();
-      
-      if (response.ok) {
-        setProducts(data.products || []);
-      } else {
-        console.error('Erro ao carregar produtos:', data.error);
-        // Fallback para produtos mockados
-        setProducts(getMockProducts());
-      }
-    } catch (error) {
-      console.error('Erro ao carregar produtos:', error);
-      setProducts(getMockProducts());
-    } finally {
-      setLoading(false);
-    }
-  }, []);
-
-  const getMockProducts = () => [
+  // Mock products data
+  const mockProducts = [
     {
-      id: '1',
-      name: 'Café Bourbon Amarelo Premium',
-      description: 'Café especial da região do Cerrado Mineiro com notas intensas de chocolate e caramelo.',
+      id: 1,
+      name: "Bourbon Amarelo Premium",
+      description: "Notas de chocolate e caramelo, corpo encorpado com acidez equilibrada.",
       price: 45.90,
-      original_price: 52.90,
-      origin: 'Cerrado Mineiro, MG',
-      roast_level: 'Médio',
-      flavor_notes: 'Chocolate, Caramelo, Nozes',
-      category: 'especial',
-      stock_quantity: 50,
+      originalPrice: 52.90,
+      category: "especiais",
       rating: 4.8,
-      is_featured: true,
-      is_active: true
+      reviews: 127,
+      image: "☕",
+      badge: "Mais Vendido",
+      origin: "Montanhas de Minas",
+      altitude: "1200m",
+      process: "Natural",
+      roast: "Médio",
+      score: 85,
+      inStock: true,
+      discount: 13
     },
     {
-      id: '2',
-      name: 'Café Geisha Especial',
-      description: 'Variedade Geisha cultivada nas montanhas do Sul de Minas com perfil floral único.',
+      id: 2,
+      name: "Geisha Especial",
+      description: "Perfil floral e cítrico excepcional, uma experiência única.",
       price: 89.90,
-      original_price: 105.90,
-      origin: 'Sul de Minas, MG',
-      roast_level: 'Claro',
-      flavor_notes: 'Floral, Cítrico, Bergamota',
-      category: 'premium',
-      stock_quantity: 25,
+      originalPrice: 89.90,
+      category: "premium",
       rating: 4.9,
-      is_featured: true,
-      is_active: true
+      reviews: 89,
+      image: "🌟",
+      badge: "Premium",
+      origin: "Fazenda São Benedito",
+      altitude: "1400m",
+      process: "Lavado",
+      roast: "Claro",
+      score: 92,
+      inStock: true,
+      discount: 0
     },
     {
-      id: '3',
-      name: 'Café Arábica Torrado Artesanal',
-      description: 'Blend exclusivo de grãos selecionados com torra artesanal para um sabor equilibrado.',
-      price: 32.90,
-      original_price: 38.90,
-      origin: 'Mogiana, SP',
-      roast_level: 'Médio-Escuro',
-      flavor_notes: 'Chocolate Amargo, Baunilha',
-      category: 'tradicional',
-      stock_quantity: 80,
-      rating: 4.6,
-      is_featured: false,
-      is_active: true
-    },
-    {
-      id: '4',
-      name: 'Café Fazenda Santa Helena',
-      description: 'Café especial com certificação orgânica, cultivado de forma sustentável.',
-      price: 67.90,
-      original_price: 75.90,
-      origin: 'Alta Mogiana, SP',
-      roast_level: 'Médio',
-      flavor_notes: 'Frutas Vermelhas, Chocolate',
-      category: 'especial',
-      stock_quantity: 35,
+      id: 3,
+      name: "Blend Signature",
+      description: "Equilíbrio perfeito entre doçura natural e corpo cremoso.",
+      price: 39.90,
+      originalPrice: 44.90,
+      category: "blends",
       rating: 4.7,
-      is_featured: true,
-      is_active: true
+      reviews: 203,
+      image: "🏆",
+      badge: "Novo",
+      origin: "Seleção Especial",
+      altitude: "1000-1300m",
+      process: "Semi-lavado",
+      roast: "Médio-escuro",
+      score: 82,
+      inStock: true,
+      discount: 11
     },
     {
-      id: '5',
-      name: 'Café Tradicional Supremo',
-      description: 'Blend tradicional perfeito para o dia a dia, com sabor equilibrado e suave.',
-      price: 28.90,
-      original_price: 32.90,
-      origin: 'Sul de Minas, MG',
-      roast_level: 'Médio-Escuro',
-      flavor_notes: 'Chocolate, Caramelo',
-      category: 'tradicional',
-      stock_quantity: 120,
+      id: 4,
+      name: "Catuaí Vermelho",
+      description: "Doce natural com notas de frutas vermelhas e chocolate ao leite.",
+      price: 42.90,
+      originalPrice: 42.90,
+      category: "especiais",
+      rating: 4.6,
+      reviews: 156,
+      image: "🔴",
+      badge: "Certificado",
+      origin: "Cerrado Mineiro",
+      altitude: "1100m",
+      process: "Pulped Natural",
+      roast: "Médio",
+      score: 84,
+      inStock: true,
+      discount: 0
+    },
+    {
+      id: 5,
+      name: "Décaféinado Especial",
+      description: "Todo sabor sem cafeína. Processo Swiss Water preserva aromas.",
+      price: 48.90,
+      originalPrice: 55.90,
+      category: "decaf",
       rating: 4.4,
-      is_featured: false,
-      is_active: true
+      reviews: 78,
+      image: "🌙",
+      badge: "Sem Cafeína",
+      origin: "Sul de Minas",
+      altitude: "1200m",
+      process: "Swiss Water",
+      roast: "Médio",
+      score: 81,
+      inStock: true,
+      discount: 12
     },
     {
-      id: '6',
-      name: 'Café Microlote Especial',
-      description: 'Edição limitada de microlote especial com pontuação SCAA acima de 85 pontos.',
-      price: 120.90,
-      original_price: 135.90,
-      origin: 'Chapada Diamantina, BA',
-      roast_level: 'Claro',
-      flavor_notes: 'Frutas Tropicais, Floral, Mel',
-      category: 'premium',
-      stock_quantity: 15,
-      rating: 4.9,
-      is_featured: true,
-      is_active: true
+      id: 6,
+      name: "Expresso Premium",
+      description: "Blend especial para expresso, crema densa e sabor intenso.",
+      price: 36.90,
+      originalPrice: 41.90,
+      category: "blends",
+      rating: 4.8,
+      reviews: 312,
+      image: "⚡",
+      badge: "Para Expresso",
+      origin: "Blend Especial",
+      altitude: "900-1200m",
+      process: "Misto",
+      roast: "Escuro",
+      score: 83,
+      inStock: false,
+      discount: 12
     }
   ];
 
-  const filterProducts = useCallback(() => {
-    let filtered = [...products];
+  const categories = [
+    { id: 'todos', name: 'Todos os Cafés', count: 6 },
+    { id: 'especiais', name: 'Cafés Especiais', count: 2 },
+    { id: 'premium', name: 'Premium', count: 1 },
+    { id: 'blends', name: 'Blends', count: 2 },
+    { id: 'decaf', name: 'Descafeinados', count: 1 }
+  ];
 
-    // Filtro por busca
+  const features = [
+    {
+      icon: Award,
+      title: "Certificação SCA",
+      description: "Pontuação acima de 80"
+    },
+    {
+      icon: Truck,
+      title: "Frete Grátis",
+      description: "Acima de R$ 99"
+    },
+    {
+      icon: Shield,
+      title: "Compra Segura",
+      description: "Proteção total"
+    },
+    {
+      icon: Coffee,
+      title: "Frescor Garantido",
+      description: "Torra sob demanda"
+    }
+  ];
+
+  useEffect(() => {
+    // Simulate API call
+    setTimeout(() => {
+      setProducts(mockProducts);
+      setFilteredProducts(mockProducts);
+      setLoading(false);
+    }, 500);
+  }, []);
+
+  useEffect(() => {
+    let filtered = products;
+
+    // Filter by search term
     if (searchTerm) {
       filtered = filtered.filter(product =>
         product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
         product.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        product.flavor_notes?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        product.origin?.toLowerCase().includes(searchTerm.toLowerCase())
+        product.origin.toLowerCase().includes(searchTerm.toLowerCase())
       );
     }
 
-    // Filtro por categoria
-    if (selectedCategory !== 'all') {
-      filtered = filtered.filter(product => 
-        product.category === selectedCategory || 
-        (selectedCategory === 'featured' && product.is_featured)
-      );
+    // Filter by category
+    if (selectedCategory !== 'todos') {
+      filtered = filtered.filter(product => product.category === selectedCategory);
     }
 
-    // Ordenação
+    // Filter by price range
+    filtered = filtered.filter(product => 
+      product.price >= priceRange[0] && product.price <= priceRange[1]
+    );
+
+    // Sort products
     filtered.sort((a, b) => {
       switch (sortBy) {
-        case 'price_asc':
+        case 'nome':
+          return a.name.localeCompare(b.name);
+        case 'preco-asc':
           return a.price - b.price;
-        case 'price_desc':
+        case 'preco-desc':
           return b.price - a.price;
         case 'rating':
-          return (b.rating || 0) - (a.rating || 0);
-        case 'name':
+          return b.rating - a.rating;
+        case 'score':
+          return b.score - a.score;
         default:
-          return a.name.localeCompare(b.name);
+          return 0;
       }
     });
 
     setFilteredProducts(filtered);
-  }, [products, searchTerm, selectedCategory, sortBy]);
+  }, [products, searchTerm, selectedCategory, sortBy, priceRange]);
 
-  const handleAddToCart = (product) => {
-    addToCart({
-      id: product.id,
-      name: product.name,
-      price: product.price,
-      image: null,
-      description: product.description,
-      weight: 500
-    });
-    
-    // Feedback visual opcional
-    const button = document.querySelector(`[data-product-id="${product.id}"]`);
-    if (button) {
-      const originalText = button.textContent;
-      button.textContent = 'Adicionado!';
-      button.disabled = true;
-      setTimeout(() => {
-        button.textContent = originalText;
-        button.disabled = false;
-      }, 1500);
-    }
-  };
+  const ProductCard = ({ product }) => (
+    <Link 
+      to={`/produto/${product.id}`}
+      className="block group bg-white rounded-3xl p-6 shadow-lg hover:shadow-2xl transition-all duration-500 transform hover:-translate-y-2 border border-slate-100 cursor-pointer"
+    >
+      {/* Product Header */}
+      <div className="relative mb-6">
+        {/* Badge */}
+        <div className="flex justify-between items-start mb-4">
+          <span className={`text-xs font-semibold px-3 py-1 rounded-full ${
+            product.badge === 'Premium' ? 'bg-purple-100 text-purple-800' :
+            product.badge === 'Mais Vendido' ? 'bg-green-100 text-green-800' :
+            product.badge === 'Novo' ? 'bg-blue-100 text-blue-800' :
+            'bg-amber-100 text-amber-800'
+          }`}>
+            {product.badge}
+          </span>
+          
+          {product.discount > 0 && (
+            <span className="bg-red-500 text-white text-xs font-bold px-2 py-1 rounded-full">
+              -{product.discount}%
+            </span>
+          )}
+        </div>
 
-  const handleAdminAction = (action, product = null) => {
-    if (!user || user.user_type !== 'admin') {
-      alert('Acesso negado. Apenas administradores podem realizar esta ação.');
-      return;
-    }
+        {/* Product Image */}
+        <div className="text-center mb-4">
+          <div className="text-6xl mb-3">{product.image}</div>
+          <div className="flex items-center justify-center gap-1 mb-2">
+            <Star className="w-4 h-4 text-yellow-400 fill-current" />
+            <span className="text-sm font-medium text-slate-600">{product.rating}</span>
+            <span className="text-xs text-slate-500">({product.reviews})</span>
+          </div>
+        </div>
 
-    setEditingProduct(product);
-    setShowAdminModal(true);
-  };
+        {/* Heart Icon */}
+        <button 
+          onClick={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            // Handle favorite logic here
+          }}
+          className="absolute top-0 right-0 w-8 h-8 bg-white rounded-full shadow-md flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+        >
+          <Heart className="w-4 h-4 text-slate-400 hover:text-red-500 transition-colors" />
+        </button>
+      </div>
 
-  const saveProduct = async (productData) => {
-    try {
-      const method = editingProduct ? 'PUT' : 'POST';
-      const url = editingProduct 
-        ? `http://localhost:5000/api/admin/products/${editingProduct.id}`
-        : 'http://localhost:5000/api/admin/products';
+      {/* Product Info */}
+      <div className="space-y-4">
+        <div>
+          <h3 className="text-xl font-bold text-slate-900 mb-2 group-hover:text-amber-600 transition-colors">{product.name}</h3>
+          <p className="text-slate-600 text-sm leading-relaxed">{product.description}</p>
+        </div>
 
-      const response = await fetch(url, {
-        method,
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${user?.access_token}`
-        },
-        body: JSON.stringify(productData)
-      });
+        {/* Product Details */}
+        <div className="grid grid-cols-2 gap-3 text-xs">
+          <div className="bg-slate-50 rounded-lg p-2">
+            <div className="text-slate-500">Origem</div>
+            <div className="font-medium text-slate-700">{product.origin}</div>
+          </div>
+          <div className="bg-slate-50 rounded-lg p-2">
+            <div className="text-slate-500">Pontuação SCA</div>
+            <div className="font-medium text-slate-700">{product.score} pts</div>
+          </div>
+        </div>
 
-      if (response.ok) {
-        await loadProducts(); // Recarregar lista
-        setShowAdminModal(false);
-        setEditingProduct(null);
-        alert(editingProduct ? 'Produto atualizado com sucesso!' : 'Produto criado com sucesso!');
-      } else {
-        const data = await response.json();
-        alert(data.error || 'Erro ao salvar produto');
-      }
-    } catch (error) {
-      console.error('Erro ao salvar produto:', error);
-      
-      // Simulação local para quando API não estiver disponível
-      const newProduct = {
-        id: editingProduct?.id || Date.now().toString(),
-        ...productData,
-        rating: editingProduct?.rating || 4.5,
-        is_active: true
-      };
+        {/* Price */}
+        <div className="flex items-center justify-between">
+          <div className="space-y-1">
+            {product.discount > 0 && (
+              <div className="text-sm text-slate-500 line-through">
+                R$ {product.originalPrice.toFixed(2).replace('.', ',')}
+              </div>
+            )}
+            <div className="text-2xl font-bold text-slate-900">
+              R$ {product.price.toFixed(2).replace('.', ',')}
+            </div>
+          </div>
+          
+          <button
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              // Handle add to cart logic here
+              if (product.inStock) {
+                console.log('Adicionando ao carrinho:', product.name);
+              }
+            }}
+            disabled={!product.inStock}
+            className={`flex items-center gap-2 px-6 py-3 rounded-xl font-semibold transition-all duration-300 ${
+              product.inStock
+                ? 'bg-amber-600 hover:bg-amber-700 text-white transform hover:scale-105'
+                : 'bg-slate-200 text-slate-500 cursor-not-allowed'
+            }`}
+          >
+            <ShoppingCart className="w-4 h-4" />
+            {product.inStock ? 'Adicionar' : 'Esgotado'}
+          </button>
+        </div>
 
-      if (editingProduct) {
-        setProducts(prev => prev.map(p => p.id === editingProduct.id ? newProduct : p));
-      } else {
-        setProducts(prev => [...prev, newProduct]);
-      }
-
-      setShowAdminModal(false);
-      setEditingProduct(null);
-      alert(editingProduct ? 'Produto atualizado!' : 'Produto criado!');
-    }
-  };
-
-  const deleteProduct = async (productId) => {
-    if (!confirm('Tem certeza que deseja excluir este produto?')) return;
-
-    try {
-      const response = await fetch(`http://localhost:5000/api/admin/products/${productId}`, {
-        method: 'DELETE',
-        headers: {
-          'Authorization': `Bearer ${user?.access_token}`
-        }
-      });
-
-      if (response.ok) {
-        await loadProducts();
-        alert('Produto excluído com sucesso!');
-      } else {
-        const data = await response.json();
-        alert(data.error || 'Erro ao excluir produto');
-      }
-    } catch (error) {
-      console.error('Erro ao excluir produto:', error);
-      
-      // Simulação local
-      setProducts(prev => prev.filter(p => p.id !== productId));
-      alert('Produto excluído!');
-    }
-  };
-
-  const isAdmin = user?.user_type === 'admin';
+        {/* View Details Hint */}
+        <div className="text-center pt-2 border-t border-slate-100">
+          <span className="text-xs text-slate-400 group-hover:text-amber-600 transition-colors">
+            Clique para ver detalhes
+          </span>
+        </div>
+      </div>
+    </Link>
+  );
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-coffee-white font-montserrat">
-        <Header />
-        <main className="flex items-center justify-center min-h-[80vh]">
-          <div className="text-center">
-            <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-coffee-gold mx-auto mb-4"></div>
-            <p className="text-coffee-gray text-lg">Carregando marketplace...</p>
-          </div>
-        </main>
-        <Footer />
+      <div className="min-h-screen bg-slate-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-16 h-16 border-4 border-amber-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-slate-600">Carregando cafés especiais...</p>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-coffee-white font-montserrat">
-      <Header />
-      
-      <main className="py-8">
+    <div className="min-h-screen bg-slate-50">
+      {/* Hero Section */}
+      <section className="bg-gradient-to-br from-slate-900 via-slate-800 to-amber-900 py-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          {/* Header do Marketplace */}
-          <div className="text-center mb-12">
-            <h1 className="font-cormorant font-bold text-4xl lg:text-5xl text-coffee-intense mb-4">
-              Market<span className="text-coffee-gold">place</span>
+          <div className="text-center">
+            <div className="inline-flex items-center gap-2 bg-amber-600/20 border border-amber-600/30 rounded-full px-4 py-2 mb-6">
+              <Coffee className="w-4 h-4 text-amber-400" />
+              <span className="text-amber-400 font-medium text-sm">Marketplace Premium</span>
+            </div>
+            
+            <h1 className="text-4xl lg:text-6xl font-bold text-white mb-6">
+              Cafés <span className="text-amber-400">Especiais</span>
             </h1>
-            <p className="text-coffee-gray text-lg max-w-2xl mx-auto">
-              Descubra nossa seleção premium de cafés especiais, diretamente dos melhores produtores do Brasil.
+            
+            <p className="text-xl text-slate-300 max-w-3xl mx-auto mb-8">
+              Descubra nossa seleção exclusiva de cafés com pontuação SCA acima de 80 pontos. 
+              Torrefação artesanal, frescor garantido e entrega em todo o Brasil.
             </p>
-          </div>
 
-          {/* Filtros e Busca */}
-          <div className="card mb-8">
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-              {/* Busca */}
-              <div className="relative md:col-span-2">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-coffee-gray w-5 h-5" />
-                <input
-                  type="text"
-                  placeholder="Buscar cafés..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="w-full pl-10 pr-4 py-3 bg-coffee-cream border-2 border-coffee-cream rounded-lg text-coffee-intense placeholder-coffee-gray focus:outline-none focus:border-coffee-gold focus:bg-coffee-white transition-all"
-                />
-              </div>
-
-              {/* Categoria */}
-              <div className="relative">
-                <Filter className="absolute left-3 top-1/2 transform -translate-y-1/2 text-coffee-gray w-5 h-5" />
-                <select
-                  value={selectedCategory}
-                  onChange={(e) => setSelectedCategory(e.target.value)}
-                  className="w-full pl-10 pr-4 py-3 bg-coffee-cream border-2 border-coffee-cream rounded-lg text-coffee-intense focus:outline-none focus:border-coffee-gold focus:bg-coffee-white transition-all appearance-none"
-                >
-                  <option value="all">Todas as categorias</option>
-                  <option value="especial">Cafés Especiais</option>
-                  <option value="premium">Premium</option>
-                  <option value="tradicional">Tradicional</option>
-                  <option value="featured">Em Destaque</option>
-                </select>
-              </div>
-
-              {/* Ordenação */}
-              <div>
-                <select
-                  value={sortBy}
-                  onChange={(e) => setSortBy(e.target.value)}
-                  className="w-full px-4 py-3 bg-coffee-cream border-2 border-coffee-cream rounded-lg text-coffee-intense focus:outline-none focus:border-coffee-gold focus:bg-coffee-white transition-all appearance-none"
-                >
-                  <option value="name">Nome A-Z</option>
-                  <option value="price_asc">Menor Preço</option>
-                  <option value="price_desc">Maior Preço</option>
-                  <option value="rating">Melhor Avaliado</option>
-                </select>
-              </div>
-            </div>
-
-            {/* Botão Admin */}
-            {isAdmin && (
-              <div className="flex justify-between items-center pt-6 border-t border-coffee-cream">
-                <span className="text-coffee-gold font-medium">Painel Administrativo</span>
-                <button
-                  onClick={() => handleAdminAction('add')}
-                  className="btn-primary flex items-center gap-2 px-4 py-2"
-                >
-                  <Plus className="w-4 h-4" />
-                  Adicionar Produto
-                </button>
-              </div>
-            )}
-          </div>
-
-          {/* Resultados */}
-          <div className="mb-6">
-            <p className="text-coffee-gray">
-              {filteredProducts.length} produto{filteredProducts.length !== 1 ? 's' : ''} encontrado{filteredProducts.length !== 1 ? 's' : ''}
-              {searchTerm && (
-                <span className="text-coffee-gold"> para "{searchTerm}"</span>
-              )}
-            </p>
-          </div>
-
-          {/* Grid de Produtos */}
-          {filteredProducts.length === 0 ? (
-            <div className="text-center py-16">
-              <div className="w-24 h-24 bg-coffee-cream rounded-full flex items-center justify-center mx-auto mb-4">
-                <Coffee className="w-12 h-12 text-coffee-gold" />
-              </div>
-              <h3 className="font-cormorant font-bold text-2xl text-coffee-intense mb-2">Nenhum produto encontrado</h3>
-              <p className="text-coffee-gray">Tente ajustar os filtros ou termo de busca.</p>
-            </div>
-          ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-              {filteredProducts.map((product) => (
-                <div
-                  key={product.id}
-                  className="card hover:shadow-gold hover:transform hover:scale-105 transition-all duration-300 relative"
-                >
-                  {/* Link para página do produto */}
-                  <Link to={`/produto/${product.id}`} className="block">
-                    {/* Imagem do Produto */}
-                    <div className="aspect-square bg-gradient-coffee/10 flex items-center justify-center relative rounded-t-lg">
-                      <Coffee className="w-16 h-16 text-coffee-gold" />
-                      
-                      {/* Badge de Destaque */}
-                      {product.is_featured && (
-                        <div className="absolute top-3 left-3 bg-coffee-gold text-coffee-white px-3 py-1 rounded-full text-xs font-bold">
-                          ⭐ Destaque
-                        </div>
-                      )}
-                    </div>
-
-                    {/* Informações do Produto */}
-                    <div className="p-6 pb-20">
-                      <h3 className="font-cormorant font-bold text-coffee-intense text-xl mb-2 line-clamp-2 hover:text-coffee-gold transition-colors">
-                        {product.name}
-                      </h3>
-
-                      {/* Avaliação */}
-                      {product.rating && (
-                        <div className="flex items-center gap-1 mb-3">
-                          <Star className="w-4 h-4 text-yellow-400 fill-current" />
-                          <span className="text-yellow-600 font-medium">{product.rating}</span>
-                          <span className="text-coffee-gray text-sm">(Avaliações)</span>
-                        </div>
-                      )}
-
-                      <p className="text-coffee-gray text-sm mb-4 line-clamp-3">{product.description}</p>
-
-                      {/* Detalhes */}
-                      <div className="space-y-1 mb-4 text-sm">
-                        {product.origin && (
-                          <p className="text-coffee-gray">
-                            <span className="text-coffee-gold font-medium">Origem:</span> {product.origin}
-                          </p>
-                        )}
-                        {product.roast_level && (
-                          <p className="text-coffee-gray">
-                            <span className="text-coffee-gold font-medium">Torra:</span> {product.roast_level}
-                          </p>
-                        )}
-                        {product.flavor_notes && (
-                          <p className="text-coffee-gray">
-                            <span className="text-coffee-gold font-medium">Notas:</span> {product.flavor_notes}
-                          </p>
-                        )}
-                      </div>
-
-                      {/* Preços */}
-                      <div className="flex items-center gap-2 mb-4">
-                        <span className="font-cormorant font-bold text-2xl text-coffee-gold">
-                          R$ {product.price.toFixed(2).replace('.', ',')}
-                        </span>
-                        {product.original_price && product.original_price > product.price && (
-                          <span className="text-coffee-gray line-through text-sm">
-                            R$ {product.original_price.toFixed(2).replace('.', ',')}
-                          </span>
-                        )}
-                      </div>
-
-                      {/* Estoque */}
-                      <div className="mb-4">
-                        <span className="text-sm text-coffee-gray">
-                          Estoque: {product.stock_quantity || 0} unidades
-                        </span>
-                      </div>
-                    </div>
-                  </Link>
-
-                  {/* Ações Admin - Posicionadas absolutamente */}
-                  {isAdmin && (
-                    <div className="absolute top-3 right-3 flex gap-2 z-10">
-                      <button
-                        onClick={(e) => {
-                          e.preventDefault();
-                          e.stopPropagation();
-                          handleAdminAction('edit', product);
-                        }}
-                        className="p-2 bg-blue-600 text-white rounded-full hover:bg-blue-700 transition-colors"
-                        title="Editar produto"
-                      >
-                        <Edit3 className="w-4 h-4" />
-                      </button>
-                      <button
-                        onClick={(e) => {
-                          e.preventDefault();
-                          e.stopPropagation();
-                          deleteProduct(product.id);
-                        }}
-                        className="p-2 bg-red-600 text-white rounded-full hover:bg-red-700 transition-colors"
-                        title="Excluir produto"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </button>
-                    </div>
-                  )}
-
-                  {/* Botão Adicionar ao Carrinho - Posicionado absolutamente */}
-                  <div className="absolute bottom-0 left-0 right-0 p-6">
-                    <button
-                      data-product-id={product.id}
-                      onClick={(e) => {
-                        e.preventDefault();
-                        e.stopPropagation();
-                        handleAddToCart(product);
-                      }}
-                      disabled={!product.stock_quantity || product.stock_quantity === 0}
-                      className="btn-primary w-full flex items-center justify-center gap-2 py-3 disabled:opacity-50 disabled:cursor-not-allowed"
-                    >
-                      <ShoppingCart className="w-4 h-4" />
-                      {product.stock_quantity > 0 ? 'Adicionar ao Carrinho' : 'Esgotado'}
-                    </button>
+            {/* Features */}
+            <div className="grid md:grid-cols-4 gap-6 max-w-4xl mx-auto">
+              {features.map((feature, index) => (
+                <div key={index} className="text-center">
+                  <div className="w-12 h-12 bg-amber-600/20 rounded-2xl flex items-center justify-center mx-auto mb-3">
+                    <feature.icon className="w-6 h-6 text-amber-400" />
                   </div>
+                  <div className="text-white font-semibold text-sm">{feature.title}</div>
+                  <div className="text-slate-400 text-xs">{feature.description}</div>
                 </div>
               ))}
             </div>
-          )}
+          </div>
         </div>
-      </main>
+      </section>
 
-      <Footer />
+      {/* Filters Section */}
+      <section className="py-8 bg-white border-b border-slate-200">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex flex-col lg:flex-row gap-6 items-center justify-between">
+            {/* Search */}
+            <div className="relative flex-1 max-w-md">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400 w-5 h-5" />
+              <input
+                type="text"
+                placeholder="Buscar cafés..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="w-full pl-10 pr-4 py-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-amber-500 focus:border-transparent"
+              />
+            </div>
 
-      {/* Modal Admin */}
-      {showAdminModal && (
-        <AdminProductModal
-          product={editingProduct}
-          onSave={saveProduct}
-          onClose={() => {
-            setShowAdminModal(false);
-            setEditingProduct(null);
-          }}
-        />
-      )}
-    </div>
-  );
-};
+            {/* Category Filter */}
+            <div className="relative">
+              <select
+                value={selectedCategory}
+                onChange={(e) => setSelectedCategory(e.target.value)}
+                className="appearance-none bg-white border border-slate-200 rounded-xl px-4 py-3 pr-10 focus:ring-2 focus:ring-amber-500 focus:border-transparent"
+              >
+                {categories.map(category => (
+                  <option key={category.id} value={category.id}>
+                    {category.name} ({category.count})
+                  </option>
+                ))}
+              </select>
+              <ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 text-slate-400 w-5 h-5 pointer-events-none" />
+            </div>
 
-// Modal para Adicionar/Editar Produtos (Admin)
-const AdminProductModal = ({ product, onSave, onClose }) => {
-  const [formData, setFormData] = useState({
-    name: product?.name || '',
-    description: product?.description || '',
-    price: product?.price || '',
-    original_price: product?.original_price || '',
-    origin: product?.origin || '',
-    roast_level: product?.roast_level || 'Médio',
-    flavor_notes: product?.flavor_notes || '',
-    category: product?.category || 'especial',
-    stock_quantity: product?.stock_quantity || '',
-    is_featured: product?.is_featured || false
-  });
+            {/* Sort */}
+            <div className="relative">
+              <select
+                value={sortBy}
+                onChange={(e) => setSortBy(e.target.value)}
+                className="appearance-none bg-white border border-slate-200 rounded-xl px-4 py-3 pr-10 focus:ring-2 focus:ring-amber-500 focus:border-transparent"
+              >
+                <option value="nome">Ordenar por Nome</option>
+                <option value="preco-asc">Menor Preço</option>
+                <option value="preco-desc">Maior Preço</option>
+                <option value="rating">Melhor Avaliado</option>
+                <option value="score">Maior Pontuação</option>
+              </select>
+              <ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 text-slate-400 w-5 h-5 pointer-events-none" />
+            </div>
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    
-    const processedData = {
-      ...formData,
-      price: parseFloat(formData.price),
-      original_price: formData.original_price ? parseFloat(formData.original_price) : null,
-      stock_quantity: parseInt(formData.stock_quantity)
-    };
+            {/* View Mode */}
+            <div className="flex bg-slate-100 rounded-xl p-1">
+              <button
+                onClick={() => setViewMode('grid')}
+                className={`p-2 rounded-lg transition-colors ${
+                  viewMode === 'grid' ? 'bg-white text-amber-600 shadow-sm' : 'text-slate-500'
+                }`}
+              >
+                <Grid className="w-5 h-5" />
+              </button>
+              <button
+                onClick={() => setViewMode('list')}
+                className={`p-2 rounded-lg transition-colors ${
+                  viewMode === 'list' ? 'bg-white text-amber-600 shadow-sm' : 'text-slate-500'
+                }`}
+              >
+                <List className="w-5 h-5" />
+              </button>
+            </div>
+          </div>
+        </div>
+      </section>
 
-    onSave(processedData);
-  };
+      {/* Products Section */}
+      <section className="py-12">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          {/* Results Info */}
+          <div className="flex items-center justify-between mb-8">
+            <div>
+              <h2 className="text-2xl font-bold text-slate-900">
+                {filteredProducts.length} {filteredProducts.length === 1 ? 'café encontrado' : 'cafés encontrados'}
+              </h2>
+              {searchTerm && (
+                <p className="text-slate-600 mt-1">
+                  Resultados para: "{searchTerm}"
+                </p>
+              )}
+            </div>
 
-  const handleChange = (e) => {
-    const { name, value, type, checked } = e.target;
-    setFormData(prev => ({
-      ...prev,
-      [name]: type === 'checkbox' ? checked : value
-    }));
-  };
-
-  return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-coffee-white rounded-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-        <div className="p-6">
-          <div className="flex justify-between items-center mb-6">
-            <h2 className="font-cormorant font-bold text-2xl text-coffee-intense">
-              {product ? 'Editar Produto' : 'Adicionar Produto'}
-            </h2>
-            <button
-              onClick={onClose}
-              className="text-coffee-gray hover:text-coffee-intense text-2xl"
-            >
-              ×
+            <button className="flex items-center gap-2 text-slate-600 hover:text-amber-600 transition-colors">
+              <SlidersHorizontal className="w-4 h-4" />
+              Filtros Avançados
             </button>
           </div>
 
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div className="grid md:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-coffee-intense font-medium mb-2">Nome *</label>
-                <input
-                  type="text"
-                  name="name"
-                  value={formData.name}
-                  onChange={handleChange}
-                  required
-                  className="w-full p-3 border-2 border-coffee-cream rounded-lg focus:border-coffee-gold focus:outline-none"
-                />
-              </div>
-
-              <div>
-                <label className="block text-coffee-intense font-medium mb-2">Preço *</label>
-                <input
-                  type="number"
-                  step="0.01"
-                  name="price"
-                  value={formData.price}
-                  onChange={handleChange}
-                  required
-                  className="w-full p-3 border-2 border-coffee-cream rounded-lg focus:border-coffee-gold focus:outline-none"
-                />
-              </div>
-            </div>
-
-            <div>
-              <label className="block text-coffee-intense font-medium mb-2">Descrição</label>
-              <textarea
-                name="description"
-                value={formData.description}
-                onChange={handleChange}
-                rows="3"
-                className="w-full p-3 border-2 border-coffee-cream rounded-lg focus:border-coffee-gold focus:outline-none"
-              />
-            </div>
-
-            <div className="grid md:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-coffee-intense font-medium mb-2">Preço Original</label>
-                <input
-                  type="number"
-                  step="0.01"
-                  name="original_price"
-                  value={formData.original_price}
-                  onChange={handleChange}
-                  className="w-full p-3 border-2 border-coffee-cream rounded-lg focus:border-coffee-gold focus:outline-none"
-                />
-              </div>
-
-              <div>
-                <label className="block text-coffee-intense font-medium mb-2">Estoque</label>
-                <input
-                  type="number"
-                  name="stock_quantity"
-                  value={formData.stock_quantity}
-                  onChange={handleChange}
-                  className="w-full p-3 border-2 border-coffee-cream rounded-lg focus:border-coffee-gold focus:outline-none"
-                />
-              </div>
-            </div>
-
-            <div className="grid md:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-coffee-intense font-medium mb-2">Origem</label>
-                <input
-                  type="text"
-                  name="origin"
-                  value={formData.origin}
-                  onChange={handleChange}
-                  className="w-full p-3 border-2 border-coffee-cream rounded-lg focus:border-coffee-gold focus:outline-none"
-                />
-              </div>
-
-              <div>
-                <label className="block text-coffee-intense font-medium mb-2">Nível de Torra</label>
-                <select
-                  name="roast_level"
-                  value={formData.roast_level}
-                  onChange={handleChange}
-                  className="w-full p-3 border-2 border-coffee-cream rounded-lg focus:border-coffee-gold focus:outline-none"
-                >
-                  <option value="Claro">Claro</option>
-                  <option value="Médio">Médio</option>
-                  <option value="Médio-Escuro">Médio-Escuro</option>
-                  <option value="Escuro">Escuro</option>
-                </select>
-              </div>
-            </div>
-
-            <div className="grid md:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-coffee-intense font-medium mb-2">Notas de Sabor</label>
-                <input
-                  type="text"
-                  name="flavor_notes"
-                  value={formData.flavor_notes}
-                  onChange={handleChange}
-                  className="w-full p-3 border-2 border-coffee-cream rounded-lg focus:border-coffee-gold focus:outline-none"
-                />
-              </div>
-
-              <div>
-                <label className="block text-coffee-intense font-medium mb-2">Categoria</label>
-                <select
-                  name="category"
-                  value={formData.category}
-                  onChange={handleChange}
-                  className="w-full p-3 border-2 border-coffee-cream rounded-lg focus:border-coffee-gold focus:outline-none"
-                >
-                  <option value="especial">Especial</option>
-                  <option value="premium">Premium</option>
-                  <option value="tradicional">Tradicional</option>
-                </select>
-              </div>
-            </div>
-
-            <div className="flex items-center">
-              <input
-                type="checkbox"
-                id="is_featured"
-                name="is_featured"
-                checked={formData.is_featured}
-                onChange={handleChange}
-                className="w-4 h-4 text-coffee-gold bg-coffee-cream border-coffee-cream rounded focus:ring-coffee-gold"
-              />
-              <label htmlFor="is_featured" className="ml-2 text-coffee-intense font-medium">
-                Produto em destaque
-              </label>
-            </div>
-
-            <div className="flex space-x-4 pt-4">
+          {/* Products Grid */}
+          {filteredProducts.length === 0 ? (
+            <div className="text-center py-16">
+              <div className="text-6xl mb-4">🔍</div>
+              <h3 className="text-2xl font-bold text-slate-900 mb-2">Nenhum café encontrado</h3>
+              <p className="text-slate-600 mb-6">
+                Tente ajustar os filtros ou fazer uma nova busca.
+              </p>
               <button
-                type="submit"
-                className="btn-primary flex-1 py-3"
+                onClick={() => {
+                  setSearchTerm('');
+                  setSelectedCategory('todos');
+                  setPriceRange([0, 200]);
+                }}
+                className="bg-amber-600 hover:bg-amber-700 text-white font-semibold px-6 py-3 rounded-xl transition-colors"
               >
-                {product ? 'Atualizar' : 'Criar'} Produto
-              </button>
-              <button
-                type="button"
-                onClick={onClose}
-                className="btn-secondary px-6 py-3"
-              >
-                Cancelar
+                Limpar Filtros
               </button>
             </div>
-          </form>
+          ) : (
+            <div className={`grid gap-8 ${
+              viewMode === 'grid' 
+                ? 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3' 
+                : 'grid-cols-1'
+            }`}>
+              {filteredProducts.map(product => (
+                <ProductCard key={product.id} product={product} />
+              ))}
+            </div>
+          )}
+
+          {/* Load More */}
+          {filteredProducts.length > 0 && (
+            <div className="text-center mt-12">
+              <button className="bg-slate-900 hover:bg-amber-600 text-white font-semibold px-8 py-4 rounded-xl transition-colors">
+                Carregar Mais Cafés
+              </button>
+            </div>
+          )}
         </div>
-      </div>
+      </section>
+
+      {/* Newsletter CTA */}
+      <section className="py-16 bg-amber-50">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+          <div className="space-y-6">
+            <div className="text-5xl">📧</div>
+            <h2 className="text-3xl font-bold text-slate-900">
+              Receba Ofertas Exclusivas
+            </h2>
+            <p className="text-xl text-slate-600">
+              Seja o primeiro a saber sobre novos cafés, promoções e conteúdo exclusivo sobre café especial.
+            </p>
+            <div className="flex flex-col sm:flex-row gap-4 max-w-md mx-auto">
+              <input
+                type="email"
+                placeholder="Seu melhor e-mail"
+                className="flex-1 px-4 py-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-amber-500 focus:border-transparent"
+              />
+              <button className="bg-amber-600 hover:bg-amber-700 text-white font-semibold px-6 py-3 rounded-xl transition-colors">
+                Inscrever
+              </button>
+            </div>
+          </div>
+        </div>
+      </section>
     </div>
   );
 };

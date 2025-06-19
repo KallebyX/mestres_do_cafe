@@ -1,7 +1,5 @@
 import React, { useState } from 'react';
 import { Trophy, Star, Gift, Target, Zap, Crown, Coffee, Users, Award, ChevronRight, Play } from 'lucide-react';
-import Header from '../components/Header';
-import Footer from '../components/Footer';
 
 const GamificationPage = () => {
   const [activeTab, setActiveTab] = useState('overview');
@@ -85,8 +83,6 @@ const GamificationPage = () => {
 
   return (
     <div className="min-h-screen bg-coffee-white font-montserrat">
-      <Header />
-      
       <main className="py-8">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           
@@ -397,8 +393,6 @@ const GamificationPage = () => {
           </section>
         </div>
       </main>
-
-      <Footer />
     </div>
   );
 };

@@ -1,8 +1,6 @@
 // API Configuration
 const API_BASE_URL = 'http://localhost:5000';
 
-
-
 // Helper function to make API requests
 async function apiRequest(endpoint, options = {}) {
   const url = `${API_BASE_URL}${endpoint}`;
@@ -179,9 +177,24 @@ export const productsAPI = {
   }
 };
 
-// Admin Products API
-export const adminProductsAPI = {
-  async getAll() {
+// Admin API (geral)
+export const adminAPI = {
+  async getStats() {
+    try {
+      const response = await apiRequest('/api/admin/stats');
+      return {
+        success: true,
+        stats: response
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: error.message
+      };
+    }
+  },
+
+  async getProducts() {
     try {
       const response = await apiRequest('/api/admin/products');
       return {
@@ -199,7 +212,7 @@ export const adminProductsAPI = {
     }
   },
 
-  async create(productData) {
+  async createProduct(productData) {
     try {
       const response = await apiRequest('/api/admin/products', {
         method: 'POST',
@@ -218,7 +231,7 @@ export const adminProductsAPI = {
     }
   },
 
-  async update(id, productData) {
+  async updateProduct(id, productData) {
     try {
       const response = await apiRequest(`/api/admin/products/${id}`, {
         method: 'PUT',
@@ -237,7 +250,7 @@ export const adminProductsAPI = {
     }
   },
 
-  async delete(id) {
+  async deleteProduct(id) {
     try {
       const response = await apiRequest(`/api/admin/products/${id}`, {
         method: 'DELETE',
@@ -250,6 +263,491 @@ export const adminProductsAPI = {
       return {
         success: false,
         error: error.message
+      };
+    }
+  },
+
+  // Blog management
+  async getBlogs() {
+    try {
+      const response = await apiRequest('/api/admin/blogs');
+      return {
+        success: true,
+        blogs: response.blogs || [],
+        total: response.total || 0
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: error.message,
+        blogs: [],
+        total: 0
+      };
+    }
+  },
+
+  async createBlog(blogData) {
+    try {
+      const response = await apiRequest('/api/admin/blogs', {
+        method: 'POST',
+        body: JSON.stringify(blogData),
+      });
+      return {
+        success: true,
+        blog: response.blog,
+        message: response.message
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: error.message
+      };
+    }
+  },
+
+  async updateBlog(id, blogData) {
+    try {
+      const response = await apiRequest(`/api/admin/blogs/${id}`, {
+        method: 'PUT',
+        body: JSON.stringify(blogData),
+      });
+      return {
+        success: true,
+        blog: response.blog,
+        message: response.message
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: error.message
+      };
+    }
+  },
+
+  async deleteBlog(id) {
+    try {
+      const response = await apiRequest(`/api/admin/blogs/${id}`, {
+        method: 'DELETE',
+      });
+      return {
+        success: true,
+        message: response.message
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: error.message
+      };
+    }
+  },
+
+  // Orders management
+  async getOrders() {
+    try {
+      const response = await apiRequest('/api/admin/orders');
+      return {
+        success: true,
+        orders: response.orders || [],
+        total: response.total || 0
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: error.message,
+        orders: [],
+        total: 0
+      };
+    }
+  },
+
+  async updateOrderStatus(id, status) {
+    try {
+      const response = await apiRequest(`/api/admin/orders/${id}/status`, {
+        method: 'PUT',
+        body: JSON.stringify({ status }),
+      });
+      return {
+        success: true,
+        order: response.order,
+        message: response.message
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: error.message
+      };
+    }
+  },
+
+  // Users management
+  async getUsers() {
+    try {
+      const response = await apiRequest('/api/admin/users');
+      return {
+        success: true,
+        users: response.users || [],
+        total: response.total || 0
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: error.message,
+        users: [],
+        total: 0
+      };
+    }
+  },
+
+  async updateUser(id, userData) {
+    try {
+      const response = await apiRequest(`/api/admin/users/${id}`, {
+        method: 'PUT',
+        body: JSON.stringify(userData),
+      });
+      return {
+        success: true,
+        user: response.user,
+        message: response.message
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: error.message
+      };
+    }
+  },
+
+  async deleteUser(id) {
+    try {
+      const response = await apiRequest(`/api/admin/users/${id}`, {
+        method: 'DELETE',
+      });
+      return {
+        success: true,
+        message: response.message
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: error.message
+      };
+    }
+  }
+};
+
+// Blog API
+export const blogAPI = {
+  async getAll(page = 1, limit = 10, category = null) {
+    try {
+      let url = `/api/blog?page=${page}&limit=${limit}`;
+      if (category) url += `&category=${category}`;
+      
+      const response = await apiRequest(url);
+      return {
+        success: true,
+        blogs: response.blogs || [],
+        total: response.total || 0,
+        currentPage: response.currentPage || 1,
+        totalPages: response.totalPages || 1
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: error.message,
+        blogs: [],
+        total: 0
+      };
+    }
+  },
+
+  async getById(id) {
+    try {
+      const response = await apiRequest(`/api/blog/${id}`);
+      return {
+        success: true,
+        blog: response.blog
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: error.message,
+        blog: null
+      };
+    }
+  },
+
+  async getFeatured() {
+    try {
+      const response = await apiRequest('/api/blog/featured');
+      return {
+        success: true,
+        blogs: response.blogs || []
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: error.message,
+        blogs: []
+      };
+    }
+  },
+
+  async getByCategory(category, page = 1, limit = 10) {
+    try {
+      const response = await apiRequest(`/api/blog/category/${category}?page=${page}&limit=${limit}`);
+      return {
+        success: true,
+        blogs: response.blogs || [],
+        total: response.total || 0,
+        currentPage: response.currentPage || 1,
+        totalPages: response.totalPages || 1
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: error.message,
+        blogs: [],
+        total: 0
+      };
+    }
+  },
+
+  async search(query, page = 1, limit = 10) {
+    try {
+      const response = await apiRequest(`/api/blog/search?q=${encodeURIComponent(query)}&page=${page}&limit=${limit}`);
+      return {
+        success: true,
+        blogs: response.blogs || [],
+        total: response.total || 0,
+        currentPage: response.currentPage || 1,
+        totalPages: response.totalPages || 1
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: error.message,
+        blogs: [],
+        total: 0
+      };
+    }
+  },
+
+  async create(blogData) {
+    try {
+      const response = await apiRequest('/api/blog', {
+        method: 'POST',
+        body: JSON.stringify(blogData),
+      });
+      return {
+        success: true,
+        blog: response.blog,
+        message: response.message
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: error.message
+      };
+    }
+  },
+
+  async update(id, blogData) {
+    try {
+      const response = await apiRequest(`/api/blog/${id}`, {
+        method: 'PUT',
+        body: JSON.stringify(blogData),
+      });
+      return {
+        success: true,
+        blog: response.blog,
+        message: response.message
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: error.message
+      };
+    }
+  },
+
+  async delete(id) {
+    try {
+      const response = await apiRequest(`/api/blog/${id}`, {
+        method: 'DELETE',
+      });
+      return {
+        success: true,
+        message: response.message
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: error.message
+      };
+    }
+  },
+
+  async like(id) {
+    try {
+      const response = await apiRequest(`/api/blog/${id}/like`, {
+        method: 'POST',
+      });
+      return {
+        success: true,
+        likes: response.likes,
+        message: response.message
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: error.message
+      };
+    }
+  },
+
+  async addComment(id, commentData) {
+    try {
+      const response = await apiRequest(`/api/blog/${id}/comments`, {
+        method: 'POST',
+        body: JSON.stringify(commentData),
+      });
+      return {
+        success: true,
+        comment: response.comment,
+        message: response.message
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: error.message
+      };
+    }
+  },
+
+  async getComments(id, page = 1, limit = 20) {
+    try {
+      const response = await apiRequest(`/api/blog/${id}/comments?page=${page}&limit=${limit}`);
+      return {
+        success: true,
+        comments: response.comments || [],
+        total: response.total || 0
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: error.message,
+        comments: [],
+        total: 0
+      };
+    }
+  }
+};
+
+// Orders API
+export const ordersAPI = {
+  async getAll() {
+    try {
+      const response = await apiRequest('/api/admin/orders');
+      return {
+        success: true,
+        orders: response.orders || [],
+        total: response.total || 0
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: error.message,
+        orders: [],
+        total: 0
+      };
+    }
+  },
+
+  async getById(id) {
+    try {
+      const response = await apiRequest(`/api/admin/orders/${id}`);
+      return {
+        success: true,
+        order: response.order
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: error.message,
+        order: null
+      };
+    }
+  },
+
+  async create(orderData) {
+    try {
+      const response = await apiRequest('/api/orders', {
+        method: 'POST',
+        body: JSON.stringify(orderData),
+      });
+      return {
+        success: true,
+        order: response.order,
+        message: response.message
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: error.message
+      };
+    }
+  },
+
+  async updateStatus(id, status) {
+    try {
+      const response = await apiRequest(`/api/admin/orders/${id}/status`, {
+        method: 'PUT',
+        body: JSON.stringify({ status }),
+      });
+      return {
+        success: true,
+        order: response.order,
+        message: response.message
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: error.message
+      };
+    }
+  },
+
+  async delete(id) {
+    try {
+      const response = await apiRequest(`/api/admin/orders/${id}`, {
+        method: 'DELETE',
+      });
+      return {
+        success: true,
+        message: response.message
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: error.message
+      };
+    }
+  },
+
+  async getUserOrders() {
+    try {
+      const response = await apiRequest('/api/orders/my-orders');
+      return {
+        success: true,
+        orders: response.orders || [],
+        total: response.total || 0
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: error.message,
+        orders: [],
+        total: 0
       };
     }
   }
@@ -407,15 +905,218 @@ export const notificationsAPI = {
   }
 };
 
-// Admin Stats API
-export const adminStatsAPI = {
-  async get() {
+// WhatsApp API
+export const whatsappAPI = {
+  async getStatus() {
     try {
-      const response = await apiRequest('/api/admin/stats');
+      const response = await apiRequest('/api/whatsapp/status');
       return {
         success: true,
-        stats: response
+        status: response
       };
+    } catch (error) {
+      return {
+        success: false,
+        error: error.message
+      };
+    }
+  },
+
+  async sendMessage(phone, message) {
+    try {
+      const response = await apiRequest('/api/whatsapp/send-message', {
+        method: 'POST',
+        body: JSON.stringify({ phone, message }),
+      });
+      return {
+        success: true,
+        result: response.result,
+        message: response.message
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: error.message
+      };
+    }
+  },
+
+  async sendBroadcast(phones, message) {
+    try {
+      const response = await apiRequest('/api/whatsapp/broadcast', {
+        method: 'POST',
+        body: JSON.stringify({ phones, message }),
+      });
+      return {
+        success: true,
+        message: response.message
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: error.message
+      };
+    }
+  },
+
+  async getQRCode() {
+    try {
+      const response = await apiRequest('/api/whatsapp/qr-code');
+      return {
+        success: true,
+        qrCode: response.qrCode,
+        connected: response.connected,
+        message: response.message
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: error.message
+      };
+    }
+  }
+};
+
+// Maps API
+export const mapsAPI = {
+  async getAllLocations() {
+    try {
+      const response = await apiRequest('/api/locations');
+      return {
+        success: true,
+        locations: response.locations || [],
+        total: response.total || 0,
+        center: response.center,
+        deliveryInfo: response.deliveryInfo
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: error.message,
+        locations: [],
+        total: 0
+      };
+    }
+  },
+
+  async getLocationById(id) {
+    try {
+      const response = await apiRequest(`/api/locations/${id}`);
+      return response;
+    } catch (error) {
+      return {
+        success: false,
+        error: error.message
+      };
+    }
+  },
+
+  async getLocationsByType(type) {
+    try {
+      const response = await apiRequest(`/api/locations/type/${type}`);
+      return response;
+    } catch (error) {
+      return {
+        success: false,
+        error: error.message
+      };
+    }
+  },
+
+  async findNearestLocation(latitude, longitude, type = 'loja') {
+    try {
+      const response = await apiRequest('/api/locations/nearest', {
+        method: 'POST',
+        body: JSON.stringify({ latitude, longitude, type }),
+      });
+      return response;
+    } catch (error) {
+      return {
+        success: false,
+        error: error.message
+      };
+    }
+  },
+
+  async checkDeliveryArea(address) {
+    try {
+      const response = await apiRequest('/api/delivery/check-area', {
+        method: 'POST',
+        body: JSON.stringify({ address }),
+      });
+      return response;
+    } catch (error) {
+      return {
+        success: false,
+        error: error.message
+      };
+    }
+  },
+
+  async geocodeAddress(address) {
+    try {
+      const response = await apiRequest('/api/maps/geocode', {
+        method: 'POST',
+        body: JSON.stringify({ address }),
+      });
+      return response;
+    } catch (error) {
+      return {
+        success: false,
+        error: error.message
+      };
+    }
+  },
+
+  async reverseGeocode(latitude, longitude) {
+    try {
+      const response = await apiRequest('/api/maps/reverse-geocode', {
+        method: 'POST',
+        body: JSON.stringify({ latitude, longitude }),
+      });
+      return response;
+    } catch (error) {
+      return {
+        success: false,
+        error: error.message
+      };
+    }
+  },
+
+  async getRoute(fromLat, fromLng, toLat, toLng) {
+    try {
+      const response = await apiRequest('/api/maps/route', {
+        method: 'POST',
+        body: JSON.stringify({ fromLat, fromLng, toLat, toLng }),
+      });
+      return response;
+    } catch (error) {
+      return {
+        success: false,
+        error: error.message
+      };
+    }
+  },
+
+  async findNearbyCafes(latitude, longitude, radius = 5000) {
+    try {
+      const response = await apiRequest('/api/maps/nearby-cafes', {
+        method: 'POST',
+        body: JSON.stringify({ latitude, longitude, radius }),
+      });
+      return response;
+    } catch (error) {
+      return {
+        success: false,
+        error: error.message
+      };
+    }
+  },
+
+  async getDeliveryStats() {
+    try {
+      const response = await apiRequest('/api/delivery/stats');
+      return response;
     } catch (error) {
       return {
         success: false,
@@ -447,7 +1148,6 @@ export const healthAPI = {
 // Cart utilities
 export const cartUtils = {
   updateCartCount() {
-    // Update cart count in UI
     const cartCount = this.getCartItemsCount();
     const cartBadges = document.querySelectorAll('.cart-count-badge');
     cartBadges.forEach(badge => {
@@ -494,13 +1194,17 @@ export const cartUtils = {
 const api = {
   auth: authAPI,
   products: productsAPI,
-  adminProducts: adminProductsAPI,
+  admin: adminAPI,
+  orders: ordersAPI,
+  blog: blogAPI,
   gamification: gamificationAPI,
   cart: cartAPI,
   coupons: couponsAPI,
   notifications: notificationsAPI,
-  adminStats: adminStatsAPI,
-  health: healthAPI
+  whatsapp: whatsappAPI,
+  maps: mapsAPI,
+  health: healthAPI,
+  cartUtils: cartUtils
 };
 
 export default api;

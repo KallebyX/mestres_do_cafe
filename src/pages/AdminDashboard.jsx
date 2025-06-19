@@ -28,11 +28,11 @@ const AdminDashboard = () => {
       const [statsData, usersData, productsData, ordersData] = await Promise.all([
         adminAPI.getStats(),
         adminAPI.getUsers(),
-        productsAPI.getProducts({ per_page: 50 }),
-        ordersAPI.getOrders({ per_page: 50 })
+        adminAPI.getProducts(),
+        ordersAPI.getAll()
       ]);
 
-      setStats(statsData);
+      setStats(statsData.stats || {});
       setUsers(usersData.users || []);
       setProducts(productsData.products || []);
       setOrders(ordersData.orders || []);

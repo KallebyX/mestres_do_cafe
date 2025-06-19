@@ -83,13 +83,13 @@ const Header = () => {
               Gamificação
             </Link>
             <Link 
-              to="/about" 
+              to="/sobre" 
               className="text-coffee-intense hover:text-coffee-gold transition-colors font-medium py-2 px-1 border-b-2 border-transparent hover:border-coffee-gold text-sm"
             >
               Sobre
             </Link>
             <Link 
-              to="/courses" 
+              to="/cursos" 
               className="text-coffee-intense hover:text-coffee-gold transition-colors font-medium py-2 px-1 border-b-2 border-transparent hover:border-coffee-gold text-sm"
             >
               Cursos
@@ -101,7 +101,7 @@ const Header = () => {
               Blog
             </Link>
             <Link 
-              to="/contact" 
+              to="/contato" 
               className="text-coffee-intense hover:text-coffee-gold transition-colors font-medium py-2 px-1 border-b-2 border-transparent hover:border-coffee-gold text-sm"
             >
               Contato
@@ -114,7 +114,7 @@ const Header = () => {
               <>
                 {/* Carrinho */}
                 <Link
-                  to="/cart"
+                  to="/carrinho"
                   className="relative p-2 bg-coffee-cream hover:bg-coffee-gold/20 rounded-full transition-colors group"
                 >
                   <span className="text-lg text-coffee-gold group-hover:text-coffee-intense">🛒</span>
@@ -153,7 +153,7 @@ const Header = () => {
                       </div>
                       
                       <Link
-                        to="/profile"
+                        to="/perfil"
                         onClick={() => setIsUserMenuOpen(false)}
                         className="flex items-center space-x-3 px-4 py-3 text-coffee-intense hover:bg-coffee-cream transition-colors"
                       >
@@ -161,7 +161,7 @@ const Header = () => {
                         <span>Meu Perfil</span>
                       </Link>
                       <Link
-                        to="/orders"
+                        to="/pedidos"
                         onClick={() => setIsUserMenuOpen(false)}
                         className="flex items-center space-x-3 px-4 py-3 text-coffee-intense hover:bg-coffee-cream transition-colors"
                       >
@@ -169,7 +169,7 @@ const Header = () => {
                         <span>Meus Pedidos</span>
                       </Link>
                       <Link
-                        to="/cart"
+                        to="/carrinho"
                         onClick={() => setIsUserMenuOpen(false)}
                         className="flex items-center space-x-3 px-4 py-3 text-coffee-intense hover:bg-coffee-cream transition-colors"
                       >
@@ -205,7 +205,7 @@ const Header = () => {
                   Entrar
                 </Link>
                 <Link
-                  to="/register"
+                  to="/registro"
                   className="btn-primary px-3 py-2 text-xs lg:px-4 lg:py-2 lg:text-sm"
                 >
                   Cadastrar
@@ -255,14 +255,14 @@ const Header = () => {
                   🏆 Gamificação
                 </Link>
                 <Link 
-                  to="/about" 
+                  to="/sobre" 
                   onClick={() => setIsMenuOpen(false)}
                   className="block py-3 px-4 text-coffee-intense hover:bg-coffee-cream hover:text-coffee-gold transition-colors rounded-lg font-medium"
                 >
                   ℹ️ Sobre
                 </Link>
                 <Link 
-                  to="/courses" 
+                  to="/cursos" 
                   onClick={() => setIsMenuOpen(false)}
                   className="block py-3 px-4 text-coffee-intense hover:bg-coffee-cream hover:text-coffee-gold transition-colors rounded-lg font-medium"
                 >
@@ -276,7 +276,7 @@ const Header = () => {
                   📝 Blog
                 </Link>
                 <Link 
-                  to="/contact" 
+                  to="/contato" 
                   onClick={() => setIsMenuOpen(false)}
                   className="block py-3 px-4 text-coffee-intense hover:bg-coffee-cream hover:text-coffee-gold transition-colors rounded-lg font-medium"
                 >
@@ -295,7 +295,7 @@ const Header = () => {
                     Entrar
                   </Link>
                   <Link
-                    to="/register"
+                    to="/registro"
                     onClick={() => setIsMenuOpen(false)}
                     className="block w-full btn-primary text-center py-3"
                   >

@@ -51,7 +51,7 @@ const renderWithContexts = (component, authOverrides = {}, cartOverrides = {}) =
   );
 };
 
-describe('Header Component', () => {
+describe('Header', () => {
   beforeEach(() => {
     vi.clearAllMocks()
     mockNavigate.mockClear()

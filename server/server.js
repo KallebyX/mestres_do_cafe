@@ -5,9 +5,21 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const fs = require('fs');
 
+// Importar serviços próprios (APIs gratuitas)
+const WhatsAppService = require('./services/WhatsAppService');
+const MapsService = require('./services/MapsService');
+
 const app = express();
 const PORT = 5000;
 const JWT_SECRET = 'mestres-cafe-super-secret-jwt-key-2025';
+
+// Inicializar serviços
+const whatsappService = new WhatsAppService();
+const mapsService = new MapsService();
+
+console.log('🚀 Inicializando serviços gratuitos...');
+console.log('📱 WhatsApp: API própria (whatsapp-web.js)');
+console.log('🗺️ Maps: OpenStreetMap + Leaflet');
 
 // Validação de CPF
 function validateCPF(cpf) {
@@ -985,6 +997,273 @@ app.get('/api/admin/stats', authenticateToken, (req, res) => {
   res.json(stats);
 });
 
+// 📱 ===================== WHATSAPP ENDPOINTS (API PRÓPRIA) =====================
+
+// Status do WhatsApp Bot
+app.get('/api/whatsapp/status', async (req, res) => {
+  try {
+    const status = await whatsappService.getStatus();
+    res.json(status);
+  } catch (error) {
+    res.status(500).json({ 
+      error: 'Erro ao verificar status do WhatsApp',
+      details: error.message 
+    });
+  }
+});
+
+// Webhook para receber mensagens do WhatsApp
+app.post('/api/whatsapp/webhook', async (req, res) => {
+  try {
+    console.log('📥 Webhook WhatsApp recebido:', req.body);
+    
+    // Processar mensagem recebida
+    await whatsappService.processIncomingMessage(req.body);
+    
+    res.json({ success: true, message: 'Mensagem processada' });
+  } catch (error) {
+    console.error('❌ Erro no webhook WhatsApp:', error);
+    res.status(500).json({ error: 'Erro ao processar mensagem' });
+  }
+});
+
+// Enviar mensagem manual (para admin)
+app.post('/api/whatsapp/send-message', authenticateToken, async (req, res) => {
+  try {
+    if (req.user.user_type !== 'admin') {
+      return res.status(403).json({ error: 'Apenas administradores podem enviar mensagens' });
+    }
+
+    const { phone, message } = req.body;
+    
+    if (!phone || !message) {
+      return res.status(400).json({ error: 'Telefone e mensagem são obrigatórios' });
+    }
+
+    const chatId = phone.includes('@') ? phone : `${phone}@c.us`;
+    const result = await whatsappService.sendTextMessage(chatId, message);
+    
+    res.json({ 
+      success: true, 
+      message: 'Mensagem enviada com sucesso',
+      result: result
+    });
+  } catch (error) {
+    console.error('❌ Erro ao enviar mensagem:', error);
+    res.status(500).json({ error: 'Erro ao enviar mensagem' });
+  }
+});
+
+// Broadcast para múltiplos contatos (para admin)
+app.post('/api/whatsapp/broadcast', authenticateToken, async (req, res) => {
+  try {
+    if (req.user.user_type !== 'admin') {
+      return res.status(403).json({ error: 'Apenas administradores podem fazer broadcast' });
+    }
+
+    const { phones, message } = req.body;
+    
+    if (!phones || !Array.isArray(phones) || !message) {
+      return res.status(400).json({ error: 'Lista de telefones e mensagem são obrigatórios' });
+    }
+
+    // Executar broadcast em background
+    whatsappService.sendBroadcast(phones, message);
+    
+    res.json({ 
+      success: true, 
+      message: `Broadcast iniciado para ${phones.length} contatos`
+    });
+  } catch (error) {
+    console.error('❌ Erro no broadcast:', error);
+    res.status(500).json({ error: 'Erro ao enviar broadcast' });
+  }
+});
+
+// QR Code para conectar WhatsApp (para admin)
+app.get('/api/whatsapp/qr-code', authenticateToken, async (req, res) => {
+  try {
+    if (req.user.user_type !== 'admin') {
+      return res.status(403).json({ error: 'Acesso negado' });
+    }
+
+    const status = await whatsappService.getStatus();
+    
+    if (status.qrCode) {
+      res.json({ 
+        qrCode: status.qrCode,
+        message: 'Escaneie o QR Code com seu WhatsApp'
+      });
+    } else if (status.connected) {
+      res.json({ 
+        connected: true,
+        message: 'WhatsApp já está conectado'
+      });
+    } else {
+      res.json({ 
+        message: 'Aguardando geração do QR Code...'
+      });
+    }
+  } catch (error) {
+    res.status(500).json({ error: 'Erro ao obter QR Code' });
+  }
+});
+
+// 🗺️ ===================== MAPS ENDPOINTS (OPENSTREETMAP) =====================
+
+// Obter todas as localizações
+app.get('/api/locations', async (req, res) => {
+  try {
+    const locations = await mapsService.getAllLocations();
+    res.json(locations);
+  } catch (error) {
+    console.error('❌ Erro ao buscar localizações:', error);
+    res.status(500).json({ error: 'Erro ao buscar localizações' });
+  }
+});
+
+// Obter localização específica
+app.get('/api/locations/:id', async (req, res) => {
+  try {
+    const location = await mapsService.getLocationById(req.params.id);
+    res.json(location);
+  } catch (error) {
+    console.error('❌ Erro ao buscar localização:', error);
+    res.status(500).json({ error: 'Erro ao buscar localização' });
+  }
+});
+
+// Buscar localizações por tipo
+app.get('/api/locations/type/:type', async (req, res) => {
+  try {
+    const locations = await mapsService.getLocationsByType(req.params.type);
+    res.json(locations);
+  } catch (error) {
+    console.error('❌ Erro ao filtrar localizações:', error);
+    res.status(500).json({ error: 'Erro ao filtrar localizações' });
+  }
+});
+
+// Encontrar loja mais próxima
+app.post('/api/locations/nearest', async (req, res) => {
+  try {
+    const { latitude, longitude, type = 'loja' } = req.body;
+    
+    if (!latitude || !longitude) {
+      return res.status(400).json({ error: 'Latitude e longitude são obrigatórias' });
+    }
+
+    const result = await mapsService.findNearestLocation(latitude, longitude, type);
+    res.json(result);
+  } catch (error) {
+    console.error('❌ Erro ao encontrar loja próxima:', error);
+    res.status(500).json({ error: 'Erro ao encontrar loja próxima' });
+  }
+});
+
+// Verificar área de delivery
+app.post('/api/delivery/check-area', async (req, res) => {
+  try {
+    const { address } = req.body;
+    
+    if (!address) {
+      return res.status(400).json({ error: 'Endereço é obrigatório' });
+    }
+
+    const result = await mapsService.checkDeliveryArea(address);
+    res.json(result);
+  } catch (error) {
+    console.error('❌ Erro ao verificar área de delivery:', error);
+    res.status(500).json({ error: 'Erro ao verificar área de delivery' });
+  }
+});
+
+// Geocodificar endereço
+app.post('/api/maps/geocode', async (req, res) => {
+  try {
+    const { address } = req.body;
+    
+    if (!address) {
+      return res.status(400).json({ error: 'Endereço é obrigatório' });
+    }
+
+    const coords = await mapsService.geocodeAddress(address);
+    
+    if (coords) {
+      res.json({ success: true, coordinates: coords });
+    } else {
+      res.status(404).json({ success: false, error: 'Endereço não encontrado' });
+    }
+  } catch (error) {
+    console.error('❌ Erro na geocodificação:', error);
+    res.status(500).json({ error: 'Erro na geocodificação' });
+  }
+});
+
+// Geocodificação reversa
+app.post('/api/maps/reverse-geocode', async (req, res) => {
+  try {
+    const { latitude, longitude } = req.body;
+    
+    if (!latitude || !longitude) {
+      return res.status(400).json({ error: 'Latitude e longitude são obrigatórias' });
+    }
+
+    const result = await mapsService.reverseGeocode(latitude, longitude);
+    res.json(result);
+  } catch (error) {
+    console.error('❌ Erro na geocodificação reversa:', error);
+    res.status(500).json({ error: 'Erro na geocodificação reversa' });
+  }
+});
+
+// Calcular rota entre dois pontos
+app.post('/api/maps/route', async (req, res) => {
+  try {
+    const { fromLat, fromLng, toLat, toLng } = req.body;
+    
+    if (!fromLat || !fromLng || !toLat || !toLng) {
+      return res.status(400).json({ 
+        error: 'Coordenadas de origem e destino são obrigatórias' 
+      });
+    }
+
+    const result = await mapsService.getRoute(fromLat, fromLng, toLat, toLng);
+    res.json(result);
+  } catch (error) {
+    console.error('❌ Erro ao calcular rota:', error);
+    res.status(500).json({ error: 'Erro ao calcular rota' });
+  }
+});
+
+// Buscar cafeterias próximas
+app.post('/api/maps/nearby-cafes', async (req, res) => {
+  try {
+    const { latitude, longitude, radius = 5000 } = req.body;
+    
+    if (!latitude || !longitude) {
+      return res.status(400).json({ error: 'Latitude e longitude são obrigatórias' });
+    }
+
+    const result = await mapsService.findNearbyCafes(latitude, longitude, radius);
+    res.json(result);
+  } catch (error) {
+    console.error('❌ Erro ao buscar cafeterias:', error);
+    res.status(500).json({ error: 'Erro ao buscar cafeterias próximas' });
+  }
+});
+
+// Estatísticas da área de entrega
+app.get('/api/delivery/stats', async (req, res) => {
+  try {
+    const stats = mapsService.getDeliveryStats();
+    res.json({ success: true, stats: stats });
+  } catch (error) {
+    console.error('❌ Erro ao obter estatísticas:', error);
+    res.status(500).json({ error: 'Erro ao obter estatísticas' });
+  }
+});
+
 // Root endpoint
 app.get('/', (req, res) => {
   res.json({
@@ -997,7 +1276,9 @@ app.get('/', (req, res) => {
       '/api/auth/login',
       '/api/products',
       '/api/cart',
-      '/api/coupons/validate'
+      '/api/coupons/validate',
+      '/api/whatsapp/status',
+      '/api/locations'
     ]
   });
 });

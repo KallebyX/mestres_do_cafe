@@ -1,8 +1,7 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
-import Header from '../components/Header';
-import Footer from '../components/Footer';
+import { Mail, Lock, Eye, EyeOff, Coffee, Shield, Star, CheckCircle, ArrowRight, User } from 'lucide-react';
 
 const LoginPage = () => {
   const [formData, setFormData] = useState({
@@ -16,12 +15,29 @@ const LoginPage = () => {
   const { login } = useAuth();
   const navigate = useNavigate();
 
+  const features = [
+    {
+      icon: Coffee,
+      title: "Cafés Premium",
+      description: "Seleção exclusiva de grãos especiais certificados SCA"
+    },
+    {
+      icon: Shield,
+      title: "Compra Segura",
+      description: "Transações protegidas e dados seguros"
+    },
+    {
+      icon: Star,
+      title: "Qualidade Garantida",
+      description: "Torrefação artesanal e frescor em cada entrega"
+    }
+  ];
+
   const handleChange = (e) => {
     setFormData({
       ...formData,
       [e.target.name]: e.target.value
     });
-    // Limpar erro quando usuário começar a digitar
     if (error) setError('');
   };
 
@@ -38,7 +54,7 @@ const LoginPage = () => {
       } else {
         setError(result.error || 'Erro ao fazer login. Verifique suas credenciais.');
       }
-    } catch (_err) { // eslint-disable-line no-unused-vars
+    } catch (_err) {
       setError('Erro de conexão. Tente novamente.');
     } finally {
       setIsLoading(false);
@@ -46,212 +62,230 @@ const LoginPage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-coffee-cream/20 via-coffee-white to-coffee-gold/10 font-montserrat">
-      <Header />
-      
-      <main className="flex-1 flex items-center justify-center py-20 px-4">
-        <div className="max-w-4xl w-full">
-          <div className="grid lg:grid-cols-2 gap-12 items-center">
-            {/* Seção Visual - Esquerda */}
-            <div className="hidden lg:block">
-              <div className="relative">
-                {/* Background com padrão de café */}
-                <div className="absolute inset-0 bg-gradient-coffee rounded-3xl opacity-10"></div>
-                <div className="relative p-12 text-center">
-                  <div className="w-32 h-32 bg-gradient-coffee rounded-full flex items-center justify-center mx-auto mb-8 shadow-gold">
-                    <span className="text-coffee-white font-cormorant font-bold text-5xl">M</span>
-                  </div>
-                  
-                  <h1 className="font-cormorant font-bold text-4xl text-coffee-intense mb-4">
-                    Bem-vindo aos Mestres do Café
-                  </h1>
-                  
-                  <p className="text-coffee-gray text-lg mb-8">
-                    Descubra os melhores cafés especiais certificados SCAA, 
-                    torrados artesanalmente para o seu prazer.
-                  </p>
+    <div className="min-h-screen bg-slate-50">
+      <div className="grid lg:grid-cols-2 min-h-screen">
+        {/* Left Column - Visual */}
+        <div className="hidden lg:flex bg-gradient-to-br from-slate-900 via-slate-800 to-amber-900 relative overflow-hidden">
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_70%,rgba(245,158,11,0.1),transparent_70%)]"></div>
+          
+          <div className="relative flex flex-col justify-center p-12 text-white">
+            {/* Logo */}
+            <div className="mb-12">
+              <div className="w-16 h-16 bg-amber-600 rounded-2xl flex items-center justify-center mb-4 shadow-2xl">
+                <Coffee className="w-8 h-8 text-white" />
+              </div>
+              <h1 className="text-3xl font-bold">Mestres do Café</h1>
+              <p className="text-slate-300 mt-2">Cafés especiais certificados SCA</p>
+            </div>
 
-                  {/* Features */}
-                  <div className="space-y-4">
-                    <div className="flex items-center space-x-4">
-                      <div className="w-12 h-12 bg-coffee-gold/20 rounded-full flex items-center justify-center">
-                        <span className="text-coffee-gold text-xl">☕</span>
-                      </div>
-                      <div className="text-left">
-                        <h3 className="font-semibold text-coffee-intense">Cafés Premium</h3>
-                        <p className="text-coffee-gray text-sm">Seleção exclusiva de grãos especiais</p>
-                      </div>
-                    </div>
-                    
-                    <div className="flex items-center space-x-4">
-                      <div className="w-12 h-12 bg-coffee-gold/20 rounded-full flex items-center justify-center">
-                        <span className="text-coffee-gold text-xl">🚚</span>
-                      </div>
-                      <div className="text-left">
-                        <h3 className="font-semibold text-coffee-intense">Entrega Rápida</h3>
-                        <p className="text-coffee-gray text-sm">Frete grátis para Santa Maria</p>
-                      </div>
-                    </div>
-                    
-                    <div className="flex items-center space-x-4">
-                      <div className="w-12 h-12 bg-coffee-gold/20 rounded-full flex items-center justify-center">
-                        <span className="text-coffee-gold text-xl">⭐</span>
-                      </div>
-                      <div className="text-left">
-                        <h3 className="font-semibold text-coffee-intense">Qualidade Garantida</h3>
-                        <p className="text-coffee-gray text-sm">Certificação SCAA e torrefação artesanal</p>
-                      </div>
-                    </div>
+            {/* Features */}
+            <div className="space-y-8 mb-12">
+              {features.map((feature, index) => (
+                <div key={index} className="flex items-start gap-4">
+                  <div className="w-12 h-12 bg-white/10 backdrop-blur-sm rounded-2xl flex items-center justify-center flex-shrink-0">
+                    <feature.icon className="w-6 h-6 text-amber-400" />
                   </div>
+                  <div>
+                    <h3 className="font-semibold text-white mb-1">{feature.title}</h3>
+                    <p className="text-slate-300 text-sm leading-relaxed">{feature.description}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* Testimonial */}
+            <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-6 border border-white/20">
+              <div className="flex items-center gap-2 mb-3">
+                {[1,2,3,4,5].map(i => (
+                  <Star key={i} className="w-4 h-4 text-yellow-400 fill-current" />
+                ))}
+              </div>
+              <p className="text-white text-sm leading-relaxed mb-4">
+                "A melhor experiência em café especial. Qualidade excepcional e atendimento impecável!"
+              </p>
+              <div className="flex items-center gap-3">
+                <div className="w-8 h-8 bg-amber-600 rounded-full flex items-center justify-center">
+                  <User className="w-4 h-4 text-white" />
+                </div>
+                <div>
+                  <div className="text-white font-medium text-sm">Maria Silva</div>
+                  <div className="text-slate-400 text-xs">Cliente há 2 anos</div>
                 </div>
               </div>
             </div>
 
-            {/* Formulário - Direita */}
-            <div className="w-full max-w-md mx-auto lg:mx-0">
-              <div className="card border-2 border-coffee-cream/50 shadow-gold">
-                <div className="text-center mb-8 lg:hidden">
-                  <div className="w-20 h-20 bg-gradient-coffee rounded-full flex items-center justify-center mx-auto mb-4 shadow-gold">
-                    <span className="text-coffee-white font-cormorant font-bold text-3xl">M</span>
-                  </div>
-                </div>
+            {/* Floating Elements */}
+            <div className="absolute top-20 right-20 w-20 h-20 bg-amber-400/10 rounded-full"></div>
+            <div className="absolute bottom-20 left-20 w-32 h-32 bg-amber-400/5 rounded-full"></div>
+          </div>
+        </div>
 
-                <h2 className="font-cormorant font-bold text-3xl text-coffee-intense mb-2 text-center">
-                  Entrar na Conta
-                </h2>
-                <p className="text-coffee-gray text-center mb-8">
-                  Acesse sua conta e explore nossos cafés especiais
-                </p>
-                
-                {error && (
-                  <div className="mb-6 p-4 bg-red-50 border-l-4 border-red-400 text-red-700 rounded-lg">
-                    <div className="flex">
-                      <span className="text-red-400 mr-2">⚠️</span>
-                      <span>{error}</span>
-                    </div>
+        {/* Right Column - Form */}
+        <div className="flex flex-col justify-center p-8 lg:p-12">
+          <div className="max-w-md w-full mx-auto">
+            {/* Mobile Logo */}
+            <div className="lg:hidden text-center mb-8">
+              <div className="w-16 h-16 bg-amber-600 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg">
+                <Coffee className="w-8 h-8 text-white" />
+              </div>
+              <h1 className="text-2xl font-bold text-slate-900">Mestres do Café</h1>
+            </div>
+
+            {/* Header */}
+            <div className="text-center lg:text-left mb-8">
+              <h2 className="text-3xl lg:text-4xl font-bold text-slate-900 mb-3">
+                Bem-vindo de volta!
+              </h2>
+              <p className="text-slate-600 text-lg">
+                Acesse sua conta e explore nossos cafés especiais
+              </p>
+            </div>
+            
+            {/* Error Message */}
+            {error && (
+              <div className="mb-6 p-4 bg-red-50 border border-red-200 text-red-700 rounded-2xl">
+                <div className="flex items-center gap-2">
+                  <div className="w-5 h-5 bg-red-500 rounded-full flex items-center justify-center">
+                    <span className="text-white text-xs">!</span>
                   </div>
-                )}
-                
-                <form onSubmit={handleSubmit} className="space-y-6">
-                  <div>
-                    <label htmlFor="email" className="block text-coffee-intense font-medium mb-2">
-                      E-mail
-                    </label>
-                    <div className="relative">
-                      <input
-                        type="email"
-                        id="email"
-                        name="email"
-                        value={formData.email}
-                        onChange={handleChange}
-                        required
-                        className="w-full p-4 pl-12 border-2 border-coffee-cream rounded-xl focus:border-coffee-gold focus:ring-2 focus:ring-coffee-gold/10 transition-all bg-coffee-white/50"
-                        placeholder="seu@email.com"
-                      />
-                      <span className="absolute left-4 top-1/2 transform -translate-y-1/2 text-coffee-gold">
-                        📧
-                      </span>
-                    </div>
-                  </div>
-                  
-                  <div>
-                    <label htmlFor="password" className="block text-coffee-intense font-medium mb-2">
-                      Senha
-                    </label>
-                    <div className="relative">
-                      <input
-                        type={showPassword ? "text" : "password"}
-                        id="password"
-                        name="password"
-                        value={formData.password}
-                        onChange={handleChange}
-                        required
-                        className="w-full p-4 pl-12 pr-12 border-2 border-coffee-cream rounded-xl focus:border-coffee-gold focus:ring-2 focus:ring-coffee-gold/10 transition-all bg-coffee-white/50"
-                        placeholder="Sua senha"
-                      />
-                      <span className="absolute left-4 top-1/2 transform -translate-y-1/2 text-coffee-gold">
-                        🔒
-                      </span>
-                      <button
-                        type="button"
-                        onClick={() => setShowPassword(!showPassword)}
-                        className="absolute right-4 top-1/2 transform -translate-y-1/2 text-coffee-gray hover:text-coffee-gold transition-colors"
-                      >
-                        {showPassword ? '👁️' : '👁️‍🗨️'}
-                      </button>
-                    </div>
-                  </div>
-                  
-                  <div className="flex items-center justify-between">
-                    <label className="flex items-center">
-                      <input
-                        type="checkbox"
-                        className="rounded border-coffee-cream text-coffee-gold focus:ring-coffee-gold"
-                      />
-                      <span className="ml-2 text-coffee-gray text-sm">Lembrar de mim</span>
-                    </label>
-                    <Link
-                      to="/forgot-password"
-                      className="text-coffee-gold hover:text-coffee-intense transition-colors text-sm font-medium"
-                    >
-                      Esqueci minha senha
-                    </Link>
-                  </div>
-                  
-                  <button
-                    type="submit"
-                    disabled={isLoading}
-                    className="btn-primary w-full py-4 text-lg font-semibold disabled:opacity-50 disabled:cursor-not-allowed transform hover:scale-105 transition-all duration-200"
-                  >
-                    {isLoading ? (
-                      <div className="flex items-center justify-center">
-                        <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-coffee-white mr-2"></div>
-                        Entrando...
-                      </div>
-                    ) : (
-                      <div className="flex items-center justify-center">
-                        <span className="mr-2">🚀</span>
-                        Entrar
-                      </div>
-                    )}
-                  </button>
-                </form>
-                
-                <div className="mt-8 text-center space-y-4">
-                  <div className="relative">
-                    <div className="absolute inset-0 flex items-center">
-                      <div className="w-full border-t border-coffee-cream"></div>
-                    </div>
-                    <div className="relative flex justify-center text-sm">
-                      <span className="px-4 bg-coffee-white text-coffee-gray">ou</span>
-                    </div>
-                  </div>
-                  
-                  <p className="text-coffee-gray">
-                    Ainda não tem conta?{' '}
-                    <Link
-                      to="/register"
-                      className="text-coffee-gold hover:text-coffee-intense transition-colors font-semibold"
-                    >
-                      Cadastre-se aqui
-                    </Link>
-                  </p>
-                  
-                  <Link
-                    to="/"
-                    className="inline-flex items-center text-coffee-gray hover:text-coffee-gold transition-colors text-sm"
-                  >
-                    <span className="mr-1">←</span>
-                    Voltar ao início
-                  </Link>
+                  <span className="text-sm">{error}</span>
                 </div>
+              </div>
+            )}
+            
+            {/* Form */}
+            <form onSubmit={handleSubmit} className="space-y-6">
+              <div>
+                <label htmlFor="email" className="block text-slate-700 font-medium mb-2">
+                  E-mail
+                </label>
+                <div className="relative">
+                  <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400 w-5 h-5" />
+                  <input
+                    type="email"
+                    id="email"
+                    name="email"
+                    value={formData.email}
+                    onChange={handleChange}
+                    required
+                    className="w-full pl-10 pr-4 py-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-amber-500 focus:border-transparent transition-all"
+                    placeholder="seu@email.com"
+                  />
+                </div>
+              </div>
+              
+              <div>
+                <label htmlFor="password" className="block text-slate-700 font-medium mb-2">
+                  Senha
+                </label>
+                <div className="relative">
+                  <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400 w-5 h-5" />
+                  <input
+                    type={showPassword ? "text" : "password"}
+                    id="password"
+                    name="password"
+                    value={formData.password}
+                    onChange={handleChange}
+                    required
+                    className="w-full pl-10 pr-12 py-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-amber-500 focus:border-transparent transition-all"
+                    placeholder="Sua senha"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors"
+                  >
+                    {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                  </button>
+                </div>
+              </div>
+              
+              <div className="flex items-center justify-between">
+                <label className="flex items-center">
+                  <input
+                    type="checkbox"
+                    className="w-4 h-4 text-amber-600 border-slate-300 rounded focus:ring-amber-500"
+                  />
+                  <span className="ml-2 text-slate-600 text-sm">Lembrar de mim</span>
+                </label>
+                <Link
+                  to="/forgot-password"
+                  className="text-amber-600 hover:text-amber-700 transition-colors text-sm font-medium"
+                >
+                  Esqueci minha senha
+                </Link>
+              </div>
+              
+              <button
+                type="submit"
+                disabled={isLoading}
+                className="w-full bg-amber-600 hover:bg-amber-700 disabled:bg-amber-400 text-white font-semibold py-3 rounded-xl transition-all duration-300 transform hover:scale-105 disabled:scale-100 flex items-center justify-center gap-2"
+              >
+                {isLoading ? (
+                  <>
+                    <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                    Entrando...
+                  </>
+                ) : (
+                  <>
+                    <Coffee className="w-5 h-5" />
+                    Entrar na Conta
+                  </>
+                )}
+              </button>
+            </form>
+            
+            {/* Divider */}
+            <div className="my-8">
+              <div className="relative">
+                <div className="absolute inset-0 flex items-center">
+                  <div className="w-full border-t border-slate-200"></div>
+                </div>
+                <div className="relative flex justify-center text-sm">
+                  <span className="px-4 bg-slate-50 text-slate-500">ou</span>
+                </div>
+              </div>
+            </div>
+            
+            {/* Footer */}
+            <div className="text-center space-y-4">
+              <p className="text-slate-600">
+                Ainda não tem conta?{' '}
+                <Link
+                  to="/registro"
+                  className="text-amber-600 hover:text-amber-700 transition-colors font-semibold"
+                >
+                  Cadastre-se gratuitamente
+                </Link>
+              </p>
+              
+              <Link
+                to="/"
+                className="inline-flex items-center text-slate-500 hover:text-amber-600 transition-colors text-sm gap-2"
+              >
+                <ArrowRight className="w-4 h-4 rotate-180" />
+                Voltar ao início
+              </Link>
+            </div>
+
+            {/* Trust Indicators */}
+            <div className="flex items-center justify-center gap-6 mt-8 pt-8 border-t border-slate-200">
+              <div className="flex items-center gap-2 text-slate-500">
+                <Shield className="w-4 h-4" />
+                <span className="text-xs">SSL Seguro</span>
+              </div>
+              <div className="flex items-center gap-2 text-slate-500">
+                <CheckCircle className="w-4 h-4" />
+                <span className="text-xs">SCA Certificado</span>
+              </div>
+              <div className="flex items-center gap-2 text-slate-500">
+                <Star className="w-4 h-4" />
+                <span className="text-xs">Premium</span>
               </div>
             </div>
           </div>
         </div>
-      </main>
-
-      <Footer />
+      </div>
     </div>
   );
 };

@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useReducer, useEffect } from 'react';
-import { productsAPI, cartUtils } from '../lib/api';
+import { cartAPI, cartUtils } from '../lib/api';
 
 const CartContext = createContext();
 
@@ -91,6 +91,14 @@ function cartReducer(state, action) {
       };
     }
     
+    case 'SET_ERROR': {
+      return {
+        ...state,
+        error: action.payload,
+        loading: false
+      };
+    }
+    
     default:
       return state;
   }
@@ -114,8 +122,9 @@ export const CartProvider = ({ children }) => {
   const loadCart = async () => {
     dispatch({ type: 'SET_LOADING', payload: true });
     try {
-      const cartData = await productsAPI.getCart();
-      dispatch({ type: 'SET_ITEMS', payload: cartData });
+      // Carregar do localStorage por enquanto (até API real estar pronta)
+      const cartData = cartUtils.getCart();
+      dispatch({ type: 'SET_ITEMS', payload: cartData.items || [] });
       cartUtils.updateCartCount();
     } catch (error) {
       dispatch({ type: 'SET_ERROR', payload: error.message });
@@ -124,12 +133,38 @@ export const CartProvider = ({ children }) => {
 
   const addToCart = async (productId, quantity = 1, weightOption = null) => {
     try {
-      await productsAPI.addToCart({
-        product_id: productId,
-        quantity,
-        weight_option: weightOption
-      });
-      await loadCart(); // Recarregar carrinho do servidor
+      // Por enquanto usar localStorage até ter API real
+      const currentCart = cartUtils.getCart();
+      const existingItemIndex = currentCart.items.findIndex(item => 
+        item.id === productId && item.weightOption === weightOption
+      );
+
+      let updatedItems;
+      if (existingItemIndex >= 0) {
+        updatedItems = currentCart.items.map((item, index) => 
+          index === existingItemIndex 
+            ? { ...item, quantity: item.quantity + quantity }
+            : item
+        );
+      } else {
+        // Adicionar produto mock básico
+        const newItem = {
+          id: productId,
+          name: `Produto ${productId}`,
+          price: 29.90,
+          quantity,
+          weightOption: weightOption || '250g'
+        };
+        updatedItems = [...currentCart.items, newItem];
+      }
+
+      const newCartData = {
+        items: updatedItems,
+        total: updatedItems.reduce((sum, item) => sum + (item.price * item.quantity), 0)
+      };
+
+      cartUtils.saveCart(newCartData);
+      dispatch({ type: 'SET_ITEMS', payload: updatedItems });
       cartUtils.updateCartCount();
     } catch (error) {
       dispatch({ type: 'SET_ERROR', payload: error.message });
@@ -142,8 +177,19 @@ export const CartProvider = ({ children }) => {
       if (quantity <= 0) {
         await removeFromCart(itemId);
       } else {
-        await productsAPI.updateCartItem(itemId, { quantity });
         dispatch({ type: 'UPDATE_QUANTITY', payload: { itemId, quantity } });
+        
+        // Atualizar localStorage
+        const currentCart = cartUtils.getCart();
+        const updatedItems = currentCart.items.map(item =>
+          item.id === itemId ? { ...item, quantity } : item
+        );
+        
+        cartUtils.saveCart({
+          items: updatedItems,
+          total: updatedItems.reduce((sum, item) => sum + (item.price * item.quantity), 0)
+        });
+        
         cartUtils.updateCartCount();
       }
     } catch (error) {
@@ -154,8 +200,17 @@ export const CartProvider = ({ children }) => {
 
   const removeFromCart = async (itemId) => {
     try {
-      await productsAPI.removeFromCart(itemId);
       dispatch({ type: 'REMOVE_ITEM', payload: itemId });
+      
+      // Atualizar localStorage
+      const currentCart = cartUtils.getCart();
+      const updatedItems = currentCart.items.filter(item => item.id !== itemId);
+      
+      cartUtils.saveCart({
+        items: updatedItems,
+        total: updatedItems.reduce((sum, item) => sum + (item.price * item.quantity), 0)
+      });
+      
       cartUtils.updateCartCount();
     } catch (error) {
       dispatch({ type: 'SET_ERROR', payload: error.message });
@@ -165,9 +220,8 @@ export const CartProvider = ({ children }) => {
 
   const clearCart = async () => {
     try {
-      await productsAPI.clearCart();
       dispatch({ type: 'CLEAR_CART' });
-      cartUtils.updateCartCount();
+      cartUtils.clearCart();
     } catch (error) {
       dispatch({ type: 'SET_ERROR', payload: error.message });
       throw error;

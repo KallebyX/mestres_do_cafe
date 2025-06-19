@@ -1,702 +1,396 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { 
-  ShoppingCart, 
-  Star, 
-  Check, 
-  Flame, 
-  Trophy,
-  ArrowRight,
-  MapPin,
-  Phone,
-  Mail,
-  Instagram,
-  Facebook,
-  Twitter
-} from 'lucide-react';
-import Header from '../components/Header';
+import { ArrowRight, Star, Truck, Shield, Award, Coffee, Users, TrendingUp, CheckCircle, PlayCircle } from 'lucide-react';
 
 const LandingPage = () => {
+  const stats = [
+    { number: "1000+", label: "Clientes Satisfeitos" },
+    { number: "50+", label: "Variedades Premium" },
+    { number: "85+", label: "Pontuação SCA" },
+    { number: "5+", label: "Anos de Experiência" }
+  ];
+
+  const features = [
+    {
+      icon: Coffee,
+      title: "Cafés Especiais Certificados",
+      description: "Seleção rigorosa de grãos com pontuação SCA acima de 80 pontos, garantindo qualidade excepcional em cada xícara."
+    },
+    {
+      icon: Truck,
+      title: "Entrega Rápida e Segura",
+      description: "Frete grátis para Santa Maria acima de R$ 99. Seus cafés chegam frescos em embalagem premium que preserva o aroma."
+    },
+    {
+      icon: Award,
+      title: "Sistema de Gamificação",
+      description: "Ganhe pontos a cada compra, evolua de nível e desbloqueie descontos exclusivos de até 25% em nossa linha premium."
+    },
+    {
+      icon: Shield,
+      title: "Compra 100% Segura",
+      description: "Transações protegidas com SSL, múltiplas formas de pagamento e garantia total de satisfação ou seu dinheiro de volta."
+    }
+  ];
+
+  const products = [
+    {
+      id: 1,
+      name: "Bourbon Amarelo Premium",
+      origin: "Montanhas de Minas",
+      price: 45.90,
+      rating: 4.8,
+      image: "☕",
+      badge: "Mais Vendido",
+      description: "Notas de chocolate e caramelo"
+    },
+    {
+      id: 2,
+      name: "Geisha Especial",
+      origin: "Fazenda São Benedito",
+      price: 89.90,
+      rating: 4.9,
+      image: "🌟",
+      badge: "Premium",
+      description: "Floral e cítrico excepcional"
+    },
+    {
+      id: 3,
+      name: "Blend Signature",
+      origin: "Seleção Especial",
+      price: 39.90,
+      rating: 4.7,
+      image: "🏆",
+      badge: "Novo",
+      description: "Equilíbrio perfeito e cremoso"
+    }
+  ];
+
+  const testimonials = [
+    {
+      name: "Maria Silva",
+      role: "Empresária",
+      avatar: "👩‍💼",
+      rating: 5,
+      comment: "A qualidade dos cafés é excepcional. O sistema de pontos me incentiva a experimentar novos sabores sempre."
+    },
+    {
+      name: "João Santos",
+      role: "Chef",
+      avatar: "👨‍🍳",
+      rating: 5,
+      comment: "Como chef, posso dizer que estes são os melhores cafés especiais que já provei. A origem é impecável."
+    },
+    {
+      name: "Ana Costa",
+      role: "Barista",
+      avatar: "👩‍🎓",
+      rating: 5,
+      comment: "Trabalho com café há 15 anos e a Mestres do Café tem os grãos mais consistentes e frescos do mercado."
+    }
+  ];
+
   return (
-    <div className="min-h-screen bg-coffee-white font-montserrat">
-      <Header />
-
+    <div className="min-h-screen bg-white">
       {/* Hero Section */}
-      <section className="bg-coffee-intense py-20 md:py-24 px-4 bg-pattern">
-        <div className="container mx-auto text-center max-w-4xl">
-          <div className="bg-coffee-intense bg-opacity-90 p-8 rounded-2xl shadow-coffee">
-            <div className="h-64 bg-coffee-gray bg-opacity-20 rounded-xl flex items-center justify-center mb-8 image-placeholder">
-              <span className="text-coffee-cream text-6xl">☕</span>
-              <div className="ml-4 text-coffee-cream">
-                <div className="text-lg font-cormorant">Premium Coffee Beans</div>
-                <div className="text-sm opacity-75">Hero Image</div>
-              </div>
-            </div>
-            
-            <h1 className="font-cormorant font-bold text-4xl md:text-6xl text-coffee-white mb-6 text-balance">
-              Descubra os Melhores <span className="text-coffee-gold">Cafés Especiais</span>
-            </h1>
-            
-            <p className="text-lg md:text-xl text-coffee-cream mb-6 leading-relaxed text-balance">
-              Torrefação artesanal com certificação SCAA. Grãos selecionados das melhores fazendas do Brasil, 
-              entregues frescos na sua casa.
-            </p>
-            
-            <div className="bg-coffee-gold/20 backdrop-blur-sm rounded-lg p-4 mb-8 border border-coffee-gold/30">
-              <div className="flex items-center justify-center text-coffee-gold mb-2">
-                <Trophy className="w-6 h-6 mr-2" />
-                <span className="font-bold">EXCLUSIVO: Sistema de Gamificação</span>
-              </div>
-              <p className="text-coffee-cream text-sm">
-                🏆 Primeira torrefação do Brasil com gamificação completa • 
-                🎯 Ganhe pontos e evolua até 25% de desconto • 
-                ⭐ Desbloqueie benefícios únicos
-              </p>
-            </div>
-            
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Link
-                to="/marketplace"
-                className="btn-primary text-lg px-8 py-4 shadow-gold hover:shadow-xl"
-              >
-                🛒 Acessar Marketplace
-                <ArrowRight className="ml-2 h-5 w-5" />
-              </Link>
-              <Link
-                to="/gamificacao"
-                className="bg-coffee-gold text-coffee-intense text-lg px-8 py-4 rounded-lg font-bold hover:bg-coffee-white transition-all shadow-gold border-2 border-coffee-gold hover:border-coffee-white"
-              >
-                🏆 Ver Gamificação
-              </Link>
-              <Link
-                to="/about"
-                className="btn-secondary text-lg px-8 py-4 border-coffee-gold text-coffee-gold hover:bg-coffee-gold hover:text-coffee-white"
-              >
-                Nossa História
-              </Link>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Nossos Cafés Especiais */}
-      <section className="py-20 px-4 bg-coffee-white">
-        <div className="container mx-auto max-w-6xl">
-          <div className="text-center mb-16">
-            <h2 className="font-cormorant font-bold text-4xl lg:text-5xl text-coffee-intense mb-4">
-              Nossos Cafés Especiais
-            </h2>
-            <p className="text-lg text-coffee-gray max-w-3xl mx-auto">
-              Seleção exclusiva de cafés com pontuação superior a 80 pontos SCAA, 
-              certificados pela Associação Americana de Cafés Especiais
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12">
-            {/* Produto 1: Café Alta Mogiana */}
-            <div className="card group hover:shadow-coffee transition-all duration-300">
-              <div className="aspect-square image-placeholder mb-6">
-                <span>☕</span>
-              </div>
-              
-              <div className="flex items-center justify-between mb-3">
-                <div className="flex items-center star-rating">
-                  {[...Array(5)].map((_, i) => (
-                    <Star key={i} className="h-4 w-4 fill-current" />
-                  ))}
-                  <span className="ml-2 text-coffee-gray text-sm">(15)</span>
-                </div>
-                <span className="badge">85 PONTOS</span>
-              </div>
-              
-              <h3 className="font-cormorant font-bold text-2xl text-coffee-intense mb-3">
-                Café Alta Mogiana
-              </h3>
-              
-              <p className="text-coffee-gray mb-6">
-                Notas de chocolate e caramelo, corpo encorpado com acidez equilibrada. 
-                Perfeito para métodos de preparo como V60 e Chemex.
-              </p>
-              
-              <div className="flex items-center justify-between mb-6">
-                <span className="font-bold text-2xl text-coffee-gold">R$ 45,00</span>
-                <span className="text-coffee-gray text-sm">250g</span>
-              </div>
-              
-              <button className="btn-primary w-full">
-                <ShoppingCart className="h-4 w-4 mr-2" />
-                Adicionar
-              </button>
-            </div>
-
-            {/* Produto 2: Café Serra do Caparaó */}
-            <div className="card group hover:shadow-coffee transition-all duration-300">
-              <div className="aspect-square image-placeholder mb-6">
-                <span>☕</span>
-              </div>
-              
-              <div className="flex items-center justify-between mb-3">
-                <div className="flex items-center star-rating">
-                  {[...Array(5)].map((_, i) => (
-                    <Star key={i} className="h-4 w-4 fill-current" />
-                  ))}
-                  <span className="ml-2 text-coffee-gray text-sm">(15)</span>
-                </div>
-                <span className="badge">92 PONTOS</span>
-              </div>
-              
-              <h3 className="font-cormorant font-bold text-2xl text-coffee-intense mb-3">
-                Café Serra do Caparaó
-              </h3>
-              
-              <p className="text-coffee-gray mb-6">
-                Aroma cítrico, sabor natural, notas florais e frutadas. 
-                Ideal para apreciadores de cafés com perfil mais complexo.
-              </p>
-              
-              <div className="flex items-center justify-between mb-6">
-                <span className="font-bold text-2xl text-coffee-gold">R$ 52,00</span>
-                <span className="text-coffee-gray text-sm">250g</span>
-              </div>
-              
-              <button className="btn-primary w-full">
-                <ShoppingCart className="h-4 w-4 mr-2" />
-                Adicionar
-              </button>
-            </div>
-
-            {/* Produto 3: Blend Especial */}
-            <div className="card group hover:shadow-coffee transition-all duration-300">
-              <div className="aspect-square image-placeholder mb-6">
-                <span>☕</span>
-              </div>
-              
-              <div className="flex items-center justify-between mb-3">
-                <div className="flex items-center star-rating">
-                  {[...Array(4)].map((_, i) => (
-                    <Star key={i} className="h-4 w-4 fill-current" />
-                  ))}
-                  <Star className="h-4 w-4 text-coffee-cream" />
-                  <span className="ml-2 text-coffee-gray text-sm">(15)</span>
-                </div>
-                <span className="badge">82 PONTOS</span>
-              </div>
-              
-              <h3 className="font-cormorant font-bold text-2xl text-coffee-intense mb-3">
-                Blend Especial
-              </h3>
-              
-              <p className="text-coffee-gray mb-6">
-                Equilíbrio perfeito, versátil para diversos métodos. 
-                Combina doçura natural com corpo médio e acidez balanceada.
-              </p>
-              
-              <div className="flex items-center justify-between mb-6">
-                <span className="font-bold text-2xl text-coffee-gold">R$ 38,00</span>
-                <span className="text-coffee-gray text-sm">250g</span>
-              </div>
-              
-              <button className="btn-primary w-full">
-                <ShoppingCart className="h-4 w-4 mr-2" />
-                Adicionar
-              </button>
-            </div>
-          </div>
-
-          <div className="text-center">
-            <Link to="/marketplace" className="btn-primary text-lg px-8 py-4 shadow-gold">
-              Ver Todos os Produtos
-              <ArrowRight className="ml-2 h-5 w-5" />
-            </Link>
-          </div>
-        </div>
-      </section>
-
-      {/* Qualidade em Cada Etapa */}
-      <section className="py-20 px-4 bg-coffee-cream">
-        <div className="container mx-auto max-w-6xl">
-          <div className="text-center mb-16">
-            <h2 className="font-cormorant font-bold text-4xl lg:text-5xl text-coffee-intense mb-4">
-              Qualidade em Cada Etapa
-            </h2>
-            <p className="text-lg text-coffee-gray max-w-3xl mx-auto">
-              Nosso compromisso com a excelência se reflete em cada processo, 
-              desde a seleção dos grãos até a entrega do seu café.
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-12">
-            {/* Seleção Premium */}
-            <div className="text-center">
-              <div className="w-20 h-20 bg-coffee-gold rounded-full flex items-center justify-center mx-auto mb-6 shadow-gold">
-                <Check className="h-10 w-10 text-coffee-white" />
-              </div>
-              <h3 className="font-cormorant font-bold text-2xl text-coffee-intense mb-4">
-                Seleção Premium
-              </h3>
-              <p className="text-coffee-gray leading-relaxed">
-                Nossos grãos são cuidadosamente selecionados das melhores regiões produtoras, 
-                como Alta Mogiana e Serra do Caparaó, garantindo qualidade excepcional em cada lote.
-              </p>
-            </div>
-
-            {/* Torrefação Artesanal */}
-            <div className="text-center">
-              <div className="w-20 h-20 bg-coffee-gold rounded-full flex items-center justify-center mx-auto mb-6 shadow-gold">
-                <Flame className="h-10 w-10 text-coffee-white" />
-              </div>
-              <h3 className="font-cormorant font-bold text-2xl text-coffee-intense mb-4">
-                Torrefação Artesanal
-              </h3>
-              <p className="text-coffee-gray leading-relaxed">
-                Processo de torrefação artesanal controlado para realçar as características únicas 
-                de cada origem, preservando os aromas e sabores naturais dos grãos.
-              </p>
-            </div>
-
-            {/* Certificação SCAA */}
-            <div className="text-center">
-              <div className="w-20 h-20 bg-coffee-gold rounded-full flex items-center justify-center mx-auto mb-6 shadow-gold">
-                <Trophy className="h-10 w-10 text-coffee-white" />
-              </div>
-              <h3 className="font-cormorant font-bold text-2xl text-coffee-intense mb-4">
-                Certificação SCAA
-              </h3>
-              <p className="text-coffee-gray leading-relaxed">
-                Todos os nossos cafés são avaliados seguindo os rigorosos padrões da SCAA 
-                (Associação Americana de Cafés Especiais), garantindo pontuação superior a 80 pontos.
-              </p>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Sistema de Gamificação */}
-      <section className="py-20 px-4 bg-gradient-coffee relative overflow-hidden">
-        {/* Background Pattern */}
-        <div className="absolute inset-0 opacity-10">
-          <div className="absolute top-10 left-10 w-20 h-20 border-2 border-coffee-gold rounded-full"></div>
-          <div className="absolute top-32 right-20 w-16 h-16 bg-coffee-gold rounded-full opacity-20"></div>
-          <div className="absolute bottom-20 left-1/4 w-24 h-24 border-2 border-coffee-gold rounded-full"></div>
-          <div className="absolute bottom-32 right-10 w-12 h-12 bg-coffee-gold rounded-full opacity-30"></div>
-        </div>
-
-        <div className="container mx-auto max-w-6xl relative z-10">
-          <div className="text-center mb-16">
-            <div className="inline-flex items-center justify-center w-20 h-20 bg-coffee-gold rounded-full mb-6 shadow-gold">
-              <Trophy className="w-10 h-10 text-coffee-white" />
-            </div>
-            <h2 className="font-cormorant font-bold text-4xl lg:text-5xl text-coffee-white mb-6">
-              Nosso Grande <span className="text-coffee-gold">Diferencial</span>
-            </h2>
-            <p className="text-xl text-coffee-cream max-w-3xl mx-auto leading-relaxed">
-              Somos a primeira torrefação do Brasil com sistema de gamificação completo. 
-              Transforme sua paixão pelo café em recompensas exclusivas!
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
-            {/* Lado Esquerdo - Informações */}
+      <section className="relative overflow-hidden bg-gradient-to-br from-slate-50 via-white to-amber-50">
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_20%,rgba(139,69,19,0.03),transparent_50%)]"></div>
+        
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 lg:py-32">
+          <div className="grid lg:grid-cols-2 gap-12 lg:gap-20 items-center">
+            {/* Left Column - Content */}
             <div className="space-y-8">
-              <div className="flex items-start space-x-4">
-                <div className="w-12 h-12 bg-coffee-gold/20 rounded-full flex items-center justify-center flex-shrink-0">
-                  <Star className="w-6 h-6 text-coffee-gold" />
-                </div>
-                <div>
-                  <h3 className="font-cormorant font-bold text-xl text-coffee-white mb-2">
-                    Acumule Pontos
-                  </h3>
-                  <p className="text-coffee-cream">
-                    Ganhe pontos em cada compra, avaliação, compartilhamento e participação em eventos. 
-                    10 pontos a cada R$ 10 gastos!
-                  </p>
-                </div>
+              {/* Badge */}
+              <div className="inline-flex items-center gap-2 bg-amber-100 border border-amber-200 rounded-full px-4 py-2">
+                <Star className="w-4 h-4 text-amber-600 fill-current" />
+                <span className="text-amber-800 font-medium text-sm">Certificação SCA</span>
               </div>
 
-              <div className="flex items-start space-x-4">
-                <div className="w-12 h-12 bg-coffee-gold/20 rounded-full flex items-center justify-center flex-shrink-0">
-                  <Trophy className="w-6 h-6 text-coffee-gold" />
-                </div>
-                <div>
-                  <h3 className="font-cormorant font-bold text-xl text-coffee-white mb-2">
-                    Evolua de Nível
-                  </h3>
-                  <p className="text-coffee-cream">
-                    5 níveis únicos: de Aprendiz do Café até Lenda. Cada nível desbloqueia 
-                    benefícios exclusivos e descontos progressivos.
-                  </p>
-                </div>
+              {/* Headline */}
+              <div className="space-y-6">
+                <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-slate-900 leading-tight">
+                  Cafés Especiais
+                  <span className="block text-amber-600">
+                    Direto do Produtor
+                  </span>
+                </h1>
+                
+                <p className="text-xl text-slate-600 leading-relaxed max-w-xl">
+                  Descubra sabores únicos dos melhores cafés especiais do Brasil. 
+                  Pontuação SCA acima de 80 pontos, torrefação artesanal e entrega garantida.
+                </p>
               </div>
 
-              <div className="flex items-start space-x-4">
-                <div className="w-12 h-12 bg-coffee-gold/20 rounded-full flex items-center justify-center flex-shrink-0">
-                  <Check className="w-6 h-6 text-coffee-gold" />
-                </div>
-                <div>
-                  <h3 className="font-cormorant font-bold text-xl text-coffee-white mb-2">
-                    Benefícios Exclusivos
-                  </h3>
-                  <p className="text-coffee-cream">
-                    Descontos até 25%, acesso VIP a lançamentos, cafés limitados exclusivos, 
-                    degustações gratuitas e muito mais!
-                  </p>
-                </div>
+              {/* CTA Buttons */}
+              <div className="flex flex-col sm:flex-row gap-4">
+                <Link
+                  to="/marketplace"
+                  className="group inline-flex items-center justify-center gap-2 bg-amber-600 hover:bg-amber-700 text-white font-semibold px-8 py-4 rounded-2xl transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-1"
+                >
+                  <Coffee className="w-5 h-5" />
+                  Explorar Cafés
+                  <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                </Link>
+                
+                <button className="group inline-flex items-center justify-center gap-2 border-2 border-slate-200 hover:border-amber-600 text-slate-700 hover:text-amber-600 font-semibold px-8 py-4 rounded-2xl transition-all duration-300">
+                  <PlayCircle className="w-5 h-5" />
+                  Ver Processo
+                </button>
+              </div>
+
+              {/* Stats */}
+              <div className="grid grid-cols-2 lg:grid-cols-4 gap-8 pt-8 border-t border-slate-200">
+                {stats.map((stat, index) => (
+                  <div key={index} className="text-center">
+                    <div className="text-2xl lg:text-3xl font-bold text-slate-900 mb-1">
+                      {stat.number}
+                    </div>
+                    <div className="text-sm text-slate-600">
+                      {stat.label}
+                    </div>
+                  </div>
+                ))}
               </div>
             </div>
 
-            {/* Lado Direito - Níveis Preview */}
-            <div className="space-y-4">
-              <div className="bg-coffee-white/10 backdrop-blur-sm rounded-xl p-6 border border-coffee-gold/20">
-                <h3 className="font-cormorant font-bold text-2xl text-coffee-white mb-4 text-center">
-                  Progressão de Níveis
+            {/* Right Column - Visual */}
+            <div className="relative">
+              <div className="relative bg-gradient-to-br from-amber-100 to-amber-200 rounded-3xl p-8 lg:p-12 shadow-2xl">
+                <div className="absolute inset-0 bg-gradient-to-br from-transparent to-black/5 rounded-3xl"></div>
+                
+                {/* Coffee Cup Visual */}
+                <div className="relative text-center">
+                  <div className="text-8xl lg:text-9xl mb-4">☕</div>
+                  <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-6 shadow-lg">
+                    <div className="flex items-center justify-center gap-2 mb-3">
+                      {[1,2,3,4,5].map(i => (
+                        <Star key={i} className="w-5 h-5 text-yellow-400 fill-current" />
+                      ))}
+                    </div>
+                    <p className="text-slate-700 font-medium">Avaliação dos Clientes</p>
+                    <p className="text-2xl font-bold text-slate-900">4.9/5</p>
+                  </div>
+                </div>
+
+                {/* Floating Elements */}
+                <div className="absolute -top-6 -right-6 bg-white rounded-2xl p-4 shadow-xl">
+                  <div className="flex items-center gap-2">
+                    <div className="w-3 h-3 bg-green-500 rounded-full"></div>
+                    <span className="text-sm font-medium text-slate-700">Certificado SCA</span>
+                  </div>
+                </div>
+                
+                <div className="absolute -bottom-6 -left-6 bg-white rounded-2xl p-4 shadow-xl">
+                  <div className="flex items-center gap-2">
+                    <Truck className="w-4 h-4 text-amber-600" />
+                    <span className="text-sm font-medium text-slate-700">Entrega Grátis</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Features Section */}
+      <section className="py-20 lg:py-32">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          {/* Section Header */}
+          <div className="text-center mb-16 lg:mb-24">
+            <div className="inline-flex items-center gap-2 bg-slate-100 rounded-full px-4 py-2 mb-6">
+              <CheckCircle className="w-4 h-4 text-slate-600" />
+              <span className="text-slate-700 font-medium text-sm">Por que Escolher os Mestres</span>
+            </div>
+            
+            <h2 className="text-3xl lg:text-5xl font-bold text-slate-900 mb-6">
+              Qualidade em Cada Detalhe
+            </h2>
+            
+            <p className="text-xl text-slate-600 max-w-3xl mx-auto leading-relaxed">
+              Mais de 5 anos dedicados à perfeição do café especial, com processo artesanal 
+              e tecnologia de ponta para garantir a melhor experiência.
+            </p>
+          </div>
+
+          {/* Features Grid */}
+          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
+            {features.map((feature, index) => (
+              <div key={index} className="group text-center">
+                <div className="relative mb-8">
+                  <div className="w-20 h-20 bg-gradient-to-br from-amber-100 to-amber-200 rounded-3xl flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform duration-300 shadow-lg">
+                    <feature.icon className="w-10 h-10 text-amber-600" />
+                  </div>
+                </div>
+                
+                <h3 className="text-xl font-bold text-slate-900 mb-4">
+                  {feature.title}
                 </h3>
                 
-                <div className="space-y-3">
-                  {[
-                    { name: 'Aprendiz do Café', points: '0+', discount: '5%', color: 'bg-gray-500' },
-                    { name: 'Conhecedor', points: '500+', discount: '10%', color: 'bg-green-500' },
-                    { name: 'Especialista', points: '1.500+', discount: '15%', color: 'bg-blue-500' },
-                    { name: 'Mestre do Café', points: '3.000+', discount: '20%', color: 'bg-purple-500' },
-                    { name: 'Lenda', points: '5.000+', discount: '25%', color: 'bg-yellow-500' }
-                  ].map((level, index) => (
-                    <div key={index} className="flex items-center space-x-3 p-3 bg-coffee-white/5 rounded-lg">
-                      <div className={`w-8 h-8 ${level.color} rounded-full flex items-center justify-center`}>
-                        <span className="text-white text-sm font-bold">{index + 1}</span>
-                      </div>
-                      <div className="flex-1">
-                        <div className="flex items-center justify-between">
-                          <span className="text-coffee-white font-medium">{level.name}</span>
-                          <div className="text-right">
-                            <div className="text-coffee-gold text-sm font-bold">{level.discount} OFF</div>
-                            <div className="text-coffee-cream text-xs">{level.points} pts</div>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
+                <p className="text-slate-600 leading-relaxed">
+                  {feature.description}
+                </p>
               </div>
-
-              <div className="text-center">
-                <Link
-                  to="/gamificacao"
-                  className="inline-flex items-center bg-coffee-gold text-coffee-intense px-8 py-4 rounded-lg font-bold hover:bg-coffee-white transition-all shadow-gold group"
-                >
-                  🏆 Descobrir Sistema Completo
-                  <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
-                </Link>
-              </div>
-            </div>
-          </div>
-
-          {/* Stats em destaque */}
-          <div className="mt-16 grid grid-cols-2 lg:grid-cols-4 gap-6">
-            <div className="text-center">
-              <div className="text-3xl lg:text-4xl font-bold text-coffee-gold mb-2">8+</div>
-              <div className="text-coffee-cream text-sm">Formas de Ganhar Pontos</div>
-            </div>
-            <div className="text-center">
-              <div className="text-3xl lg:text-4xl font-bold text-coffee-gold mb-2">5</div>
-              <div className="text-coffee-cream text-sm">Níveis Únicos</div>
-            </div>
-            <div className="text-center">
-              <div className="text-3xl lg:text-4xl font-bold text-coffee-gold mb-2">25%</div>
-              <div className="text-coffee-cream text-sm">Desconto Máximo</div>
-            </div>
-            <div className="text-center">
-              <div className="text-3xl lg:text-4xl font-bold text-coffee-gold mb-2">1º</div>
-              <div className="text-coffee-cream text-sm">Torrefação Gamificada</div>
-            </div>
+            ))}
           </div>
         </div>
       </section>
 
-      {/* Depoimentos */}
-      <section className="py-20 px-4 bg-coffee-white">
-        <div className="container mx-auto max-w-6xl">
+      {/* Products Showcase */}
+      <section className="py-20 lg:py-32 bg-slate-50">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          {/* Section Header */}
           <div className="text-center mb-16">
-            <h2 className="font-cormorant font-bold text-4xl lg:text-5xl text-coffee-intense mb-4">
-              O Que Nossos Clientes Dizem
+            <div className="inline-flex items-center gap-2 bg-white rounded-full px-4 py-2 mb-6 shadow-sm">
+              <Coffee className="w-4 h-4 text-amber-600" />
+              <span className="text-slate-700 font-medium text-sm">Cafés Premium</span>
+            </div>
+            
+            <h2 className="text-3xl lg:text-5xl font-bold text-slate-900 mb-6">
+              Nossos Cafés Especiais
             </h2>
-            <p className="text-lg text-coffee-gray max-w-3xl mx-auto">
-              Experiências autênticas de quem já descobriu a qualidade excepcional 
-              dos nossos cafés especiais
+            
+            <p className="text-xl text-slate-600 max-w-3xl mx-auto">
+              Seleção exclusiva dos melhores grãos, torrefação artesanal e qualidade certificada SCA
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {/* Depoimento 1 */}
-            <div className="card text-center">
-              <div className="flex items-center justify-center mb-4 star-rating">
-                {[...Array(5)].map((_, i) => (
-                  <Star key={i} className="h-5 w-5 fill-current" />
-                ))}
-              </div>
-              
-              <blockquote className="text-coffee-gray mb-6 italic">
-                "Nunca imaginei que café pudesse ter tantos sabores! O Café Alta Mogiana 
-                mudou completamente minha percepção sobre café especial."
-              </blockquote>
-              
-              <div className="flex items-center justify-center">
-                <div className="w-12 h-12 bg-gradient-coffee rounded-full flex items-center justify-center mr-3">
-                  <span className="text-coffee-white font-bold">M</span>
+          {/* Products Grid */}
+          <div className="grid md:grid-cols-3 gap-8 mb-12">
+            {products.map((product, index) => (
+              <div key={product.id} className="group bg-white rounded-3xl p-8 shadow-lg hover:shadow-2xl transition-all duration-500 transform hover:-translate-y-2">
+                {/* Badge */}
+                <div className="flex justify-between items-start mb-6">
+                  <span className="bg-amber-100 text-amber-800 text-xs font-semibold px-3 py-1 rounded-full">
+                    {product.badge}
+                  </span>
+                  <div className="flex items-center gap-1">
+                    <Star className="w-4 h-4 text-yellow-400 fill-current" />
+                    <span className="text-sm font-medium text-slate-600">{product.rating}</span>
+                  </div>
                 </div>
-                <div className="text-left">
-                  <div className="font-semibold text-coffee-intense">Mariana Silva</div>
-                  <div className="text-coffee-gray text-sm">Cliente satisfeita</div>
+
+                {/* Product Visual */}
+                <div className="text-center mb-6">
+                  <div className="text-6xl mb-4">{product.image}</div>
+                  <h3 className="text-xl font-bold text-slate-900 mb-2">{product.name}</h3>
+                  <p className="text-slate-600 text-sm mb-2">{product.origin}</p>
+                  <p className="text-slate-500 text-sm">{product.description}</p>
                 </div>
-              </div>
-            </div>
 
-            {/* Depoimento 2 */}
-            <div className="card text-center">
-              <div className="flex items-center justify-center mb-4 star-rating">
-                {[...Array(5)].map((_, i) => (
-                  <Star key={i} className="h-5 w-5 fill-current" />
-                ))}
-              </div>
-              
-              <blockquote className="text-coffee-gray mb-6 italic">
-                "O sistema de gamificação é genial! Já evoluí para Especialista e os descontos 
-                são incríveis. Nunca vi nada igual em torrefação."
-              </blockquote>
-              
-              <div className="flex items-center justify-center">
-                <div className="w-12 h-12 bg-gradient-coffee rounded-full flex items-center justify-center mr-3">
-                  <span className="text-coffee-white font-bold">C</span>
+                {/* Price & CTA */}
+                <div className="flex items-center justify-between pt-6 border-t border-slate-100">
+                  <div className="text-2xl font-bold text-slate-900">
+                    R$ {product.price.toFixed(2).replace('.', ',')}
+                  </div>
+                  <button className="bg-amber-600 hover:bg-amber-700 text-white font-semibold px-6 py-3 rounded-xl transition-colors duration-300">
+                    Adicionar
+                  </button>
                 </div>
-                <div className="text-left">
-                  <div className="font-semibold text-coffee-intense">Carlos Mendes</div>
-                  <div className="text-coffee-gray text-sm">Nível Especialista</div>
-                </div>
-              </div>
-            </div>
-
-            {/* Depoimento 3 */}
-            <div className="card text-center">
-              <div className="flex items-center justify-center mb-4 star-rating">
-                {[...Array(5)].map((_, i) => (
-                  <Star key={i} className="h-5 w-5 fill-current" />
-                ))}
-              </div>
-              
-              <blockquote className="text-coffee-gray mb-6 italic">
-                "A assinatura mensal de café é perfeita! Recebo grãos frescos, torra diferente 
-                e a experiência de descobrir novos sabores é incrível."
-              </blockquote>
-              
-              <div className="flex items-center justify-center">
-                <div className="w-12 h-12 bg-gradient-coffee rounded-full flex items-center justify-center mr-3">
-                  <span className="text-coffee-white font-bold">F</span>
-                </div>
-                <div className="text-left">
-                  <div className="font-semibold text-coffee-intense">Fernanda Costa</div>
-                  <div className="text-coffee-gray text-sm">Professora</div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* CTA Gamificação */}
-          <div className="mt-16 text-center">
-            <div className="bg-gradient-coffee/5 rounded-xl p-8 border border-coffee-gold/20">
-              <div className="flex items-center justify-center mb-4">
-                <Trophy className="w-8 h-8 text-coffee-gold mr-3" />
-                <h3 className="font-cormorant font-bold text-2xl text-coffee-intense">
-                  Junte-se ao Primeiro Sistema de Gamificação em Torrefação!
-                </h3>
-              </div>
-              <p className="text-coffee-gray mb-6 max-w-2xl mx-auto">
-                Cadastre-se agora e comece com 100 pontos de bônus na sua primeira compra. 
-                Evolua, ganhe descontos e desbloqueie benefícios exclusivos!
-              </p>
-              <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                <Link
-                  to="/register"
-                  className="btn-primary px-8 py-3 flex items-center justify-center gap-2"
-                >
-                  🎮 Começar Jornada Gamificada
-                </Link>
-                <Link
-                  to="/gamificacao"
-                  className="btn-secondary px-8 py-3 flex items-center justify-center gap-2"
-                >
-                  <Trophy className="w-4 h-4" />
-                  Ver Sistema Completo
-                </Link>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Call-to-Action */}
-      <section className="py-20 px-4 bg-coffee-intense bg-pattern">
-        <div className="container mx-auto text-center max-w-4xl">
-          <h2 className="font-cormorant font-bold text-4xl lg:text-5xl text-coffee-white mb-6">
-            Experimente Nossos Cafés Especiais
-          </h2>
-          <p className="text-lg text-coffee-cream mb-8 leading-relaxed">
-            Descubra sabores únicos, certificação SCAA e entrega para todo o Brasil. 
-            Junte-se à nossa comunidade de apreciadores de café especial.
-          </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Link
-              to="/marketplace"
-              className="btn-primary text-lg px-8 py-4 bg-coffee-gold hover:bg-coffee-white hover:text-coffee-intense shadow-gold"
-            >
-              Visite Nossa Loja
-              <ArrowRight className="ml-2 h-5 w-5" />
-            </Link>
-            <Link
-              to="/subscriptions"
-              className="btn-secondary text-lg px-8 py-4 border-coffee-gold text-coffee-gold hover:bg-coffee-gold hover:text-coffee-white"
-            >
-              Conheça Nossas Assinaturas
-            </Link>
-          </div>
-        </div>
-      </section>
-
-      {/* Instagram */}
-      <section className="py-20 px-4 bg-coffee-cream">
-        <div className="container mx-auto max-w-6xl">
-          <div className="text-center mb-12">
-            <h2 className="font-cormorant font-bold text-4xl lg:text-5xl text-coffee-intense mb-4">
-              Siga-nos no Instagram
-            </h2>
-            <p className="text-coffee-gold font-semibold text-lg">@mestresdocafe</p>
-          </div>
-
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-            {[1, 2, 3, 4].map((item) => (
-              <div key={item} className="aspect-square image-placeholder group hover:shadow-coffee transition-all duration-300 cursor-pointer">
-                <span className="text-4xl">📸</span>
               </div>
             ))}
           </div>
 
+          {/* View All CTA */}
           <div className="text-center">
-            <a
-              href="https://instagram.com/mestresdocafe"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="btn-primary text-lg px-8 py-4 shadow-gold"
+            <Link
+              to="/marketplace"
+              className="inline-flex items-center gap-2 bg-slate-900 hover:bg-amber-600 text-white font-semibold px-8 py-4 rounded-2xl transition-all duration-300 shadow-lg hover:shadow-xl"
             >
-              <Instagram className="h-5 w-5 mr-2" />
-              Ver Mais no Instagram
-            </a>
+              Ver Todos os Cafés
+              <ArrowRight className="w-4 h-4" />
+            </Link>
           </div>
         </div>
       </section>
 
-      {/* Footer */}
-      <footer className="bg-coffee-intense py-16 px-4">
-        <div className="container mx-auto max-w-6xl">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
-            {/* Branding */}
-            <div>
-              <div className="flex items-center space-x-3 mb-4">
-                <div className="w-10 h-10 bg-gradient-gold rounded-full flex items-center justify-center">
-                  <span className="text-coffee-white font-cormorant font-bold text-lg">M</span>
-                </div>
-                <div>
-                  <h3 className="font-cormorant font-bold text-lg text-coffee-white">
-                    Mestres do Café
-                  </h3>
-                </div>
-              </div>
-              <p className="text-coffee-cream text-sm leading-relaxed">
-                Cafés especiais certificados SCAA com entrega em todo o Brasil. 
-                Descobrindo novos sabores desde 2019.
-              </p>
+      {/* Testimonials */}
+      <section className="py-20 lg:py-32">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          {/* Section Header */}
+          <div className="text-center mb-16">
+            <div className="inline-flex items-center gap-2 bg-slate-100 rounded-full px-4 py-2 mb-6">
+              <Users className="w-4 h-4 text-slate-600" />
+              <span className="text-slate-700 font-medium text-sm">Depoimentos</span>
             </div>
-
-            {/* Links Rápidos */}
-            <div>
-              <h4 className="font-cormorant font-bold text-lg text-coffee-white mb-4">
-                Links Rápidos
-              </h4>
-              <nav className="space-y-2">
-                <Link to="/about" className="footer-link block text-sm">
-                  Sobre Nós
-                </Link>
-                <Link to="/marketplace" className="footer-link block text-sm">
-                  Marketplace
-                </Link>
-                <Link to="/courses" className="footer-link block text-sm">
-                  Cursos
-                </Link>
-                <Link to="/blog" className="footer-link block text-sm">
-                  Blog
-                </Link>
-              </nav>
-            </div>
-
-            {/* Contato */}
-            <div>
-              <h4 className="font-cormorant font-bold text-lg text-coffee-white mb-4">
-                Contato
-              </h4>
-              <div className="space-y-2 text-sm">
-                <div className="flex items-center text-coffee-cream">
-                  <MapPin className="h-4 w-4 mr-2 text-coffee-gold" />
-                  Santa Maria, RS
-                </div>
-                <div className="flex items-center text-coffee-cream">
-                  <Phone className="h-4 w-4 mr-2 text-coffee-gold" />
-                  (55) 9999-9999
-                </div>
-                <div className="flex items-center text-coffee-cream">
-                  <Mail className="h-4 w-4 mr-2 text-coffee-gold" />
-                  contato@mestresdocafe.com
-                </div>
-              </div>
-            </div>
-
-            {/* Redes Sociais */}
-            <div>
-              <h4 className="font-cormorant font-bold text-lg text-coffee-white mb-4">
-                Redes Sociais
-              </h4>
-              <div className="flex space-x-4">
-                <a
-                  href="https://instagram.com/mestresdocafe"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="w-10 h-10 bg-coffee-gold rounded-full flex items-center justify-center hover:bg-coffee-white hover:text-coffee-intense transition-colors"
-                >
-                  <Instagram className="h-5 w-5" />
-                </a>
-                <a
-                  href="https://facebook.com/mestresdocafe"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="w-10 h-10 bg-coffee-gold rounded-full flex items-center justify-center hover:bg-coffee-white hover:text-coffee-intense transition-colors"
-                >
-                  <Facebook className="h-5 w-5" />
-                </a>
-                <a
-                  href="https://twitter.com/mestresdocafe"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="w-10 h-10 bg-coffee-gold rounded-full flex items-center justify-center hover:bg-coffee-white hover:text-coffee-intense transition-colors"
-                >
-                  <Twitter className="h-5 w-5" />
-                </a>
-              </div>
-            </div>
+            
+            <h2 className="text-3xl lg:text-5xl font-bold text-slate-900 mb-6">
+              O Que Nossos Clientes Dizem
+            </h2>
           </div>
 
-          {/* Copyright */}
-          <div className="border-t border-coffee-gold border-opacity-30 pt-8">
-            <p className="text-center text-coffee-cream text-sm">
-              © 2024 Mestres do Café. Todos os direitos reservados.
-            </p>
+          {/* Testimonials Grid */}
+          <div className="grid md:grid-cols-3 gap-8">
+            {testimonials.map((testimonial, index) => (
+              <div key={index} className="bg-white rounded-3xl p-8 shadow-lg border border-slate-100">
+                {/* Rating */}
+                <div className="flex items-center gap-1 mb-6">
+                  {[1,2,3,4,5].map(i => (
+                    <Star key={i} className="w-5 h-5 text-yellow-400 fill-current" />
+                  ))}
+                </div>
+
+                {/* Comment */}
+                <p className="text-slate-700 leading-relaxed mb-6 text-lg">
+                  "{testimonial.comment}"
+                </p>
+
+                {/* Author */}
+                <div className="flex items-center gap-4">
+                  <div className="w-12 h-12 bg-slate-100 rounded-full flex items-center justify-center text-xl">
+                    {testimonial.avatar}
+                  </div>
+                  <div>
+                    <div className="font-semibold text-slate-900">{testimonial.name}</div>
+                    <div className="text-slate-600 text-sm">{testimonial.role}</div>
+                  </div>
+                </div>
+              </div>
+            ))}
           </div>
         </div>
-      </footer>
+      </section>
+
+      {/* CTA Section */}
+      <section className="py-20 lg:py-32 bg-gradient-to-br from-slate-900 via-slate-800 to-amber-900 relative overflow-hidden">
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_70%_30%,rgba(245,158,11,0.1),transparent_70%)]"></div>
+        
+        <div className="relative max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+          <div className="space-y-8">
+            <div className="inline-flex items-center gap-2 bg-amber-600/20 border border-amber-600/30 rounded-full px-4 py-2">
+              <TrendingUp className="w-4 h-4 text-amber-400" />
+              <span className="text-amber-400 font-medium text-sm">Cadastre-se Agora</span>
+            </div>
+            
+            <h2 className="text-3xl lg:text-5xl font-bold text-white leading-tight">
+              Comece Sua Jornada no
+              <span className="block text-amber-400">Mundo dos Cafés Especiais</span>
+            </h2>
+            
+            <p className="text-xl text-slate-300 max-w-2xl mx-auto leading-relaxed">
+              Ganhe 100 pontos de boas-vindas, acesse descontos exclusivos e descubra 
+              sabores únicos que vão transformar seu momento café.
+            </p>
+            
+            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+              <Link
+                to="/registro"
+                className="group inline-flex items-center justify-center gap-2 bg-amber-600 hover:bg-amber-500 text-white font-semibold px-8 py-4 rounded-2xl transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-1"
+              >
+                <Star className="w-5 h-5" />
+                Criar Conta Grátis
+                <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+              </Link>
+              
+              <Link
+                to="/marketplace"
+                className="inline-flex items-center justify-center gap-2 border-2 border-white/30 hover:border-amber-400 text-white hover:text-amber-400 font-semibold px-8 py-4 rounded-2xl transition-all duration-300"
+              >
+                Explorar Sem Cadastro
+              </Link>
+            </div>
+          </div>
+        </div>
+      </section>
     </div>
   );
 };

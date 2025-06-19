@@ -2,8 +2,7 @@ import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useCart } from '../contexts/CartContext';
 import { useAuth } from '../contexts/AuthContext';
-import Header from '../components/Header';
-import Footer from '../components/Footer';
+import { Trash2, Plus, Minus, ShoppingBag, ArrowRight } from 'lucide-react';
 
 const CartPage = () => {
   const { cartItems, updateQuantity, removeFromCart, getTotalPrice } = useCart();
@@ -29,8 +28,6 @@ const CartPage = () => {
   if (cartItems.length === 0) {
     return (
       <div className="min-h-screen bg-coffee-white font-montserrat">
-        <Header />
-        
         <main className="py-20 px-4">
           <div className="max-w-4xl mx-auto text-center">
             <div className="w-32 h-32 bg-coffee-cream rounded-full flex items-center justify-center mx-auto mb-8">
@@ -53,15 +50,12 @@ const CartPage = () => {
             </Link>
           </div>
         </main>
-
-        <Footer />
       </div>
     );
   }
 
   return (
     <div className="min-h-screen bg-coffee-white font-montserrat">
-      <Header />
       
       <main className="py-20 px-4">
         <div className="max-w-6xl mx-auto">
@@ -254,8 +248,6 @@ const CartPage = () => {
           </div>
         </div>
       </main>
-
-      <Footer />
     </div>
   );
 };

@@ -58,38 +58,59 @@ describe('LandingPage', () => {
   })
 
   describe('Renderização inicial', () => {
-    it('deve renderizar seção hero', () => {
+    it('deve renderizar seção hero com texto principal', () => {
       renderWithContexts(<LandingPage />);
       
-      expect(screen.getByText(/descubra os melhores/i)).toBeInTheDocument();
-      // Usar getAllByText para elementos que aparecem múltiplas vezes
-      const cafesElements = screen.getAllByText(/cafés especiais/i);
-      expect(cafesElements.length).toBeGreaterThan(0);
+      expect(screen.getByText('Cafés Especiais')).toBeInTheDocument();
+      expect(screen.getByText('Direto do Produtor')).toBeInTheDocument();
+      expect(screen.getByText(/Descubra sabores únicos dos melhores cafés especiais do Brasil/i)).toBeInTheDocument();
     });
 
     it('deve mostrar call-to-action principal', () => {
       renderWithContexts(<LandingPage />);
       
-      expect(screen.getByText(/acessar marketplace/i)).toBeInTheDocument();
-      expect(screen.getByText(/ver gamificação/i)).toBeInTheDocument();
+      expect(screen.getByText(/explorar cafés/i)).toBeInTheDocument();
+      expect(screen.getByText(/ver processo/i)).toBeInTheDocument();
     });
 
-    it('deve renderizar seção de diferenciais', () => {
+    it('deve renderizar estatísticas', () => {
       renderWithContexts(<LandingPage />);
       
-      // Verificar o texto real que existe na implementação - usar getAllByText
-      const gamificationElements = screen.getAllByText(/sistema de gamificação/i);
-      expect(gamificationElements.length).toBeGreaterThan(0);
+      expect(screen.getByText('1000+')).toBeInTheDocument();
+      expect(screen.getByText('Clientes Satisfeitos')).toBeInTheDocument();
+      expect(screen.getByText('50+')).toBeInTheDocument();
+      expect(screen.getByText('Variedades Premium')).toBeInTheDocument();
     });
 
-    it('deve mostrar estatísticas de gamificação', () => {
+    it('deve mostrar avaliação dos clientes', () => {
       renderWithContexts(<LandingPage />);
       
-      // Verificar estatísticas da seção de gamificação - usar getAllByText para números duplicados
-      const fiveElements = screen.getAllByText('5');
-      expect(fiveElements.length).toBeGreaterThan(0);
-      const percentElements = screen.getAllByText('25%');
-      expect(percentElements.length).toBeGreaterThan(0);
+      expect(screen.getByText('4.9/5')).toBeInTheDocument();
+      expect(screen.getByText('Avaliação dos Clientes')).toBeInTheDocument();
+    });
+  })
+
+  describe('Seção de funcionalidades', () => {
+    it('deve renderizar seção de qualidade', () => {
+      renderWithContexts(<LandingPage />);
+      
+      expect(screen.getByText('Qualidade em Cada Detalhe')).toBeInTheDocument();
+      expect(screen.getByText('Cafés Especiais Certificados')).toBeInTheDocument();
+      expect(screen.getByText('Entrega Rápida e Segura')).toBeInTheDocument();
+    });
+
+    it('deve mostrar sistema de gamificação', () => {
+      renderWithContexts(<LandingPage />);
+      
+      expect(screen.getByText('Sistema de Gamificação')).toBeInTheDocument();
+      expect(screen.getByText(/Ganhe pontos a cada compra/i)).toBeInTheDocument();
+    });
+
+    it('deve mostrar compra segura', () => {
+      renderWithContexts(<LandingPage />);
+      
+      expect(screen.getByText('Compra 100% Segura')).toBeInTheDocument();
+      expect(screen.getByText(/Transações protegidas com SSL/i)).toBeInTheDocument();
     });
   })
 
@@ -97,17 +118,17 @@ describe('LandingPage', () => {
     it('deve carregar e exibir produtos em destaque', () => {
       renderWithContexts(<LandingPage />)
       
-      expect(screen.getByText('Café Alta Mogiana')).toBeInTheDocument()
-      expect(screen.getByText('Café Serra do Caparaó')).toBeInTheDocument()
-      expect(screen.getByText('Blend Especial')).toBeInTheDocument()
+      expect(screen.getByText('Bourbon Amarelo Premium')).toBeInTheDocument()
+      expect(screen.getByText('Geisha Especial')).toBeInTheDocument()
+      expect(screen.getByText('Blend Signature')).toBeInTheDocument()
     })
 
     it('deve mostrar preços dos produtos', () => {
       renderWithContexts(<LandingPage />)
       
-      expect(screen.getByText('R$ 45,00')).toBeInTheDocument()
-      expect(screen.getByText('R$ 52,00')).toBeInTheDocument()
-      expect(screen.getByText('R$ 38,00')).toBeInTheDocument()
+      expect(screen.getByText('R$ 45,90')).toBeInTheDocument()
+      expect(screen.getByText('R$ 89,90')).toBeInTheDocument()
+      expect(screen.getByText('R$ 39,90')).toBeInTheDocument()
     })
 
     it('deve mostrar botões de adicionar ao carrinho', () => {
@@ -116,92 +137,79 @@ describe('LandingPage', () => {
       const addToCartButtons = screen.getAllByText(/adicionar/i)
       expect(addToCartButtons).toHaveLength(3)
     })
+
+    it('deve mostrar badges dos produtos', () => {
+      renderWithContexts(<LandingPage />)
+      
+      expect(screen.getByText('Mais Vendido')).toBeInTheDocument()
+      expect(screen.getByText('Premium')).toBeInTheDocument()
+      expect(screen.getByText('Novo')).toBeInTheDocument()
+    })
   })
 
   describe('Navegação e interações', () => {
-    it('deve navegar para marketplace ao clicar em "Acessar Marketplace"', () => {
+    it('deve navegar para marketplace ao clicar em "Explorar Cafés"', () => {
       renderWithContexts(<LandingPage />)
       
-      const marketplaceButton = screen.getByText(/acessar marketplace/i)
+      const marketplaceButton = screen.getByText(/explorar cafés/i)
       fireEvent.click(marketplaceButton)
       
-      // Como são Links, não chamam navigate diretamente, mas deveriam funcionar
       expect(marketplaceButton.closest('a')).toHaveAttribute('href', '/marketplace')
     })
 
-    it('deve navegar para gamificação ao clicar no botão específico', () => {
+    it('deve navegar para marketplace ao clicar em "Ver Todos os Cafés"', () => {
       renderWithContexts(<LandingPage />)
       
-      const gamificationButton = screen.getByText(/ver gamificação/i)
-      fireEvent.click(gamificationButton)
-      
-      expect(gamificationButton.closest('a')).toHaveAttribute('href', '/gamificacao')
+      const viewAllButton = screen.getByText(/ver todos os cafés/i)
+      expect(viewAllButton.closest('a')).toHaveAttribute('href', '/marketplace')
     })
 
-    it('deve navegar para marketplace ao clicar em "Ver Todos os Produtos"', () => {
+    it('deve navegar para registro ao clicar em "Criar Conta Grátis"', () => {
       renderWithContexts(<LandingPage />)
       
-      const viewAllButton = screen.getByText(/ver todos os produtos/i)
-      expect(viewAllButton.closest('a')).toHaveAttribute('href', '/marketplace')
+      const registerButton = screen.getByText(/criar conta grátis/i)
+      expect(registerButton.closest('a')).toHaveAttribute('href', '/registro')
     })
   })
 
-  describe('Seções informativas', () => {
-    it('deve mostrar seção sobre qualidade', () => {
-      renderWithContexts(<LandingPage />);
-      
-      expect(screen.getByText(/qualidade em cada etapa/i)).toBeInTheDocument();
-      expect(screen.getByText(/seleção premium/i)).toBeInTheDocument();
-      // Usar getAllByText para elementos que aparecem múltiplas vezes
-      const torrefacaoElements = screen.getAllByText(/torrefação artesanal/i);
-      expect(torrefacaoElements.length).toBeGreaterThan(0);
-    });
-
+  describe('Seção de depoimentos', () => {
     it('deve exibir depoimentos de clientes', () => {
       renderWithContexts(<LandingPage />);
       
       expect(screen.getByText(/o que nossos clientes dizem/i)).toBeInTheDocument();
-      expect(screen.getByText('Mariana Silva')).toBeInTheDocument();
-      expect(screen.getByText('Carlos Mendes')).toBeInTheDocument();
+      expect(screen.getByText('Maria Silva')).toBeInTheDocument();
+      expect(screen.getByText('João Santos')).toBeInTheDocument();
+      expect(screen.getByText('Ana Costa')).toBeInTheDocument();
     });
 
-    it('deve mostrar informações da empresa', () => {
+    it('deve mostrar roles dos clientes', () => {
       renderWithContexts(<LandingPage />);
       
-      // Usar getAllByText para elementos duplicados
-      const torrefacaoElements = screen.getAllByText(/torrefação artesanal/i);
-      expect(torrefacaoElements.length).toBeGreaterThan(0);
-      const certificacaoElements = screen.getAllByText(/certificação scaa/i);
-      expect(certificacaoElements.length).toBeGreaterThan(0);
+      expect(screen.getByText('Empresária')).toBeInTheDocument();
+      expect(screen.getByText('Chef')).toBeInTheDocument();
+      expect(screen.getByText('Barista')).toBeInTheDocument();
+    });
+
+    it('deve mostrar comentários dos clientes', () => {
+      renderWithContexts(<LandingPage />);
+      
+      expect(screen.getByText(/a qualidade dos cafés é excepcional/i)).toBeInTheDocument();
+      expect(screen.getByText(/trabalho com café há 15 anos/i)).toBeInTheDocument();
     });
   })
 
-  describe('Sistema de gamificação', () => {
-    it('deve mostrar níveis de gamificação', () => {
+  describe('Seção CTA final', () => {
+    it('deve mostrar call-to-action final', () => {
       renderWithContexts(<LandingPage />)
       
-      expect(screen.getByText('Aprendiz do Café')).toBeInTheDocument()
-      expect(screen.getByText('Conhecedor')).toBeInTheDocument()
-      expect(screen.getByText('Especialista')).toBeInTheDocument()
-      expect(screen.getByText('Mestre do Café')).toBeInTheDocument()
-      expect(screen.getByText('Lenda')).toBeInTheDocument()
+      expect(screen.getByText(/comece sua jornada no/i)).toBeInTheDocument()
+      expect(screen.getByText(/mundo dos cafés especiais/i)).toBeInTheDocument()
     })
 
-    it('deve mostrar descontos progressivos', () => {
+    it('deve mostrar informações sobre pontos de boas-vindas', () => {
       renderWithContexts(<LandingPage />)
       
-      expect(screen.getByText('5% OFF')).toBeInTheDocument()
-      expect(screen.getByText('10% OFF')).toBeInTheDocument()
-      expect(screen.getByText('15% OFF')).toBeInTheDocument()
-      expect(screen.getByText('20% OFF')).toBeInTheDocument()
-      expect(screen.getByText('25% OFF')).toBeInTheDocument()
-    })
-
-    it('deve ter botão para descobrir sistema completo', () => {
-      renderWithContexts(<LandingPage />)
-      
-      const discoverButton = screen.getByText(/descobrir sistema completo/i)
-      expect(discoverButton.closest('a')).toHaveAttribute('href', '/gamificacao')
+      expect(screen.getByText(/ganhe 100 pontos de boas-vindas/i)).toBeInTheDocument()
     })
   })
 
@@ -210,19 +218,17 @@ describe('LandingPage', () => {
       renderWithContexts(<LandingPage />);
       
       // Verificar se elementos principais estão presentes
-      expect(screen.getByText(/descubra os melhores/i)).toBeInTheDocument();
-      // Usar getAllByText para elementos que aparecem múltiplas vezes
-      const cafesElements = screen.getAllByText(/nossos cafés especiais/i);
-      expect(cafesElements.length).toBeGreaterThan(0);
+      expect(screen.getByText('Cafés Especiais')).toBeInTheDocument();
+      expect(screen.getByText('Nossos Cafés Especiais')).toBeInTheDocument();
     })
 
     it('deve mostrar produtos em grid responsivo', () => {
       renderWithContexts(<LandingPage />)
       
       const products = [
-        screen.getByText('Café Alta Mogiana'),
-        screen.getByText('Café Serra do Caparaó'),
-        screen.getByText('Blend Especial')
+        screen.getByText('Bourbon Amarelo Premium'),
+        screen.getByText('Geisha Especial'),
+        screen.getByText('Blend Signature')
       ]
       
       products.forEach(product => {
@@ -231,31 +237,35 @@ describe('LandingPage', () => {
     })
   })
 
-  describe('Elementos visuais', () => {
-    it('deve mostrar ícones e elementos visuais', () => {
+  describe('Elementos visuais e interações', () => {
+    it('deve mostrar certificação SCA', () => {
       renderWithContexts(<LandingPage />);
       
-      // Verificar se há elementos que indicam ícones (como emojis ou símbolos)
-      expect(screen.getByText(/🛒/)).toBeInTheDocument();
-      // Usar getAllByText para elementos que aparecem múltiplas vezes
-      const trophyElements = screen.getAllByText(/🏆/);
-      expect(trophyElements.length).toBeGreaterThan(0);
+      expect(screen.getByText('Certificação SCA')).toBeInTheDocument();
     })
 
-    it('deve mostrar avaliações com estrelas', () => {
+    it('deve mostrar avaliações com estrelas nos produtos', () => {
       renderWithContexts(<LandingPage />)
       
-      // Verificar se há elementos de avaliação
-      const ratingElements = screen.getAllByText('(15)')
-      expect(ratingElements.length).toBeGreaterThan(0)
+      expect(screen.getByText('4.8')).toBeInTheDocument()
+      expect(screen.getByText('4.9')).toBeInTheDocument()
+      expect(screen.getByText('4.7')).toBeInTheDocument()
     })
 
-    it('deve mostrar badges de pontuação SCAA', () => {
+    it('deve mostrar descrições dos produtos', () => {
       renderWithContexts(<LandingPage />)
       
-      expect(screen.getByText('85 PONTOS')).toBeInTheDocument()
-      expect(screen.getByText('92 PONTOS')).toBeInTheDocument()
-      expect(screen.getByText('82 PONTOS')).toBeInTheDocument()
+      expect(screen.getByText('Notas de chocolate e caramelo')).toBeInTheDocument()
+      expect(screen.getByText('Floral e cítrico excepcional')).toBeInTheDocument()
+      expect(screen.getByText('Equilíbrio perfeito e cremoso')).toBeInTheDocument()
+    })
+
+    it('deve mostrar origens dos produtos', () => {
+      renderWithContexts(<LandingPage />)
+      
+      expect(screen.getByText('Montanhas de Minas')).toBeInTheDocument()
+      expect(screen.getByText('Fazenda São Benedito')).toBeInTheDocument()
+      expect(screen.getByText('Seleção Especial')).toBeInTheDocument()
     })
   })
 }) 
