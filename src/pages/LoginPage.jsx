@@ -38,7 +38,7 @@ const LoginPage = () => {
       } else {
         setError(result.error || 'Erro ao fazer login. Verifique suas credenciais.');
       }
-    } catch (err) {
+    } catch (_err) { // eslint-disable-line no-unused-vars
       setError('Erro de conexão. Tente novamente.');
     } finally {
       setIsLoading(false);

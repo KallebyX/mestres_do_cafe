@@ -444,6 +444,52 @@ export const healthAPI = {
   }
 };
 
+// Cart utilities
+export const cartUtils = {
+  updateCartCount() {
+    // Update cart count in UI
+    const cartCount = this.getCartItemsCount();
+    const cartBadges = document.querySelectorAll('.cart-count-badge');
+    cartBadges.forEach(badge => {
+      badge.textContent = cartCount;
+      badge.style.display = cartCount > 0 ? 'inline-block' : 'none';
+    });
+  },
+
+  getCartItemsCount() {
+    const cart = localStorage.getItem('cart');
+    if (!cart) return 0;
+    
+    try {
+      const cartData = JSON.parse(cart);
+      return cartData.items?.reduce((total, item) => total + item.quantity, 0) || 0;
+    } catch {
+      return 0;
+    }
+  },
+
+  saveCart(cartData) {
+    localStorage.setItem('cart', JSON.stringify(cartData));
+    this.updateCartCount();
+  },
+
+  getCart() {
+    const cart = localStorage.getItem('cart');
+    if (!cart) return { items: [], total: 0 };
+    
+    try {
+      return JSON.parse(cart);
+    } catch {
+      return { items: [], total: 0 };
+    }
+  },
+
+  clearCart() {
+    localStorage.removeItem('cart');
+    this.updateCartCount();
+  }
+};
+
 // Export default object with all APIs
 const api = {
   auth: authAPI,

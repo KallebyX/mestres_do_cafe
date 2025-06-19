@@ -9,7 +9,7 @@ import Footer from '../components/Footer';
 const ProductPage = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { user: _user } = useAuth();
   const { addToCart } = useCart();
   
   const [product, setProduct] = useState(null);
@@ -22,7 +22,7 @@ const ProductPage = () => {
   useEffect(() => {
     loadProduct();
     loadRelatedProducts();
-  }, [id]);
+  }, [id]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const loadProduct = async () => {
     try {
@@ -36,8 +36,8 @@ const ProductPage = () => {
         const mockProduct = getMockProductById(id);
         setProduct(mockProduct);
       }
-    } catch (error) {
-      console.error('Erro ao carregar produto:', error);
+    } catch (_error) {
+      console.error('Erro ao carregar produto:', _error);
       const mockProduct = getMockProductById(id);
       setProduct(mockProduct);
     } finally {
@@ -57,7 +57,7 @@ const ProductPage = () => {
         const mockProducts = getMockProducts().filter(p => p.id !== id).slice(0, 4);
         setRelatedProducts(mockProducts);
       }
-    } catch (error) {
+    } catch (_error) { // eslint-disable-line no-unused-vars
       const mockProducts = getMockProducts().filter(p => p.id !== id).slice(0, 4);
       setRelatedProducts(mockProducts);
     }

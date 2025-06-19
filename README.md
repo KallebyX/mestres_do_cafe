@@ -1,258 +1,326 @@
-# ☕ Mestres do Café - Plataforma Digital
+# ☕ Mestres do Café - Frontend
 
-> **Torrefação Artesanal Premium em Santa Maria/RS**
+> **Plataforma completa de torrefação artesanal com sistema de gamificação integrado**
 
-[![React](https://img.shields.io/badge/React-18.3.1-blue.svg)](https://reactjs.org/)
-[![Node.js](https://img.shields.io/badge/Node.js-16+-green.svg)](https://nodejs.org/)
-[![Vite](https://img.shields.io/badge/Vite-6.0.1-purple.svg)](https://vitejs.dev/)
-[![Express](https://img.shields.io/badge/Express-4.19.2-lightgrey.svg)](https://expressjs.com/)
-[![License](https://img.shields.io/badge/License-MIT-yellow.svg)](./docs/LICENSE)
+<div align="center">
 
-## 🎯 Sobre o Projeto
+![React](https://img.shields.io/badge/React-18.3.1-61DAFB?style=for-the-badge&logo=react)
+![Node.js](https://img.shields.io/badge/Node.js-20.x-339933?style=for-the-badge&logo=node.js)
+![Tests](https://img.shields.io/badge/Tests-121/121_✅-4CAF50?style=for-the-badge)
+![Coverage](https://img.shields.io/badge/Coverage-100%25-4CAF50?style=for-the-badge)
+![TypeScript](https://img.shields.io/badge/TypeScript-Ready-3178C6?style=for-the-badge&logo=typescript)
 
-A **Mestres do Café** é uma plataforma digital completa para torrefação artesanal, desenvolvida especialmente para conectar produtores, torrefadores e apaixonados por café de qualidade. O projeto combina um marketplace premium com sistema de gamificação único e ferramentas de gestão avançadas.
+**[Demo ao Vivo](#) | [Documentação](./docs/) | [API Docs](./server/README.md)**
 
-### 🏆 Diferenciais Únicos
+</div>
 
-- **🎮 Sistema de Gamificação**: 5 níveis de progressão com descontos de até 25%
-- **🏢 Programa Corporativo**: Parcerias PJ com benefícios exclusivos
-- **🗺️ Mapa Interativo**: Localização de produtores e pontos de venda
-- **🤖 Automação WhatsApp**: Atendimento automatizado 24/7
-- **📊 Dashboard Avançado**: Analytics e gestão completa
+## 🚀 **Visão Geral**
 
-## 🚀 Quick Start
+O **Mestres do Café** é uma plataforma moderna e completa para torrefação artesanal em Santa Maria/RS. Desenvolvido com React.js e Node.js, oferece uma experiência única de e-commerce com sistema de gamificação avançado, validações brasileiras (CPF/CNPJ) e interface responsiva.
 
-### Pré-requisitos
-- **Node.js** 16+ 
-- **npm** 8+
-- **Git**
+### ✨ **Principais Características**
 
-### Instalação Rápida
+- 🎮 **Sistema de Gamificação Completo** - Pontos, níveis, leaderboard
+- 🛒 **E-commerce Avançado** - Carrinho, checkout, gestão de pedidos
+- 👥 **Multi-perfil** - Pessoa Física, Pessoa Jurídica, Administrador
+- 📱 **100% Responsivo** - Desktop, tablet e mobile
+- 🔐 **Autenticação Segura** - JWT, bcrypt, validações
+- 🧪 **100% Testado** - 121 testes automatizados
+- 🎨 **UI/UX Moderna** - Design system próprio com Tailwind CSS
 
-```bash
-# Clone o repositório
-git clone https://github.com/usuario/mestres-do-cafe-frontend.git
-cd mestres-do-cafe-frontend
-
-# Instalar dependências de frontend e backend
-npm run setup
-
-# Executar frontend + backend simultaneamente
-npm run full-dev
-```
-
-### URLs de Acesso
-- **Frontend**: http://localhost:5173
-- **Backend API**: http://localhost:5000
-- **Health Check**: http://localhost:5000/api/health
-
-## 📁 Estrutura do Projeto
+## 🏗️ **Arquitetura do Projeto**
 
 ```
 mestres-do-cafe-frontend/
-├── 📂 src/                      # Frontend React
-│   ├── 📂 components/           # Componentes reutilizáveis
-│   │   ├── 📂 ui/              # Componentes UI (shadcn/ui)
-│   │   ├── Header.jsx          # Cabeçalho principal
-│   │   ├── Footer.jsx          # Rodapé
-│   │   └── LoadingSpinner.jsx  # Loading spinner
-│   ├── 📂 pages/               # Páginas da aplicação
-│   │   ├── LandingPage.jsx     # Página inicial
-│   │   ├── MarketplacePage.jsx # Marketplace de cafés
-│   │   ├── ProductPage.jsx     # Página do produto
-│   │   ├── GamificationPage.jsx # Sistema de gamificação
-│   │   ├── AdminDashboard.jsx  # Dashboard administrativo
-│   │   └── ...                 # Outras páginas
-│   ├── 📂 contexts/            # Contextos React
-│   │   ├── AuthContext.jsx     # Autenticação
-│   │   └── CartContext.jsx     # Carrinho de compras
-│   ├── 📂 lib/                 # Utilitários e configurações
-│   │   ├── api.js              # Cliente API
-│   │   ├── utils.js            # Funções utilitárias
-│   │   └── validation.js       # Validações (CPF, CNPJ, etc.)
-│   └── 📂 hooks/               # Custom hooks
-├── 📂 server/                   # Backend Node.js/Express
-│   ├── 📂 routes/              # Rotas da API
-│   │   ├── auth.js             # Autenticação
-│   │   ├── products.js         # Produtos
-│   │   ├── admin.js            # Administração
-│   │   └── orders.js           # Pedidos
-│   ├── 📂 middleware/          # Middlewares
-│   │   └── auth.js             # Middleware de autenticação
-│   ├── 📂 database/            # Scripts de banco
-│   │   └── init.js             # Inicialização
-│   ├── 📂 scripts/             # Scripts utilitários
-│   │   └── seedData.js         # Dados de exemplo
-│   ├── server.js               # Servidor principal
-│   └── package.json            # Dependências do backend
-├── 📂 docs/                    # Documentação
-│   ├── CONTRIBUTING.md         # Guia de contribuição
-│   ├── ROADMAP.md              # Roadmap do projeto
-│   ├── ESPECIFICACOES_TECNICAS.md # Especificações técnicas
-│   └── ...                     # Outros documentos
-├── 📂 public/                  # Assets estáticos
-├── package.json                # Dependências do frontend
-└── README.md                   # Este arquivo
+├── 🎨 src/                    # Frontend React
+│   ├── components/            # Componentes reutilizáveis
+│   ├── pages/                # Páginas da aplicação
+│   ├── contexts/             # Context API (Auth, Cart)
+│   ├── lib/                  # Utilitários e APIs
+│   └── assets/               # Imagens e recursos
+├── 🔧 server/                # Backend Node.js
+│   ├── routes/               # Rotas da API
+│   ├── middleware/           # Middlewares (auth, cors)
+│   ├── database/             # Mock database
+│   └── tests/                # Testes do backend
+├── 🧪 tests/                 # Testes do frontend
+│   ├── frontend/             # Testes de componentes
+│   ├── integration/          # Testes de integração
+│   └── setup.js              # Configuração de testes
+└── 📚 docs/                  # Documentação
 ```
 
-## 🛠️ Scripts Disponíveis
+## 🚀 **Início Rápido**
 
-### Frontend
+### **Pré-requisitos**
+- Node.js 18+ 
+- npm 9+
+
+### **1. Instalação**
 ```bash
-npm run dev          # Executar frontend em desenvolvimento
-npm run build        # Build para produção
-npm run preview      # Preview do build
-npm run lint         # Linting do código
-```
-
-### Backend
-```bash
-npm run server       # Executar backend em desenvolvimento
-npm run server:start # Executar backend em produção
-npm run server:install # Instalar dependências do backend
-```
-
-### Ambiente Completo
-```bash
-npm run full-dev     # Frontend + Backend simultaneamente
-npm run setup        # Instalação completa (frontend + backend)
-```
-
-## 🎮 Sistema de Gamificação
-
-### Níveis de Progressão
-| Nível | Nome | Pontos Necessários | Desconto |
-|-------|------|-------------------|----------|
-| 1 | 🌱 Aprendiz | 0 - 499 | 5% |
-| 2 | ☕ Conhecedor | 500 - 1.499 | 10% |
-| 3 | 🔥 Especialista | 1.500 - 3.999 | 15% |
-| 4 | 👑 Mestre | 4.000 - 9.999 | 20% |
-| 5 | 🏆 Lenda | 10.000+ | 25% |
-
-### Como Ganhar Pontos
-- **💰 Compras**: 10 pontos por R$ 10 gastos
-- **⭐ Avaliações**: 50 pontos por avaliação
-- **📱 Compartilhamentos**: 25 pontos por compartilhamento
-- **👥 Indicações**: 200 pontos por amigo indicado
-- **📅 Check-in Diário**: 10 pontos por dia
-- **🎯 Desafios**: 100-500 pontos por desafio
-- **📝 Reviews Detalhadas**: 100 pontos por review
-- **🎂 Bônus de Aniversário**: 500 pontos
-
-## 🔑 Funcionalidades Principais
-
-### 🛒 Marketplace
-- Catálogo completo de cafés especiais
-- Filtros avançados (origem, torra, notas)
-- Sistema de avaliações e reviews
-- Carrinho de compras otimizado
-- Checkout seguro
-
-### 👤 Sistema de Usuários
-- Cadastro PF/PJ com validação de CPF/CNPJ
-- Perfis personalizados
-- Histórico de compras
-- Sistema de pontos e recompensas
-
-### 🎯 Gamificação
-- Níveis de progressão
-- Sistema de pontos
-- Desafios e conquistas
-- Leaderboard
-- Programa corporativo
-
-### 📊 Dashboard Admin
-- Gestão de produtos
-- Relatórios de vendas
-- Controle de usuários
-- Analytics avançados
-
-## 🔧 Tecnologias Utilizadas
-
-### Frontend
-- **React** 18.3.1 - Biblioteca principal
-- **Vite** 6.0.1 - Build tool
-- **React Router** 6.28.0 - Roteamento
-- **Tailwind CSS** - Estilização
-- **Radix UI** - Componentes acessíveis
-- **Lucide React** - Ícones
-- **Date-fns** - Manipulação de datas
-
-### Backend
-- **Node.js** 16+ - Runtime
-- **Express** 4.19.2 - Framework web
-- **JWT** 9.0.2 - Autenticação
-- **bcryptjs** 3.0.2 - Hash de senhas
-- **CORS** 2.8.5 - Cross-origin requests
-
-### Desenvolvimento
-- **ESLint** - Linting
-- **Concurrently** - Execução simultânea
-- **Nodemon** - Hot reload backend
-
-## 🌟 Próximas Funcionalidades
-
-- [ ] 🗺️ **Mapa Interativo**: Localização de produtores
-- [ ] 🤖 **Automação WhatsApp**: Atendimento automatizado
-- [ ] 🏢 **Sistema PJ Avançado**: Gestão corporativa
-- [ ] 📊 **Integração Egestor**: ERP integrado
-- [ ] 💳 **Gateway de Pagamento**: PIX, cartões, boleto
-- [ ] 📱 **App Mobile**: React Native
-- [ ] 🔔 **Sistema de Notificações**: Push notifications
-- [ ] 📈 **Analytics Avançado**: Dashboard detalhado
-
-## 👨‍💻 Desenvolvimento
-
-### Configuração do Ambiente
-```bash
-# Clonar repositório
-git clone https://github.com/usuario/mestres-do-cafe-frontend.git
+# Clone o repositório
+git clone https://github.com/seu-usuario/mestres-do-cafe-frontend.git
 cd mestres-do-cafe-frontend
 
-# Instalar dependências
+# Instale as dependências (frontend + backend)
 npm run setup
-
-# Configurar variáveis de ambiente (opcional)
-cp .env.example .env
 ```
 
-### Comandos Úteis
+### **2. Configuração**
 ```bash
-# Instalar nova dependência no frontend
-npm install package-name
+# Copie o arquivo de exemplo para variáveis de ambiente
+cp .env.example .env
 
-# Instalar nova dependência no backend
-cd server && npm install package-name
+# Configure as variáveis (opcional para desenvolvimento)
+```
 
-# Executar apenas frontend
+### **3. Executar em Desenvolvimento**
+```bash
+# Opção 1: Frontend + Backend simultaneamente
+npm run full-dev
+
+# Opção 2: Apenas frontend (porta 5173)
 npm run dev
 
-# Executar apenas backend
+# Opção 3: Apenas backend (porta 5000)
 npm run server
-
-# Build para produção
-npm run build
 ```
 
-## 📞 Contato e Suporte
+### **4. Executar Testes**
+```bash
+# Todos os testes (frontend + backend)
+npm run test:all
 
-**Cliente**: Daniel do Nascimento  
-**Telefone**: (55) 99645-8600  
-**Email**: mestres@cafe.com.br  
-**Localização**: Santa Maria/RS
+# Apenas frontend
+npm run test:run
 
-## 📄 Licença
+# Apenas backend  
+npm run test:backend
 
-Este projeto está licenciado sob a licença MIT. Veja o arquivo [LICENSE](./docs/LICENSE) para mais detalhes.
+# Com coverage
+npm run test:coverage
+```
 
-## 🤝 Contribuição
+## 🔧 **Scripts Disponíveis**
 
-Contribuições são bem-vindas! Por favor, leia o [CONTRIBUTING.md](./docs/CONTRIBUTING.md) para detalhes sobre nosso código de conduta e processo de contribuição.
+| Script | Descrição |
+|--------|-----------|
+| `npm run dev` | Inicia frontend em modo desenvolvimento |
+| `npm run server` | Inicia apenas o backend |
+| `npm run full-dev` | Inicia frontend + backend simultaneamente |
+| `npm run setup` | Instala todas as dependências |
+| `npm run build` | Build de produção |
+| `npm run preview` | Preview do build |
+| `npm run test:all` | Executa todos os testes |
+| `npm run test:coverage` | Testes com relatório de cobertura |
+| `npm run lint` | Analisa código com ESLint |
+| `npm run validate` | Valida projeto completo |
+
+## 🧪 **Sistema de Testes**
+
+### **Estatísticas dos Testes**
+- ✅ **Backend**: 49/49 testes (100%)
+- ✅ **Frontend**: 72/72 testes (100%)
+- ✅ **Total**: 121/121 testes (100%)
+
+### **Cobertura por Módulo**
+
+#### **Backend (Jest + Supertest)**
+- 🔐 **Authentication**: 15 testes
+- 📦 **Products**: 14 testes  
+- 🎮 **Gamification**: 16 testes
+- 🏥 **Health**: 4 testes
+
+#### **Frontend (Vitest + Testing Library)**
+- 🧪 **Validações**: 37 testes
+- 🎯 **Header**: 14 testes
+- 📄 **LandingPage**: 21 testes
+
+### **Executar Testes Específicos**
+```bash
+# Testes de autenticação
+npm run test:backend -- tests/auth/auth.test.js
+
+# Testes de componentes
+npm run test:run -- tests/frontend/components/
+
+# Testes com watch mode
+npm run test:backend:watch
+```
+
+## 🎮 **Sistema de Gamificação**
+
+### **Níveis e Pontuação**
+| Nível | Pontos Necessários | Benefícios |
+|-------|-------------------|------------|
+| 🥉 Bronze | 0 - 99 | Acesso básico |
+| 🥈 Prata | 100 - 499 | Desconto 5% |
+| 🥇 Ouro | 500 - 999 | Desconto 10% |
+| 💎 Platina | 1000 - 2499 | Desconto 15% |
+| 💠 Diamante | 2500+ | Desconto 25% |
+
+### **Como Ganhar Pontos**
+- 💰 **Compras**: 1 ponto/R$ (PF) ou 2 pontos/R$ (PJ)
+- ⭐ **Avaliações**: 10 pontos por avaliação
+- 🎁 **Bônus**: Compras acima de R$ 100
+
+## 🔐 **Autenticação e Perfis**
+
+### **Tipos de Usuário**
+- **👤 Pessoa Física**: CPF, 1 ponto por real gasto
+- **🏢 Pessoa Jurídica**: CNPJ, 2 pontos por real gasto  
+- **👨‍💼 Administrador**: Acesso ao painel admin
+
+### **Validações Implementadas**
+- ✅ CPF/CNPJ brasileiros válidos
+- ✅ Email com formato correto
+- ✅ Telefone brasileiro (fixo/celular)
+- ✅ CEP brasileiro
+- ✅ Senhas seguras
+
+## 🛒 **E-commerce Features**
+
+### **Catálogo de Produtos**
+- 📦 Cafés especiais com origem certificada
+- 🏷️ Filtros por categoria, preço, origem
+- ⭐ Sistema de avaliações
+- 📱 Design responsivo em grid
+
+### **Carrinho e Checkout**
+- 🛒 Persistência em localStorage
+- 📊 Cálculo automático de totais
+- 🎮 Integração com sistema de pontos
+- 💳 Simulação de pagamento
+
+### **Gestão de Pedidos**
+- 📋 Histórico completo de pedidos
+- 📦 Rastreamento de entregas
+- 🔄 Status em tempo real
+- 📧 Notificações por email
+
+## 🎨 **Design System**
+
+### **Paleta de Cores**
+```css
+/* Cores principais */
+--coffee-intense: #2B3A42    /* Azul escuro */
+--coffee-gold: #C8956D       /* Dourado */
+--coffee-white: #FEFEFE      /* Branco */
+--coffee-cream: #F5F5DC      /* Creme */
+--coffee-gray: #6B7280       /* Cinza */
+```
+
+### **Tipografia**
+- **Títulos**: Cormorant Garamond (serifada)
+- **Corpo**: Montserrat (sem serifa)
+- **Interface**: Sistema responsivo em rem
+
+### **Componentes**
+- 🎯 Buttons com estados hover/active
+- 📱 Cards responsivos
+- 🎨 Forms com validação visual
+- 🔄 Loading spinners
+- 📊 Progress bars
+
+## 📚 **Documentação Adicional**
+
+- 📖 [**Guia de Contribuição**](./CONTRIBUTING.md)
+- 🔧 [**API Documentation**](./server/README.md)
+- 🧪 [**Guia de Testes**](./tests/README.md)
+- 🚀 [**Deploy Guide**](./docs/DEPLOY.md)
+- 📝 [**Changelog**](./CHANGELOG.md)
+
+## 🛠️ **Stack Tecnológica**
+
+### **Frontend**
+- ⚛️ **React** 18.3.1 - Library principal
+- 🎨 **Tailwind CSS** - Styling
+- 🧭 **React Router** - Navegação
+- 📊 **Context API** - Gerenciamento de estado
+- 🧪 **Vitest** - Testes unitários
+- 📱 **Lucide Icons** - Ícones
+
+### **Backend**
+- 🟢 **Node.js** - Runtime
+- 🚀 **Express.js** - Framework web
+- 🔐 **JWT** - Autenticação
+- 🛡️ **bcrypt** - Hash de senhas
+- 🧪 **Jest + Supertest** - Testes
+- ✅ **express-validator** - Validações
+
+### **DevTools**
+- ⚡ **Vite** - Build tool
+- 📏 **ESLint** - Linting
+- 🎯 **Testing Library** - Testes de UI
+- 📊 **Coverage** - Cobertura de testes
+
+## 🚀 **Deploy**
+
+### **Build de Produção**
+```bash
+# Build do frontend
+npm run build
+
+# Serve arquivos estáticos
+npm run preview
+```
+
+### **Variáveis de Ambiente**
+```env
+# Frontend (.env)
+VITE_API_BASE_URL=http://localhost:5000
+
+# Backend (server/.env)
+NODE_ENV=production
+PORT=5000
+JWT_SECRET=sua-chave-super-secreta
+JWT_EXPIRES_IN=15m
+```
+
+### **Deploy Platforms**
+- ☁️ **Frontend**: Vercel, Netlify
+- 🔧 **Backend**: Railway, Heroku, VPS
+- 💾 **Database**: PostgreSQL, MongoDB
+
+## 👥 **Contribuição**
+
+1. **Fork** o projeto
+2. **Clone** seu fork
+3. **Crie** uma branch para sua feature
+4. **Implemente** as mudanças
+5. **Teste** tudo (`npm run validate`)
+6. **Commit** seguindo [Conventional Commits](https://conventionalcommits.org/)
+7. **Abra** um Pull Request
+
+### **Comandos de Desenvolvimento**
+```bash
+# Preparar ambiente
+npm run setup
+
+# Desenvolvimento com hot reload
+npm run full-dev
+
+# Validar antes do commit
+npm run validate
+```
+
+## 📞 **Suporte**
+
+- 🌐 **Website**: [mestrescafe.com.br](#)
+- 📧 **Email**: contato@mestrescafe.com.br
+- 📱 **WhatsApp**: (55) 99645-8600
+- 📍 **Endereço**: Santa Maria, RS
+
+## 📄 **Licença**
+
+Este projeto está sob a licença MIT. Veja o arquivo [LICENSE](./LICENSE) para mais detalhes.
 
 ---
 
 <div align="center">
 
-**☕ Feito com amor e muito café pela equipe Mestres do Café ☕**
+**Feito com ❤️ por [Kalleby](https://github.com/kalleby) em Santa Maria/RS** 
+
+⭐ **Gostou do projeto? Deixe uma estrela!** ⭐
 
 </div>

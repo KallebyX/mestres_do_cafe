@@ -38,7 +38,7 @@ export const AuthProvider = ({ children }) => {
     };
 
     initAuth();
-  }, []);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Verificar se o token ainda é válido
   const verifyToken = async (token) => {

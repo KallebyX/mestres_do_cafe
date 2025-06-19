@@ -1,8 +1,9 @@
-import express from 'express';
-import cors from 'cors';
-import bcrypt from 'bcryptjs';
-import jwt from 'jsonwebtoken';
-import fs from 'fs';
+/* eslint-disable no-undef */
+const express = require('express');
+const cors = require('cors');
+const bcrypt = require('bcryptjs');
+const jwt = require('jsonwebtoken');
+const fs = require('fs');
 
 const app = express();
 const PORT = 5000;
@@ -402,26 +403,7 @@ app.get('/api/products', (req, res) => {
   });
 });
 
-// Get single product
-app.get('/api/products/:id', (req, res) => {
-  console.log('🔍 Requisição para produto específico:', req.params.id);
-  
-  const product = mockProducts.find(p => p.id === req.params.id && p.is_active);
-  
-  if (!product) {
-    return res.status(404).json({ 
-      success: false,
-      error: 'Produto não encontrado' 
-    });
-  }
-  
-  res.json({ 
-    success: true,
-    product 
-  });
-});
-
-// Featured products
+// Featured products (DEVE vir antes de /api/products/:id)
 app.get('/api/products/featured', (req, res) => {
   const featuredProducts = [
     {
@@ -445,6 +427,25 @@ app.get('/api/products/featured', (req, res) => {
   ];
   
   res.json({ products: featuredProducts, total: featuredProducts.length });
+});
+
+// Get single product (DEVE vir depois de rotas específicas)
+app.get('/api/products/:id', (req, res) => {
+  console.log('🔍 Requisição para produto específico:', req.params.id);
+  
+  const product = mockProducts.find(p => p.id === req.params.id && p.is_active);
+  
+  if (!product) {
+    return res.status(404).json({ 
+      success: false,
+      error: 'Produto não encontrado' 
+    });
+  }
+  
+  res.json({ 
+    success: true,
+    product 
+  });
 });
 
 // 🔐 Middleware para verificar se é admin
@@ -1031,18 +1032,20 @@ app.use((err, req, res, next) => {
   });
 });
 
-// Start server
-app.listen(PORT, () => {
-  console.log(`🚀 Servidor Mestres do Café rodando na porta ${PORT}`);
-  console.log(`📍 Health check: http://localhost:${PORT}/api/health`);
-  console.log(`🌍 CORS habilitado para: http://localhost:5173`);
-  console.log(`☕ Endpoints disponíveis:`);
-  console.log(`   GET  / - Info da API`);
-  console.log(`   GET  /api/health - Status do sistema`);
-  console.log(`   POST /api/auth/register - Cadastro`);
-  console.log(`   POST /api/auth/login - Login`);
-  console.log(`   GET  /api/products - Lista de produtos`);
-  console.log(`   GET  /api/products/featured - Produtos em destaque`);
-});
+// Start server only if not in test environment
+if (process.env.NODE_ENV !== 'test') {
+  app.listen(PORT, () => {
+    console.log(`🚀 Servidor Mestres do Café rodando na porta ${PORT}`);
+    console.log(`📍 Health check: http://localhost:${PORT}/api/health`);
+    console.log(`🌍 CORS habilitado para: http://localhost:5173`);
+    console.log(`☕ Endpoints disponíveis:`);
+    console.log(`   GET  / - Info da API`);
+    console.log(`   GET  /api/health - Status do sistema`);
+    console.log(`   POST /api/auth/register - Cadastro`);
+    console.log(`   POST /api/auth/login - Login`);
+    console.log(`   GET  /api/products - Lista de produtos`);
+    console.log(`   GET  /api/products/featured - Produtos em destaque`);
+  });
+}
 
-export default app; 
+module.exports = app; 

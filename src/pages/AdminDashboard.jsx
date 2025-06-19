@@ -1,8 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { 
   Users, Package, TrendingUp, DollarSign, Eye, Edit, Trash2, Plus, 
-  Search, Filter, BarChart3, PieChart, Calendar, Coffee, Star,
-  ShoppingCart, Clock, CheckCircle, XCircle, AlertCircle
+  Search, BarChart3, Coffee, Star, ShoppingCart
 } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { adminAPI, productsAPI, ordersAPI } from '../lib/api';
@@ -37,8 +36,8 @@ const AdminDashboard = () => {
       setUsers(usersData.users || []);
       setProducts(productsData.products || []);
       setOrders(ordersData.orders || []);
-    } catch (error) {
-      console.error('Erro ao carregar dados do dashboard:', error);
+    } catch (_error) {
+      console.error('Erro ao carregar dados do dashboard:', _error);
     } finally {
       setLoading(false);
     }
@@ -74,7 +73,7 @@ const AdminDashboard = () => {
         await adminAPI.deleteProduct(productId);
         setProducts(products.filter(p => p.id !== productId));
         alert('Produto excluído com sucesso!');
-      } catch (error) {
+      } catch (_error) { // eslint-disable-line no-unused-vars
         alert('Erro ao excluir produto');
       }
     }
@@ -87,7 +86,7 @@ const AdminDashboard = () => {
         order.id === orderId ? { ...order, status: newStatus } : order
       ));
       alert('Status do pedido atualizado!');
-    } catch (error) {
+    } catch (_error) { // eslint-disable-line no-unused-vars
       alert('Erro ao atualizar status do pedido');
     }
   };

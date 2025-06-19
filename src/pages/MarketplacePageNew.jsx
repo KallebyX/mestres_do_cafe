@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Search, Filter, Plus, Edit3, Trash2, ShoppingCart, Star, Coffee } from 'lucide-react';
 
 const MarketplacePageNew = () => {
@@ -16,12 +16,12 @@ const MarketplacePageNew = () => {
   useEffect(() => {
     loadUserData();
     loadProducts();
-  }, []);
+  }, [loadProducts]);
 
   // Filtrar produtos quando houver mudanças
   useEffect(() => {
     filterProducts();
-  }, [products, searchTerm, selectedCategory, sortBy]);
+  }, [filterProducts]);
 
   const loadUserData = () => {
     try {
@@ -35,7 +35,7 @@ const MarketplacePageNew = () => {
     }
   };
 
-  const loadProducts = async () => {
+  const loadProducts = useCallback(async () => {
     try {
       const response = await fetch('http://localhost:5000/api/products');
       const data = await response.json();
@@ -53,7 +53,7 @@ const MarketplacePageNew = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
   const getMockProducts = () => [
     {
@@ -103,7 +103,7 @@ const MarketplacePageNew = () => {
     }
   ];
 
-  const filterProducts = () => {
+  const filterProducts = useCallback(() => {
     let filtered = [...products];
 
     // Filtro por busca
@@ -140,7 +140,7 @@ const MarketplacePageNew = () => {
     });
 
     setFilteredProducts(filtered);
-  };
+  }, [products, searchTerm, selectedCategory, sortBy]);
 
   const addToCart = (product) => {
     // Integrar com o sistema de carrinho global

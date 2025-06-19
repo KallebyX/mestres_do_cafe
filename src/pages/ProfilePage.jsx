@@ -87,7 +87,7 @@ const ProfilePage = () => {
       } else {
         setMessage({ type: 'error', text: result.error || 'Erro ao atualizar perfil' });
       }
-    } catch (error) {
+    } catch (_error) { // eslint-disable-line no-unused-vars
       setMessage({ type: 'error', text: 'Erro de conexão. Tente novamente.' });
     } finally {
       setIsLoading(false);

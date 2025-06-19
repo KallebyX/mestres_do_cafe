@@ -3,6 +3,23 @@
     "baseUrl": "./",
     "paths": {
       "@/*": ["src/*"]
-    }
-  }
+    },
+    "jsx": "react-jsx",
+    "moduleResolution": "bundler",
+    "allowImportingTsExtensions": false,
+    "allowSyntheticDefaultImports": true,
+    "noEmit": true
+  },
+  "include": [
+    "src/**/*",
+    "*.js",
+    "*.jsx",
+    "vite.config.js"
+  ],
+  "exclude": [
+    "node_modules",
+    "server/**/*",
+    "dist",
+    "tests/backend/**/*"
+  ]
 }

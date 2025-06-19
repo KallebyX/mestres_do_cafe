@@ -3,87 +3,98 @@ import { productsAPI, cartUtils } from '../lib/api';
 
 const CartContext = createContext();
 
-const cartReducer = (state, action) => {
+function cartReducer(state, action) {
   switch (action.type) {
-    case 'SET_LOADING':
-      return { ...state, loading: action.payload };
-    case 'SET_CART':
-      return { 
-        ...state, 
-        items: action.payload.cart_items || [],
-        total: action.payload.total || 0,
-        itemsCount: action.payload.items_count || 0,
-        loading: false 
-      };
-    case 'ADD_ITEM':
-      const existingItemIndex = state.items.findIndex(
-        item => item.product_id === action.payload.product_id && 
-                item.weight_option === action.payload.weight_option
-      );
-      
-      let newItems;
-      if (existingItemIndex >= 0) {
-        newItems = [...state.items];
-        newItems[existingItemIndex].quantity += action.payload.quantity;
-      } else {
-        newItems = [...state.items, action.payload];
-      }
-      
-      const newTotal = newItems.reduce((sum, item) => 
-        sum + (item.product?.price || 0) * item.quantity, 0
-      );
-      const newCount = newItems.reduce((sum, item) => sum + item.quantity, 0);
-      
+    case 'SET_LOADING': {
       return {
         ...state,
-        items: newItems,
-        total: newTotal,
-        itemsCount: newCount
+        loading: action.payload
       };
-    case 'UPDATE_ITEM':
-      const updatedItems = state.items.map(item =>
-        item.id === action.payload.id 
-          ? { ...item, quantity: action.payload.quantity }
-          : item
-      );
+    }
+    
+    case 'SET_ITEMS': {
+      const items = action.payload;
+      const total = items.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+      return {
+        ...state,
+        items,
+        total,
+        loading: false
+      };
+    }
+    
+    case 'ADD_ITEM': {
+      const newItem = action.payload;
+      const existingItemIndex = state.items.findIndex(item => item.id === newItem.id);
+      let updatedItems;
       
-      const updatedTotal = updatedItems.reduce((sum, item) => 
-        sum + (item.product?.price || 0) * item.quantity, 0
-      );
-      const updatedCount = updatedItems.reduce((sum, item) => sum + item.quantity, 0);
+      if (existingItemIndex >= 0) {
+        updatedItems = state.items.map((item, index) => 
+          index === existingItemIndex 
+            ? { ...item, quantity: item.quantity + (newItem.quantity || 1) }
+            : item
+        );
+      } else {
+        updatedItems = [...state.items, { ...newItem, quantity: newItem.quantity || 1 }];
+      }
+      
+      const total = updatedItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
       
       return {
         ...state,
         items: updatedItems,
-        total: updatedTotal,
-        itemsCount: updatedCount
+        total
       };
-    case 'REMOVE_ITEM':
-      const filteredItems = state.items.filter(item => item.id !== action.payload);
-      const filteredTotal = filteredItems.reduce((sum, item) => 
-        sum + (item.product?.price || 0) * item.quantity, 0
-      );
-      const filteredCount = filteredItems.reduce((sum, item) => sum + item.quantity, 0);
+    }
+    
+    case 'REMOVE_ITEM': {
+      const itemId = action.payload;
+      const updatedItems = state.items.filter(item => item.id !== itemId);
+      const total = updatedItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
       
       return {
         ...state,
-        items: filteredItems,
-        total: filteredTotal,
-        itemsCount: filteredCount
+        items: updatedItems,
+        total
       };
-    case 'CLEAR_CART':
+    }
+    
+    case 'UPDATE_QUANTITY': {
+      const { itemId, quantity } = action.payload;
+      const updatedItems = state.items.map(item => 
+        item.id === itemId ? { ...item, quantity: Math.max(0, quantity) } : item
+      ).filter(item => item.quantity > 0);
+      
+      const total = updatedItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+      
+      return {
+        ...state,
+        items: updatedItems,
+        total
+      };
+    }
+    
+    case 'CLEAR_CART': {
       return {
         ...state,
         items: [],
-        total: 0,
-        itemsCount: 0
+        total: 0
       };
-    case 'SET_ERROR':
-      return { ...state, error: action.payload, loading: false };
+    }
+    
+    case 'APPLY_DISCOUNT': {
+      const discount = action.payload;
+      return {
+        ...state,
+        discount,
+        discountedTotal: state.total - discount
+      };
+    }
+    
     default:
       return state;
   }
-};
+}
 
 const initialState = {
   items: [],
@@ -104,7 +115,7 @@ export const CartProvider = ({ children }) => {
     dispatch({ type: 'SET_LOADING', payload: true });
     try {
       const cartData = await productsAPI.getCart();
-      dispatch({ type: 'SET_CART', payload: cartData });
+      dispatch({ type: 'SET_ITEMS', payload: cartData });
       cartUtils.updateCartCount();
     } catch (error) {
       dispatch({ type: 'SET_ERROR', payload: error.message });
@@ -132,7 +143,7 @@ export const CartProvider = ({ children }) => {
         await removeFromCart(itemId);
       } else {
         await productsAPI.updateCartItem(itemId, { quantity });
-        dispatch({ type: 'UPDATE_ITEM', payload: { id: itemId, quantity } });
+        dispatch({ type: 'UPDATE_QUANTITY', payload: { itemId, quantity } });
         cartUtils.updateCartCount();
       }
     } catch (error) {

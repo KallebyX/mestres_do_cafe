@@ -17,9 +17,14 @@ export default defineConfig({
     sourcemap: false,
     rollupOptions: {
       output: {
-        manualChunks: undefined,
+        manualChunks: {
+          vendor: ['react', 'react-dom'],
+          router: ['react-router-dom'],
+          ui: ['@radix-ui/react-dialog', '@radix-ui/react-dropdown-menu', 'lucide-react']
+        },
       },
     },
+    chunkSizeWarningLimit: 1000,
   },
   server: {
     host: '0.0.0.0',
@@ -29,4 +34,8 @@ export default defineConfig({
     host: '0.0.0.0',
     port: 4173,
   },
+  optimizeDeps: {
+    exclude: ['bcryptjs'],
+    include: ['react', 'react-dom', 'react-router-dom']
+  }
 })

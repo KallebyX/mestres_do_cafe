@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Package, Star, Clock, MapPin, User, Award, TrendingUp, Coffee } from 'lucide-react';
+import { Package, Star, Clock, User, TrendingUp, Coffee } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { ordersAPI } from '../lib/api';
 import Header from '../components/Header';
