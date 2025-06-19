@@ -5,16 +5,6 @@ services:
     runtime: static
     buildCommand: npm install && npm run build
     staticPublishPath: ./dist
-    headers:
-      - path: /*
-        name: X-Frame-Options
-        value: DENY
-      - path: /*
-        name: X-Content-Type-Options
-        value: nosniff
-      - path: /*
-        name: Referrer-Policy
-        value: strict-origin-when-cross-origin
     routes:
       - type: rewrite
         source: /*
@@ -27,9 +17,9 @@ services:
   - type: web
     name: mestres-cafe-backend
     runtime: node
-    buildCommand: cd server && npm install
-    startCommand: cd server && npm start
-    healthCheckPath: /api/health
+    rootDir: ./server
+    buildCommand: npm install
+    startCommand: npm start
     envVars:
       - key: NODE_ENV
         value: production
