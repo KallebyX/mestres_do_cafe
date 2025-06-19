@@ -330,33 +330,64 @@ NODE_ENV=development
 
 ## 🌐 **Deploy em Produção**
 
-### **☁️ Frontend (Vercel)**
-1. Conectar repositório no Vercel
-2. Configurar variáveis de ambiente
-3. Deploy automático a cada push
+### **🚀 Deploy no Render (RECOMENDADO)**
 
-```bash
-# Deploy manual
-vercel --prod
+#### **⚡ Deploy Automático (1-Click)**
+1. Acesse [render.com](https://render.com)
+2. Clique em "New +" → "Blueprint"
+3. Conecte: `https://github.com/KallebyX/v0-mestres.git`
+4. O arquivo `render.yaml` configurará automaticamente:
+   - ✅ Frontend: `https://mestres-cafe-frontend.onrender.com`
+   - ✅ Backend: `https://mestres-cafe-backend.onrender.com`
+
+#### **🔧 Deploy Manual**
+**Frontend:**
+- New → Static Site
+- Build: `npm install && npm run build`
+- Publish: `dist`
+
+**Backend:**
+- New → Web Service
+- Root: `server`
+- Build: `npm install`
+- Start: `npm start`
+
+#### **🔐 Variáveis de Ambiente**
+Configurar no dashboard do Render (use `render.env.example`):
+```env
+NODE_ENV=production
+PORT=10000
+JWT_SECRET=sua_chave_jwt_super_segura
+VITE_API_URL=https://mestres-cafe-backend.onrender.com
+CORS_ORIGIN=https://mestres-cafe-frontend.onrender.com
 ```
 
-### **🚂 Backend (Railway)**
-1. Conectar repositório no Railway
-2. Configurar variáveis de ambiente
-3. Deploy automático da pasta `server/`
+### **☁️ Alternativas de Deploy**
 
+#### **Frontend (Vercel/Netlify)**
 ```bash
-# Deploy manual
-railway login
-railway link
-railway up
+# Vercel
+vercel --prod
+
+# Netlify
+npm run build && netlify deploy --prod --dir=dist
+```
+
+#### **Backend (Railway/Heroku)**
+```bash
+# Railway
+railway login && railway up
+
+# Heroku
+git push heroku main
 ```
 
 ### **📊 Monitoramento**
-- ✅ **Health check** automático
-- ✅ **Logs centralizados**
-- ✅ **Métricas de performance**
-- ✅ **Alertas de erro**
+- ✅ **Health check**: `/api/health`
+- ✅ **Logs centralizados** no dashboard
+- ✅ **Métricas de performance** em tempo real
+- ✅ **Alertas automáticos** de erro
+- ✅ **SSL gratuito** e CDN global
 
 ---
 
