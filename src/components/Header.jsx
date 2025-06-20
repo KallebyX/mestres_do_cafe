@@ -7,7 +7,7 @@ import { Menu, X, ShoppingCart, User, LogOut, Settings, Shield } from 'lucide-re
 import Logo from './Logo';
 
 export const Header = () => {
-  const { user, logout, isAuthenticated } = useSupabaseAuth();
+  const { user, logout, profile } = useSupabaseAuth();
   const { getCartCount, cart } = useCart();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
@@ -74,9 +74,9 @@ export const Header = () => {
 
   const isActive = (href) => location.pathname === href;
 
-  const isLoggedIn = isAuthenticated();
-  const userName = user?.profile?.name || user?.user_metadata?.name || 'Usuário';
-  const userType = user?.profile?.user_type || 'cliente_pf';
+  const isLoggedIn = !!user;
+  const userName = profile?.name || user?.user_metadata?.name || 'Usuário';
+  const userRole = profile?.role || 'customer';
 
   return (
     <header
@@ -161,7 +161,7 @@ export const Header = () => {
                   <div className="absolute right-0 top-full mt-2 w-56 bg-white rounded-lg shadow-lg border border-gray-200 py-2 z-50">
                     <div className="px-4 py-2 border-b border-gray-100">
                       <p className="text-sm font-medium text-gray-900">{userName}</p>
-                      <p className="text-xs text-gray-500 capitalize">{userType.replace('_', ' ')}</p>
+                      <p className="text-xs text-gray-500 capitalize">{userRole.replace('_', ' ')}</p>
                     </div>
                     
                     <Link to="/perfil" onClick={() => setIsUserMenuOpen(false)}>
@@ -178,7 +178,7 @@ export const Header = () => {
                       </button>
                     </Link>
 
-                    {userType === 'admin' && (
+                    {(profile?.role === 'admin' || profile?.role === 'super_admin') && (
                       <Link to="/admin" onClick={() => setIsUserMenuOpen(false)}>
                         <button className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-2">
                           <Shield className="w-4 h-4" />
@@ -268,7 +268,7 @@ export const Header = () => {
                   </div>
                   <div>
                     <div className="font-medium text-brand-dark">{userName}</div>
-                    <div className="text-xs text-gray-500 capitalize">{userType.replace('_', ' ')}</div>
+                    <div className="text-xs text-gray-500 capitalize">{userRole.replace('_', ' ')}</div>
                   </div>
                 </div>
                 

@@ -22,6 +22,9 @@ import MapPage from './pages/MapPage';
 import CoursesPage from './pages/CoursesPage';
 import ForumPage from './pages/ForumPage';
 import BlogPage from './pages/BlogPage';
+import AdminBlogManager from './pages/AdminBlogManager';
+import AdminCRMDashboard from './pages/AdminCRMDashboard';
+import AdminFinancialReports from './pages/AdminFinancialReports';
 import NotFoundPage from './pages/NotFoundPage';
 import './App.css';
 
@@ -44,6 +47,9 @@ function App() {
                 <Route path="/checkout" element={<CheckoutPage />} />
                 <Route path="/dashboard" element={<CustomerDashboard />} />
                 <Route path="/admin" element={<AdminDashboard />} />
+                <Route path="/admin/blog" element={<AdminBlogManager />} />
+                <Route path="/admin/crm" element={<AdminCRMDashboard />} />
+                <Route path="/admin/financeiro" element={<AdminFinancialReports />} />
                 <Route path="/gamificacao" element={<GamificationPage />} />
                 <Route path="/perfil" element={<ProfilePage />} />
                 <Route path="/pedidos" element={<OrdersPage />} />

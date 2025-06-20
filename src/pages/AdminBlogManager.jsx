@@ -1,449 +1,653 @@
 import React, { useState, useEffect } from 'react';
 import { 
-  Plus, Edit, Trash2, Eye, Search, Filter, Calendar, 
-  User, Tag, TrendingUp, Star, MessageSquare, ThumbsUp
+  FileText, Plus, Search, Edit, Trash2, Eye, Save, X, Image, 
+  Calendar, User, Tag, BarChart3, TrendingUp, MessageSquare,
+  Filter, Download, Upload, Settings, Clock, Globe
 } from 'lucide-react';
-import { blogAPI, adminAPI } from '../lib/api';
-import { Header } from '../components/Header';
-import { Footer } from '../components/Footer';
+import { useSupabaseAuth } from '../contexts/SupabaseAuthContext';
+import { useNavigate } from 'react-router-dom';
 
 const AdminBlogManager = () => {
-  const [blogs, setBlogs] = useState([]);
+  const [posts, setPosts] = useState([]);
+  const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [activeTab, setActiveTab] = useState('posts');
   const [searchTerm, setSearchTerm] = useState('');
-  const [categoryFilter, setCategoryFilter] = useState('');
-  const [showCreateModal, setShowCreateModal] = useState(false);
-  const [editingBlog, setEditingBlog] = useState(null);
-  const [formData, setFormData] = useState({
+  const [selectedCategory, setSelectedCategory] = useState('all');
+  const [selectedPost, setSelectedPost] = useState(null);
+  const [isEditing, setIsEditing] = useState(false);
+  const [showEditor, setShowEditor] = useState(false);
+  
+  // Form states
+  const [postForm, setPostForm] = useState({
     title: '',
     content: '',
     excerpt: '',
     category: '',
-    featured_image: '',
     tags: '',
-    is_published: true,
-    is_featured: false
+    featured_image: '',
+    status: 'draft',
+    seo_title: '',
+    seo_description: '',
+    publish_date: ''
   });
 
-  const categories = [
-    'Dicas de Café',
-    'Receitas',
-    'Origem',
-    'Equipamentos',
-    'Barista',
-    'Sustentabilidade',
-    'Novidades',
-    'Eventos'
-  ];
+  const { user, hasPermission } = useSupabaseAuth();
+  const navigate = useNavigate();
 
   useEffect(() => {
-    loadBlogs();
-  }, []);
+    if (!user || !hasPermission('admin')) {
+      navigate('/dashboard');
+      return;
+    }
+    loadBlogData();
+  }, [user, hasPermission, navigate]);
 
-  const loadBlogs = async () => {
+  const loadBlogData = async () => {
     setLoading(true);
     try {
-      const response = await adminAPI.getBlogs();
-      if (response.success) {
-        setBlogs(response.blogs);
-      }
-    } catch (error) {
-      console.error('Erro ao carregar blogs:', error);
-      // Mock data para desenvolvimento
-      setBlogs([
+      // Simular dados do blog
+      const mockPosts = [
         {
-          id: '1',
-          title: 'Como Escolher o Café Perfeito',
-          excerpt: 'Descubra as características que fazem um café ser especial...',
-          category: 'Dicas de Café',
-          author: 'Admin',
+          id: 1,
+          title: 'Os Segredos da Torra Perfeita',
+          excerpt: 'Descubra como o processo de torra influencia o sabor final do seu café.',
+          content: 'Conteúdo completo do post sobre torra...',
+          category: 'Processos',
+          tags: 'torra,café,técnicas',
+          author: 'Mestres do Café',
           created_at: '2024-01-15',
-          is_published: true,
-          is_featured: true,
-          views: 234,
-          likes: 45,
-          comments_count: 12
+          updated_at: '2024-01-15',
+          status: 'published',
+          views: 1250,
+          comments: 23,
+          featured_image: '/images/torra.jpg',
+          seo_title: 'Guia Completo: Torra Perfeita de Café',
+          seo_description: 'Aprenda as técnicas profissionais de torra de café'
         },
         {
-          id: '2',
-          title: 'Receita: Cold Brew Artesanal',
-          excerpt: 'Aprenda a fazer cold brew em casa com ingredientes simples...',
-          category: 'Receitas',
-          author: 'Admin',
+          id: 2,
+          title: 'Café Especial: Do Grão à Xícara',
+          excerpt: 'Uma jornada completa desde o plantio até o preparo do café especial.',
+          content: 'Conteúdo sobre o processo completo...',
+          category: 'Educação',
+          tags: 'café especial,qualidade,origem',
+          author: 'Mestres do Café',
           created_at: '2024-01-10',
-          is_published: true,
-          is_featured: false,
-          views: 189,
-          likes: 32,
-          comments_count: 8
+          updated_at: '2024-01-12',
+          status: 'published',
+          views: 892,
+          comments: 15,
+          featured_image: '/images/grao-xicara.jpg',
+          seo_title: 'Café Especial: Guia Completo do Grão à Xícara',
+          seo_description: 'Descubra todo o processo do café especial'
+        },
+        {
+          id: 3,
+          title: 'Tendências do Mercado de Café 2024',
+          excerpt: 'As principais tendências que moldarão o mercado de café este ano.',
+          content: 'Análise das tendências de mercado...',
+          category: 'Mercado',
+          tags: 'tendências,mercado,2024',
+          author: 'Mestres do Café',
+          created_at: '2024-01-08',
+          updated_at: '2024-01-08',
+          status: 'draft',
+          views: 0,
+          comments: 0,
+          featured_image: '/images/tendencias.jpg',
+          seo_title: 'Tendências do Café 2024: O que Esperar',
+          seo_description: 'Principais tendências do mercado de café para 2024'
         }
-      ]);
+      ];
+
+      const mockCategories = [
+        { id: 1, name: 'Processos', count: 8, color: 'bg-blue-100 text-blue-800' },
+        { id: 2, name: 'Educação', count: 12, color: 'bg-green-100 text-green-800' },
+        { id: 3, name: 'Mercado', count: 5, color: 'bg-purple-100 text-purple-800' },
+        { id: 4, name: 'Receitas', count: 15, color: 'bg-orange-100 text-orange-800' },
+        { id: 5, name: 'Equipamentos', count: 7, color: 'bg-red-100 text-red-800' }
+      ];
+
+      setPosts(mockPosts);
+      setCategories(mockCategories);
+    } catch (error) {
+      console.error('Erro ao carregar dados do blog:', error);
     } finally {
       setLoading(false);
     }
   };
 
-  const handleSave = async () => {
-    try {
-      if (editingBlog) {
-        const response = await adminAPI.updateBlog(editingBlog.id, formData);
-        if (response.success) {
-          setBlogs(blogs.map(blog => 
-            blog.id === editingBlog.id ? { ...blog, ...formData } : blog
-          ));
-          alert('Blog atualizado com sucesso!');
-        }
-      } else {
-        const response = await adminAPI.createBlog(formData);
-        if (response.success) {
-          setBlogs([response.blog, ...blogs]);
-          alert('Blog criado com sucesso!');
-        }
-      }
-      handleCloseModal();
-    } catch (error) {
-      alert('Erro ao salvar blog: ' + error.message);
-    }
-  };
-
-  const handleDelete = async (id) => {
-    if (!window.confirm('Tem certeza que deseja excluir este blog?')) return;
-    
-    try {
-      const response = await adminAPI.deleteBlog(id);
-      if (response.success) {
-        setBlogs(blogs.filter(blog => blog.id !== id));
-        alert('Blog excluído com sucesso!');
-      }
-    } catch (error) {
-      alert('Erro ao excluir blog: ' + error.message);
-    }
-  };
-
-  const handleEdit = (blog) => {
-    setEditingBlog(blog);
-    setFormData({
-      title: blog.title || '',
-      content: blog.content || '',
-      excerpt: blog.excerpt || '',
-      category: blog.category || '',
-      featured_image: blog.featured_image || '',
-      tags: blog.tags ? blog.tags.join(', ') : '',
-      is_published: blog.is_published || true,
-      is_featured: blog.is_featured || false
-    });
-    setShowCreateModal(true);
-  };
-
-  const handleCloseModal = () => {
-    setShowCreateModal(false);
-    setEditingBlog(null);
-    setFormData({
+  const handleCreatePost = () => {
+    setPostForm({
       title: '',
       content: '',
       excerpt: '',
       category: '',
-      featured_image: '',
       tags: '',
-      is_published: true,
-      is_featured: false
+      featured_image: '',
+      status: 'draft',
+      seo_title: '',
+      seo_description: '',
+      publish_date: ''
     });
+    setSelectedPost(null);
+    setIsEditing(false);
+    setShowEditor(true);
   };
 
-  const filteredBlogs = blogs.filter(blog => {
-    const matchesSearch = blog.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         blog.excerpt.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesCategory = !categoryFilter || blog.category === categoryFilter;
+  const handleEditPost = (post) => {
+    setPostForm({
+      title: post.title,
+      content: post.content,
+      excerpt: post.excerpt,
+      category: post.category,
+      tags: post.tags,
+      featured_image: post.featured_image,
+      status: post.status,
+      seo_title: post.seo_title,
+      seo_description: post.seo_description,
+      publish_date: post.created_at
+    });
+    setSelectedPost(post);
+    setIsEditing(true);
+    setShowEditor(true);
+  };
+
+  const handleSavePost = async () => {
+    try {
+      if (isEditing) {
+        // Atualizar post existente
+        setPosts(posts.map(post => 
+          post.id === selectedPost.id 
+            ? { ...post, ...postForm, updated_at: new Date().toISOString() }
+            : post
+        ));
+      } else {
+        // Criar novo post
+        const newPost = {
+          id: Date.now(),
+          ...postForm,
+          author: user.name,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+          views: 0,
+          comments: 0
+        };
+        setPosts([newPost, ...posts]);
+      }
+      setShowEditor(false);
+      alert('Post salvo com sucesso!');
+    } catch (error) {
+      alert('Erro ao salvar post: ' + error.message);
+    }
+  };
+
+  const handleDeletePost = async (postId) => {
+    if (window.confirm('Tem certeza que deseja excluir este post?')) {
+      try {
+        setPosts(posts.filter(post => post.id !== postId));
+        alert('Post excluído com sucesso!');
+      } catch (error) {
+        alert('Erro ao excluir post: ' + error.message);
+      }
+    }
+  };
+
+  const handleStatusChange = async (postId, newStatus) => {
+    try {
+      setPosts(posts.map(post => 
+        post.id === postId 
+          ? { ...post, status: newStatus, updated_at: new Date().toISOString() }
+          : post
+      ));
+      alert('Status atualizado com sucesso!');
+    } catch (error) {
+      alert('Erro ao atualizar status: ' + error.message);
+    }
+  };
+
+  const exportPosts = () => {
+    // Implementar exportação
+    alert('Exportando posts... (funcionalidade em desenvolvimento)');
+  };
+
+  const filteredPosts = posts.filter(post => {
+    const matchesSearch = post.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         post.content.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesCategory = selectedCategory === 'all' || post.category === selectedCategory;
     return matchesSearch && matchesCategory;
   });
 
+  const getStatusColor = (status) => {
+    const colors = {
+      draft: 'text-gray-600 bg-gray-100 border-gray-200',
+      published: 'text-green-600 bg-green-100 border-green-200',
+      scheduled: 'text-blue-600 bg-blue-100 border-blue-200',
+      archived: 'text-orange-600 bg-orange-100 border-orange-200'
+    };
+    return colors[status] || 'text-gray-600 bg-gray-100 border-gray-200';
+  };
+
+  const getStatusText = (status) => {
+    const texts = {
+      draft: 'Rascunho',
+      published: 'Publicado',
+      scheduled: 'Agendado',
+      archived: 'Arquivado'
+    };
+    return texts[status] || status;
+  };
+
+  // Estatísticas do blog
+  const totalPosts = posts.length;
+  const publishedPosts = posts.filter(p => p.status === 'published').length;
+  const totalViews = posts.reduce((sum, post) => sum + (post.views || 0), 0);
+  const totalComments = posts.reduce((sum, post) => sum + (post.comments || 0), 0);
+
   return (
-    <div className="min-h-screen bg-slate-50 font-inter">
-      <Header />
-      
-      <main className="pt-20 pb-16">
-        <div className="max-w-7xl mx-auto px-4">
-          <div className="mb-8">
-            <h1 className="text-3xl font-bold text-slate-900 mb-2">
-              Gerenciamento de Blog
-            </h1>
-            <p className="text-slate-600">
-              Crie e gerencie artigos para o blog do Mestres do Café
-            </p>
-          </div>
-
-          <div className="bg-white rounded-2xl shadow-lg p-6 mb-8">
-            <div className="flex flex-col md:flex-row gap-4 items-start md:items-center justify-between">
-              <div className="flex flex-col sm:flex-row gap-4 flex-1">
-                <div className="relative flex-1 max-w-md">
-                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400" size={20} />
-                  <input
-                    type="text"
-                    placeholder="Buscar blogs..."
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    className="w-full pl-10 pr-4 py-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-amber-500 focus:border-transparent"
-                  />
-                </div>
-
-                <div className="relative">
-                  <Filter className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400" size={20} />
-                  <select
-                    value={categoryFilter}
-                    onChange={(e) => setCategoryFilter(e.target.value)}
-                    className="pl-10 pr-8 py-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-amber-500 focus:border-transparent bg-white"
-                  >
-                    <option value="">Todas as categorias</option>
-                    {categories.map(category => (
-                      <option key={category} value={category}>{category}</option>
-                    ))}
-                  </select>
-                </div>
+    <div className="min-h-screen bg-slate-50 py-20">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        {/* Header */}
+        <div className="mb-12">
+          <div className="flex items-center justify-between">
+            <div>
+              <div className="flex items-center gap-3 mb-2">
+                <FileText className="w-8 h-8 text-amber-600" />
+                <h1 className="text-4xl font-bold text-slate-900">Gerenciamento do Blog</h1>
               </div>
-
+              <p className="text-xl text-slate-600">
+                Crie e gerencie conteúdo para o blog do Mestres do Café
+              </p>
+            </div>
+            <div className="flex items-center gap-3">
               <button
-                onClick={() => setShowCreateModal(true)}
-                className="bg-amber-600 hover:bg-amber-700 text-white px-6 py-3 rounded-xl font-semibold flex items-center space-x-2 transition-all duration-300"
+                onClick={exportPosts}
+                className="bg-slate-700 hover:bg-slate-800 text-white font-medium py-2 px-4 rounded-xl transition-colors flex items-center gap-2"
               >
-                <Plus size={20} />
-                <span>Novo Blog</span>
+                <Download className="w-4 h-4" />
+                Exportar
+              </button>
+              <button
+                onClick={handleCreatePost}
+                className="bg-amber-600 hover:bg-amber-700 text-white font-medium py-2 px-4 rounded-xl transition-colors flex items-center gap-2"
+              >
+                <Plus className="w-4 h-4" />
+                Novo Post
               </button>
             </div>
           </div>
+        </div>
 
-          {loading ? (
-            <div className="text-center py-12">
-              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-amber-600 mx-auto mb-4"></div>
-              <p className="text-slate-600">Carregando blogs...</p>
+        {/* Statistics Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+          <div className="bg-white rounded-3xl shadow-lg border border-slate-200 p-6">
+            <div className="flex items-center justify-between mb-4">
+              <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-blue-600 rounded-2xl flex items-center justify-center">
+                <FileText className="text-white w-6 h-6" />
+              </div>
+              <TrendingUp className="text-blue-600 w-5 h-5" />
             </div>
-          ) : (
-            <div className="space-y-4">
-              {filteredBlogs.map((blog) => (
-                <div key={blog.id} className="bg-white rounded-2xl shadow-lg p-6 hover:shadow-xl transition-all duration-300">
-                  <div className="flex items-start justify-between">
-                    <div className="flex-1">
-                      <div className="flex items-center space-x-3 mb-3">
-                        <span className={`px-3 py-1 rounded-full text-sm font-medium ${
-                          blog.category === 'Dicas de Café' ? 'bg-blue-100 text-blue-800' :
-                          blog.category === 'Receitas' ? 'bg-green-100 text-green-800' :
-                          blog.category === 'Origem' ? 'bg-orange-100 text-orange-800' :
-                          'bg-purple-100 text-purple-800'
-                        }`}>
-                          {blog.category}
-                        </span>
-                        {blog.is_featured && (
-                          <span className="bg-amber-100 text-amber-800 px-3 py-1 rounded-full text-sm font-medium">
-                            Destaque
-                          </span>
-                        )}
-                        <span className={`px-3 py-1 rounded-full text-sm font-medium ${
-                          blog.is_published 
-                            ? 'bg-green-100 text-green-800' 
-                            : 'bg-red-100 text-red-800'
-                        }`}>
-                          {blog.is_published ? 'Publicado' : 'Rascunho'}
-                        </span>
-                      </div>
+            <h3 className="text-slate-700 font-medium mb-2">Total de Posts</h3>
+            <p className="text-3xl font-bold text-blue-600">{totalPosts}</p>
+            <p className="text-xs text-slate-500">{publishedPosts} publicados</p>
+          </div>
 
-                      <h3 className="text-xl font-bold text-slate-900 mb-2">{blog.title}</h3>
-                      <p className="text-slate-600 mb-4 line-clamp-2">{blog.excerpt}</p>
+          <div className="bg-white rounded-3xl shadow-lg border border-slate-200 p-6">
+            <div className="flex items-center justify-between mb-4">
+              <div className="w-12 h-12 bg-gradient-to-br from-green-500 to-green-600 rounded-2xl flex items-center justify-center">
+                <Eye className="text-white w-6 h-6" />
+              </div>
+              <BarChart3 className="text-green-600 w-5 h-5" />
+            </div>
+            <h3 className="text-slate-700 font-medium mb-2">Total de Visualizações</h3>
+            <p className="text-3xl font-bold text-green-600">{totalViews.toLocaleString()}</p>
+            <p className="text-xs text-slate-500">Todas as publicações</p>
+          </div>
 
-                      <div className="flex items-center space-x-6 text-sm text-slate-500">
-                        <div className="flex items-center space-x-1">
-                          <User size={16} />
-                          <span>{blog.author}</span>
-                        </div>
-                        <div className="flex items-center space-x-1">
-                          <Calendar size={16} />
-                          <span>{new Date(blog.created_at).toLocaleDateString('pt-BR')}</span>
-                        </div>
-                        <div className="flex items-center space-x-1">
-                          <Eye size={16} />
-                          <span>{blog.views || 0} visualizações</span>
-                        </div>
-                        <div className="flex items-center space-x-1">
-                          <ThumbsUp size={16} />
-                          <span>{blog.likes || 0} curtidas</span>
-                        </div>
-                        <div className="flex items-center space-x-1">
-                          <MessageSquare size={16} />
-                          <span>{blog.comments_count || 0} comentários</span>
-                        </div>
-                      </div>
+          <div className="bg-white rounded-3xl shadow-lg border border-slate-200 p-6">
+            <div className="flex items-center justify-between mb-4">
+              <div className="w-12 h-12 bg-gradient-to-br from-purple-500 to-purple-600 rounded-2xl flex items-center justify-center">
+                <MessageSquare className="text-white w-6 h-6" />
+              </div>
+              <TrendingUp className="text-purple-600 w-5 h-5" />
+            </div>
+            <h3 className="text-slate-700 font-medium mb-2">Comentários</h3>
+            <p className="text-3xl font-bold text-purple-600">{totalComments}</p>
+            <p className="text-xs text-slate-500">Interações dos leitores</p>
+          </div>
+
+          <div className="bg-white rounded-3xl shadow-lg border border-slate-200 p-6">
+            <div className="flex items-center justify-between mb-4">
+              <div className="w-12 h-12 bg-gradient-to-br from-amber-500 to-amber-600 rounded-2xl flex items-center justify-center">
+                <Tag className="text-white w-6 h-6" />
+              </div>
+              <Settings className="text-amber-600 w-5 h-5" />
+            </div>
+            <h3 className="text-slate-700 font-medium mb-2">Categorias</h3>
+            <p className="text-3xl font-bold text-amber-600">{categories.length}</p>
+            <p className="text-xs text-slate-500">Organizadas por tema</p>
+          </div>
+        </div>
+
+        {/* Main Content */}
+        <div className="bg-white rounded-3xl shadow-lg border border-slate-200">
+          {/* Tabs */}
+          <div className="border-b border-slate-200">
+            <nav className="flex space-x-8 px-8">
+              {[
+                { id: 'posts', label: 'Posts', icon: FileText },
+                { id: 'categories', label: 'Categorias', icon: Tag },
+                { id: 'analytics', label: 'Analytics', icon: BarChart3 }
+              ].map(tab => (
+                <button
+                  key={tab.id}
+                  onClick={() => setActiveTab(tab.id)}
+                  className={`py-4 px-2 border-b-2 font-medium text-sm flex items-center gap-2 transition-colors ${
+                    activeTab === tab.id
+                      ? 'border-amber-500 text-amber-600'
+                      : 'border-transparent text-slate-500 hover:text-slate-700'
+                  }`}
+                >
+                  <tab.icon className="w-4 h-4" />
+                  {tab.label}
+                </button>
+              ))}
+            </nav>
+          </div>
+
+          <div className="p-8">
+            {/* Posts Tab */}
+            {activeTab === 'posts' && (
+              <div>
+                {/* Filters */}
+                <div className="flex items-center justify-between mb-6">
+                  <div className="flex items-center gap-4">
+                    <div className="relative">
+                      <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400 w-5 h-5" />
+                      <input
+                        type="text"
+                        placeholder="Buscar posts..."
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                        className="pl-10 pr-4 py-2 border border-slate-200 rounded-xl focus:ring-2 focus:ring-amber-500 focus:border-transparent transition-all"
+                      />
                     </div>
-
-                    <div className="flex items-center space-x-2 ml-4">
-                      <button
-                        onClick={() => window.open(`/blog/${blog.id}`, '_blank')}
-                        className="p-2 text-slate-400 hover:text-blue-600 transition-colors"
-                        title="Visualizar"
-                      >
-                        <Eye size={20} />
-                      </button>
-                      <button
-                        onClick={() => handleEdit(blog)}
-                        className="p-2 text-slate-400 hover:text-amber-600 transition-colors"
-                        title="Editar"
-                      >
-                        <Edit size={20} />
-                      </button>
-                      <button
-                        onClick={() => handleDelete(blog.id)}
-                        className="p-2 text-slate-400 hover:text-red-600 transition-colors"
-                        title="Excluir"
-                      >
-                        <Trash2 size={20} />
-                      </button>
-                    </div>
+                    <select
+                      value={selectedCategory}
+                      onChange={(e) => setSelectedCategory(e.target.value)}
+                      className="px-4 py-2 border border-slate-200 rounded-xl focus:ring-2 focus:ring-amber-500 focus:border-transparent"
+                    >
+                      <option value="all">Todas as categorias</option>
+                      {categories.map(category => (
+                        <option key={category.id} value={category.name}>
+                          {category.name}
+                        </option>
+                      ))}
+                    </select>
                   </div>
                 </div>
-              ))}
 
-              {filteredBlogs.length === 0 && (
-                <div className="text-center py-12">
-                  <Tag className="mx-auto text-slate-400 mb-4" size={48} />
-                  <h3 className="text-xl font-semibold text-slate-900 mb-2">Nenhum blog encontrado</h3>
-                  <p className="text-slate-600 mb-6">
-                    {searchTerm || categoryFilter 
-                      ? 'Tente ajustar os filtros de busca' 
-                      : 'Comece criando seu primeiro artigo'
-                    }
-                  </p>
-                  {!searchTerm && !categoryFilter && (
-                    <button
-                      onClick={() => setShowCreateModal(true)}
-                      className="bg-amber-600 hover:bg-amber-700 text-white px-6 py-3 rounded-xl font-semibold"
-                    >
-                      Criar Primeiro Blog
-                    </button>
-                  )}
-                </div>
-              )}
-            </div>
-          )}
-        </div>
-      </main>
-
-      {showCreateModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-2xl p-6 w-full max-w-4xl max-h-[90vh] overflow-y-auto">
-            <h2 className="text-2xl font-bold text-slate-900 mb-6">
-              {editingBlog ? 'Editar Blog' : 'Criar Novo Blog'}
-            </h2>
-
-            <div className="space-y-6">
-              <div>
-                <label className="block text-sm font-medium text-slate-700 mb-2">
-                  Título *
-                </label>
-                <input
-                  type="text"
-                  value={formData.title}
-                  onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                  className="w-full px-4 py-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-amber-500 focus:border-transparent"
-                  placeholder="Digite o título do blog..."
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-slate-700 mb-2">
-                  Resumo *
-                </label>
-                <textarea
-                  value={formData.excerpt}
-                  onChange={(e) => setFormData({ ...formData, excerpt: e.target.value })}
-                  rows={3}
-                  className="w-full px-4 py-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-amber-500 focus:border-transparent"
-                  placeholder="Breve descrição do artigo..."
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-slate-700 mb-2">
-                  Conteúdo *
-                </label>
-                <textarea
-                  value={formData.content}
-                  onChange={(e) => setFormData({ ...formData, content: e.target.value })}
-                  rows={12}
-                  className="w-full px-4 py-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-amber-500 focus:border-transparent"
-                  placeholder="Escreva o conteúdo completo do artigo..."
-                />
-              </div>
-
-              <div className="grid md:grid-cols-2 gap-6">
-                <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-2">
-                    Categoria *
-                  </label>
-                  <select
-                    value={formData.category}
-                    onChange={(e) => setFormData({ ...formData, category: e.target.value })}
-                    className="w-full px-4 py-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-amber-500 focus:border-transparent"
-                  >
-                    <option value="">Selecione uma categoria</option>
-                    {categories.map(category => (
-                      <option key={category} value={category}>{category}</option>
+                {/* Posts List */}
+                {loading ? (
+                  <div className="text-center py-12">
+                    <div className="w-12 h-12 border-4 border-amber-200 border-t-amber-600 rounded-full animate-spin mx-auto mb-4"></div>
+                    <p className="text-slate-600">Carregando posts...</p>
+                  </div>
+                ) : (
+                  <div className="space-y-6">
+                    {filteredPosts.map(post => (
+                      <div key={post.id} className="bg-slate-50 rounded-2xl p-6 border border-slate-100">
+                        <div className="flex items-start justify-between">
+                          <div className="flex-1">
+                            <div className="flex items-center gap-4 mb-3">
+                              <h3 className="text-xl font-bold text-slate-900">{post.title}</h3>
+                              <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium border ${getStatusColor(post.status)}`}>
+                                {getStatusText(post.status)}
+                              </span>
+                              <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800">
+                                {post.category}
+                              </span>
+                            </div>
+                            <p className="text-slate-600 mb-4">{post.excerpt}</p>
+                            <div className="flex items-center gap-6 text-sm text-slate-500">
+                              <div className="flex items-center gap-1">
+                                <User className="w-4 h-4" />
+                                <span>{post.author}</span>
+                              </div>
+                              <div className="flex items-center gap-1">
+                                <Calendar className="w-4 h-4" />
+                                <span>{new Date(post.created_at).toLocaleDateString('pt-BR')}</span>
+                              </div>
+                              <div className="flex items-center gap-1">
+                                <Eye className="w-4 h-4" />
+                                <span>{post.views} visualizações</span>
+                              </div>
+                              <div className="flex items-center gap-1">
+                                <MessageSquare className="w-4 h-4" />
+                                <span>{post.comments} comentários</span>
+                              </div>
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <select
+                              value={post.status}
+                              onChange={(e) => handleStatusChange(post.id, e.target.value)}
+                              className={`px-3 py-1 rounded-full text-sm border-0 ${getStatusColor(post.status)}`}
+                            >
+                              <option value="draft">Rascunho</option>
+                              <option value="published">Publicado</option>
+                              <option value="scheduled">Agendado</option>
+                              <option value="archived">Arquivado</option>
+                            </select>
+                            <button
+                              onClick={() => handleEditPost(post)}
+                              className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                            >
+                              <Edit className="w-4 h-4" />
+                            </button>
+                            <button
+                              onClick={() => handleDeletePost(post.id)}
+                              className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </button>
+                          </div>
+                        </div>
+                      </div>
                     ))}
-                  </select>
-                </div>
+                  </div>
+                )}
+              </div>
+            )}
 
-                <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-2">
-                    Tags
-                  </label>
-                  <input
-                    type="text"
-                    value={formData.tags}
-                    onChange={(e) => setFormData({ ...formData, tags: e.target.value })}
-                    className="w-full px-4 py-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-amber-500 focus:border-transparent"
-                    placeholder="café, dicas, receita (separar por vírgula)"
-                  />
+            {/* Categories Tab */}
+            {activeTab === 'categories' && (
+              <div>
+                <h3 className="text-2xl font-bold text-slate-900 mb-6">Categorias do Blog</h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {categories.map(category => (
+                    <div key={category.id} className="bg-slate-50 rounded-2xl p-6 border border-slate-100">
+                      <div className="flex items-center justify-between mb-4">
+                        <h4 className="text-lg font-semibold text-slate-900">{category.name}</h4>
+                        <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${category.color}`}>
+                          {category.count} posts
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <button className="flex-1 bg-amber-600 hover:bg-amber-700 text-white font-medium py-2 rounded-lg transition-colors">
+                          Editar
+                        </button>
+                        <button className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors">
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </div>
+                    </div>
+                  ))}
                 </div>
               </div>
+            )}
 
-              <div className="flex items-center space-x-6">
-                <label className="flex items-center space-x-3">
-                  <input
-                    type="checkbox"
-                    checked={formData.is_published}
-                    onChange={(e) => setFormData({ ...formData, is_published: e.target.checked })}
-                    className="rounded border-slate-300 text-amber-600 focus:ring-amber-500"
-                  />
-                  <span className="text-sm font-medium text-slate-700">Publicar imediatamente</span>
-                </label>
-
-                <label className="flex items-center space-x-3">
-                  <input
-                    type="checkbox"
-                    checked={formData.is_featured}
-                    onChange={(e) => setFormData({ ...formData, is_featured: e.target.checked })}
-                    className="rounded border-slate-300 text-amber-600 focus:ring-amber-500"
-                  />
-                  <span className="text-sm font-medium text-slate-700">Marcar como destaque</span>
-                </label>
+            {/* Analytics Tab */}
+            {activeTab === 'analytics' && (
+              <div>
+                <h3 className="text-2xl font-bold text-slate-900 mb-6">Analytics do Blog</h3>
+                <div className="text-center py-12">
+                  <BarChart3 className="w-16 h-16 text-slate-300 mx-auto mb-4" />
+                  <h4 className="text-lg font-medium text-slate-900 mb-2">Analytics em desenvolvimento</h4>
+                  <p className="text-slate-600">Gráficos detalhados e métricas avançadas estarão disponíveis em breve.</p>
+                </div>
               </div>
-            </div>
-
-            <div className="flex items-center justify-end space-x-4 mt-8 pt-6 border-t border-slate-200">
-              <button
-                onClick={handleCloseModal}
-                className="px-6 py-3 border border-slate-200 text-slate-700 rounded-xl hover:bg-slate-50 transition-colors"
-              >
-                Cancelar
-              </button>
-              <button
-                onClick={handleSave}
-                className="px-6 py-3 bg-amber-600 hover:bg-amber-700 text-white rounded-xl font-semibold transition-colors"
-              >
-                {editingBlog ? 'Atualizar' : 'Criar'} Blog
-              </button>
-            </div>
+            )}
           </div>
         </div>
-      )}
-      
-      <Footer />
+
+        {/* Editor Modal */}
+        {showEditor && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+            <div className="bg-white rounded-3xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-auto">
+              <div className="p-8">
+                <div className="flex items-center justify-between mb-6">
+                  <h2 className="text-2xl font-bold text-slate-900">
+                    {isEditing ? 'Editar Post' : 'Novo Post'}
+                  </h2>
+                  <button
+                    onClick={() => setShowEditor(false)}
+                    className="p-2 text-slate-400 hover:text-slate-600 transition-colors"
+                  >
+                    <X className="w-6 h-6" />
+                  </button>
+                </div>
+
+                <div className="space-y-6">
+                  {/* Title */}
+                  <div>
+                    <label className="block text-slate-700 font-medium mb-2">Título</label>
+                    <input
+                      type="text"
+                      value={postForm.title}
+                      onChange={(e) => setPostForm({...postForm, title: e.target.value})}
+                      className="w-full px-4 py-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-amber-500 focus:border-transparent"
+                      placeholder="Digite o título do post"
+                    />
+                  </div>
+
+                  {/* Category and Status */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                      <label className="block text-slate-700 font-medium mb-2">Categoria</label>
+                      <select
+                        value={postForm.category}
+                        onChange={(e) => setPostForm({...postForm, category: e.target.value})}
+                        className="w-full px-4 py-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-amber-500 focus:border-transparent"
+                      >
+                        <option value="">Selecione uma categoria</option>
+                        {categories.map(category => (
+                          <option key={category.id} value={category.name}>
+                            {category.name}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                    <div>
+                      <label className="block text-slate-700 font-medium mb-2">Status</label>
+                      <select
+                        value={postForm.status}
+                        onChange={(e) => setPostForm({...postForm, status: e.target.value})}
+                        className="w-full px-4 py-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-amber-500 focus:border-transparent"
+                      >
+                        <option value="draft">Rascunho</option>
+                        <option value="published">Publicado</option>
+                        <option value="scheduled">Agendado</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  {/* Excerpt */}
+                  <div>
+                    <label className="block text-slate-700 font-medium mb-2">Resumo</label>
+                    <textarea
+                      value={postForm.excerpt}
+                      onChange={(e) => setPostForm({...postForm, excerpt: e.target.value})}
+                      rows={3}
+                      className="w-full px-4 py-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-amber-500 focus:border-transparent"
+                      placeholder="Breve descrição do post"
+                    />
+                  </div>
+
+                  {/* Content */}
+                  <div>
+                    <label className="block text-slate-700 font-medium mb-2">Conteúdo</label>
+                    <textarea
+                      value={postForm.content}
+                      onChange={(e) => setPostForm({...postForm, content: e.target.value})}
+                      rows={12}
+                      className="w-full px-4 py-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-amber-500 focus:border-transparent"
+                      placeholder="Escreva o conteúdo do post aqui..."
+                    />
+                  </div>
+
+                  {/* Tags */}
+                  <div>
+                    <label className="block text-slate-700 font-medium mb-2">Tags</label>
+                    <input
+                      type="text"
+                      value={postForm.tags}
+                      onChange={(e) => setPostForm({...postForm, tags: e.target.value})}
+                      className="w-full px-4 py-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-amber-500 focus:border-transparent"
+                      placeholder="Separe as tags por vírgula"
+                    />
+                  </div>
+
+                  {/* SEO Fields */}
+                  <div className="border-t border-slate-200 pt-6">
+                    <h3 className="text-lg font-semibold text-slate-900 mb-4">SEO</h3>
+                    <div className="space-y-4">
+                      <div>
+                        <label className="block text-slate-700 font-medium mb-2">Título SEO</label>
+                        <input
+                          type="text"
+                          value={postForm.seo_title}
+                          onChange={(e) => setPostForm({...postForm, seo_title: e.target.value})}
+                          className="w-full px-4 py-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-amber-500 focus:border-transparent"
+                          placeholder="Título otimizado para SEO"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-slate-700 font-medium mb-2">Descrição SEO</label>
+                        <textarea
+                          value={postForm.seo_description}
+                          onChange={(e) => setPostForm({...postForm, seo_description: e.target.value})}
+                          rows={2}
+                          className="w-full px-4 py-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-amber-500 focus:border-transparent"
+                          placeholder="Descrição para mecanismos de busca"
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Actions */}
+                  <div className="flex items-center justify-end gap-4 pt-6 border-t border-slate-200">
+                    <button
+                      onClick={() => setShowEditor(false)}
+                      className="px-6 py-3 bg-slate-200 hover:bg-slate-300 text-slate-700 font-medium rounded-xl transition-colors"
+                    >
+                      Cancelar
+                    </button>
+                    <button
+                      onClick={handleSavePost}
+                      className="px-6 py-3 bg-amber-600 hover:bg-amber-700 text-white font-medium rounded-xl transition-colors flex items-center gap-2"
+                    >
+                      <Save className="w-4 h-4" />
+                      Salvar Post
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
     </div>
   );
 };

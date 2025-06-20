@@ -1,223 +1,450 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
-import { supabaseAuth, onAuthStateChange } from '../lib/supabase';
+import React, { createContext, useContext, useEffect, useState } from 'react';
+import { supabase } from '../lib/supabase';
 
-const SupabaseAuthContext = createContext();
+const SupabaseAuthContext = createContext({});
 
 export const useSupabaseAuth = () => {
   const context = useContext(SupabaseAuthContext);
   if (!context) {
-    throw new Error('useSupabaseAuth deve ser usado dentro de um SupabaseAuthProvider');
+    throw new Error('useSupabaseAuth deve ser usado dentro de SupabaseAuthProvider');
   }
   return context;
 };
 
 export const SupabaseAuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
-  const [session, setSession] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const [profile, setProfile] = useState(null);
 
-  // Inicializar autenticação
   useEffect(() => {
-    const initAuth = async () => {
-      try {
-        // Verificar se há uma sessão ativa
-        const sessionData = await supabaseAuth.getSession();
-        if (sessionData) {
-          setSession(sessionData);
-          
-          // Buscar dados completos do usuário
-          const userResult = await supabaseAuth.getCurrentUser();
-          if (userResult.success) {
-            setUser(userResult.user);
-          }
+    // Verificar sessão inicial
+    getSession();
+
+    // Listener para mudanças de autenticação
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      async (event, session) => {
+        if (session?.user) {
+          setUser(session.user);
+          await loadUserProfile(session.user.id);
+        } else {
+          setUser(null);
+          setProfile(null);
         }
-      } catch (error) {
-        console.error('Erro ao inicializar autenticação:', error);
-        setError(error.message);
-      } finally {
         setLoading(false);
       }
-    };
+    );
 
-    initAuth();
-
-    // Listener para mudanças na autenticação
-    const { data: { subscription } } = onAuthStateChange(async (event, session) => {
-      console.log('Auth state changed:', event, session);
-      
-      setSession(session);
-      
-      if (session?.user) {
-        // Buscar dados completos do usuário
-        const userResult = await supabaseAuth.getCurrentUser();
-        if (userResult.success) {
-          setUser(userResult.user);
-        }
-      } else {
-        setUser(null);
-      }
-      
-      setLoading(false);
-    });
-
-    return () => {
-      subscription?.unsubscribe();
-    };
+    return () => subscription?.unsubscribe();
   }, []);
 
-  // Função de login
+  const getSession = async () => {
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session?.user) {
+        setUser(session.user);
+        await loadUserProfile(session.user.id);
+      }
+    } catch (error) {
+      console.error('Erro ao verificar sessão:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const loadUserProfile = async (userId) => {
+    try {
+      const { data, error } = await supabase
+        .from('users')
+        .select('*')
+        .eq('id', userId)
+        .single();
+
+      if (error) {
+        console.error('Erro ao carregar perfil:', error);
+        // Se não encontrar perfil, criar um básico
+        await createUserProfile(userId);
+      } else {
+        setProfile(data);
+      }
+    } catch (error) {
+      console.error('Erro ao carregar perfil do usuário:', error);
+    }
+  };
+
+  const createUserProfile = async (userId) => {
+    try {
+      const { data: { user: authUser } } = await supabase.auth.getUser();
+      
+      const profileData = {
+        id: userId,
+        email: authUser.email,
+        name: authUser.user_metadata?.name || authUser.email?.split('@')[0] || 'Usuário',
+        user_type: 'cliente_pf',
+        points: 0,
+        level: 'Bronze',
+        role: 'customer', // customer, admin, super_admin
+        permissions: ['read'], // read, write, admin, super_admin
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      };
+
+      const { data, error } = await supabase
+        .from('users')
+        .insert([profileData])
+        .select()
+        .single();
+
+      if (error) {
+        console.error('Erro ao criar perfil:', error);
+      } else {
+        setProfile(data);
+      }
+    } catch (error) {
+      console.error('Erro ao criar perfil do usuário:', error);
+    }
+  };
+
   const login = async (email, password) => {
     try {
       setLoading(true);
-      setError(null);
-
-      const result = await supabaseAuth.signIn(email, password);
-
-      if (result.success) {
-        // O listener onAuthStateChange vai atualizar o estado automaticamente
-        return { success: true, user: result.user, session: result.session };
-      } else {
-        throw new Error(result.error);
-      }
-    } catch (error) {
-      const errorMessage = error.message || 'Erro ao fazer login';
-      setError(errorMessage);
-      return { success: false, error: errorMessage };
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // Função de registro
-  const register = async (userData) => {
-    try {
-      setLoading(true);
-      setError(null);
-
-      const { email, password, ...profileData } = userData;
-      
-      const result = await supabaseAuth.signUp(email, password, {
-        ...profileData,
-        email
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email,
+        password
       });
 
-      if (result.success) {
-        return {
-          success: true,
-          message: 'Conta criada com sucesso! Você ganhou 100 pontos de boas-vindas!',
-          user: result.user,
-          session: result.session
+      if (error) {
+        return { 
+          success: false, 
+          error: error.message || 'Erro ao fazer login'
         };
-      } else {
-        throw new Error(result.error);
       }
+
+      return { 
+        success: true, 
+        user: data.user 
+      };
     } catch (error) {
-      const errorMessage = error.message || 'Erro ao criar conta';
-      setError(errorMessage);
-      return { success: false, error: errorMessage };
+      return { 
+        success: false, 
+        error: 'Erro inesperado ao fazer login' 
+      };
     } finally {
       setLoading(false);
     }
   };
 
-  // Função de logout
+  const register = async (email, password, userData = {}) => {
+    try {
+      setLoading(true);
+      
+      // Registrar usuário no Supabase Auth
+      const { data, error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          data: {
+            name: userData.name || 'Usuário'
+          }
+        }
+      });
+
+      if (error) {
+        return { 
+          success: false, 
+          error: error.message || 'Erro ao criar conta'
+        };
+      }
+
+      // Se o registro foi bem-sucedido e temos um usuário
+      if (data.user) {
+        // Criar perfil na tabela users
+        const profileData = {
+          id: data.user.id,
+          email: email,
+          name: userData.name || 'Usuário',
+          phone: userData.phone || '',
+          cpf_cnpj: userData.cpf_cnpj || '',
+          company_name: userData.company_name || '',
+          company_segment: userData.company_segment || '',
+          user_type: userData.accountType || 'cliente_pf',
+          points: 0,
+          level: 'Bronze',
+          role: 'customer',
+          permissions: ['read'],
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString()
+        };
+
+        const { error: profileError } = await supabase
+          .from('users')
+          .insert([profileData]);
+
+        if (profileError) {
+          console.error('Erro ao criar perfil:', profileError);
+        }
+      }
+
+      return { 
+        success: true, 
+        user: data.user,
+        message: 'Conta criada com sucesso! Verifique seu email para confirmar.'
+      };
+    } catch (error) {
+      return { 
+        success: false, 
+        error: 'Erro inesperado ao criar conta' 
+      };
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const logout = async () => {
     try {
-      setLoading(true);
-      const result = await supabaseAuth.signOut();
-      
-      if (result.success) {
-        setUser(null);
-        setSession(null);
+      const { error } = await supabase.auth.signOut();
+      if (error) {
+        console.error('Erro ao fazer logout:', error);
+        return { success: false, error: error.message };
       }
       
-      return result;
+      setUser(null);
+      setProfile(null);
+      return { success: true };
     } catch (error) {
-      console.error('Erro ao fazer logout:', error);
-      setError(error.message);
-      return { success: false, error: error.message };
-    } finally {
-      setLoading(false);
+      return { success: false, error: 'Erro inesperado ao fazer logout' };
     }
   };
 
-  // Atualizar perfil do usuário
-  const updateProfile = async (profileData) => {
+  const updateProfile = async (updates) => {
     try {
-      setLoading(true);
-      setError(null);
-
-      if (!user?.id) {
-        throw new Error('Usuário não autenticado');
+      if (!user) {
+        return { success: false, error: 'Usuário não autenticado' };
       }
 
-      const result = await supabaseAuth.updateProfile(user.id, profileData);
+      const { error } = await supabase
+        .from('users')
+        .update({
+          ...updates,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', user.id);
 
-      if (result.success) {
-        // Atualizar estado local
-        setUser(prev => ({
-          ...prev,
-          profile: { ...prev.profile, ...profileData }
-        }));
-        
-        return { success: true, user: user };
-      } else {
-        throw new Error(result.error);
+      if (error) {
+        return { success: false, error: error.message };
       }
+
+      // Atualizar o estado local
+      setProfile(prev => ({ ...prev, ...updates }));
+      return { success: true };
     } catch (error) {
-      const errorMessage = error.message || 'Erro ao atualizar perfil';
-      setError(errorMessage);
-      return { success: false, error: errorMessage };
-    } finally {
-      setLoading(false);
+      return { success: false, error: 'Erro ao atualizar perfil' };
     }
   };
 
-  // Verificar se o usuário tem permissão para uma ação
-  const hasPermission = (requiredRole) => {
-    if (!user?.profile) return false;
+  const updatePassword = async (newPassword) => {
+    try {
+      const { error } = await supabase.auth.updateUser({
+        password: newPassword
+      });
 
-    const roles = {
-      'admin': 3,
-      'cliente_pj': 2,
-      'cliente_pf': 1
-    };
+      if (error) {
+        return { success: false, error: error.message };
+      }
 
-    const userRole = roles[user.profile.user_type] || 0;
-    const requiredLevel = roles[requiredRole] || 0;
-
-    return userRole >= requiredLevel;
+      return { success: true };
+    } catch (error) {
+      return { success: false, error: 'Erro ao atualizar senha' };
+    }
   };
 
-  // Verificar se o usuário está autenticado
-  const isAuthenticated = () => {
-    return !!session && !!user;
+  const resetPassword = async (email) => {
+    try {
+      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: `${window.location.origin}/reset-password`
+      });
+
+      if (error) {
+        return { success: false, error: error.message };
+      }
+
+      return { success: true };
+    } catch (error) {
+      return { success: false, error: 'Erro ao enviar email de recuperação' };
+    }
   };
 
-  // Limpar erro
-  const clearError = () => {
-    setError(null);
+  const getCurrentUser = () => {
+    return user;
   };
 
-  // Login demo para testes
-  const demoLogin = async () => {
-    return await login('cliente@teste.com', '123456');
+  const getUserProfile = () => {
+    return profile;
+  };
+
+  // Sistema de permissões
+  const hasPermission = (permission) => {
+    if (!profile) return false;
+    
+    // Super admin tem todas as permissões
+    if (profile.role === 'super_admin') return true;
+    
+    // Admin tem permissões de admin
+    if (permission === 'admin' && (profile.role === 'admin' || profile.role === 'super_admin')) {
+      return true;
+    }
+    
+    // Verificar permissões específicas
+    return profile.permissions?.includes(permission) || false;
+  };
+
+  const isAdmin = () => {
+    return profile?.role === 'admin' || profile?.role === 'super_admin';
+  };
+
+  const isSuperAdmin = () => {
+    return profile?.role === 'super_admin';
+  };
+
+  // Funções administrativas
+  const promoteToAdmin = async (userId) => {
+    try {
+      if (!isSuperAdmin()) {
+        return { success: false, error: 'Permissão negada' };
+      }
+
+      const { error } = await supabase
+        .from('users')
+        .update({
+          role: 'admin',
+          permissions: ['read', 'write', 'admin'],
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', userId);
+
+      if (error) {
+        return { success: false, error: error.message };
+      }
+
+      return { success: true };
+    } catch (error) {
+      return { success: false, error: 'Erro ao promover usuário' };
+    }
+  };
+
+  const revokeAdmin = async (userId) => {
+    try {
+      if (!isSuperAdmin()) {
+        return { success: false, error: 'Permissão negada' };
+      }
+
+      const { error } = await supabase
+        .from('users')
+        .update({
+          role: 'customer',
+          permissions: ['read'],
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', userId);
+
+      if (error) {
+        return { success: false, error: error.message };
+      }
+
+      return { success: true };
+    } catch (error) {
+      return { success: false, error: 'Erro ao revogar permissões' };
+    }
+  };
+
+  // Funções de pontos e gamificação
+  const addPoints = async (points, reason = 'Atividade') => {
+    try {
+      if (!user || !profile) return { success: false, error: 'Usuário não autenticado' };
+
+      const newPoints = (profile.points || 0) + points;
+      const newLevel = calculateLevel(newPoints);
+
+      const { error } = await supabase
+        .from('users')
+        .update({
+          points: newPoints,
+          level: newLevel,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', user.id);
+
+      if (error) {
+        return { success: false, error: error.message };
+      }
+
+      // Registrar histórico de pontos
+      await supabase
+        .from('points_history')
+        .insert({
+          user_id: user.id,
+          points: points,
+          reason: reason,
+          created_at: new Date().toISOString()
+        });
+
+      setProfile(prev => ({ ...prev, points: newPoints, level: newLevel }));
+      return { success: true, newLevel: newLevel !== profile.level };
+    } catch (error) {
+      return { success: false, error: 'Erro ao adicionar pontos' };
+    }
+  };
+
+  const calculateLevel = (points) => {
+    if (points >= 5000) return 'Diamante';
+    if (points >= 3000) return 'Platina';
+    if (points >= 1500) return 'Ouro';
+    if (points >= 500) return 'Prata';
+    return 'Bronze';
+  };
+
+  // Analytics e métricas
+  const getUserStats = async () => {
+    try {
+      if (!user) return null;
+
+      const { data, error } = await supabase
+        .from('user_stats')
+        .select('*')
+        .eq('user_id', user.id)
+        .single();
+
+      if (error && error.code !== 'PGRST116') {
+        console.error('Erro ao buscar estatísticas:', error);
+        return null;
+      }
+
+      return data;
+    } catch (error) {
+      console.error('Erro ao buscar estatísticas do usuário:', error);
+      return null;
+    }
   };
 
   const value = {
     user,
-    session,
+    profile,
     loading,
-    error,
     login,
     register,
     logout,
     updateProfile,
+    updatePassword,
+    resetPassword,
+    getCurrentUser,
+    getUserProfile,
     hasPermission,
-    isAuthenticated,
-    clearError,
-    demoLogin
+    isAdmin,
+    isSuperAdmin,
+    promoteToAdmin,
+    revokeAdmin,
+    addPoints,
+    calculateLevel,
+    getUserStats
   };
 
   return (
