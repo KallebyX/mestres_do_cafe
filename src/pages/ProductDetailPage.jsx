@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, Link, useNavigate } from 'react-router-dom';
 import { 
   Star, ShoppingCart, Heart, Share2, Minus, Plus, Coffee, 
   Award, Truck, Shield, ChevronLeft, ChevronRight, Eye
@@ -7,8 +7,7 @@ import {
 import { useCart } from '../contexts/CartContext';
 import { useAuth } from '../contexts/AuthContext';
 import { productsAPI } from '../lib/api';
-import Header from '../components/Header';
-import Footer from '../components/Footer';
+import { Badge } from '../components/ui/badge';
 
 const ProductDetailPage = () => {
   const { id } = useParams();
@@ -287,18 +286,14 @@ const ProductDetailPage = () => {
   if (loading) {
     return (
       <div className="min-h-screen bg-slate-50 font-inter">
-        <Header />
-        <main className="pt-20 pb-16">
-          <div className="max-w-7xl mx-auto px-4">
-            <div className="flex items-center justify-center min-h-[60vh]">
-              <div className="text-center">
-                <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-amber-600 mx-auto mb-4"></div>
-                <p className="text-slate-600 text-lg">Carregando produto...</p>
-              </div>
+        <div className="max-w-7xl mx-auto px-4">
+          <div className="flex items-center justify-center min-h-[60vh]">
+            <div className="text-center">
+              <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-amber-600 mx-auto mb-4"></div>
+              <p className="text-slate-600 text-lg">Carregando produto...</p>
             </div>
           </div>
-        </main>
-        <Footer />
+        </div>
       </div>
     );
   }
@@ -306,357 +301,347 @@ const ProductDetailPage = () => {
   if (error || !product) {
     return (
       <div className="min-h-screen bg-slate-50 font-inter">
-        <Header />
-        <main className="pt-20 pb-16">
-          <div className="max-w-7xl mx-auto px-4">
-            <div className="flex items-center justify-center min-h-[60vh]">
-              <div className="text-center">
-                <Coffee className="mx-auto text-slate-400 mb-4" size={64} />
-                <h2 className="text-2xl font-bold text-slate-900 mb-2">Produto não encontrado</h2>
-                <p className="text-slate-600 mb-6">{error}</p>
-                <button 
-                  onClick={() => navigate('/marketplace')}
-                  className="bg-amber-600 hover:bg-amber-700 text-white px-6 py-3 rounded-xl font-semibold transition-all duration-300"
-                >
-                  Voltar ao Marketplace
-                </button>
-              </div>
+        <div className="max-w-7xl mx-auto px-4">
+          <div className="flex items-center justify-center min-h-[60vh]">
+            <div className="text-center">
+              <Coffee className="mx-auto text-slate-400 mb-4" size={64} />
+              <h2 className="text-2xl font-bold text-slate-900 mb-2">Produto não encontrado</h2>
+              <p className="text-slate-600 mb-6">{error}</p>
+              <button 
+                onClick={() => navigate('/marketplace')}
+                className="bg-amber-600 hover:bg-amber-700 text-white px-6 py-3 rounded-xl font-semibold transition-all duration-300"
+              >
+                Voltar ao Marketplace
+              </button>
             </div>
           </div>
-        </main>
-        <Footer />
+        </div>
       </div>
     );
   }
 
   return (
     <div className="min-h-screen bg-slate-50 font-inter">
-      <Header />
-      
-      <main className="pt-20 pb-16">
-        <div className="max-w-7xl mx-auto px-4">
-          {/* Breadcrumb */}
-          <nav className="flex items-center space-x-2 text-sm text-slate-600 mb-8">
-            <button onClick={() => navigate('/')} className="hover:text-amber-600">
-              Início
-            </button>
-            <span>/</span>
-            <button onClick={() => navigate('/marketplace')} className="hover:text-amber-600">
-              Marketplace
-            </button>
-            <span>/</span>
-            <span className="text-slate-900 font-medium">{product.name}</span>
-          </nav>
+      <div className="max-w-7xl mx-auto px-4">
+        {/* Breadcrumb */}
+        <nav className="flex items-center space-x-2 text-sm text-slate-600 mb-8">
+          <button onClick={() => navigate('/')} className="hover:text-amber-600">
+            Início
+          </button>
+          <span>/</span>
+          <button onClick={() => navigate('/marketplace')} className="hover:text-amber-600">
+            Marketplace
+          </button>
+          <span>/</span>
+          <span className="text-slate-900 font-medium">{product.name}</span>
+        </nav>
 
-          <div className="grid lg:grid-cols-2 gap-12 mb-16">
-            {/* Product Images */}
-            <div className="space-y-4">
-              {/* Main Image */}
-              <div className="aspect-square bg-white rounded-3xl shadow-lg overflow-hidden relative group flex items-center justify-center">
-                {product.image && product.image.match(/^[\u{1F300}-\u{1F9FF}]/u) ? (
-                  // Display emoji as large icon
-                  <div className="text-9xl">{product.image}</div>
-                ) : (
-                  // Display regular image
-                  <img 
-                    src={productImages[currentImageIndex]}
-                    alt={product.name}
-                    className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-                  />
-                )}
-                
-                {/* Image Navigation */}
-                {productImages.length > 1 && (
-                  <>
-                    <button 
-                      onClick={() => setCurrentImageIndex(prev => prev === 0 ? productImages.length - 1 : prev - 1)}
-                      className="absolute left-4 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white rounded-full p-2 shadow-lg transition-all duration-300"
-                    >
-                      <ChevronLeft size={20} />
-                    </button>
-                    <button 
-                      onClick={() => setCurrentImageIndex(prev => prev === productImages.length - 1 ? 0 : prev + 1)}
-                      className="absolute right-4 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white rounded-full p-2 shadow-lg transition-all duration-300"
-                    >
-                      <ChevronRight size={20} />
-                    </button>
-                  </>
-                )}
-
-                {/* Favorite & Share */}
-                <div className="absolute top-4 right-4 flex space-x-2">
+        <div className="grid lg:grid-cols-2 gap-12 mb-16">
+          {/* Product Images */}
+          <div className="space-y-4">
+            {/* Main Image */}
+            <div className="aspect-square bg-white rounded-3xl shadow-lg overflow-hidden relative group flex items-center justify-center">
+              {product.image && product.image.match(/^[\u{1F300}-\u{1F9FF}]/u) ? (
+                // Display emoji as large icon
+                <div className="text-9xl">{product.image}</div>
+              ) : (
+                // Display regular image
+                <img 
+                  src={productImages[currentImageIndex]}
+                  alt={product.name}
+                  className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                />
+              )}
+              
+              {/* Image Navigation */}
+              {productImages.length > 1 && (
+                <>
                   <button 
-                    onClick={() => setIsFavorite(!isFavorite)}
-                    className={`p-2 rounded-full shadow-lg transition-all duration-300 ${
-                      isFavorite ? 'bg-red-500 text-white' : 'bg-white/80 hover:bg-white text-slate-600'
+                    onClick={() => setCurrentImageIndex(prev => prev === 0 ? productImages.length - 1 : prev - 1)}
+                    className="absolute left-4 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white rounded-full p-2 shadow-lg transition-all duration-300"
+                  >
+                    <ChevronLeft size={20} />
+                  </button>
+                  <button 
+                    onClick={() => setCurrentImageIndex(prev => prev === productImages.length - 1 ? 0 : prev + 1)}
+                    className="absolute right-4 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white rounded-full p-2 shadow-lg transition-all duration-300"
+                  >
+                    <ChevronRight size={20} />
+                  </button>
+                </>
+              )}
+
+              {/* Favorite & Share */}
+              <div className="absolute top-4 right-4 flex space-x-2">
+                <button 
+                  onClick={() => setIsFavorite(!isFavorite)}
+                  className={`p-2 rounded-full shadow-lg transition-all duration-300 ${
+                    isFavorite ? 'bg-red-500 text-white' : 'bg-white/80 hover:bg-white text-slate-600'
+                  }`}
+                >
+                  <Heart size={20} fill={isFavorite ? 'currentColor' : 'none'} />
+                </button>
+                <button className="p-2 bg-white/80 hover:bg-white rounded-full shadow-lg transition-all duration-300">
+                  <Share2 size={20} />
+                </button>
+              </div>
+            </div>
+
+            {/* Thumbnail Images */}
+            {productImages.length > 1 && (
+              <div className="flex space-x-4 overflow-x-auto">
+                {productImages.map((image, index) => (
+                  <button
+                    key={index}
+                    onClick={() => setCurrentImageIndex(index)}
+                    className={`flex-shrink-0 w-20 h-20 rounded-xl overflow-hidden border-2 transition-all duration-300 bg-white flex items-center justify-center ${
+                      index === currentImageIndex ? 'border-amber-600' : 'border-slate-200 hover:border-amber-300'
                     }`}
                   >
-                    <Heart size={20} fill={isFavorite ? 'currentColor' : 'none'} />
+                    {image && image.match(/^[\u{1F300}-\u{1F9FF}]/u) ? (
+                      // Display emoji
+                      <div className="text-2xl">{image}</div>
+                    ) : (
+                      // Display regular image
+                      <img 
+                        src={image} 
+                        alt={`${product.name} - ${index + 1}`}
+                        className="w-full h-full object-cover"
+                      />
+                    )}
                   </button>
-                  <button className="p-2 bg-white/80 hover:bg-white rounded-full shadow-lg transition-all duration-300">
-                    <Share2 size={20} />
-                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* Product Info */}
+          <div className="space-y-6">
+            {/* Header */}
+            <div>
+              <div className="flex items-center space-x-2 mb-2">
+                <span className="bg-amber-100 text-amber-800 px-3 py-1 rounded-full text-sm font-medium">
+                  {product.category || 'Café Especial'}
+                </span>
+                {product.is_featured && (
+                  <span className="bg-purple-100 text-purple-800 px-3 py-1 rounded-full text-sm font-medium">
+                    Destaque
+                  </span>
+                )}
+              </div>
+              <h1 className="text-3xl font-bold text-slate-900 mb-2">{product.name}</h1>
+              <p className="text-slate-600 mb-4">{product.description}</p>
+              
+              {/* Rating */}
+              <div className="flex items-center space-x-4 mb-6">
+                <div className="flex items-center space-x-1">
+                  {[...Array(5)].map((_, i) => (
+                    <Star 
+                      key={i} 
+                      size={20} 
+                      className={`${i < product.rating ? 'text-yellow-400 fill-current' : 'text-slate-300'}`}
+                    />
+                  ))}
                 </div>
+                <span className="text-slate-600">({product.reviews_count || 0} avaliações)</span>
+              </div>
+            </div>
+
+            {/* Price */}
+            <div className="bg-white rounded-2xl p-6 shadow-lg">
+              <div className="flex items-baseline space-x-3 mb-4">
+                <span className="text-3xl font-bold text-slate-900">
+                  R$ {currentPrice.toFixed(2)}
+                </span>
+                {currentWeightOption.priceMultiplier !== 1 && (
+                  <span className="text-lg text-slate-500 line-through">
+                    R$ {(product.price * currentWeightOption.priceMultiplier * 1.2).toFixed(2)}
+                  </span>
+                )}
               </div>
 
-              {/* Thumbnail Images */}
-              {productImages.length > 1 && (
-                <div className="flex space-x-4 overflow-x-auto">
-                  {productImages.map((image, index) => (
+              {/* Weight Options */}
+              <div className="mb-6">
+                <label className="block text-sm font-medium text-slate-700 mb-3">
+                  Peso
+                </label>
+                <div className="grid grid-cols-3 gap-3">
+                  {weightOptions.map((option) => (
                     <button
-                      key={index}
-                      onClick={() => setCurrentImageIndex(index)}
-                      className={`flex-shrink-0 w-20 h-20 rounded-xl overflow-hidden border-2 transition-all duration-300 bg-white flex items-center justify-center ${
-                        index === currentImageIndex ? 'border-amber-600' : 'border-slate-200 hover:border-amber-300'
+                      key={option.value}
+                      onClick={() => setSelectedWeight(option.value)}
+                      className={`p-3 rounded-xl border-2 transition-all duration-300 ${
+                        selectedWeight === option.value
+                          ? 'border-amber-600 bg-amber-50 text-amber-900'
+                          : 'border-slate-200 hover:border-amber-300'
                       }`}
                     >
-                      {image && image.match(/^[\u{1F300}-\u{1F9FF}]/u) ? (
-                        // Display emoji
-                        <div className="text-2xl">{image}</div>
-                      ) : (
-                        // Display regular image
-                        <img 
-                          src={image} 
-                          alt={`${product.name} - ${index + 1}`}
-                          className="w-full h-full object-cover"
-                        />
-                      )}
+                      <div className="text-sm font-medium">{option.label}</div>
+                      <div className="text-xs text-slate-600">
+                        R$ {(product.price * option.priceMultiplier).toFixed(2)}
+                      </div>
                     </button>
                   ))}
                 </div>
-              )}
+              </div>
+
+              {/* Quantity */}
+              <div className="mb-6">
+                <label className="block text-sm font-medium text-slate-700 mb-3">
+                  Quantidade
+                </label>
+                <div className="flex items-center space-x-4">
+                  <div className="flex items-center border-2 border-slate-200 rounded-xl">
+                    <button
+                      onClick={() => handleQuantityChange(-1)}
+                      disabled={quantity <= 1}
+                      className="p-2 hover:bg-slate-100 disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      <Minus size={16} />
+                    </button>
+                    <span className="px-4 py-2 min-w-[60px] text-center font-medium">
+                      {quantity}
+                    </span>
+                    <button
+                      onClick={() => handleQuantityChange(1)}
+                      disabled={quantity >= 10}
+                      className="p-2 hover:bg-slate-100 disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      <Plus size={16} />
+                    </button>
+                  </div>
+                  <span className="text-sm text-slate-600">
+                    Total: R$ {(currentPrice * quantity).toFixed(2)}
+                  </span>
+                </div>
+              </div>
+
+              {/* Add to Cart */}
+              <button
+                onClick={handleAddToCart}
+                className="add-to-cart-btn w-full bg-amber-600 hover:bg-amber-700 text-white font-semibold py-4 rounded-xl transition-all duration-300 transform hover:scale-105 flex items-center justify-center space-x-2"
+              >
+                <ShoppingCart size={20} />
+                <span>Adicionar ao Carrinho</span>
+              </button>
             </div>
 
-            {/* Product Info */}
-            <div className="space-y-6">
-              {/* Header */}
-              <div>
-                <div className="flex items-center space-x-2 mb-2">
-                  <span className="bg-amber-100 text-amber-800 px-3 py-1 rounded-full text-sm font-medium">
-                    {product.category || 'Café Especial'}
-                  </span>
-                  {product.is_featured && (
-                    <span className="bg-purple-100 text-purple-800 px-3 py-1 rounded-full text-sm font-medium">
-                      Destaque
-                    </span>
-                  )}
-                </div>
-                <h1 className="text-3xl font-bold text-slate-900 mb-2">{product.name}</h1>
-                <p className="text-slate-600 mb-4">{product.description}</p>
-                
-                {/* Rating */}
-                <div className="flex items-center space-x-4 mb-6">
-                  <div className="flex items-center space-x-1">
-                    {[...Array(5)].map((_, i) => (
-                      <Star 
-                        key={i} 
-                        size={20} 
-                        className={`${i < product.rating ? 'text-yellow-400 fill-current' : 'text-slate-300'}`}
-                      />
-                    ))}
-                  </div>
-                  <span className="text-slate-600">({product.reviews_count || 0} avaliações)</span>
-                </div>
+            {/* Product Features */}
+            <div className="grid grid-cols-2 gap-4">
+              <div className="bg-white rounded-xl p-4 text-center">
+                <Award className="mx-auto text-amber-600 mb-2" size={24} />
+                <div className="text-sm font-medium text-slate-900">Origem</div>
+                <div className="text-xs text-slate-600">{product.origin || 'Brasil'}</div>
               </div>
-
-              {/* Price */}
-              <div className="bg-white rounded-2xl p-6 shadow-lg">
-                <div className="flex items-baseline space-x-3 mb-4">
-                  <span className="text-3xl font-bold text-slate-900">
-                    R$ {currentPrice.toFixed(2)}
-                  </span>
-                  {currentWeightOption.priceMultiplier !== 1 && (
-                    <span className="text-lg text-slate-500 line-through">
-                      R$ {(product.price * currentWeightOption.priceMultiplier * 1.2).toFixed(2)}
-                    </span>
-                  )}
-                </div>
-
-                {/* Weight Options */}
-                <div className="mb-6">
-                  <label className="block text-sm font-medium text-slate-700 mb-3">
-                    Peso
-                  </label>
-                  <div className="grid grid-cols-3 gap-3">
-                    {weightOptions.map((option) => (
-                      <button
-                        key={option.value}
-                        onClick={() => setSelectedWeight(option.value)}
-                        className={`p-3 rounded-xl border-2 transition-all duration-300 ${
-                          selectedWeight === option.value
-                            ? 'border-amber-600 bg-amber-50 text-amber-900'
-                            : 'border-slate-200 hover:border-amber-300'
-                        }`}
-                      >
-                        <div className="text-sm font-medium">{option.label}</div>
-                        <div className="text-xs text-slate-600">
-                          R$ {(product.price * option.priceMultiplier).toFixed(2)}
-                        </div>
-                      </button>
-                    ))}
-                  </div>
-                </div>
-
-                {/* Quantity */}
-                <div className="mb-6">
-                  <label className="block text-sm font-medium text-slate-700 mb-3">
-                    Quantidade
-                  </label>
-                  <div className="flex items-center space-x-4">
-                    <div className="flex items-center border-2 border-slate-200 rounded-xl">
-                      <button
-                        onClick={() => handleQuantityChange(-1)}
-                        disabled={quantity <= 1}
-                        className="p-2 hover:bg-slate-100 disabled:opacity-50 disabled:cursor-not-allowed"
-                      >
-                        <Minus size={16} />
-                      </button>
-                      <span className="px-4 py-2 min-w-[60px] text-center font-medium">
-                        {quantity}
-                      </span>
-                      <button
-                        onClick={() => handleQuantityChange(1)}
-                        disabled={quantity >= 10}
-                        className="p-2 hover:bg-slate-100 disabled:opacity-50 disabled:cursor-not-allowed"
-                      >
-                        <Plus size={16} />
-                      </button>
-                    </div>
-                    <span className="text-sm text-slate-600">
-                      Total: R$ {(currentPrice * quantity).toFixed(2)}
-                    </span>
-                  </div>
-                </div>
-
-                {/* Add to Cart */}
-                <button
-                  onClick={handleAddToCart}
-                  className="add-to-cart-btn w-full bg-amber-600 hover:bg-amber-700 text-white font-semibold py-4 rounded-xl transition-all duration-300 transform hover:scale-105 flex items-center justify-center space-x-2"
-                >
-                  <ShoppingCart size={20} />
-                  <span>Adicionar ao Carrinho</span>
-                </button>
+              <div className="bg-white rounded-xl p-4 text-center">
+                <Coffee className="mx-auto text-amber-600 mb-2" size={24} />
+                <div className="text-sm font-medium text-slate-900">Intensidade</div>
+                <div className="text-xs text-slate-600">{product.intensity || 4}/5</div>
               </div>
-
-              {/* Product Features */}
-              <div className="grid grid-cols-2 gap-4">
-                <div className="bg-white rounded-xl p-4 text-center">
-                  <Award className="mx-auto text-amber-600 mb-2" size={24} />
-                  <div className="text-sm font-medium text-slate-900">Origem</div>
-                  <div className="text-xs text-slate-600">{product.origin || 'Brasil'}</div>
-                </div>
-                <div className="bg-white rounded-xl p-4 text-center">
-                  <Coffee className="mx-auto text-amber-600 mb-2" size={24} />
-                  <div className="text-sm font-medium text-slate-900">Intensidade</div>
-                  <div className="text-xs text-slate-600">{product.intensity || 4}/5</div>
-                </div>
-                <div className="bg-white rounded-xl p-4 text-center">
-                  <Truck className="mx-auto text-amber-600 mb-2" size={24} />
-                  <div className="text-sm font-medium text-slate-900">Entrega</div>
-                  <div className="text-xs text-slate-600">2-5 dias úteis</div>
-                </div>
-                <div className="bg-white rounded-xl p-4 text-center">
-                  <Shield className="mx-auto text-amber-600 mb-2" size={24} />
-                  <div className="text-sm font-medium text-slate-900">Garantia</div>
-                  <div className="text-xs text-slate-600">Satisfação 100%</div>
-                </div>
+              <div className="bg-white rounded-xl p-4 text-center">
+                <Truck className="mx-auto text-amber-600 mb-2" size={24} />
+                <div className="text-sm font-medium text-slate-900">Entrega</div>
+                <div className="text-xs text-slate-600">2-5 dias úteis</div>
+              </div>
+              <div className="bg-white rounded-xl p-4 text-center">
+                <Shield className="mx-auto text-amber-600 mb-2" size={24} />
+                <div className="text-sm font-medium text-slate-900">Garantia</div>
+                <div className="text-xs text-slate-600">Satisfação 100%</div>
               </div>
             </div>
           </div>
-
-          {/* Product Details Tabs */}
-          <div className="bg-white rounded-3xl shadow-lg p-8 mb-16">
-            <div className="max-w-4xl mx-auto">
-              <div className="grid md:grid-cols-2 gap-8">
-                <div>
-                  <h3 className="text-xl font-bold text-slate-900 mb-4">Descrição Detalhada</h3>
-                  <p className="text-slate-600 leading-relaxed mb-6">
-                    {product.detailed_description || product.description}
-                  </p>
-                  
-                  {product.tasting_notes && (
-                    <div>
-                      <h4 className="font-semibold text-slate-900 mb-2">Notas de Degustação</h4>
-                      <p className="text-slate-600">{product.tasting_notes}</p>
-                    </div>
-                  )}
-                </div>
-                
-                <div>
-                  <h3 className="text-xl font-bold text-slate-900 mb-4">Especificações</h3>
-                  <div className="space-y-3">
-                    <div className="flex justify-between">
-                      <span className="text-slate-600">Tipo:</span>
-                      <span className="font-medium">{product.type || 'Café Torrado'}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-slate-600">Origem:</span>
-                      <span className="font-medium">{product.origin || 'Brasil'}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-slate-600">Processo:</span>
-                      <span className="font-medium">{product.process || 'Natural'}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-slate-600">Intensidade:</span>
-                      <span className="font-medium">{product.intensity || 4}/5</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-slate-600">Altitude:</span>
-                      <span className="font-medium">{product.altitude || '1200m'}</span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Related Products */}
-          {relatedProducts.length > 0 && (
-            <div>
-              <h2 className="text-2xl font-bold text-slate-900 mb-8 text-center">
-                Produtos Relacionados
-              </h2>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                {relatedProducts.map((relatedProduct) => (
-                  <div key={relatedProduct.id} className="bg-white rounded-2xl shadow-lg overflow-hidden group hover:shadow-xl transition-all duration-300">
-                    <div className="aspect-square overflow-hidden bg-slate-50 flex items-center justify-center">
-                      {relatedProduct.image && relatedProduct.image.match(/^[\u{1F300}-\u{1F9FF}]/u) ? (
-                        // Display emoji as large icon
-                        <div className="text-6xl">{relatedProduct.image}</div>
-                      ) : (
-                        // Display regular image
-                        <img 
-                          src={relatedProduct.image || '/default-coffee.jpg'}
-                          alt={relatedProduct.name}
-                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                        />
-                      )}
-                    </div>
-                    <div className="p-6">
-                      <h3 className="font-semibold text-slate-900 mb-2">{relatedProduct.name}</h3>
-                      <p className="text-slate-600 text-sm mb-4 line-clamp-2">{relatedProduct.description}</p>
-                      <div className="flex items-center justify-between">
-                        <span className="text-xl font-bold text-amber-600">
-                          R$ {relatedProduct.price.toFixed(2)}
-                        </span>
-                        <button 
-                          onClick={() => navigate(`/produto/${relatedProduct.id}`)}
-                          className="bg-slate-100 hover:bg-amber-600 hover:text-white p-2 rounded-full transition-all duration-300"
-                        >
-                          <Eye size={16} />
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
         </div>
-      </main>
-      
-      <Footer />
+
+        {/* Product Details Tabs */}
+        <div className="bg-white rounded-3xl shadow-lg p-8 mb-16">
+          <div className="max-w-4xl mx-auto">
+            <div className="grid md:grid-cols-2 gap-8">
+              <div>
+                <h3 className="text-xl font-bold text-slate-900 mb-4">Descrição Detalhada</h3>
+                <p className="text-slate-600 leading-relaxed mb-6">
+                  {product.detailed_description || product.description}
+                </p>
+                
+                {product.tasting_notes && (
+                  <div>
+                    <h4 className="font-semibold text-slate-900 mb-2">Notas de Degustação</h4>
+                    <p className="text-slate-600">{product.tasting_notes}</p>
+                  </div>
+                )}
+              </div>
+              
+              <div>
+                <h3 className="text-xl font-bold text-slate-900 mb-4">Especificações</h3>
+                <div className="space-y-3">
+                  <div className="flex justify-between">
+                    <span className="text-slate-600">Tipo:</span>
+                    <span className="font-medium">{product.type || 'Café Torrado'}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-slate-600">Origem:</span>
+                    <span className="font-medium">{product.origin || 'Brasil'}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-slate-600">Processo:</span>
+                    <span className="font-medium">{product.process || 'Natural'}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-slate-600">Intensidade:</span>
+                    <span className="font-medium">{product.intensity || 4}/5</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-slate-600">Altitude:</span>
+                    <span className="font-medium">{product.altitude || '1200m'}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Related Products */}
+        {relatedProducts.length > 0 && (
+          <div>
+            <h2 className="text-2xl font-bold text-slate-900 mb-8 text-center">
+              Produtos Relacionados
+            </h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+              {relatedProducts.map((relatedProduct) => (
+                <div key={relatedProduct.id} className="bg-white rounded-2xl shadow-lg overflow-hidden group hover:shadow-xl transition-all duration-300">
+                  <div className="aspect-square overflow-hidden bg-slate-50 flex items-center justify-center">
+                    {relatedProduct.image && relatedProduct.image.match(/^[\u{1F300}-\u{1F9FF}]/u) ? (
+                      // Display emoji as large icon
+                      <div className="text-6xl">{relatedProduct.image}</div>
+                    ) : (
+                      // Display regular image
+                      <img 
+                        src={relatedProduct.image || '/default-coffee.jpg'}
+                        alt={relatedProduct.name}
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                      />
+                    )}
+                  </div>
+                  <div className="p-6">
+                    <h3 className="font-semibold text-slate-900 mb-2">{relatedProduct.name}</h3>
+                    <p className="text-slate-600 text-sm mb-4 line-clamp-2">{relatedProduct.description}</p>
+                    <div className="flex items-center justify-between">
+                      <span className="text-xl font-bold text-amber-600">
+                        R$ {relatedProduct.price.toFixed(2)}
+                      </span>
+                      <button 
+                        onClick={() => navigate(`/produto/${relatedProduct.id}`)}
+                        className="bg-slate-100 hover:bg-amber-600 hover:text-white p-2 rounded-full transition-all duration-300"
+                      >
+                        <Eye size={16} />
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
     </div>
   );
 };

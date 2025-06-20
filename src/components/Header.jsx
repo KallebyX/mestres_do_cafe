@@ -5,9 +5,9 @@ import { useCart } from '../contexts/CartContext';
 import { Button } from './ui/button';
 import { Menu, X, ShoppingCart } from 'lucide-react';
 
-const Header = () => {
+export const Header = () => {
   const { user, logout } = useAuth();
-  const { getCartCount } = useCart();
+  const { getCartCount, cart } = useCart();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
   const userMenuRef = useRef(null);
@@ -71,6 +71,8 @@ const Header = () => {
 
   const cn = (...classes) => classes.filter(Boolean).join(' ');
 
+  const isActive = (href) => location.pathname === href;
+
   return (
     <header
       className={cn(
@@ -102,14 +104,14 @@ const Header = () => {
                 to={item.href}
                 className={cn(
                   'text-sm font-medium transition-colors duration-200 relative group',
-                  location.pathname === item.href ? 'text-brand-brown' : 'text-brand-dark hover:text-brand-brown'
+                  isActive(item.href) ? 'text-brand-brown' : 'text-brand-dark hover:text-brand-brown'
                 )}
               >
                 {item.label}
                 <span
                   className={cn(
                     'absolute -bottom-1 left-0 h-[2px] bg-brand-brown transition-all duration-300',
-                    location.pathname === item.href ? 'w-full' : 'w-0 group-hover:w-full'
+                    isActive(item.href) ? 'w-full' : 'w-0 group-hover:w-full'
                   )}
                   aria-hidden="true"
                 ></span>
@@ -118,38 +120,37 @@ const Header = () => {
           </nav>
 
           <div className="flex items-center space-x-2">
-            <Button
-              variant="ghost"
-              size="icon"
-              className="text-brand-dark hover:text-brand-brown hover:bg-brand-brown/10 hidden lg:inline-flex"
+            <button
+              className="text-brand-dark hover:text-brand-brown hover:bg-brand-brown/10 hidden lg:inline-flex relative p-2 rounded-md transition-colors"
               aria-label="Carrinho de Compras"
             >
               <ShoppingCart className="w-5 h-5" />
-            </Button>
+              {cart && cart.length > 0 && (
+                <span className="absolute -top-1 -right-1 bg-brand-brown text-white text-xs rounded-full w-5 h-5 flex items-center justify-center font-medium">
+                  {cart.length}
+                </span>
+              )}
+            </button>
+            
             <div className="hidden lg:flex items-center space-x-1">
               <Link to="/login">
-                <Button
-                  variant="ghost"
-                  className="text-brand-dark hover:text-brand-brown hover:bg-brand-brown/10 px-3 py-2 text-sm"
-                >
+                <button className="text-brand-dark hover:text-brand-brown hover:bg-brand-brown/10 px-3 py-2 text-sm rounded-md transition-colors">
                   Entrar
-                </Button>
+                </button>
               </Link>
-              <span className="text-brand-dark/30 hidden md:inline" aria-hidden="true">
-                |
-              </span>
+              <span className="text-brand-dark/30 hidden md:inline" aria-hidden="true">|</span>
               <Link to="/registro">
-                <Button className="bg-brand-brown hover:bg-brand-brown/90 text-brand-light px-3 py-2 text-sm shadow-md hover:shadow-lg transition-all">
+                <button className="bg-brand-brown hover:bg-brand-brown/90 text-brand-light px-3 py-2 text-sm shadow-md hover:shadow-lg transition-all rounded-md">
                   Cadastrar
-                </Button>
+                </button>
               </Link>
             </div>
 
             {/* Mobile Menu Button */}
             <button
-              className="lg:hidden p-2 text-brand-dark hover:text-brand-brown focus:outline-none focus:ring-2 focus:ring-inset focus:ring-brand-brown"
+              className="lg:hidden p-2 text-brand-dark hover:text-brand-brown focus:outline-none focus:ring-2 focus:ring-inset focus:ring-brand-brown rounded-md"
               onClick={() => setIsMenuOpen(!isMenuOpen)}
-              aria-label={isMenuOpen ? 'Fechar menu de navegação' : 'Abrir menu de navegação'}
+              aria-label={isMenuOpen ? "Fechar menu de navegação" : "Abrir menu de navegação"}
               aria-expanded={isMenuOpen}
               aria-controls="mobile-menu"
             >
@@ -176,7 +177,7 @@ const Header = () => {
                 onClick={() => setIsMenuOpen(false)}
                 className={cn(
                   'block font-medium py-2.5 px-3 rounded-md transition-colors text-base',
-                  location.pathname === item.href
+                  isActive(item.href)
                     ? 'bg-brand-brown/10 text-brand-brown'
                     : 'text-brand-dark hover:bg-brand-brown/5 hover:text-brand-brown'
                 )}
@@ -186,35 +187,38 @@ const Header = () => {
             ))}
             <div className="flex items-center space-x-2 mt-3 pt-3 border-t border-brand-brown/10">
               <Link to="/login" className="flex-1">
-                <Button
-                  variant="outline"
-                  className="border-brand-brown text-brand-brown hover:bg-brand-brown/10 justify-center w-full bg-white"
+                <button
+                  className="border-2 border-brand-brown text-brand-brown hover:bg-brand-brown/10 justify-center w-full py-2 px-4 rounded-md transition-colors bg-white"
                   onClick={() => setIsMenuOpen(false)}
                 >
                   Entrar
-                </Button>
+                </button>
               </Link>
               <Link to="/registro" className="flex-1">
-                <Button
-                  className="bg-brand-brown hover:bg-brand-brown/90 text-brand-light justify-center w-full"
+                <button
+                  className="bg-brand-brown hover:bg-brand-brown/90 text-brand-light justify-center w-full py-2 px-4 rounded-md transition-colors"
                   onClick={() => setIsMenuOpen(false)}
                 >
                   Cadastrar
-                </Button>
+                </button>
               </Link>
             </div>
-            <Button
-              variant="ghost"
-              className="text-brand-dark hover:text-brand-brown hover:bg-brand-brown/10 flex items-center justify-start w-full mt-2 py-2.5 px-3 text-base"
+            <button
+              className="text-brand-dark hover:text-brand-brown hover:bg-brand-brown/10 flex items-center justify-start w-full mt-2 py-2.5 px-3 text-base rounded-md transition-colors"
+              onClick={() => setIsMenuOpen(false)}
             >
-              <ShoppingCart className="w-5 h-5 mr-2" /> Carrinho
-            </Button>
+              <ShoppingCart className="w-5 h-5 mr-2" />
+              Carrinho
+              {cart && cart.length > 0 && (
+                <span className="ml-auto bg-brand-brown text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
+                  {cart.length}
+                </span>
+              )}
+            </button>
           </nav>
         </div>
       </div>
     </header>
   );
 };
-
-export default Header;
 

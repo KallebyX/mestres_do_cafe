@@ -5,8 +5,7 @@ import {
 } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { adminAPI, productsAPI, ordersAPI } from '../lib/api';
-import Header from '../components/Header';
-import Footer from '../components/Footer';
+import { useNavigate, Link } from 'react-router-dom';
 
 const AdminDashboard = () => {
   const [loading, setLoading] = useState(true);
@@ -108,8 +107,6 @@ const AdminDashboard = () => {
 
   return (
     <div className="min-h-screen bg-coffee-white font-montserrat">
-      <Header />
-      
       <main className="py-20 px-4">
         <div className="max-w-7xl mx-auto">
           {/* Header */}
@@ -535,8 +532,6 @@ const AdminDashboard = () => {
           </div>
         </div>
       </main>
-
-      <Footer />
     </div>
   );
 };

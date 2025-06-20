@@ -2,7 +2,7 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { Instagram, Facebook, Twitter, Mail, Phone, MapPin } from 'lucide-react';
 
-const Footer = () => {
+export const Footer = () => {
   const currentYear = new Date().getFullYear();
 
   return (
@@ -66,12 +66,12 @@ const Footer = () => {
             <h4 className="text-base font-semibold mb-4 uppercase tracking-wider">Links Rápidos</h4>
             <ul className="space-y-2.5 text-sm">
               {[
-                { label: 'Marketplace', href: '/marketplace' },
-                { label: 'Gamificação', href: '/gamificacao' },
-                { label: 'Cursos', href: '/cursos' },
-                { label: 'Blog', href: '/blog' },
-                { label: 'Sobre Nós', href: '/sobre' },
-                { label: 'Contato', href: '/contato' }
+                { label: "Marketplace", href: "/marketplace" },
+                { label: "Gamificação", href: "/gamificacao" },
+                { label: "Cursos", href: "/cursos" },
+                { label: "Blog", href: "/blog" },
+                { label: "Sobre Nós", href: "/sobre" },
+                { label: "Contato", href: "/contato" },
               ].map((link) => (
                 <li key={link.label}>
                   <Link to={link.href} className="text-brand-light/80 hover:text-brand-brown transition-colors">
@@ -90,14 +90,14 @@ const Footer = () => {
                 <Mail className="w-4 h-4 text-brand-brown mt-0.5 flex-shrink-0" />
                 <a
                   href="mailto:financeiro.mestresdocafe@gmail.com"
-                  className="text-brand-light/80 hover:text-brand-brown break-all"
+                  className="text-brand-light/80 hover:text-brand-brown break-all transition-colors"
                 >
                   financeiro.mestresdocafe@gmail.com
                 </a>
               </div>
               <div className="flex items-start space-x-3">
                 <Phone className="w-4 h-4 text-brand-brown mt-0.5 flex-shrink-0" />
-                <a href="tel:+55996458600" className="text-brand-light/80 hover:text-brand-brown">
+                <a href="tel:+55996458600" className="text-brand-light/80 hover:text-brand-brown transition-colors">
                   (55) 99645-8600
                 </a>
               </div>
@@ -111,13 +111,11 @@ const Footer = () => {
 
         <div className="border-t border-brand-light/10 mt-10 pt-8 text-center">
           <p className="text-xs text-brand-light/60">
-            © {currentYear} Mestres do Café. Todos os direitos reservados.
+            © {currentYear} Mestres do Café. Todos os direitos reservados. CNPJ: XX.XXX.XXX/0001-XX
           </p>
         </div>
       </div>
     </footer>
   );
 };
-
-export default Footer;
 

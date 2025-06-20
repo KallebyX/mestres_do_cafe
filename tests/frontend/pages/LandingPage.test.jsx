@@ -61,7 +61,7 @@ describe('LandingPage', () => {
     it('deve renderizar seção hero com texto principal', () => {
       renderWithContexts(<LandingPage />);
       
-      expect(screen.getByText('Cafés Especiais')).toBeInTheDocument();
+      expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('Cafés Especiais');
       expect(screen.getByText('Direto do Produtor')).toBeInTheDocument();
       expect(screen.getByText(/Descubra sabores únicos dos melhores cafés especiais do Brasil/i)).toBeInTheDocument();
     });
@@ -76,41 +76,57 @@ describe('LandingPage', () => {
     it('deve renderizar estatísticas', () => {
       renderWithContexts(<LandingPage />);
       
-      expect(screen.getByText('1000+')).toBeInTheDocument();
+      expect(screen.getByText('500+')).toBeInTheDocument();
       expect(screen.getByText('Clientes Satisfeitos')).toBeInTheDocument();
       expect(screen.getByText('50+')).toBeInTheDocument();
-      expect(screen.getByText('Variedades Premium')).toBeInTheDocument();
+      expect(screen.getAllByText('Cafés Especiais')).toHaveLength(2);
+      expect(screen.getByText('5')).toBeInTheDocument();
+      expect(screen.getByText('Anos de Experiência')).toBeInTheDocument();
+      expect(screen.getByText('95%')).toBeInTheDocument();
+      expect(screen.getByText('Avaliações 5 Estrelas')).toBeInTheDocument();
     });
 
-    it('deve mostrar avaliação dos clientes', () => {
+    it('deve mostrar certificação SCA', () => {
       renderWithContexts(<LandingPage />);
       
-      expect(screen.getByText('4.9/5')).toBeInTheDocument();
-      expect(screen.getByText('Avaliação dos Clientes')).toBeInTheDocument();
+      expect(screen.getByText('Certificação SCA & Torra Artesanal')).toBeInTheDocument();
     });
   })
 
   describe('Seção de funcionalidades', () => {
-    it('deve renderizar seção de qualidade', () => {
+    it('deve renderizar seção "Por que escolher nossos cafés?"', () => {
       renderWithContexts(<LandingPage />);
       
-      expect(screen.getByText('Qualidade em Cada Detalhe')).toBeInTheDocument();
-      expect(screen.getByText('Cafés Especiais Certificados')).toBeInTheDocument();
-      expect(screen.getByText('Entrega Rápida e Segura')).toBeInTheDocument();
+      expect(screen.getByText('Por que escolher nossos cafés?')).toBeInTheDocument();
+      expect(screen.getByText('Oferecemos uma experiência completa em cafés especiais, do grão à xícara')).toBeInTheDocument();
     });
 
-    it('deve mostrar sistema de gamificação', () => {
+    it('deve mostrar certificação SCA', () => {
       renderWithContexts(<LandingPage />);
       
-      expect(screen.getByText('Sistema de Gamificação')).toBeInTheDocument();
-      expect(screen.getByText(/Ganhe pontos a cada compra/i)).toBeInTheDocument();
+      expect(screen.getByText('Certificação SCA')).toBeInTheDocument();
+      expect(screen.getByText('Todos os nossos cafés possuem pontuação SCA acima de 80 pontos')).toBeInTheDocument();
+    });
+
+    it('deve mostrar frete grátis', () => {
+      renderWithContexts(<LandingPage />);
+      
+      expect(screen.getByText('Frete Grátis')).toBeInTheDocument();
+      expect(screen.getByText('Entrega gratuita para compras acima de R$ 99 em todo o Brasil')).toBeInTheDocument();
     });
 
     it('deve mostrar compra segura', () => {
       renderWithContexts(<LandingPage />);
       
-      expect(screen.getByText('Compra 100% Segura')).toBeInTheDocument();
-      expect(screen.getByText(/Transações protegidas com SSL/i)).toBeInTheDocument();
+      expect(screen.getByText('Compra Segura')).toBeInTheDocument();
+      expect(screen.getByText('Pagamento seguro com garantia de qualidade ou dinheiro de volta')).toBeInTheDocument();
+    });
+
+    it('deve mostrar frescor garantido', () => {
+      renderWithContexts(<LandingPage />);
+      
+      expect(screen.getByText('Frescor Garantido')).toBeInTheDocument();
+      expect(screen.getByText('Torrefação semanal para garantir máximo frescor e sabor')).toBeInTheDocument();
     });
   })
 
@@ -128,22 +144,39 @@ describe('LandingPage', () => {
       
       expect(screen.getByText('R$ 45,90')).toBeInTheDocument()
       expect(screen.getByText('R$ 89,90')).toBeInTheDocument()
-      expect(screen.getByText('R$ 39,90')).toBeInTheDocument()
+      expect(screen.getByText('R$ 67,90')).toBeInTheDocument()
     })
 
-    it('deve mostrar botões de adicionar ao carrinho', () => {
+    it('deve mostrar SCA score dos produtos', () => {
       renderWithContexts(<LandingPage />)
       
-      const addToCartButtons = screen.getAllByText(/adicionar/i)
-      expect(addToCartButtons).toHaveLength(3)
+      expect(screen.getByText('SCA 86')).toBeInTheDocument()
+      expect(screen.getByText('SCA 92')).toBeInTheDocument()
+      expect(screen.getByText('SCA 88')).toBeInTheDocument()
     })
 
-    it('deve mostrar badges dos produtos', () => {
+    it('deve mostrar descrições dos produtos', () => {
       renderWithContexts(<LandingPage />)
       
-      expect(screen.getByText('Mais Vendido')).toBeInTheDocument()
-      expect(screen.getByText('Premium')).toBeInTheDocument()
-      expect(screen.getByText('Novo')).toBeInTheDocument()
+      expect(screen.getByText('Notas de chocolate e caramelo')).toBeInTheDocument()
+      expect(screen.getByText('Floral e cítrico excepcional')).toBeInTheDocument()
+      expect(screen.getByText('Equilíbrio perfeito e cremoso')).toBeInTheDocument()
+    })
+
+    it('deve mostrar origens dos produtos', () => {
+      renderWithContexts(<LandingPage />)
+      
+      expect(screen.getByText('Montanhas de Minas')).toBeInTheDocument()
+      expect(screen.getByText('Fazenda São Benedito')).toBeInTheDocument()
+      expect(screen.getByText('Seleção Especial')).toBeInTheDocument()
+    })
+
+    it('deve mostrar avaliações com estrelas nos produtos', () => {
+      renderWithContexts(<LandingPage />)
+      
+      expect(screen.getByText('4.8')).toBeInTheDocument()
+      expect(screen.getByText('4.9')).toBeInTheDocument()
+      expect(screen.getByText('4.7')).toBeInTheDocument()
     })
   })
 
@@ -151,65 +184,44 @@ describe('LandingPage', () => {
     it('deve navegar para marketplace ao clicar em "Explorar Cafés"', () => {
       renderWithContexts(<LandingPage />)
       
-      const marketplaceButton = screen.getByText(/explorar cafés/i)
-      fireEvent.click(marketplaceButton)
+      const marketplaceLink = screen.getByRole('link', { name: /explorar cafés/i })
+      expect(marketplaceLink).toHaveAttribute('href', '/marketplace')
+    })
+
+    it('deve navegar para sobre ao clicar em "Ver Processo"', () => {
+      renderWithContexts(<LandingPage />)
       
-      expect(marketplaceButton.closest('a')).toHaveAttribute('href', '/marketplace')
+      const aboutLink = screen.getByRole('link', { name: /ver processo/i })
+      expect(aboutLink).toHaveAttribute('href', '/sobre')
     })
 
     it('deve navegar para marketplace ao clicar em "Ver Todos os Cafés"', () => {
       renderWithContexts(<LandingPage />)
       
-      const viewAllButton = screen.getByText(/ver todos os cafés/i)
-      expect(viewAllButton.closest('a')).toHaveAttribute('href', '/marketplace')
+      const viewAllLink = screen.getByRole('link', { name: /ver todos os cafés/i })
+      expect(viewAllLink).toHaveAttribute('href', '/marketplace')
     })
 
-    it('deve navegar para registro ao clicar em "Criar Conta Grátis"', () => {
+    it('deve navegar para marketplace ao clicar em "Começar Jornada"', () => {
       renderWithContexts(<LandingPage />)
       
-      const registerButton = screen.getByText(/criar conta grátis/i)
-      expect(registerButton.closest('a')).toHaveAttribute('href', '/registro')
+      const startJourneyLink = screen.getByRole('link', { name: /começar jornada/i })
+      expect(startJourneyLink).toHaveAttribute('href', '/marketplace')
     })
-  })
-
-  describe('Seção de depoimentos', () => {
-    it('deve exibir depoimentos de clientes', () => {
-      renderWithContexts(<LandingPage />);
-      
-      expect(screen.getByText(/o que nossos clientes dizem/i)).toBeInTheDocument();
-      expect(screen.getByText('Maria Silva')).toBeInTheDocument();
-      expect(screen.getByText('João Santos')).toBeInTheDocument();
-      expect(screen.getByText('Ana Costa')).toBeInTheDocument();
-    });
-
-    it('deve mostrar roles dos clientes', () => {
-      renderWithContexts(<LandingPage />);
-      
-      expect(screen.getByText('Empresária')).toBeInTheDocument();
-      expect(screen.getByText('Chef')).toBeInTheDocument();
-      expect(screen.getByText('Barista')).toBeInTheDocument();
-    });
-
-    it('deve mostrar comentários dos clientes', () => {
-      renderWithContexts(<LandingPage />);
-      
-      expect(screen.getByText(/a qualidade dos cafés é excepcional/i)).toBeInTheDocument();
-      expect(screen.getByText(/trabalho com café há 15 anos/i)).toBeInTheDocument();
-    });
   })
 
   describe('Seção CTA final', () => {
     it('deve mostrar call-to-action final', () => {
       renderWithContexts(<LandingPage />)
       
-      expect(screen.getByText(/comece sua jornada no/i)).toBeInTheDocument()
-      expect(screen.getByText(/mundo dos cafés especiais/i)).toBeInTheDocument()
+      expect(screen.getByText(/pronto para descobrir o seu café especial/i)).toBeInTheDocument()
+      expect(screen.getByText(/junte-se a centenas de amantes do café que já descobriram sabores únicos/i)).toBeInTheDocument()
     })
 
-    it('deve mostrar informações sobre pontos de boas-vindas', () => {
+    it('deve mostrar botão "Começar Jornada"', () => {
       renderWithContexts(<LandingPage />)
       
-      expect(screen.getByText(/ganhe 100 pontos de boas-vindas/i)).toBeInTheDocument()
+      expect(screen.getByText(/começar jornada/i)).toBeInTheDocument()
     })
   })
 
@@ -218,7 +230,7 @@ describe('LandingPage', () => {
       renderWithContexts(<LandingPage />);
       
       // Verificar se elementos principais estão presentes
-      expect(screen.getByText('Cafés Especiais')).toBeInTheDocument();
+      expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('Cafés Especiais');
       expect(screen.getByText('Nossos Cafés Especiais')).toBeInTheDocument();
     })
 
@@ -238,34 +250,25 @@ describe('LandingPage', () => {
   })
 
   describe('Elementos visuais e interações', () => {
-    it('deve mostrar certificação SCA', () => {
+    it('deve mostrar pontuação SCA no texto hero', () => {
       renderWithContexts(<LandingPage />);
       
-      expect(screen.getByText('Certificação SCA')).toBeInTheDocument();
+      expect(screen.getAllByText(/pontuação SCA acima de 80 pontos/i)).toHaveLength(2);
     })
 
-    it('deve mostrar avaliações com estrelas nos produtos', () => {
+    it('deve mostrar seção de produtos em destaque', () => {
       renderWithContexts(<LandingPage />)
       
-      expect(screen.getByText('4.8')).toBeInTheDocument()
-      expect(screen.getByText('4.9')).toBeInTheDocument()
-      expect(screen.getByText('4.7')).toBeInTheDocument()
+      expect(screen.getByText('Nossos Cafés Especiais')).toBeInTheDocument()
+      expect(screen.getByText('Conheça nossa seleção premium de cafés especiais')).toBeInTheDocument()
     })
 
-    it('deve mostrar descrições dos produtos', () => {
+    it('deve mostrar preços originais tachados quando há desconto', () => {
       renderWithContexts(<LandingPage />)
       
-      expect(screen.getByText('Notas de chocolate e caramelo')).toBeInTheDocument()
-      expect(screen.getByText('Floral e cítrico excepcional')).toBeInTheDocument()
-      expect(screen.getByText('Equilíbrio perfeito e cremoso')).toBeInTheDocument()
-    })
-
-    it('deve mostrar origens dos produtos', () => {
-      renderWithContexts(<LandingPage />)
-      
-      expect(screen.getByText('Montanhas de Minas')).toBeInTheDocument()
-      expect(screen.getByText('Fazenda São Benedito')).toBeInTheDocument()
-      expect(screen.getByText('Seleção Especial')).toBeInTheDocument()
+      expect(screen.getByText('R$ 52,90')).toBeInTheDocument()
+      expect(screen.getByText('R$ 105,90')).toBeInTheDocument()
+      expect(screen.getByText('R$ 75,90')).toBeInTheDocument()
     })
   })
 }) 

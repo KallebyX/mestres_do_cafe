@@ -3,8 +3,8 @@ import { useParams, useNavigate, Link } from 'react-router-dom';
 import { ArrowLeft, ShoppingCart, Star, Coffee, Package, Truck, Shield, Heart, Share2, Plus, Minus } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { useCart } from '../contexts/CartContext';
-import Header from '../components/Header';
-import Footer from '../components/Footer';
+import { Header } from '../components/Header';
+import { Footer } from '../components/Footer';
 
 const ProductPage = () => {
   const { id } = useParams();

@@ -1,8 +1,7 @@
-import { Header } from '../components/Header'
-import { Footer } from '../components/Footer'
+import React from 'react'
+import { Badge } from '../components/ui/badge'
 import { Card, CardContent, CardFooter, CardHeader, CardTitle, CardDescription } from '../components/ui/card'
 import { Button } from '../components/ui/button'
-import { Badge } from '../components/ui/badge'
 import { Calendar, User, ArrowRight, Tag, Edit3, Clock } from 'lucide-react'
 import { Link } from 'react-router-dom'
 
@@ -52,7 +51,6 @@ const articles = [
 const BlogPage = () => {
   return (
     <div className="flex flex-col min-h-screen bg-brand-light">
-      <Header />
       <main className="flex-grow container mx-auto px-4 py-8 md:py-12">
         <div className="text-center mb-10 md:mb-16">
           <Edit3 className="w-16 h-16 text-brand-brown mx-auto mb-4" />
@@ -124,7 +122,6 @@ const BlogPage = () => {
           ))}
         </div>
       </main>
-      <Footer />
     </div>
   )
 }

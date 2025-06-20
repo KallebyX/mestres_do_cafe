@@ -4,8 +4,8 @@ import {
   User, Tag, TrendingUp, Star, MessageSquare, ThumbsUp
 } from 'lucide-react';
 import { blogAPI, adminAPI } from '../lib/api';
-import Header from '../components/Header';
-import Footer from '../components/Footer';
+import { Header } from '../components/Header';
+import { Footer } from '../components/Footer';
 
 const AdminBlogManager = () => {
   const [blogs, setBlogs] = useState([]);

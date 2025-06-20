@@ -1,8 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
-import Header from '../components/Header';
-import Footer from '../components/Footer';
 
 const ProfilePage = () => {
   const { user, updateProfile, logout } = useAuth();
@@ -18,22 +16,6 @@ const ProfilePage = () => {
   });
   const [isLoading, setIsLoading] = useState(false);
   const [message, setMessage] = useState({ type: '', text: '' });
-
-  useEffect(() => {
-    if (!user) {
-      navigate('/login');
-      return;
-    }
-    
-    setFormData({
-      name: user.name || '',
-      email: user.email || '',
-      phone: user.phone || '',
-      currentPassword: '',
-      newPassword: '',
-      confirmPassword: ''
-    });
-  }, [user, navigate]);
 
   const handleChange = (e) => {
     setFormData({
@@ -105,8 +87,6 @@ const ProfilePage = () => {
 
   return (
     <div className="min-h-screen bg-coffee-white font-montserrat">
-      <Header />
-      
       <main className="py-20 px-4">
         <div className="max-w-4xl mx-auto">
           <div className="text-center mb-12">
@@ -308,8 +288,6 @@ const ProfilePage = () => {
           </div>
         </div>
       </main>
-
-      <Footer />
     </div>
   );
 };
