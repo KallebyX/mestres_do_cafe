@@ -1,6 +1,6 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import { AuthProvider } from './contexts/AuthContext';
+import { SupabaseAuthProvider } from './contexts/SupabaseAuthContext';
 import { CartProvider } from './contexts/CartContext';
 import { Header } from './components/Header';
 import { Footer } from './components/Footer';
@@ -27,11 +27,12 @@ import './App.css';
 
 function App() {
   return (
-    <AuthProvider>
+    <SupabaseAuthProvider>
       <CartProvider>
         <Router>
           <div className="App min-h-screen bg-slate-50">
             <Header />
+
             <main className="flex-1">
               <Routes>
                 <Route path="/" element={<LandingPage />} />
@@ -59,7 +60,7 @@ function App() {
           </div>
         </Router>
       </CartProvider>
-    </AuthProvider>
+    </SupabaseAuthProvider>
   );
 }
 

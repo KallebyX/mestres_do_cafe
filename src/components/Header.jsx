@@ -1,13 +1,13 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
-import { useAuth } from '../contexts/AuthContext';
+import { useSupabaseAuth } from '../contexts/SupabaseAuthContext';
 import { useCart } from '../contexts/CartContext';
 import { Button } from './ui/button';
-import { Menu, X, ShoppingCart } from 'lucide-react';
+import { Menu, X, ShoppingCart, User, LogOut, Settings, Shield } from 'lucide-react';
 import Logo from './Logo';
 
 export const Header = () => {
-  const { user, logout } = useAuth();
+  const { user, logout, isAuthenticated } = useSupabaseAuth();
   const { getCartCount, cart } = useCart();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
@@ -55,8 +55,8 @@ export const Header = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [location.pathname]);
 
-  const handleLogout = () => {
-    logout();
+  const handleLogout = async () => {
+    await logout();
     setIsUserMenuOpen(false);
     navigate('/');
   };
@@ -73,6 +73,10 @@ export const Header = () => {
   const cn = (...classes) => classes.filter(Boolean).join(' ');
 
   const isActive = (href) => location.pathname === href;
+
+  const isLoggedIn = isAuthenticated();
+  const userName = user?.profile?.name || user?.user_metadata?.name || 'Usuário';
+  const userType = user?.profile?.user_type || 'cliente_pf';
 
   return (
     <header
@@ -113,31 +117,89 @@ export const Header = () => {
           </nav>
 
           <div className="flex items-center space-x-2">
-            <button
-              className="text-brand-dark hover:text-brand-brown hover:bg-brand-brown/10 hidden lg:inline-flex relative p-2 rounded-md transition-colors"
-              aria-label="Carrinho de Compras"
-            >
-              <ShoppingCart className="w-5 h-5" />
-              {cart && cart.length > 0 && (
-                <span className="absolute -top-1 -right-1 bg-brand-brown text-white text-xs rounded-full w-5 h-5 flex items-center justify-center font-medium">
-                  {cart.length}
-                </span>
-              )}
-            </button>
+            <Link to="/carrinho">
+              <button
+                className="text-brand-dark hover:text-brand-brown hover:bg-brand-brown/10 hidden lg:inline-flex relative p-2 rounded-md transition-colors"
+                aria-label="Carrinho de Compras"
+              >
+                <ShoppingCart className="w-5 h-5" />
+                {cart && cart.length > 0 && (
+                  <span className="absolute -top-1 -right-1 bg-brand-brown text-white text-xs rounded-full w-5 h-5 flex items-center justify-center font-medium">
+                    {cart.length}
+                  </span>
+                )}
+              </button>
+            </Link>
             
-            <div className="hidden lg:flex items-center space-x-1">
-              <Link to="/login">
-                <button className="text-brand-dark hover:text-brand-brown hover:bg-brand-brown/10 px-3 py-2 text-sm rounded-md transition-colors">
-                  Entrar
+            {!isLoggedIn ? (
+              <div className="hidden lg:flex items-center space-x-1">
+                <Link to="/login">
+                  <button className="text-brand-dark hover:text-brand-brown hover:bg-brand-brown/10 px-3 py-2 text-sm rounded-md transition-colors">
+                    Entrar
+                  </button>
+                </Link>
+                <span className="text-brand-dark/30 hidden md:inline" aria-hidden="true">|</span>
+                <Link to="/registro">
+                  <button className="bg-brand-brown hover:bg-brand-brown/90 text-brand-light px-3 py-2 text-sm shadow-md hover:shadow-lg transition-all rounded-md">
+                    Cadastrar
+                  </button>
+                </Link>
+              </div>
+            ) : (
+              <div className="hidden lg:flex items-center space-x-3 relative" ref={userMenuRef}>
+                <button
+                  onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
+                  className="flex items-center space-x-2 p-2 rounded-lg hover:bg-brand-brown/10 transition-colors"
+                >
+                  <div className="w-8 h-8 bg-brand-brown text-white rounded-full flex items-center justify-center text-sm font-medium">
+                    {getUserInitials(userName)}
+                  </div>
+                  <span className="text-sm font-medium text-brand-dark">{userName}</span>
                 </button>
-              </Link>
-              <span className="text-brand-dark/30 hidden md:inline" aria-hidden="true">|</span>
-              <Link to="/registro">
-                <button className="bg-brand-brown hover:bg-brand-brown/90 text-brand-light px-3 py-2 text-sm shadow-md hover:shadow-lg transition-all rounded-md">
-                  Cadastrar
-                </button>
-              </Link>
-            </div>
+
+                {isUserMenuOpen && (
+                  <div className="absolute right-0 top-full mt-2 w-56 bg-white rounded-lg shadow-lg border border-gray-200 py-2 z-50">
+                    <div className="px-4 py-2 border-b border-gray-100">
+                      <p className="text-sm font-medium text-gray-900">{userName}</p>
+                      <p className="text-xs text-gray-500 capitalize">{userType.replace('_', ' ')}</p>
+                    </div>
+                    
+                    <Link to="/perfil" onClick={() => setIsUserMenuOpen(false)}>
+                      <button className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-2">
+                        <User className="w-4 h-4" />
+                        Meu Perfil
+                      </button>
+                    </Link>
+                    
+                    <Link to="/dashboard" onClick={() => setIsUserMenuOpen(false)}>
+                      <button className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-2">
+                        <Settings className="w-4 h-4" />
+                        Dashboard
+                      </button>
+                    </Link>
+
+                    {userType === 'admin' && (
+                      <Link to="/admin" onClick={() => setIsUserMenuOpen(false)}>
+                        <button className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-2">
+                          <Shield className="w-4 h-4" />
+                          Admin
+                        </button>
+                      </Link>
+                    )}
+                    
+                    <div className="border-t border-gray-100 mt-2 pt-2">
+                      <button
+                        onClick={handleLogout}
+                        className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 flex items-center gap-2"
+                      >
+                        <LogOut className="w-4 h-4" />
+                        Sair
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
 
             {/* Mobile Menu Button */}
             <button
@@ -178,36 +240,70 @@ export const Header = () => {
                 {item.label}
               </Link>
             ))}
-            <div className="flex items-center space-x-2 mt-3 pt-3 border-t border-brand-brown/10">
-              <Link to="/login" className="flex-1">
+            
+            {!isLoggedIn ? (
+              <div className="flex items-center space-x-2 mt-3 pt-3 border-t border-brand-brown/10">
+                <Link to="/login" className="flex-1">
+                  <button
+                    className="border-2 border-brand-brown text-brand-brown hover:bg-brand-brown/10 justify-center w-full py-2 px-4 rounded-md transition-colors bg-white"
+                    onClick={() => setIsMenuOpen(false)}
+                  >
+                    Entrar
+                  </button>
+                </Link>
+                <Link to="/registro" className="flex-1">
+                  <button
+                    className="bg-brand-brown hover:bg-brand-brown/90 text-brand-light justify-center w-full py-2 px-4 rounded-md transition-colors"
+                    onClick={() => setIsMenuOpen(false)}
+                  >
+                    Cadastrar
+                  </button>
+                </Link>
+              </div>
+            ) : (
+              <div className="mt-3 pt-3 border-t border-brand-brown/10">
+                <div className="flex items-center gap-2 px-3 py-2 text-sm">
+                  <div className="w-8 h-8 bg-brand-brown text-white rounded-full flex items-center justify-center text-sm font-medium">
+                    {getUserInitials(userName)}
+                  </div>
+                  <div>
+                    <div className="font-medium text-brand-dark">{userName}</div>
+                    <div className="text-xs text-gray-500 capitalize">{userType.replace('_', ' ')}</div>
+                  </div>
+                </div>
+                
+                <Link to="/dashboard" onClick={() => setIsMenuOpen(false)}>
+                  <button className="w-full text-left px-3 py-2 text-brand-dark hover:bg-brand-brown/5 rounded-md">
+                    Dashboard
+                  </button>
+                </Link>
+                
                 <button
-                  className="border-2 border-brand-brown text-brand-brown hover:bg-brand-brown/10 justify-center w-full py-2 px-4 rounded-md transition-colors bg-white"
-                  onClick={() => setIsMenuOpen(false)}
+                  onClick={() => {
+                    handleLogout();
+                    setIsMenuOpen(false);
+                  }}
+                  className="w-full text-left px-3 py-2 text-red-600 hover:bg-red-50 rounded-md"
                 >
-                  Entrar
+                  Sair
                 </button>
-              </Link>
-              <Link to="/registro" className="flex-1">
-                <button
-                  className="bg-brand-brown hover:bg-brand-brown/90 text-brand-light justify-center w-full py-2 px-4 rounded-md transition-colors"
-                  onClick={() => setIsMenuOpen(false)}
-                >
-                  Cadastrar
-                </button>
-              </Link>
-            </div>
-            <button
-              className="text-brand-dark hover:text-brand-brown hover:bg-brand-brown/10 flex items-center justify-start w-full mt-2 py-2.5 px-3 text-base rounded-md transition-colors"
-              onClick={() => setIsMenuOpen(false)}
-            >
-              <ShoppingCart className="w-5 h-5 mr-2" />
-              Carrinho
-              {cart && cart.length > 0 && (
-                <span className="ml-auto bg-brand-brown text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
-                  {cart.length}
-                </span>
-              )}
-            </button>
+              </div>
+            )}
+            
+            <Link to="/carrinho">
+              <button
+                className="text-brand-dark hover:text-brand-brown hover:bg-brand-brown/10 flex items-center justify-start w-full mt-2 py-2.5 px-3 text-base rounded-md transition-colors"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                <ShoppingCart className="w-5 h-5 mr-2" />
+                Carrinho
+                {cart && cart.length > 0 && (
+                  <span className="ml-auto bg-brand-brown text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
+                    {cart.length}
+                  </span>
+                )}
+              </button>
+            </Link>
           </nav>
         </div>
       </div>

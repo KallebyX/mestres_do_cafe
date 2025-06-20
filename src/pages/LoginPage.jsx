@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { useAuth } from '../contexts/AuthContext';
-import { Mail, Lock, Eye, EyeOff, Coffee, Shield, Star, CheckCircle, ArrowRight, User } from 'lucide-react';
+import { useSupabaseAuth } from '../contexts/SupabaseAuthContext';
+import { Mail, Lock, Eye, EyeOff, Coffee, Shield, Star, CheckCircle, ArrowRight } from 'lucide-react';
 import Logo from '../components/Logo';
 
 const LoginPage = () => {
@@ -13,7 +13,7 @@ const LoginPage = () => {
   const [error, setError] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   
-  const { login } = useAuth();
+  const { login } = useSupabaseAuth();
   const navigate = useNavigate();
 
   const features = [
@@ -51,7 +51,7 @@ const LoginPage = () => {
       const result = await login(formData.email, formData.password);
       
       if (result.success) {
-        navigate('/marketplace');
+        navigate('/dashboard');
       } else {
         setError(result.error || 'Erro ao fazer login. Verifique suas credenciais.');
       }
@@ -103,7 +103,7 @@ const LoginPage = () => {
               </p>
               <div className="flex items-center gap-3">
                 <div className="w-8 h-8 bg-amber-600 rounded-full flex items-center justify-center">
-                  <User className="w-4 h-4 text-white" />
+                  <Coffee className="w-4 h-4 text-white" />
                 </div>
                 <div>
                   <div className="text-white font-medium text-sm">Maria Silva</div>
@@ -230,20 +230,8 @@ const LoginPage = () => {
               </button>
             </form>
             
-            {/* Divider */}
-            <div className="my-8">
-              <div className="relative">
-                <div className="absolute inset-0 flex items-center">
-                  <div className="w-full border-t border-slate-200"></div>
-                </div>
-                <div className="relative flex justify-center text-sm">
-                  <span className="px-4 bg-slate-50 text-slate-500">ou</span>
-                </div>
-              </div>
-            </div>
-            
             {/* Footer */}
-            <div className="text-center space-y-4">
+            <div className="text-center space-y-4 mt-8">
               <p className="text-slate-600">
                 Ainda não tem conta?{' '}
                 <Link

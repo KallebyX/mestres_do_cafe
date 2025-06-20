@@ -1,5 +1,8 @@
-// API Configuration
-const API_BASE_URL = 'http://localhost:5000';
+// API Configuration - Auto detect environment
+const isDevelopment = import.meta.env.DEV || window.location.hostname === 'localhost';
+const API_BASE_URL = isDevelopment 
+  ? 'http://localhost:5000' 
+  : `${window.location.protocol}//${window.location.host}`;
 
 // Helper function to make API requests
 async function apiRequest(endpoint, options = {}) {
@@ -21,15 +24,22 @@ async function apiRequest(endpoint, options = {}) {
 
   try {
     const response = await fetch(url, config);
-    const data = await response.json();
 
     if (!response.ok) {
-      throw new Error(data.error || `HTTP error! status: ${response.status}`);
+      let errorMessage;
+      try {
+        const errorData = await response.json();
+        errorMessage = errorData.error || `HTTP error! status: ${response.status}`;
+      } catch {
+        errorMessage = `HTTP error! status: ${response.status}`;
+      }
+      throw new Error(errorMessage);
     }
 
+    const data = await response.json();
     return data;
   } catch (error) {
-    console.error('API Request failed:', error);
+    console.error('API Request failed:', error.message);
     throw error;
   }
 }
@@ -119,6 +129,33 @@ export const authAPI = {
 
   getToken() {
     return localStorage.getItem('access_token');
+  },
+
+  // Demo login para testes
+  async demoLogin(email = 'cliente@teste.com', password = '123456') {
+    try {
+      const response = await apiRequest('/api/auth/demo-login', {
+        method: 'POST',
+        body: JSON.stringify({ email, password }),
+      });
+
+      if (response.access_token) {
+        localStorage.setItem('access_token', response.access_token);
+        localStorage.setItem('user', JSON.stringify(response.user));
+      }
+
+      return {
+        success: true,
+        data: response,
+        user: response.user,
+        token: response.access_token
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: error.message
+      };
+    }
   }
 };
 

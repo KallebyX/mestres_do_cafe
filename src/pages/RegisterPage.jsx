@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { useAuth } from '../contexts/AuthContext';
+import { useSupabaseAuth } from '../contexts/SupabaseAuthContext';
 import { 
   User, 
   Mail, 
@@ -40,7 +40,7 @@ const RegisterPage = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [errors, setErrors] = useState({});
   
-  const { register } = useAuth();
+  const { register } = useSupabaseAuth();
   const navigate = useNavigate();
 
   const features = [
@@ -222,7 +222,7 @@ const RegisterPage = () => {
       });
       
       if (result.success) {
-        navigate('/marketplace');
+        navigate('/dashboard');
       } else {
         setErrors({ submit: result.error || 'Erro ao criar conta' });
       }
