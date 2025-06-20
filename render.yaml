@@ -3,7 +3,7 @@ services:
   - type: web
     name: mestres-cafe-unified
     runtime: node
-    buildCommand: npm install && npm run build
+    buildCommand: ./scripts/render-deploy.sh
     startCommand: npm start
     envVars:
       - key: NODE_ENV
@@ -12,6 +12,7 @@ services:
         value: 10000
       - key: JWT_SECRET
         generateValue: true
+    rootDir: ./
 
 # Configurações adicionais
 databases:
