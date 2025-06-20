@@ -1,0 +1,10 @@
+📋 ADICIONE A IMAGEM DA CANECA AQUI
+
+Para adicionar a imagem da caneca:
+
+1. Salve a imagem como: caneca-mestres-cafe.jpg
+2. Coloque nesta pasta (substitua este arquivo)
+3. A imagem aparecerá automaticamente na página inicial!
+
+Formato recomendado: JPG (800x600px ou similar)
+Tamanho máximo: 2MB 

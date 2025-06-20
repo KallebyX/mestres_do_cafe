@@ -4,6 +4,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { useCart } from '../contexts/CartContext';
 import { Button } from './ui/button';
 import { Menu, X, ShoppingCart } from 'lucide-react';
+import Logo from './Logo';
 
 export const Header = () => {
   const { user, logout } = useAuth();
@@ -85,15 +86,7 @@ export const Header = () => {
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between h-16 md:h-20">
           <Link to="/" className="flex items-center shrink-0" aria-label="Mestres do Café - Página Inicial">
-            <div className="flex items-center space-x-3">
-              <div className="w-10 h-10 bg-brand-brown rounded-lg flex items-center justify-center">
-                <span className="text-white font-bold text-xl">M</span>
-              </div>
-              <div>
-                <h1 className="text-xl font-bold font-serif text-brand-dark">Mestres do Café</h1>
-                <p className="text-xs text-brand-brown font-medium">Torrefação Artesanal</p>
-              </div>
-            </div>
+            <Logo size="medium" showText={true} variant="light" />
           </Link>
 
           {/* Desktop Navigation */}

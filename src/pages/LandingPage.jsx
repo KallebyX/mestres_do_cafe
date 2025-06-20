@@ -147,8 +147,19 @@ const LandingPage = () => {
 
               <div className="relative max-w-xl lg:max-w-2xl mx-auto group">
                 <div className="absolute -inset-2 sm:-inset-4 bg-gradient-to-r from-brand-brown/50 to-yellow-600/50 rounded-3xl blur-xl opacity-25 group-hover:opacity-40 transition-opacity duration-500 transform group-hover:rotate-3"></div>
-                <div className="relative w-full h-80 bg-gradient-to-br from-brand-brown/20 to-amber-200/30 rounded-2xl sm:rounded-3xl shadow-2xl group-hover:shadow-3xl transition-shadow duration-500 flex items-center justify-center">
-                  <Coffee className="w-24 h-24 text-brand-brown opacity-60" />
+                <div className="relative w-full h-80 bg-gradient-to-br from-brand-brown/20 to-amber-200/30 rounded-2xl sm:rounded-3xl shadow-2xl group-hover:shadow-3xl transition-shadow duration-500 flex items-center justify-center overflow-hidden">
+                  <img 
+                    src="/assets/images/caneca-mestres-cafe.jpg" 
+                    alt="Caneca Mestres do Café"
+                    className="w-full h-full object-cover rounded-2xl sm:rounded-3xl transform group-hover:scale-105 transition-transform duration-500"
+                    onError={(e) => {
+                      e.target.style.display = 'none';
+                      e.target.nextSibling.style.display = 'flex';
+                    }}
+                  />
+                  <div className="hidden w-full h-full items-center justify-center">
+                    <Coffee className="w-24 h-24 text-brand-brown opacity-60" />
+                  </div>
                 </div>
               </div>
             </div>

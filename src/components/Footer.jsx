@@ -1,6 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { Instagram, Facebook, Twitter, Mail, Phone, MapPin } from 'lucide-react';
+import Logo from './Logo';
 
 export const Footer = () => {
   const currentYear = new Date().getFullYear();
@@ -13,18 +14,10 @@ export const Footer = () => {
           <div className="lg:col-span-2">
             <Link
               to="/"
-              className="flex items-center space-x-3 mb-5 group"
+              className="mb-5 group"
               aria-label="Mestres do Café - Página Inicial"
             >
-              <div className="w-12 h-12 bg-brand-brown rounded-lg flex items-center justify-center group-hover:bg-brand-brown/90 transition-colors">
-                <span className="text-white font-bold text-xl">M</span>
-              </div>
-              <div>
-                <h3 className="text-xl font-bold font-serif group-hover:text-brand-brown transition-colors">
-                  Mestres do Café
-                </h3>
-                <p className="text-sm text-brand-brown font-medium">Torrefação Artesanal</p>
-              </div>
+              <Logo size="large" showText={true} variant="dark" textColor="text-white group-hover:text-brand-brown transition-colors" />
             </Link>
             <p className="text-brand-light/80 mb-6 max-w-md text-sm leading-relaxed">
               Conectando você aos melhores cafés especiais do Brasil. Qualidade, tradição e sabor em cada xícara, desde

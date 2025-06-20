@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { Mail, Lock, Eye, EyeOff, Coffee, Shield, Star, CheckCircle, ArrowRight, User } from 'lucide-react';
+import Logo from '../components/Logo';
 
 const LoginPage = () => {
   const [formData, setFormData] = useState({
@@ -71,11 +72,8 @@ const LoginPage = () => {
           <div className="relative flex flex-col justify-center p-12 text-white">
             {/* Logo */}
             <div className="mb-12">
-              <div className="w-16 h-16 bg-amber-600 rounded-2xl flex items-center justify-center mb-4 shadow-2xl">
-                <Coffee className="w-8 h-8 text-white" />
-              </div>
-              <h1 className="text-3xl font-bold">Mestres do Café</h1>
-              <p className="text-slate-300 mt-2">Cafés especiais certificados SCA</p>
+              <Logo size="large" showText={true} variant="dark" textColor="text-white" className="items-start" />
+              <p className="text-slate-300 mt-2 ml-19">Cafés especiais certificados SCA</p>
             </div>
 
             {/* Features */}
@@ -125,10 +123,7 @@ const LoginPage = () => {
           <div className="max-w-md w-full mx-auto">
             {/* Mobile Logo */}
             <div className="lg:hidden text-center mb-8">
-              <div className="w-16 h-16 bg-amber-600 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg">
-                <Coffee className="w-8 h-8 text-white" />
-              </div>
-              <h1 className="text-2xl font-bold text-slate-900">Mestres do Café</h1>
+              <Logo size="large" showText={true} variant="light" className="justify-center" />
             </div>
 
             {/* Header */}
