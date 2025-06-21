@@ -1,466 +1,503 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../contexts/AuthContext';
+import { Search, Filter, Star, ShoppingCart, Heart, ChevronDown, Coffee, TrendingUp } from 'lucide-react';
 import { useCart } from '../contexts/CartContext';
-import { Button } from '../components/ui/button';
-import { Badge } from '../components/ui/badge';
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '../components/ui/card';
-import { 
-  Coffee, 
-  Star, 
-  ShoppingCart, 
-  Shield,
-  Truck,
-  Award,
-  Package,
-  Search, 
-  Heart,
-  Droplets,
-  Zap,
-  Thermometer,
-  Mail 
-} from 'lucide-react';
+import { useSupabaseAuth } from '../contexts/SupabaseAuthContext';
+import { getAllProducts } from '../lib/supabase-products';
+import { useNavigate } from 'react-router-dom';
 
-export default function MarketplacePage() {
-  const { user } = useAuth();
-  const { addToCart } = useCart();
-  const navigate = useNavigate();
+const MarketplacePage = () => {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [filteredProducts, setFilteredProducts] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
-  const [filterCategory, setFilterCategory] = useState('all');
+  const [selectedCategory, setSelectedCategory] = useState('all');
+  const [selectedRoast, setSelectedRoast] = useState('all');
+  const [priceRange, setPriceRange] = useState('all');
   const [sortBy, setSortBy] = useState('name');
-  const [email, setEmail] = useState('');
+  const [showFilters, setShowFilters] = useState(false);
+  const [favoriteProducts, setFavoriteProducts] = useState(new Set());
+  
+  const { addToCart } = useCart();
+  const { user } = useSupabaseAuth();
+  const navigate = useNavigate();
 
-  // Mock data para os cafés especiais
-  const mockProducts = [
-    {
-      id: 1,
-      name: 'Bourbon Amarelo Premium',
-      description: 'Café especial com notas de chocolate e caramelo',
-      price: 45.90,
-      originalPrice: 52.90,
-      category: 'premium',
-      image: '/api/placeholder/300/200',
-      rating: 4.8,
-      reviews: 124,
-      region: 'Cerrado Mineiro',
-      roast: 'Médio',
-      process: 'Natural',
-      altitude: '1200m',
-      badge: 'Mais Vendido',
-      sensorial: {
-        sweetness: 8,
-        acidity: 6,
-        intensity: 7
-      },
-      inStock: true,
-      featured: true
-    },
-    {
-      id: 2,
-      name: 'Geisha Especial',
-      description: 'Café premium com sabor frutado e equilibrado',
-      price: 89.90,
-      originalPrice: 98.90,
-      category: 'premium',
-      image: '/api/placeholder/300/200',
-      rating: 4.9,
-      reviews: 89,
-      region: 'Sul de Minas',
-      roast: 'Claro',
-      process: 'Lavado',
-      altitude: '1400m',
-      badge: 'Especial',
-      sensorial: {
-        sweetness: 7,
-        acidity: 8,
-        intensity: 6
-      },
-      inStock: true,
-      featured: false
-    },
-    {
-      id: 3,
-      name: 'Café Mundo Novo',
-      description: 'Café tradicional brasileiro com corpo intenso',
-      price: 38.90,
-      originalPrice: 42.90,
-      category: 'tradicional',
-      image: '/api/placeholder/300/200',
-      rating: 4.5,
-      reviews: 156,
-      region: 'Mogiana',
-      roast: 'Escuro',
-      process: 'Cereja descascado',
-      altitude: '1000m',
-      badge: 'Tradicional',
-      sensorial: {
-        sweetness: 6,
-        acidity: 5,
-        intensity: 9
-      },
-      inStock: true,
-      featured: false
-    },
-    {
-      id: 4,
-      name: 'Café Arábica Gourmet',
-      description: 'Café gourmet selecionado',
-      price: 52.90,
-      category: 'gourmet',
-      image: '/api/placeholder/300/200',
-      rating: 4.7,
-      reviews: 78,
-      region: 'Mantiqueira',
-      roast: 'Médio',
-      process: 'Natural',
-      altitude: '1300m',
-      badge: 'Gourmet',
-      sensorial: {
-        sweetness: 8,
-        acidity: 7,
-        intensity: 8
-      },
-      inStock: true,
-      featured: false
-    },
-    {
-      id: 5,
-      name: 'Café Catuaí Premium',
-      description: 'Café premium especial',
-      price: 47.90,
-      category: 'premium',
-      image: '/api/placeholder/300/200',
-      rating: 4.6,
-      reviews: 95,
-      region: 'Cerrado',
-      roast: 'Médio',
-      process: 'Lavado',
-      altitude: '1150m',
-      badge: 'Premium',
-      sensorial: {
-        sweetness: 7,
-        acidity: 6,
-        intensity: 7
-      },
-      inStock: true,
-      featured: false
-    },
-    {
-      id: 6,
-      name: 'Café Blend Especial',
-      description: 'Blend especial da casa',
-      price: 41.90,
-      category: 'especial',
-      image: '/api/placeholder/300/200',
-      rating: 4.4,
-      reviews: 112,
-      region: 'Minas Gerais',
-      roast: 'Médio',
-      process: 'Semi-lavado',
-      altitude: '1100m',
-      badge: 'Blend',
-      sensorial: {
-        sweetness: 6,
-        acidity: 5,
-        intensity: 6
-      },
-      inStock: true,
-      featured: false
-    }
-  ];
-
+  // Carregar produtos do Supabase
   useEffect(() => {
-    // Simular loading para testes
-    setTimeout(() => {
-      setProducts(mockProducts);
-      setLoading(false);
-    }, 100);
+    loadProducts();
   }, []);
 
-  const filteredProducts = products.filter(product => {
-    const matchesSearch = product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         product.description.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesCategory = filterCategory === 'all' || product.category === filterCategory;
-    return matchesSearch && matchesCategory;
-  });
-
-  const handleAddToCart = (product) => {
-    if (!user) {
-      navigate('/login');
-      return;
+  const loadProducts = async () => {
+    setLoading(true);
+    setError(null);
+    
+    try {
+      const result = await getAllProducts();
+      
+      if (result.success) {
+        console.log('✅ Produtos carregados do Supabase:', result.data.length);
+        setProducts(result.data);
+        setFilteredProducts(result.data);
+      } else {
+        throw new Error(result.error || 'Erro ao carregar produtos');
+      }
+    } catch (err) {
+      console.error('❌ Erro ao carregar produtos:', err);
+      setError('Erro ao carregar produtos. Tente novamente.');
+    } finally {
+      setLoading(false);
     }
-    addToCart(product);
   };
 
-  const handleNewsletterSubmit = (e) => {
-    e.preventDefault();
-    console.log('Newsletter signup:', email);
-    setEmail('');
+  // Aplicar filtros
+  useEffect(() => {
+    let filtered = [...products];
+
+    // Filtro por termo de busca
+    if (searchTerm) {
+      filtered = filtered.filter(product =>
+        product.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        product.description?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        product.origin?.toLowerCase().includes(searchTerm.toLowerCase())
+      );
+    }
+
+    // Filtro por categoria
+    if (selectedCategory !== 'all') {
+      filtered = filtered.filter(product => product.category === selectedCategory);
+    }
+
+    // Filtro por nível de torra
+    if (selectedRoast !== 'all') {
+      filtered = filtered.filter(product => product.roast_level === selectedRoast);
+    }
+
+    // Filtro por faixa de preço
+    if (priceRange !== 'all') {
+      const [min, max] = priceRange.split('-').map(Number);
+      filtered = filtered.filter(product => {
+        const price = product.price;
+        if (max) {
+          return price >= min && price <= max;
+        } else {
+          return price >= min;
+        }
+      });
+    }
+
+    // Ordenação
+    filtered.sort((a, b) => {
+      switch (sortBy) {
+        case 'price-low':
+          return a.price - b.price;
+        case 'price-high':
+          return b.price - a.price;
+        case 'rating':
+          return (b.rating || 0) - (a.rating || 0);
+        case 'newest':
+          return new Date(b.created_at) - new Date(a.created_at);
+        default:
+          return a.name.localeCompare(b.name);
+      }
+    });
+
+    setFilteredProducts(filtered);
+  }, [products, searchTerm, selectedCategory, selectedRoast, priceRange, sortBy]);
+
+  const handleAddToCart = async (product) => {
+    try {
+      await addToCart(product.id, 1);
+      alert(`${product.name} adicionado ao carrinho!`);
+    } catch (error) {
+      alert('Erro ao adicionar produto ao carrinho');
+    }
   };
 
-  const SensorAttribute = ({ icon: Icon, label, value, color }) => (
-    <div className="flex items-center space-x-2">
-      <Icon className={`w-4 h-4 ${color}`} />
-      <span className="text-xs text-brand-dark">{label}</span>
-      <div className="flex space-x-1">
-        {[...Array(10)].map((_, i) => (
-          <div
-            key={i}
-            className={`w-1.5 h-1.5 rounded-full ${
-              i < value ? color.replace('text-', 'bg-') : 'bg-gray-200'
-            }`}
-          />
-        ))}
-      </div>
-    </div>
-  );
+  const toggleFavorite = (productId) => {
+    const newFavorites = new Set(favoriteProducts);
+    if (newFavorites.has(productId)) {
+      newFavorites.delete(productId);
+    } else {
+      newFavorites.add(productId);
+    }
+    setFavoriteProducts(newFavorites);
+  };
 
-  const ProductSkeleton = () => (
-    <Card className="overflow-hidden">
-      <div className="h-48 bg-gray-200 animate-pulse" />
-      <CardHeader>
-        <div className="h-4 bg-gray-200 animate-pulse rounded mb-2" />
-        <div className="h-3 bg-gray-200 animate-pulse rounded" />
-      </CardHeader>
-      <CardContent>
-        <div className="h-6 bg-gray-200 animate-pulse rounded mb-4" />
-        <div className="h-4 bg-gray-200 animate-pulse rounded" />
-      </CardContent>
-    </Card>
-  );
+  const formatPrice = (price) => {
+    return new Intl.NumberFormat('pt-BR', {
+      style: 'currency',
+      currency: 'BRL'
+    }).format(price);
+  };
+
+  const getDiscountPercentage = (originalPrice, currentPrice) => {
+    if (!originalPrice || originalPrice <= currentPrice) return 0;
+    return Math.round(((originalPrice - currentPrice) / originalPrice) * 100);
+  };
+
+  // Obter categorias únicas dos produtos
+  const categories = [...new Set(products.map(p => p.category))].filter(Boolean);
+  const roastLevels = [...new Set(products.map(p => p.roast_level))].filter(Boolean);
 
   if (loading) {
     return (
-      <div className="flex flex-col min-h-screen bg-brand-light">
-        <main className="flex-1 flex items-center justify-center">
-          <div className="text-center py-16">
-            <Coffee className="w-16 h-16 text-brand-brown mx-auto mb-4 animate-pulse" />
-            <h2 className="text-2xl font-serif text-brand-dark mb-2">Carregando cafés especiais...</h2>
-            <p className="text-brand-dark">Aguarde um momento</p>
+      <div className="min-h-screen bg-slate-50 py-20">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center py-20">
+            <Coffee className="w-16 h-16 text-amber-600 mx-auto mb-4 animate-pulse" />
+            <h2 className="text-2xl font-bold text-slate-900 mb-2">Carregando Produtos...</h2>
+            <p className="text-slate-600">Buscando os melhores cafés para você</p>
           </div>
-        </main>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen bg-slate-50 py-20">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center py-20">
+            <div className="bg-red-50 border border-red-200 rounded-2xl p-8 max-w-md mx-auto">
+              <div className="text-red-600 text-6xl mb-4">⚠️</div>
+              <h2 className="text-2xl font-bold text-red-900 mb-2">Erro ao Carregar</h2>
+              <p className="text-red-700 mb-4">{error}</p>
+              <button 
+                onClick={loadProducts}
+                className="bg-red-600 hover:bg-red-700 text-white font-medium py-2 px-6 rounded-xl transition-colors"
+              >
+                Tentar Novamente
+              </button>
+            </div>
+          </div>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="flex flex-col min-h-screen bg-brand-light">
-      <main className="flex-1">
-        {/* Hero Section */}
-        <section className="bg-gradient-to-r from-brand-dark to-brand-brown text-white py-16">
-          <div className="container mx-auto px-4 text-center">
-            <h1 className="text-4xl md:text-5xl font-bold font-serif mb-4">
-              Cafés <span className="text-brand-light">Especiais</span>
+    <div className="min-h-screen bg-slate-50 py-20">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        {/* Header */}
+        <div className="mb-12">
+          <div className="text-center mb-8">
+            <h1 className="text-4xl font-bold text-slate-900 mb-4">
+              ☕ Marketplace de Cafés Especiais
             </h1>
-            <p className="text-xl text-brand-light/90 mb-8 max-w-2xl mx-auto">
-              Descubra nossa seleção exclusiva de grãos artesanais, torrados com paixão para sua melhor experiência
+            <p className="text-xl text-slate-600 max-w-3xl mx-auto">
+              Descubra os melhores cafés especiais selecionados diretamente dos produtores. 
+              Qualidade, origem e sabor únicos em cada grão.
             </p>
-            <Badge variant="secondary" className="bg-brand-brown/20 text-brand-light border-brand-light/20">
-              <Coffee className="w-4 h-4 mr-2" />
-              Torrado na Hora
-            </Badge>
           </div>
-        </section>
 
-        {/* Features Section */}
-        <section className="py-8 bg-white border-b">
-          <div className="container mx-auto px-4">
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-              <div className="text-center">
-                <Award className="w-8 h-8 text-brand-brown mx-auto mb-2" />
-                <h3 className="font-semibold text-brand-dark">Certificação SCA</h3>
-              </div>
-              <div className="text-center">
-                <Truck className="w-8 h-8 text-brand-brown mx-auto mb-2" />
-                <h3 className="font-semibold text-brand-dark">Frete Grátis</h3>
-              </div>
-              <div className="text-center">
-                <Shield className="w-8 h-8 text-brand-brown mx-auto mb-2" />
-                <h3 className="font-semibold text-brand-dark">Compra Segura</h3>
-              </div>
-              <div className="text-center">
-                <Package className="w-8 h-8 text-brand-brown mx-auto mb-2" />
-                <h3 className="font-semibold text-brand-dark">Frescor Garantido</h3>
-              </div>
+          {/* Stats */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+            <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 text-center">
+              <Coffee className="w-8 h-8 text-amber-600 mx-auto mb-3" />
+              <div className="text-3xl font-bold text-slate-900 mb-1">{products.length}</div>
+              <div className="text-slate-600">Cafés Disponíveis</div>
+            </div>
+            <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 text-center">
+              <Star className="w-8 h-8 text-yellow-500 mx-auto mb-3" />
+              <div className="text-3xl font-bold text-slate-900 mb-1">86+</div>
+              <div className="text-slate-600">Pontuação SCA Média</div>
+            </div>
+            <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 text-center">
+              <TrendingUp className="w-8 h-8 text-green-600 mx-auto mb-3" />
+              <div className="text-3xl font-bold text-slate-900 mb-1">100%</div>
+              <div className="text-slate-600">Cafés Especiais</div>
             </div>
           </div>
-        </section>
 
-        {/* Filters and Search */}
-        <section className="py-8 bg-white border-b">
-          <div className="container mx-auto px-4">
-            <div className="flex flex-col md:flex-row gap-4 items-center justify-between">
-              <div className="flex items-center space-x-4">
-                <h2 className="text-xl font-semibold text-brand-dark">Produtos</h2>
-                <Badge variant="outline" className="text-brand-brown border-brand-brown">
-                  {filteredProducts.length} produtos
-                </Badge>
+          {/* Search and Filters */}
+          <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
+            <div className="flex flex-col lg:flex-row gap-4">
+              {/* Search */}
+              <div className="relative flex-1">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400 w-5 h-5" />
+                <input
+                  type="text"
+                  placeholder="Buscar por nome, origem ou descrição..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="w-full pl-10 pr-4 py-3 border border-slate-300 rounded-xl focus:ring-2 focus:ring-amber-500 focus:border-transparent"
+                />
               </div>
-              
-              <div className="flex flex-col sm:flex-row gap-4 w-full md:w-auto">
-                <div className="relative">
-                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-brand-dark/50 w-4 h-4" />
-                  <input
-                    type="text"
-                    placeholder="Buscar cafés..."
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    className="pl-10 pr-4 py-2 border border-brand-brown/20 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-brown/50 w-full sm:w-64"
-                  />
+
+              {/* Toggle Filters */}
+              <button
+                onClick={() => setShowFilters(!showFilters)}
+                className="flex items-center gap-2 px-6 py-3 bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium rounded-xl transition-colors"
+              >
+                <Filter className="w-5 h-5" />
+                Filtros
+                <ChevronDown className={`w-4 h-4 transition-transform ${showFilters ? 'rotate-180' : ''}`} />
+              </button>
+            </div>
+
+            {/* Expanded Filters */}
+            {showFilters && (
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mt-6 pt-6 border-t border-slate-200">
+                {/* Category Filter */}
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 mb-2">Categoria</label>
+                  <select
+                    value={selectedCategory}
+                    onChange={(e) => setSelectedCategory(e.target.value)}
+                    className="w-full p-3 border border-slate-300 rounded-xl focus:ring-2 focus:ring-amber-500 focus:border-transparent"
+                  >
+                    <option value="all">Todas as categorias</option>
+                    {categories.map(category => (
+                      <option key={category} value={category}>
+                        {category.charAt(0).toUpperCase() + category.slice(1)}
+                      </option>
+                    ))}
+                  </select>
                 </div>
-                
-                <select
-                  value={filterCategory}
-                  onChange={(e) => setFilterCategory(e.target.value)}
-                  className="px-4 py-2 border border-brand-brown/20 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-brown/50 bg-white"
-                >
-                  <option value="all">Todos os Cafés (6)</option>
-                  <option value="premium">Premium</option>
-                  <option value="tradicional">Tradicional</option>
-                  <option value="gourmet">Gourmet</option>
-                  <option value="especial">Especial</option>
-                </select>
 
-                <select
-                  value={sortBy}
-                  onChange={(e) => setSortBy(e.target.value)}
-                  className="px-4 py-2 border border-brand-brown/20 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-brown/50 bg-white"
-                >
-                  <option value="name">Ordenar por Nome</option>
-                  <option value="price">Ordenar por Preço</option>
-                  <option value="rating">Ordenar por Avaliação</option>
-                </select>
+                {/* Roast Level Filter */}
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 mb-2">Nível de Torra</label>
+                  <select
+                    value={selectedRoast}
+                    onChange={(e) => setSelectedRoast(e.target.value)}
+                    className="w-full p-3 border border-slate-300 rounded-xl focus:ring-2 focus:ring-amber-500 focus:border-transparent"
+                  >
+                    <option value="all">Todos os níveis</option>
+                    {roastLevels.map(roast => (
+                      <option key={roast} value={roast}>
+                        {roast === 'light' ? 'Clara' : roast === 'medium' ? 'Média' : roast === 'medium-dark' ? 'Média-Escura' : 'Escura'}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                {/* Price Range Filter */}
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 mb-2">Faixa de Preço</label>
+                  <select
+                    value={priceRange}
+                    onChange={(e) => setPriceRange(e.target.value)}
+                    className="w-full p-3 border border-slate-300 rounded-xl focus:ring-2 focus:ring-amber-500 focus:border-transparent"
+                  >
+                    <option value="all">Todos os preços</option>
+                    <option value="0-40">Até R$ 40</option>
+                    <option value="40-60">R$ 40 - R$ 60</option>
+                    <option value="60-80">R$ 60 - R$ 80</option>
+                    <option value="80-100">R$ 80 - R$ 100</option>
+                    <option value="100">Acima de R$ 100</option>
+                  </select>
+                </div>
+
+                {/* Sort By */}
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 mb-2">Ordenar Por</label>
+                  <select
+                    value={sortBy}
+                    onChange={(e) => setSortBy(e.target.value)}
+                    className="w-full p-3 border border-slate-300 rounded-xl focus:ring-2 focus:ring-amber-500 focus:border-transparent"
+                  >
+                    <option value="name">Nome A-Z</option>
+                    <option value="price-low">Menor Preço</option>
+                    <option value="price-high">Maior Preço</option>
+                    <option value="rating">Melhor Avaliação</option>
+                    <option value="newest">Mais Recentes</option>
+                  </select>
+                </div>
               </div>
-            </div>
+            )}
           </div>
-        </section>
+        </div>
+
+        {/* Results Count */}
+        <div className="flex items-center justify-between mb-8">
+          <h3 className="text-lg font-semibold text-slate-900">
+            {filteredProducts.length} produto{filteredProducts.length !== 1 ? 's' : ''} encontrado{filteredProducts.length !== 1 ? 's' : ''}
+          </h3>
+          
+          {filteredProducts.length === 0 && products.length > 0 && (
+            <button
+              onClick={() => {
+                setSearchTerm('');
+                setSelectedCategory('all');
+                setSelectedRoast('all');
+                setPriceRange('all');
+              }}
+              className="text-amber-600 hover:text-amber-700 font-medium"
+            >
+              Limpar filtros
+            </button>
+          )}
+        </div>
 
         {/* Products Grid */}
-        <section className="py-12">
-          <div className="container mx-auto px-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-              {filteredProducts.map((product) => (
-                <Card key={product.id} className="overflow-hidden hover:shadow-lg transition-shadow">
-                  <div className="relative">
-                    <img
-                      src={product.image}
-                      alt={product.name}
-                      className="w-full h-48 object-cover"
-                    />
-                    {product.badge && (
-                      <Badge className="absolute top-2 left-2 bg-brand-brown text-white">
-                        {product.badge}
-                      </Badge>
+        {filteredProducts.length > 0 ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
+            {filteredProducts.map((product) => {
+              const discount = getDiscountPercentage(product.original_price, product.price);
+              const isInStock = product.stock > 0;
+              const isFavorite = favoriteProducts.has(product.id);
+              
+              return (
+                <div key={product.id} className="bg-white rounded-3xl shadow-lg border border-slate-200 overflow-hidden hover:shadow-xl transition-all duration-300 group">
+                  {/* Product Image */}
+                  <div className="relative h-64 bg-gradient-to-br from-amber-50 to-orange-50 overflow-hidden">
+                    {product.images && product.images[0] ? (
+                      <img 
+                        src={product.images[0]} 
+                        alt={product.name}
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                        onError={(e) => {
+                          e.target.src = 'https://images.unsplash.com/photo-1559056199-641a0ac8b55e?w=400';
+                        }}
+                      />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center">
+                        <Coffee className="w-16 h-16 text-amber-400" />
+                      </div>
                     )}
-                    <button className="absolute top-2 right-2 p-2 bg-white/80 rounded-full hover:bg-white transition-colors">
-                      <Heart className="w-4 h-4 text-brand-dark" />
-                    </button>
-                  </div>
-                  
-                  <CardHeader>
-                    <div className="flex items-start justify-between">
-                      <div>
-                        <CardTitle className="text-lg font-semibold text-brand-dark">
-                          {product.name}
-                        </CardTitle>
-                        <p className="text-sm text-brand-dark mt-1 font-medium">
-                          {product.region} • {product.roast}
-                        </p>
-                      </div>
-                      <div className="flex items-center space-x-1">
-                        <Star className="w-4 h-4 text-yellow-400 fill-current" />
-                        <span className="text-sm font-medium">{product.rating}</span>
-                        <span className="text-xs text-brand-dark/80">
-                          ({product.reviews})
+                    
+                    {/* Badges */}
+                    <div className="absolute top-3 left-3 flex flex-col gap-2">
+                      {product.is_featured && (
+                        <span className="bg-amber-500 text-white text-xs font-bold px-3 py-1 rounded-full">
+                          ⭐ Destaque
                         </span>
-                      </div>
-                    </div>
-                  </CardHeader>
-                  
-                  <CardContent>
-                    <p className="text-sm text-brand-dark mb-4">
-                      {product.description}
-                    </p>
-                    
-                    {/* Atributos Sensoriais */}
-                    <div className="space-y-2 mb-4">
-                      <SensorAttribute
-                        icon={Droplets}
-                        label="Doçura"
-                        value={product.sensorial.sweetness}
-                        color="text-blue-500"
-                      />
-                      <SensorAttribute
-                        icon={Zap}
-                        label="Acidez"
-                        value={product.sensorial.acidity}
-                        color="text-yellow-500"
-                      />
-                      <SensorAttribute
-                        icon={Thermometer}
-                        label="Intensidade"
-                        value={product.sensorial.intensity}
-                        color="text-red-500"
-                      />
-                    </div>
-                    
-                    <div className="flex items-center space-x-2 mb-4">
-                      <span className="text-2xl font-bold text-brand-brown">
-                        R$ {product.price.toFixed(2).replace('.', ',')}
-                      </span>
-                      {product.originalPrice && (
-                        <span className="text-sm text-brand-dark/80 line-through">
-                          R$ {product.originalPrice.toFixed(2).replace('.', ',')}
+                      )}
+                      {discount > 0 && (
+                        <span className="bg-red-500 text-white text-xs font-bold px-3 py-1 rounded-full">
+                          -{discount}%
+                        </span>
+                      )}
+                      {!isInStock && (
+                        <span className="bg-gray-500 text-white text-xs font-bold px-3 py-1 rounded-full">
+                          Esgotado
                         </span>
                       )}
                     </div>
-                  </CardContent>
-                  
-                  <CardFooter>
-                    <Button
-                      onClick={() => handleAddToCart(product)}
-                      disabled={!product.inStock}
-                      className="w-full bg-brand-brown hover:bg-brand-brown/90 text-white"
-                    >
-                      <ShoppingCart className="w-4 h-4 mr-2" />
-                      {product.inStock ? 'Adicionar' : 'Indisponível'}
-                    </Button>
-                  </CardFooter>
-                </Card>
-              ))}
-            </div>
-          </div>
-        </section>
 
-        {/* Newsletter Section */}
-        <section className="py-16 bg-brand-dark text-white">
-          <div className="container mx-auto px-4 text-center">
-            <h2 className="text-3xl font-bold font-serif mb-4">
-              Receba Ofertas Exclusivas
-            </h2>
-            <p className="text-brand-light/80 mb-8 max-w-2xl mx-auto">
-              Seja o primeiro a saber sobre novos cafés, promoções especiais e dicas de preparo
-            </p>
-            
-            <form onSubmit={handleNewsletterSubmit} className="max-w-md mx-auto flex gap-2">
-              <input
-                type="email"
-                placeholder="Seu melhor e-mail"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-                className="flex-1 px-4 py-3 rounded-lg text-brand-dark focus:outline-none focus:ring-2 focus:ring-brand-brown"
-              />
-              <Button type="submit" className="bg-brand-brown hover:bg-brand-brown/90 px-6">
-                <Mail className="w-4 h-4 mr-2" />
-                Inscrever
-              </Button>
-            </form>
+                    {/* Favorite Button */}
+                    <button
+                      onClick={() => toggleFavorite(product.id)}
+                      className={`absolute top-3 right-3 w-10 h-10 rounded-full flex items-center justify-center transition-colors ${
+                        isFavorite 
+                          ? 'bg-red-500 text-white' 
+                          : 'bg-white/80 text-slate-600 hover:bg-white'
+                      }`}
+                    >
+                      <Heart className={`w-5 h-5 ${isFavorite ? 'fill-current' : ''}`} />
+                    </button>
+                  </div>
+
+                  {/* Product Info */}
+                  <div className="p-6">
+                    {/* Header */}
+                    <div className="mb-3">
+                      <h3 className="font-bold text-slate-900 text-lg mb-1 line-clamp-2">
+                        {product.name}
+                      </h3>
+                      <p className="text-slate-600 text-sm">
+                        {product.origin} • {product.weight || '500g'}
+                      </p>
+                    </div>
+
+                    {/* Description */}
+                    <p className="text-slate-600 text-sm mb-4 line-clamp-2">
+                      {product.description}
+                    </p>
+
+                    {/* Rating and Score */}
+                    <div className="flex items-center justify-between mb-4">
+                      <div className="flex items-center gap-1">
+                        <Star className="w-4 h-4 text-yellow-400 fill-current" />
+                        <span className="text-sm font-medium text-slate-700">
+                          {product.sca_score || 85} SCA
+                        </span>
+                      </div>
+                      <div className="text-sm text-slate-500">
+                        Estoque: {product.stock}
+                      </div>
+                    </div>
+
+                    {/* Flavor Notes */}
+                    {product.flavor_notes && product.flavor_notes.length > 0 && (
+                      <div className="mb-4">
+                        <p className="text-xs text-slate-500 mb-1">Notas de sabor:</p>
+                        <div className="flex flex-wrap gap-1">
+                          {product.flavor_notes.slice(0, 3).map((note, index) => (
+                            <span key={index} className="text-xs bg-amber-50 text-amber-700 px-2 py-1 rounded-full">
+                              {note}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Price */}
+                    <div className="flex items-center justify-between mb-4">
+                      <div>
+                        <div className="flex items-center gap-2">
+                          <span className="text-2xl font-bold text-slate-900">
+                            {formatPrice(product.price)}
+                          </span>
+                          {product.original_price && product.original_price > product.price && (
+                            <span className="text-sm text-slate-500 line-through">
+                              {formatPrice(product.original_price)}
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Actions */}
+                    <div className="flex gap-2">
+                      <button
+                        onClick={() => navigate(`/produto/${product.id}`)}
+                        className="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium py-3 px-4 rounded-xl transition-colors"
+                      >
+                        Ver Detalhes
+                      </button>
+                      <button
+                        onClick={() => handleAddToCart(product)}
+                        disabled={!isInStock}
+                        className={`flex-1 font-medium py-3 px-4 rounded-xl transition-colors flex items-center justify-center gap-2 ${
+                          isInStock
+                            ? 'bg-amber-600 hover:bg-amber-700 text-white'
+                            : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                        }`}
+                      >
+                        <ShoppingCart className="w-4 h-4" />
+                        {isInStock ? 'Comprar' : 'Esgotado'}
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
           </div>
-        </section>
-      </main>
+        ) : (
+          <div className="text-center py-20">
+            <div className="text-6xl mb-4">🔍</div>
+            <h3 className="text-2xl font-bold text-slate-900 mb-2">Nenhum produto encontrado</h3>
+            <p className="text-slate-600 mb-6">
+              Tente ajustar os filtros ou remover alguns termos da busca.
+            </p>
+            <button
+              onClick={() => {
+                setSearchTerm('');
+                setSelectedCategory('all');
+                setSelectedRoast('all');
+                setPriceRange('all');
+              }}
+              className="bg-amber-600 hover:bg-amber-700 text-white font-medium py-3 px-6 rounded-xl transition-colors"
+            >
+              Limpar Filtros
+            </button>
+          </div>
+        )}
+      </div>
     </div>
   );
-} 
+};
+
+export default MarketplacePage; 

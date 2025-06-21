@@ -25,6 +25,8 @@ import BlogPage from './pages/BlogPage';
 import AdminBlogManager from './pages/AdminBlogManager';
 import AdminCRMDashboard from './pages/AdminCRMDashboard';
 import AdminFinancialReports from './pages/AdminFinancialReports';
+import AdminAnalytics from './pages/AdminAnalytics';
+import AdminFinancial from './pages/AdminFinancial';
 import NotFoundPage from './pages/NotFoundPage';
 import './App.css';
 
@@ -49,7 +51,8 @@ function App() {
                 <Route path="/admin" element={<AdminDashboard />} />
                 <Route path="/admin/blog" element={<AdminBlogManager />} />
                 <Route path="/admin/crm" element={<AdminCRMDashboard />} />
-                <Route path="/admin/financeiro" element={<AdminFinancialReports />} />
+                <Route path="/admin/financeiro" element={<AdminFinancial />} />
+                <Route path="/admin/analytics" element={<AdminAnalytics />} />
                 <Route path="/gamificacao" element={<GamificationPage />} />
                 <Route path="/perfil" element={<ProfilePage />} />
                 <Route path="/pedidos" element={<OrdersPage />} />

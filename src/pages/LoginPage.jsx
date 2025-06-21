@@ -13,7 +13,7 @@ const LoginPage = () => {
   const [error, setError] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   
-  const { login } = useSupabaseAuth();
+  const { login, profile, getUserProfile, isAdmin } = useSupabaseAuth();
   const navigate = useNavigate();
 
   const features = [
@@ -51,12 +51,43 @@ const LoginPage = () => {
       const result = await login(formData.email, formData.password);
       
       if (result.success) {
-        navigate('/dashboard');
+        setTimeout(() => {
+          const currentProfile = getUserProfile();
+          
+          if (currentProfile?.role === 'admin' || currentProfile?.role === 'super_admin' || isAdmin()) {
+            console.log('Usuário admin detectado, redirecionando para /admin');
+            navigate('/admin');
+          } else {
+            console.log('Usuário comum, redirecionando para /dashboard');
+            navigate('/dashboard');
+          }
+        }, 500);
       } else {
         setError(result.error || 'Erro ao fazer login. Verifique suas credenciais.');
       }
     } catch (_err) {
       setError('Erro de conexão. Tente novamente.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleAdminLogin = async () => {
+    setIsLoading(true);
+    setError('');
+    
+    try {
+      const result = await login('admin@mestrescafe.com', 'admin123');
+      
+      if (result.success) {
+        setTimeout(() => {
+          navigate('/admin');
+        }, 500);
+      } else {
+        setError('Credenciais de admin não encontradas. Verifique se o usuário admin foi criado no Supabase.');
+      }
+    } catch (_err) {
+      setError('Erro ao fazer login como admin.');
     } finally {
       setIsLoading(false);
     }
@@ -147,6 +178,31 @@ const LoginPage = () => {
                 </div>
               </div>
             )}
+            
+            {/* Botão de Login Rápido Admin */}
+            <div className="mb-6">
+              <button
+                onClick={handleAdminLogin}
+                disabled={isLoading}
+                className="w-full bg-red-600 hover:bg-red-700 disabled:bg-red-400 text-white font-semibold py-3 rounded-xl transition-all duration-300 flex items-center justify-center gap-2"
+              >
+                <Shield className="w-5 h-5" />
+                🚀 Login Rápido Admin
+              </button>
+              <p className="text-xs text-slate-500 mt-2 text-center">
+                Para testes: admin@mestrescafe.com
+              </p>
+            </div>
+
+            {/* Divider */}
+            <div className="relative mb-6">
+              <div className="absolute inset-0 flex items-center">
+                <div className="w-full border-t border-slate-200" />
+              </div>
+              <div className="relative flex justify-center text-sm">
+                <span className="px-4 bg-slate-50 text-slate-500">ou faça login manual</span>
+              </div>
+            </div>
             
             {/* Form */}
             <form onSubmit={handleSubmit} className="space-y-6">
