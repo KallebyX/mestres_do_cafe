@@ -233,7 +233,7 @@ const AdminDashboard = () => {
         result = await coursesAPI.createCourse(courseData);
       }
 
-      if (result.success) {
+        if (result.success) {
         const response = await coursesAPI.getAllCourses();
         if (response.success) {
           setCourses(response.data);
@@ -242,10 +242,10 @@ const AdminDashboard = () => {
         setShowCourseModal(false);
         setEditingCourse(null);
         alert(editingCourse ? 'Curso atualizado com sucesso!' : 'Curso criado com sucesso!');
-      } else {
+        } else {
         alert('Erro ao salvar curso: ' + result.error);
-      }
-    } catch (error) {
+        }
+      } catch (error) {
       console.error('Erro ao salvar curso:', error);
       alert('Erro ao salvar curso');
     }
@@ -951,16 +951,16 @@ const AdminDashboard = () => {
                   </div>
                 </div>
 
-                <div className="relative">
+                    <div className="relative">
                   <Search className="absolute left-3 top-3 w-4 h-4 text-slate-400" />
-                  <input
-                    type="text"
+                      <input
+                        type="text"
                     placeholder="Buscar usuários por nome ou email..."
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
                     className="w-full pl-10 pr-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                  />
-                </div>
+                      />
+                    </div>
 
 
 
@@ -1019,20 +1019,20 @@ const AdminDashboard = () => {
                         <p className="text-slate-600 mb-4">
                           Mostrando 9 de {filteredUsers.length} usuários encontrados
                         </p>
-                        <button 
+                    <button
                           onClick={() => navigate('/admin/crm')}
                           className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-medium"
-                        >
+                    >
                           Ver Todos os {filteredUsers.length} Usuários no CRM
-                        </button>
-                </div>
+                    </button>
+                  </div>
                     )}
                   </>
                 ) : (
                   <div className="text-center py-12">
                     <div className="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-4">
                       <Users className="w-8 h-8 text-slate-400" />
-                    </div>
+                </div>
                     {users.length === 0 ? (
                       <>
                         <h3 className="text-lg font-semibold text-slate-900 mb-2">Nenhum usuário cadastrado</h3>
@@ -1055,7 +1055,7 @@ const AdminDashboard = () => {
                         </button>
                       </>
                     )}
-                  </div>
+                </div>
                 )}
               </div>
             )}
@@ -1076,7 +1076,7 @@ const AdminDashboard = () => {
                       Novo Produto
                     </button>
                   </div>
-                </div>
+                                </div>
 
                 {/* Search Bar */}
                 <div className="relative">
@@ -1088,7 +1088,7 @@ const AdminDashboard = () => {
                     onChange={(e) => setSearchTerm(e.target.value)}
                     className="w-full pl-10 pr-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-amber-500"
                   />
-                </div>
+                                </div>
 
                 {/* Products Grid */}
                 {filteredProducts.length > 0 ? (
@@ -1100,7 +1100,7 @@ const AdminDashboard = () => {
                             <div className="flex items-center gap-3">
                               <div className="w-12 h-12 bg-gradient-to-br from-amber-500 to-orange-600 rounded-lg flex items-center justify-center">
                                 <Coffee className="w-6 h-6 text-white" />
-                        </div>
+                              </div>
                               <div className="flex-1">
                                 <h4 className="font-semibold text-slate-900 mb-1">{product.name || 'Nome não informado'}</h4>
                                 <p className="text-sm text-slate-600">{product.category || 'Categoria não informada'}</p>
@@ -1110,8 +1110,8 @@ const AdminDashboard = () => {
                               product.is_active ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
                           }`}>
                             {product.is_active ? 'Ativo' : 'Inativo'}
-                          </span>
-                        </div>
+                              </span>
+                              </div>
                           
                           {product.description && (
                             <p className="text-sm text-slate-600 mb-4 line-clamp-2">
@@ -1157,8 +1157,8 @@ const AdminDashboard = () => {
                               className="p-2 text-slate-500 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
                               title="Editar produto"
                             >
-                              <Edit className="w-4 h-4" />
-                            </button>
+                                <Edit className="w-4 h-4" />
+                              </button>
                             <button
                               onClick={() => handleToggleProductStatus(product.id, product.is_active)}
                               className={`p-2 rounded-lg transition-colors ${
@@ -1176,7 +1176,7 @@ const AdminDashboard = () => {
                               title="Deletar produto"
                             >
                                 <Trash2 className="w-4 h-4" />
-                            </button>
+                              </button>
                           </div>
                           
                           {product.created_at && (
@@ -1188,14 +1188,14 @@ const AdminDashboard = () => {
                           )}
                         </div>
                       ))}
-                    </div>
+                  </div>
                     
                     {products.length > filteredProducts.length && (
                       <div className="text-center">
                         <p className="text-slate-600 mb-4">
                           Mostrando {filteredProducts.length} de {products.length} produtos encontrados
                         </p>
-                      </div>
+                </div>
                     )}
                   </>
                 ) : (
@@ -1230,8 +1230,8 @@ const AdminDashboard = () => {
                         </button>
                       </>
                     )}
-                          </div>
-                )}
+              </div>
+            )}
 
                 {/* Delete Confirmation Modal */}
                 {showDeleteConfirm && (
@@ -1284,16 +1284,16 @@ const AdminDashboard = () => {
                   </div>
                 </div>
 
-                <div className="relative">
+                    <div className="relative">
                   <Search className="absolute left-3 top-3 w-4 h-4 text-slate-400" />
-                  <input
-                    type="text"
+                      <input
+                        type="text"
                     placeholder="Buscar cursos por título, instrutor ou descrição..."
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
                     className="w-full pl-10 pr-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                  />
-                </div>
+                      />
+                    </div>
 
 
 
@@ -1368,7 +1368,7 @@ const AdminDashboard = () => {
                           
                           {/* Actions */}
                           <div className="flex items-center gap-2">
-                            <button
+                    <button 
                               onClick={() => handleEditCourse(course)}
                               className="p-2 text-slate-500 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
                               title="Editar curso"
@@ -1392,8 +1392,8 @@ const AdminDashboard = () => {
                               title="Deletar curso"
                             >
                               <Trash2 className="w-4 h-4" />
-                            </button>
-                          </div>
+                    </button>
+                  </div>
 
                           {course.created_at && (
                             <div className="mt-3 pt-3 border-t border-slate-100">
@@ -1404,14 +1404,14 @@ const AdminDashboard = () => {
                           )}
                         </div>
                       ))}
-                    </div>
-                    
+                </div>
+
                     {courses.length > filteredCourses.length && (
                       <div className="text-center">
                         <p className="text-slate-600 mb-4">
                           Mostrando {filteredCourses.length} de {courses.length} cursos encontrados
                         </p>
-                      </div>
+                </div>
                     )}
                   </>
                 ) : (
@@ -1456,7 +1456,7 @@ const AdminDashboard = () => {
                       <div className="text-center">
                         <div className="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
                           <Trash2 className="w-6 h-6 text-red-600" />
-                        </div>
+                  </div>
                         <h3 className="text-lg font-semibold text-slate-900 mb-2">Confirmar Exclusão</h3>
                         <p className="text-slate-600 mb-6">
                           Tem certeza que deseja remover este curso? Esta ação não pode ser desfeita.
@@ -1474,7 +1474,7 @@ const AdminDashboard = () => {
                           >
                             Excluir
                           </button>
-                        </div>
+                </div>
                       </div>
                     </div>
                   </div>
@@ -1521,14 +1521,14 @@ const AdminDashboard = () => {
 
                 {filteredBlogPosts.length > 0 ? (
                   <>
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                       {filteredBlogPosts.map((post, index) => (
                         <div key={post.id || index} className="bg-white border border-slate-200 rounded-lg p-6 hover:shadow-md transition-shadow">
                           <div className="flex items-start justify-between mb-4">
                             <div className="flex items-center gap-3">
                               <div className="w-12 h-12 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-lg flex items-center justify-center">
                                 <FileText className="w-6 h-6 text-white" />
-                              </div>
+                        </div>
                               <div className="flex-1">
                                 <h4 className="font-semibold text-slate-900 mb-1">{post.title || 'Título não informado'}</h4>
                                 <p className="text-sm text-slate-600">{post.author || 'Autor não informado'}</p>
@@ -1542,8 +1542,8 @@ const AdminDashboard = () => {
                               {post.status === 'published' ? 'Publicado' : 
                                post.status === 'draft' ? 'Rascunho' : 
                                'Inativo'}
-                            </span>
-                          </div>
+                          </span>
+                        </div>
                           
                           {post.excerpt && (
                             <p className="text-sm text-slate-600 mb-4 line-clamp-3">
@@ -1551,18 +1551,18 @@ const AdminDashboard = () => {
                             </p>
                           )}
 
-                          <div className="flex items-center justify-between mb-4">
+                        <div className="flex items-center justify-between mb-4">
                             <div className="flex items-center gap-4">
                               {post.category && (
                                 <div className="flex items-center gap-1 text-sm text-slate-500">
                                   <span>📂 {post.category}</span>
-                                </div>
+                          </div>
                               )}
                               {post.reading_time && (
                                 <div className="flex items-center gap-1 text-sm text-slate-500">
                                   <Clock className="w-4 h-4" />
                                   <span>{post.reading_time} min</span>
-                                </div>
+                        </div>
                               )}
                             </div>
                           </div>
@@ -1571,7 +1571,7 @@ const AdminDashboard = () => {
                             {post.tags && post.tags.map && post.tags.map((tag, idx) => (
                               <span key={idx} className="text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded-full">
                                 {tag}
-                              </span>
+                          </span>
                             ))}
                             {post.featured && (
                               <span className="text-xs bg-purple-100 text-purple-700 px-2 py-1 rounded-full">
@@ -1586,7 +1586,7 @@ const AdminDashboard = () => {
                           </div>
                           
                           <div className="flex items-center gap-2">
-                            <button
+                            <button 
                               onClick={() => handleEditBlogPost(post)}
                               className="p-2 text-slate-500 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors"
                               title="Editar post"
@@ -1609,7 +1609,7 @@ const AdminDashboard = () => {
                               className="p-2 text-slate-500 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
                               title="Deletar post"
                             >
-                              <Trash2 className="w-4 h-4" />
+                                <Trash2 className="w-4 h-4" />
                             </button>
                           </div>
 
@@ -1690,9 +1690,9 @@ const AdminDashboard = () => {
                             className="flex-1 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700"
                           >
                             Excluir
-                          </button>
+                            </button>
+                          </div>
                         </div>
-                      </div>
                     </div>
                   </div>
                 )}
@@ -1791,9 +1791,9 @@ const AdminDashboard = () => {
                             }`}>
                               {user.user_type === 'cliente_pj' ? 'PJ' : 'PF'}
                             </span>
-                          </div>
-                        </div>
-                      ))}
+                      </div>
+                    </div>
+                  ))}
                     </div>
                   </div>
 
@@ -1844,14 +1844,14 @@ const AdminDashboard = () => {
               <div className="space-y-6">
                 <div className="flex items-center justify-between">
                   <h3 className="text-2xl font-bold text-slate-900">📊 Analytics & Performance</h3>
-                  <button
+                    <button
                     onClick={() => navigate('/admin/analytics')}
                     className="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg flex items-center gap-2"
-                  >
+                    >
                     <BarChart3 className="w-4 h-4" />
                     Analytics Completo
-                  </button>
-          </div>
+                    </button>
+                  </div>
 
                 {/* Analytics KPIs */}
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
@@ -1864,7 +1864,7 @@ const AdminDashboard = () => {
                     </div>
                     <p className="text-3xl font-bold text-emerald-600">+12.5%</p>
                     <p className="text-sm text-slate-600 mt-2">vs mês anterior</p>
-      </div>
+                </div>
 
                   <div className="bg-white rounded-2xl border border-slate-200 p-6">
                     <div className="flex items-center gap-3 mb-4">
@@ -2203,8 +2203,8 @@ const AdminDashboard = () => {
                       defaultValue={editingCourse?.instructor || ''}
                       className="w-full border border-slate-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                       placeholder="Nome do instrutor"
-                    />
-                  </div>
+                  />
+                </div>
 
                   <div>
                     <label className="block text-sm font-medium text-slate-700 mb-2">
@@ -2233,7 +2233,7 @@ const AdminDashboard = () => {
                       className="w-full border border-slate-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                       placeholder="8"
                     />
-                  </div>
+                </div>
 
                   <div>
                     <label className="block text-sm font-medium text-slate-700 mb-2">
@@ -2261,7 +2261,7 @@ const AdminDashboard = () => {
                       className="w-full border border-slate-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                       placeholder="Ex: Barista, Torra, Análise Sensorial"
                     />
-                  </div>
+                              </div>
 
                   <div>
                     <label className="block text-sm font-medium text-slate-700 mb-2">
@@ -2286,7 +2286,7 @@ const AdminDashboard = () => {
                         />
                         <span className="text-sm text-slate-700">Curso em destaque</span>
                       </label>
-                    </div>
+                              </div>
                   </div>
                 </div>
 
@@ -2297,18 +2297,18 @@ const AdminDashboard = () => {
                     className="flex-1 px-4 py-2 border border-slate-300 text-slate-700 rounded-lg hover:bg-slate-50"
                   >
                     Cancelar
-                  </button>
+                              </button>
                   <button
                     type="submit"
                     className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
                   >
                     {editingCourse ? 'Atualizar' : 'Criar'} Curso
-                  </button>
-                </div>
+                              </button>
+                  </div>
               </form>
-            </div>
-          </div>
-        )}
+                </div>
+              </div>
+            )}
 
         {/* Blog Modal (Simple Version) */}
         {showBlogModal && (
@@ -2324,7 +2324,7 @@ const AdminDashboard = () => {
                 >
                   <X className="w-5 h-5 text-slate-500" />
                 </button>
-              </div>
+          </div>
               
               <form
                 onSubmit={(e) => {
@@ -2357,7 +2357,7 @@ const AdminDashboard = () => {
                       className="w-full border border-slate-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
                       placeholder="Ex: As Melhores Técnicas de Extração de Café"
                     />
-                  </div>
+        </div>
 
                   <div className="md:col-span-2">
                     <label className="block text-sm font-medium text-slate-700 mb-2">
@@ -2371,7 +2371,7 @@ const AdminDashboard = () => {
                       className="w-full border border-slate-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
                       placeholder="Breve resumo do post que aparecerá na listagem..."
                     />
-                  </div>
+      </div>
 
                   <div className="md:col-span-2">
                     <label className="block text-sm font-medium text-slate-700 mb-2">
