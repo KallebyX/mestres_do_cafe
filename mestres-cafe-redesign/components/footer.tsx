@@ -120,7 +120,7 @@ export function Footer() {
 
         <div className="border-t border-brand-light/10 mt-10 pt-8 text-center">
           <p className="text-xs text-brand-light/60 font-sans">
-            © {currentYear} Mestres do Café. Todos os direitos reservados. CNPJ: XX.XXX.XXX/0001-XX
+            © {currentYear} Mestres do Café. Todos os direitos reservados. CNPJ: 55.653.149/0001-61
           </p>
           {/* <p className="text-xs text-brand-light/50 font-sans mt-1">
             Desenvolvido com <Heart className="inline w-3 h-3 text-red-500" /> por [Seu Nome/Empresa Aqui]

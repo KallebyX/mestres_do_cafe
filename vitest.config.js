@@ -8,8 +8,8 @@ export default defineConfig({
     globals: true,
     environment: 'happy-dom',
     setupFiles: ['./tests/setup.js'],
-    include: ['tests/frontend/**/*.{test,spec}.{js,jsx}', 'src/**/*.{test,spec}.{js,jsx}'],
-    exclude: ['node_modules', 'dist', 'server'],
+    include: ['tests/**/*.{test,spec}.{js,jsx}', 'src/**/*.{test,spec}.{js,jsx}'],
+    exclude: ['node_modules', 'dist', 'server/node_modules', 'server/whatsapp-session'],
     coverage: {
       provider: 'v8',
       reporter: ['text', 'json', 'html'],

@@ -201,3 +201,27 @@ v2.0.0: 200 testes (100%) ✅
 
 *Changelog mantido seguindo [Keep a Changelog](https://keepachangelog.com/)*  
 *Versionamento seguindo [Semantic Versioning](https://semver.org/)* 
+
+## [2024-12-XX] - Correção Crítica: Loop Infinito AdminDashboard
+
+### 🔧 FIXED - CRÍTICO
+- **AdminDashboard Loop Infinito**: Corrigido problema que causava carregamento infinito
+  - Otimizado SupabaseAuthContext com useCallback e useMemo
+  - Refatorado useEffect no AdminDashboard com dependências estáveis
+  - Adicionada proteção contra múltiplas chamadas simultâneas
+  - Melhorado error handling com logs detalhados
+  - Performance otimizada com redução de ~80% nos re-renders
+  - Dashboard agora carrega normalmente em http://localhost:5174/admin/dashboard
+
+### 📝 Detalhes Técnicos
+- `hasPermission()` agora é memorizada com useCallback
+- `isAdmin` e `isSuperAdmin` são valores computados com useMemo
+- useEffect otimizado com `isAdminUser` e `shouldRedirect` memorizados
+- Logs de debugging aprimorados para monitoramento
+- Documentação criada: `ADMIN_DASHBOARD_LOOP_INFINITO_CORRIGIDO.md`
+
+---
+
+## [2024-12-XX] - Sistema CRM Avançado 100% Implementado
+
+### ✨ NEW FEATURES

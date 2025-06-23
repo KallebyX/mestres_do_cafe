@@ -1,240 +1,229 @@
-import React, { createContext, useContext, useReducer, useEffect } from 'react';
-import { cartAPI, cartUtils } from '../lib/api';
+import React, { createContext, useContext, useState, useEffect } from 'react';
+
+// =============================================
+// CART UTILITIES - FUNÇÕES LOCAIS
+// =============================================
+
+const cartUtils = {
+  updateCartCount() {
+    const cartCount = this.getCartItemsCount();
+    const cartBadges = document.querySelectorAll('.cart-count-badge');
+    cartBadges.forEach(badge => {
+      badge.textContent = cartCount;
+      badge.style.display = cartCount > 0 ? 'inline-block' : 'none';
+    });
+  },
+
+  getCartItemsCount() {
+    const cart = localStorage.getItem('cart');
+    if (!cart) return 0;
+    
+    try {
+      const cartData = JSON.parse(cart);
+      return cartData.items?.reduce((total, item) => total + item.quantity, 0) || 0;
+    } catch {
+      return 0;
+    }
+  },
+
+  saveCart(cartData) {
+    localStorage.setItem('cart', JSON.stringify(cartData));
+    this.updateCartCount();
+  },
+
+  getCart() {
+    const cart = localStorage.getItem('cart');
+    if (!cart) return { items: [], total: 0 };
+    
+    try {
+      return JSON.parse(cart);
+    } catch {
+      return { items: [], total: 0 };
+    }
+  },
+
+  clearCart() {
+    localStorage.removeItem('cart');
+    this.updateCartCount();
+  }
+};
+
+// =============================================
+// CART CONTEXT
+// =============================================
 
 const CartContext = createContext();
 
-function cartReducer(state, action) {
-  switch (action.type) {
-    case 'SET_LOADING': {
-      return {
-        ...state,
-        loading: action.payload
-      };
-    }
-    
-    case 'SET_ITEMS': {
-      const items = action.payload;
-      const total = items.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-      return {
-        ...state,
-        items,
-        total,
-        loading: false
-      };
-    }
-    
-    case 'ADD_ITEM': {
-      const newItem = action.payload;
-      const existingItemIndex = state.items.findIndex(item => item.id === newItem.id);
-      let updatedItems;
-      
-      if (existingItemIndex >= 0) {
-        updatedItems = state.items.map((item, index) => 
-          index === existingItemIndex 
-            ? { ...item, quantity: item.quantity + (newItem.quantity || 1) }
-            : item
-        );
-      } else {
-        updatedItems = [...state.items, { ...newItem, quantity: newItem.quantity || 1 }];
-      }
-      
-      const total = updatedItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-      
-      return {
-        ...state,
-        items: updatedItems,
-        total
-      };
-    }
-    
-    case 'REMOVE_ITEM': {
-      const itemId = action.payload;
-      const updatedItems = state.items.filter(item => item.id !== itemId);
-      const total = updatedItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-      
-      return {
-        ...state,
-        items: updatedItems,
-        total
-      };
-    }
-    
-    case 'UPDATE_QUANTITY': {
-      const { itemId, quantity } = action.payload;
-      const updatedItems = state.items.map(item => 
-        item.id === itemId ? { ...item, quantity: Math.max(0, quantity) } : item
-      ).filter(item => item.quantity > 0);
-      
-      const total = updatedItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-      
-      return {
-        ...state,
-        items: updatedItems,
-        total
-      };
-    }
-    
-    case 'CLEAR_CART': {
-      return {
-        ...state,
-        items: [],
-        total: 0
-      };
-    }
-    
-    case 'APPLY_DISCOUNT': {
-      const discount = action.payload;
-      return {
-        ...state,
-        discount,
-        discountedTotal: state.total - discount
-      };
-    }
-    
-    case 'SET_ERROR': {
-      return {
-        ...state,
-        error: action.payload,
-        loading: false
-      };
-    }
-    
-    default:
-      return state;
+export const useCart = () => {
+  const context = useContext(CartContext);
+  if (!context) {
+    throw new Error('useCart deve ser usado dentro de um CartProvider');
   }
-}
-
-const initialState = {
-  items: [],
-  total: 0,
-  itemsCount: 0,
-  loading: false,
-  error: null,
+  return context;
 };
 
 export const CartProvider = ({ children }) => {
-  const [state, dispatch] = useReducer(cartReducer, initialState);
+  const [cartItems, setCartItems] = useState([]);
+  const [cartTotal, setCartTotal] = useState(0);
+  const [isLoading, setIsLoading] = useState(false);
 
+  // Carregar carrinho do localStorage na inicialização
   useEffect(() => {
-    loadCart();
+    try {
+      const cartData = cartUtils.getCart();
+      setCartItems(cartData.items || []);
+      cartUtils.updateCartCount();
+    } catch (error) {
+      console.error('Erro ao carregar carrinho:', error);
+    }
   }, []);
 
-  const loadCart = async () => {
-    dispatch({ type: 'SET_LOADING', payload: true });
-    try {
-      // Carregar do localStorage por enquanto (até API real estar pronta)
-      const cartData = cartUtils.getCart();
-      dispatch({ type: 'SET_ITEMS', payload: cartData.items || [] });
-      cartUtils.updateCartCount();
-    } catch (error) {
-      dispatch({ type: 'SET_ERROR', payload: error.message });
-    }
-  };
+  // Calcular total do carrinho sempre que os itens mudarem
+  useEffect(() => {
+    const total = cartItems.reduce((sum, item) => {
+      const price = parseFloat(item.price) || 0;
+      const quantity = parseInt(item.quantity) || 0;
+      return sum + (price * quantity);
+    }, 0);
+    setCartTotal(total);
+  }, [cartItems]);
 
-  const addToCart = async (productId, quantity = 1, weightOption = null) => {
+  const addToCart = async (product, quantity = 1) => {
+    setIsLoading(true);
     try {
-      // Por enquanto usar localStorage até ter API real
       const currentCart = cartUtils.getCart();
-      const existingItemIndex = currentCart.items.findIndex(item => 
-        item.id === productId && item.weightOption === weightOption
-      );
+      const existingItem = currentCart.items.find(item => item.id === product.id);
 
-      let updatedItems;
-      if (existingItemIndex >= 0) {
-        updatedItems = currentCart.items.map((item, index) => 
-          index === existingItemIndex 
-            ? { ...item, quantity: item.quantity + quantity }
-            : item
-        );
-      } else {
-        // Adicionar produto mock básico
-        const newItem = {
-          id: productId,
-          name: `Produto ${productId}`,
-          price: 29.90,
-          quantity,
-          weightOption: weightOption || '250g'
+      let newCartData;
+      if (existingItem) {
+        // Atualizar quantidade do item existente
+        newCartData = {
+          ...currentCart,
+          items: currentCart.items.map(item =>
+            item.id === product.id
+              ? { ...item, quantity: item.quantity + quantity }
+              : item
+          )
         };
-        updatedItems = [...currentCart.items, newItem];
+      } else {
+        // Adicionar novo item
+        newCartData = {
+          ...currentCart,
+          items: [
+            ...currentCart.items,
+            {
+              id: product.id,
+              name: product.name,
+              price: product.price,
+              image: product.image,
+              quantity: quantity,
+              weight: product.weight,
+              grind: product.grind || 'grãos'
+            }
+          ]
+        };
       }
-
-      const newCartData = {
-        items: updatedItems,
-        total: updatedItems.reduce((sum, item) => sum + (item.price * item.quantity), 0)
-      };
 
       cartUtils.saveCart(newCartData);
-      dispatch({ type: 'SET_ITEMS', payload: updatedItems });
+      setCartItems(newCartData.items);
       cartUtils.updateCartCount();
+
+      return { success: true };
     } catch (error) {
-      dispatch({ type: 'SET_ERROR', payload: error.message });
-      throw error;
+      console.error('Erro ao adicionar ao carrinho:', error);
+      return { success: false, error: error.message };
+    } finally {
+      setIsLoading(false);
     }
   };
 
-  const updateCartItem = async (itemId, quantity) => {
+  const removeFromCart = async (productId) => {
+    setIsLoading(true);
     try {
-      if (quantity <= 0) {
-        await removeFromCart(itemId);
-      } else {
-        dispatch({ type: 'UPDATE_QUANTITY', payload: { itemId, quantity } });
-        
-        // Atualizar localStorage
-        const currentCart = cartUtils.getCart();
-        const updatedItems = currentCart.items.map(item =>
-          item.id === itemId ? { ...item, quantity } : item
-        );
-        
-        cartUtils.saveCart({
-          items: updatedItems,
-          total: updatedItems.reduce((sum, item) => sum + (item.price * item.quantity), 0)
-        });
-        
-        cartUtils.updateCartCount();
-      }
-    } catch (error) {
-      dispatch({ type: 'SET_ERROR', payload: error.message });
-      throw error;
-    }
-  };
-
-  const removeFromCart = async (itemId) => {
-    try {
-      dispatch({ type: 'REMOVE_ITEM', payload: itemId });
-      
-      // Atualizar localStorage
       const currentCart = cartUtils.getCart();
-      const updatedItems = currentCart.items.filter(item => item.id !== itemId);
       
+      const newCartData = {
+        ...currentCart,
+        items: currentCart.items.filter(item => item.id !== productId)
+      };
+
       cartUtils.saveCart({
-        items: updatedItems,
-        total: updatedItems.reduce((sum, item) => sum + (item.price * item.quantity), 0)
+        ...newCartData,
+        total: newCartData.items.reduce((sum, item) => sum + (item.price * item.quantity), 0)
       });
-      
+
+      setCartItems(newCartData.items);
       cartUtils.updateCartCount();
+
+      return { success: true };
     } catch (error) {
-      dispatch({ type: 'SET_ERROR', payload: error.message });
-      throw error;
+      console.error('Erro ao remover do carrinho:', error);
+      return { success: false, error: error.message };
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const updateQuantity = async (productId, newQuantity) => {
+    setIsLoading(true);
+    try {
+      const currentCart = cartUtils.getCart();
+      
+      const newCartData = {
+        ...currentCart,
+        items: currentCart.items.map(item =>
+          item.id === productId
+            ? { ...item, quantity: Math.max(0, newQuantity) }
+            : item
+        ).filter(item => item.quantity > 0)
+      };
+
+      cartUtils.saveCart({
+        ...newCartData,
+        total: newCartData.items.reduce((sum, item) => sum + (item.price * item.quantity), 0)
+      });
+
+      setCartItems(newCartData.items);
+      cartUtils.updateCartCount();
+
+      return { success: true };
+    } catch (error) {
+      console.error('Erro ao atualizar quantidade:', error);
+      return { success: false, error: error.message };
+    } finally {
+      setIsLoading(false);
     }
   };
 
   const clearCart = async () => {
+    setIsLoading(true);
     try {
-      dispatch({ type: 'CLEAR_CART' });
       cartUtils.clearCart();
+      setCartItems([]);
+      setCartTotal(0);
+
+      return { success: true };
     } catch (error) {
-      dispatch({ type: 'SET_ERROR', payload: error.message });
-      throw error;
+      console.error('Erro ao limpar carrinho:', error);
+      return { success: false, error: error.message };
+    } finally {
+      setIsLoading(false);
     }
   };
 
+  const getCartItemsCount = () => {
+    return cartItems.reduce((total, item) => total + item.quantity, 0);
+  };
+
   const value = {
-    ...state,
+    cartItems,
+    cartTotal,
+    isLoading,
     addToCart,
-    updateCartItem,
     removeFromCart,
+    updateQuantity,
     clearCart,
-    loadCart,
+    getCartItemsCount,
   };
 
   return (
@@ -242,14 +231,6 @@ export const CartProvider = ({ children }) => {
       {children}
     </CartContext.Provider>
   );
-};
-
-export const useCart = () => {
-  const context = useContext(CartContext);
-  if (!context) {
-    throw new Error('useCart must be used within a CartProvider');
-  }
-  return context;
 };
 
 export default CartContext;

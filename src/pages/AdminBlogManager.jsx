@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { 
   FileText, Plus, Search, Filter, Edit, Trash2, Eye, EyeOff, 
-  Calendar, User, Tag, BarChart3, Save, X, Image, Globe
+  Calendar, User, Tag, BarChart3, Save, X, Image, Globe, ArrowLeft
 } from 'lucide-react';
 import { useSupabaseAuth } from '../contexts/SupabaseAuthContext';
+import { useNavigate } from 'react-router-dom';
 import { 
   getAllBlogPostsAdmin, 
   getBlogCategories, 
@@ -25,6 +26,7 @@ const AdminBlogManager = () => {
   const [saving, setSaving] = useState(false);
   
   const { user, hasPermission } = useSupabaseAuth();
+  const navigate = useNavigate();
 
   const [postForm, setPostForm] = useState({
     title: '',
@@ -228,6 +230,17 @@ const AdminBlogManager = () => {
   return (
     <div className="min-h-screen bg-slate-50 py-20">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        {/* Back Button */}
+        <div className="mb-6">
+          <button
+            onClick={() => navigate('/admin/dashboard')}
+            className="flex items-center gap-2 text-slate-600 hover:text-slate-900 transition-colors font-medium"
+          >
+            <ArrowLeft className="w-4 h-4" />
+            Voltar ao Dashboard
+          </button>
+        </div>
+
         {/* Header */}
         <div className="mb-8">
           <div className="flex items-center justify-between">

@@ -171,13 +171,6 @@ export const Header = () => {
                       </button>
                     </Link>
                     
-                    <Link to="/dashboard" onClick={() => setIsUserMenuOpen(false)}>
-                      <button className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-2">
-                        <Settings className="w-4 h-4" />
-                        Dashboard
-                      </button>
-                    </Link>
-
                     {(profile?.role === 'admin' || profile?.role === 'super_admin') && (
                       <Link to="/admin" onClick={() => setIsUserMenuOpen(false)}>
                         <button className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-2">
@@ -271,12 +264,6 @@ export const Header = () => {
                     <div className="text-xs text-gray-500 capitalize">{userRole.replace('_', ' ')}</div>
                   </div>
                 </div>
-                
-                <Link to="/dashboard" onClick={() => setIsMenuOpen(false)}>
-                  <button className="w-full text-left px-3 py-2 text-brand-dark hover:bg-brand-brown/5 rounded-md">
-                    Dashboard
-                  </button>
-                </Link>
                 
                 <button
                   onClick={() => {

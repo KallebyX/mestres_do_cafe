@@ -152,7 +152,7 @@ const MarketplacePageNew = () => {
   };
 
   const handleAdminAction = (action, product = null) => {
-    if (!currentUser || currentUser.user_type !== 'admin') {
+    if (!currentUser || currentUser.role !== 'admin') {
       alert('Acesso negado. Apenas administradores podem realizar esta ação.');
       return;
     }
@@ -236,7 +236,7 @@ const MarketplacePageNew = () => {
     }
   };
 
-  const isAdmin = currentUser?.user_type === 'admin';
+  const isAdmin = currentUser?.role === 'admin';
 
   if (loading) {
     return (

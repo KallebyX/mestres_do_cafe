@@ -2,10 +2,43 @@ const express = require('express');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const { body, validationResult } = require('express-validator');
-const { db } = require('../database/init');
+const fs = require('fs');
+const path = require('path');
 const { authenticateToken } = require('../middleware/auth');
 
 const router = express.Router();
+
+const JWT_SECRET = process.env.JWT_SECRET || 'mestres-cafe-super-secret-jwt-key-2025';
+const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN || '24h';
+const DB_FILE = path.join(__dirname, '../data/db.json');
+
+// Funções de banco JSON
+function readDB() {
+  try {
+    if (!fs.existsSync(DB_FILE)) {
+      const initialData = { users: [], products: [], orders: [] };
+      writeDB(initialData);
+      return initialData;
+    }
+    const data = fs.readFileSync(DB_FILE, 'utf8');
+    return JSON.parse(data);
+  } catch (error) {
+    console.error('Erro ao ler banco JSON:', error);
+    return { users: [], products: [], orders: [] };
+  }
+}
+
+function writeDB(data) {
+  try {
+    const dbDir = path.dirname(DB_FILE);
+    if (!fs.existsSync(dbDir)) {
+      fs.mkdirSync(dbDir, { recursive: true });
+    }
+    fs.writeFileSync(DB_FILE, JSON.stringify(data, null, 2));
+  } catch (error) {
+    console.error('Erro ao escrever banco JSON:', error);
+  }
+}
 
 // Validações
 const registerValidation = [
@@ -25,13 +58,14 @@ const loginValidation = [
 const generateToken = (user) => {
   return jwt.sign(
     { 
+      userId: user.id,
       id: user.id, 
       email: user.email, 
       user_type: user.user_type,
       name: user.name
     },
-    process.env.JWT_SECRET,
-    { expiresIn: process.env.JWT_EXPIRES_IN }
+    JWT_SECRET,
+    { expiresIn: JWT_EXPIRES_IN }
   );
 };
 
@@ -48,63 +82,69 @@ router.post('/register', registerValidation, async (req, res) => {
 
     const { name, email, password, user_type, phone, cpf_cnpj, address, city, state, zip_code } = req.body;
 
+    const database = readDB();
+
     // Verificar se email já existe
-    db.get('SELECT id FROM users WHERE email = ?', [email], async (err, existingUser) => {
-      if (err) {
-        console.error('Database error:', err);
-        return res.status(500).json({ error: 'Erro interno do servidor' });
-      }
+    const existingUser = database.users.find(u => u.email === email);
+    if (existingUser) {
+      return res.status(400).json({ error: 'Email já está em uso' });
+    }
 
-      if (existingUser) {
-        return res.status(400).json({ error: 'Email já está em uso' });
-      }
+    try {
+      // Hash da senha
+      const saltRounds = 12;
+      const hashedPassword = await bcrypt.hash(password, saltRounds);
 
-      try {
-        // Hash da senha
-        const saltRounds = 12;
-        const hashedPassword = await bcrypt.hash(password, saltRounds);
+      // Gerar ID único
+      const userId = require('crypto').randomUUID();
 
-        // Inserir usuário
-        const sql = `INSERT INTO users (name, email, password, user_type, phone, cpf_cnpj, address, city, state, zip_code) 
-                     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
-        
-        db.run(sql, [name, email, hashedPassword, user_type, phone, cpf_cnpj, address, city, state, zip_code], function(err) {
-          if (err) {
-            console.error('Database error:', err);
-            return res.status(500).json({ error: 'Erro ao criar usuário' });
-          }
+      const newUser = {
+        id: userId,
+        name,
+        email,
+        password: hashedPassword,
+        user_type,
+        phone,
+        cpf_cnpj,
+        address,
+        city,
+        state,
+        zip_code,
+        points: 0,
+        level: 'Bronze',
+        role: 'customer',
+        permissions: JSON.stringify(['read']),
+        is_active: true,
+        created_at: new Date().toISOString()
+      };
 
-          const newUser = {
-            id: this.lastID,
-            name,
-            email,
-            user_type,
-            phone,
-            cpf_cnpj,
-            address,
-            city,
-            state,
-            zip_code,
-            points: 0,
-            is_active: 1
-          };
+      database.users.push(newUser);
+      writeDB(database);
 
-          const token = generateToken(newUser);
+      const token = generateToken(newUser);
 
-          res.status(201).json({
-            message: 'Usuário criado com sucesso',
-            access_token: token,
-            user: {
-              ...newUser,
-              password: undefined // Não retornar senha
-            }
-          });
-        });
-      } catch (hashError) {
-        console.error('Password hash error:', hashError);
-        res.status(500).json({ error: 'Erro ao processar senha' });
-      }
-    });
+      res.status(201).json({
+        message: 'Usuário criado com sucesso',
+        access_token: token,
+        user: {
+          id: newUser.id,
+          name: newUser.name,
+          email: newUser.email,
+          user_type: newUser.user_type,
+          phone: newUser.phone,
+          cpf_cnpj: newUser.cpf_cnpj,
+          address: newUser.address,
+          city: newUser.city,
+          state: newUser.state,
+          zip_code: newUser.zip_code,
+          points: newUser.points,
+          is_active: newUser.is_active
+        }
+      });
+    } catch (hashError) {
+      console.error('Password hash error:', hashError);
+      res.status(500).json({ error: 'Erro ao processar senha' });
+    }
   } catch (error) {
     console.error('Register error:', error);
     res.status(500).json({ error: 'Erro interno do servidor' });
@@ -112,7 +152,7 @@ router.post('/register', registerValidation, async (req, res) => {
 });
 
 // Login de usuário
-router.post('/login', loginValidation, (req, res) => {
+router.post('/login', loginValidation, async (req, res) => {
   try {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
@@ -124,48 +164,54 @@ router.post('/login', loginValidation, (req, res) => {
 
     const { email, password } = req.body;
 
-    db.get('SELECT * FROM users WHERE email = ? AND is_active = 1', [email], async (err, user) => {
-      if (err) {
-        console.error('Database error:', err);
-        return res.status(500).json({ error: 'Erro interno do servidor' });
-      }
+    const database = readDB();
+    console.log('🔍 Login attempt for:', email);
+    console.log('📊 Total users in database:', database.users.length);
+    
+    // Buscar usuário por email
+    const user = database.users.find(u => u.email === email && u.is_active !== false);
+    console.log('👤 User found:', user ? 'YES' : 'NO');
+    if (user) {
+      console.log('📧 User email matches:', user.email === email);
+      console.log('✅ User is active:', user.is_active);
+    }
 
-      if (!user) {
+    if (!user) {
+      console.log('❌ Login failed: User not found');
+      return res.status(401).json({ error: 'Email ou senha incorretos' });
+    }
+
+    try {
+      const validPassword = await bcrypt.compare(password, user.password);
+      
+      if (!validPassword) {
         return res.status(401).json({ error: 'Email ou senha incorretos' });
       }
 
-      try {
-        const validPassword = await bcrypt.compare(password, user.password);
-        
-        if (!validPassword) {
-          return res.status(401).json({ error: 'Email ou senha incorretos' });
+      const token = generateToken(user);
+
+      res.json({
+        message: 'Login realizado com sucesso',
+        access_token: token,
+        user: {
+          id: user.id,
+          name: user.name,
+          email: user.email,
+          user_type: user.user_type,
+          phone: user.phone,
+          cpf_cnpj: user.cpf_cnpj,
+          address: user.address,
+          city: user.city,
+          state: user.state,
+          zip_code: user.zip_code,
+          points: user.points,
+          is_active: user.is_active
         }
-
-        const token = generateToken(user);
-
-        res.json({
-          message: 'Login realizado com sucesso',
-          access_token: token,
-          user: {
-            id: user.id,
-            name: user.name,
-            email: user.email,
-            user_type: user.user_type,
-            phone: user.phone,
-            cpf_cnpj: user.cpf_cnpj,
-            address: user.address,
-            city: user.city,
-            state: user.state,
-            zip_code: user.zip_code,
-            points: user.points,
-            is_active: user.is_active
-          }
-        });
-      } catch (compareError) {
-        console.error('Password compare error:', compareError);
-        res.status(500).json({ error: 'Erro ao verificar senha' });
-      }
-    });
+      });
+    } catch (compareError) {
+      console.error('Password compare error:', compareError);
+      res.status(500).json({ error: 'Erro ao verificar senha' });
+    }
   } catch (error) {
     console.error('Login error:', error);
     res.status(500).json({ error: 'Erro interno do servidor' });
@@ -174,49 +220,16 @@ router.post('/login', loginValidation, (req, res) => {
 
 // Verificar token
 router.get('/verify-token', authenticateToken, (req, res) => {
-  db.get('SELECT * FROM users WHERE id = ? AND is_active = 1', [req.user.id], (err, user) => {
-    if (err) {
-      console.error('Database error:', err);
-      return res.status(500).json({ error: 'Erro interno do servidor' });
-    }
+  const database = readDB();
+  const user = database.users.find(u => u.id === req.user.id && u.is_active !== false);
 
-    if (!user) {
-      return res.status(401).json({ valid: false, error: 'Usuário não encontrado' });
-    }
+  if (!user) {
+    return res.status(401).json({ valid: false, error: 'Usuário não encontrado' });
+  }
 
-    res.json({
-      valid: true,
-      user: {
-        id: user.id,
-        name: user.name,
-        email: user.email,
-        user_type: user.user_type,
-        phone: user.phone,
-        cpf_cnpj: user.cpf_cnpj,
-        address: user.address,
-        city: user.city,
-        state: user.state,
-        zip_code: user.zip_code,
-        points: user.points,
-        is_active: user.is_active
-      }
-    });
-  });
-});
-
-// Obter perfil do usuário
-router.get('/profile', authenticateToken, (req, res) => {
-  db.get('SELECT * FROM users WHERE id = ?', [req.user.id], (err, user) => {
-    if (err) {
-      console.error('Database error:', err);
-      return res.status(500).json({ error: 'Erro interno do servidor' });
-    }
-
-    if (!user) {
-      return res.status(404).json({ error: 'Usuário não encontrado' });
-    }
-
-    res.json({
+  res.json({
+    valid: true,
+    user: {
       id: user.id,
       name: user.name,
       email: user.email,
@@ -228,9 +241,34 @@ router.get('/profile', authenticateToken, (req, res) => {
       state: user.state,
       zip_code: user.zip_code,
       points: user.points,
-      is_active: user.is_active,
-      created_at: user.created_at
-    });
+      is_active: user.is_active
+    }
+  });
+});
+
+// Obter perfil do usuário
+router.get('/profile', authenticateToken, (req, res) => {
+  const database = readDB();
+  const user = database.users.find(u => u.id === req.user.id);
+
+  if (!user) {
+    return res.status(404).json({ error: 'Usuário não encontrado' });
+  }
+
+  res.json({
+    id: user.id,
+    name: user.name,
+    email: user.email,
+    user_type: user.user_type,
+    phone: user.phone,
+    cpf_cnpj: user.cpf_cnpj,
+    address: user.address,
+    city: user.city,
+    state: user.state,
+    zip_code: user.zip_code,
+    points: user.points,
+    is_active: user.is_active,
+    created_at: user.created_at
   });
 });
 
@@ -249,25 +287,83 @@ router.put('/profile', authenticateToken, [
 
   const { name, phone, cpf_cnpj, address, city, state, zip_code } = req.body;
   
-  const sql = `UPDATE users 
-               SET name = COALESCE(?, name), 
-                   phone = COALESCE(?, phone),
-                   cpf_cnpj = COALESCE(?, cpf_cnpj),
-                   address = COALESCE(?, address),
-                   city = COALESCE(?, city),
-                   state = COALESCE(?, state),
-                   zip_code = COALESCE(?, zip_code),
-                   updated_at = CURRENT_TIMESTAMP
-               WHERE id = ?`;
+  const database = readDB();
+  const userIndex = database.users.findIndex(u => u.id === req.user.id);
 
-  db.run(sql, [name, phone, cpf_cnpj, address, city, state, zip_code, req.user.id], function(err) {
-    if (err) {
-      console.error('Database error:', err);
-      return res.status(500).json({ error: 'Erro ao atualizar perfil' });
+  if (userIndex === -1) {
+    return res.status(404).json({ error: 'Usuário não encontrado' });
+  }
+
+  // Atualizar usuário
+  const updatedUser = {
+    ...database.users[userIndex],
+    name: name || database.users[userIndex].name,
+    phone: phone || database.users[userIndex].phone,
+    cpf_cnpj: cpf_cnpj || database.users[userIndex].cpf_cnpj,
+    address: address || database.users[userIndex].address,
+    city: city || database.users[userIndex].city,
+    state: state || database.users[userIndex].state,
+    zip_code: zip_code || database.users[userIndex].zip_code,
+    updated_at: new Date().toISOString()
+  };
+
+  database.users[userIndex] = updatedUser;
+  writeDB(database);
+
+  res.json({ message: 'Perfil atualizado com sucesso' });
+});
+
+// Endpoint de teste para debugar login
+router.post('/test-login', async (req, res) => {
+  try {
+    const { email, password } = req.body;
+    
+    console.log('🔍 TEST LOGIN - Email:', email);
+    console.log('🔍 TEST LOGIN - Password:', password);
+    
+    const database = readDB();
+    console.log('📊 Total users:', database.users.length);
+    
+    const allUsers = database.users.map(u => ({
+      id: u.id,
+      email: u.email,
+      user_type: u.user_type,
+      is_active: u.is_active
+    }));
+    console.log('👥 All users:', JSON.stringify(allUsers, null, 2));
+    
+    const user = database.users.find(u => u.email === email);
+    console.log('👤 User found by email:', user ? 'YES' : 'NO');
+    
+    if (user) {
+      console.log('🔑 Stored password hash:', user.password);
+      const passwordMatch = await bcrypt.compare(password, user.password);
+      console.log('🔐 Password matches:', passwordMatch);
+      
+      return res.json({
+        success: true,
+        userFound: true,
+        passwordMatch,
+        userDetails: {
+          id: user.id,
+          email: user.email,
+          user_type: user.user_type,
+          is_active: user.is_active
+        }
+      });
     }
-
-    res.json({ message: 'Perfil atualizado com sucesso' });
-  });
+    
+    res.json({
+      success: false,
+      userFound: false,
+      passwordMatch: false,
+      allEmails: database.users.map(u => u.email)
+    });
+    
+  } catch (error) {
+    console.error('❌ Test login error:', error);
+    res.status(500).json({ error: error.message });
+  }
 });
 
 module.exports = router; 

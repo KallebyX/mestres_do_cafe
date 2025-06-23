@@ -22,6 +22,26 @@ server/dist/
 server/.env
 server/.env.local
 
+# Configuration files with potential secrets
+**/config.js
+**/config.json
+**/credentials.json
+**/secrets.json
+**/.secrets
+**/*secrets*
+**/*credentials*
+**/*oauth*
+**/*key*
+
+# Documentation files that might contain sensitive data
+docs/secrets/
+docs/credentials/
+docs/oauth/
+**/CONFIGURAR_*_OAUTH_*.md
+**/CONFIGURACAO_*_SECRETS*.md
+**/GOOGLE_OAUTH_*.md
+**/SECRET_*.md
+
 # Editor directories and files
 .vscode/
 .idea/
@@ -106,3 +126,15 @@ users.json
 # Documentation build
 docs/build/
 whatsapp-session/
+
+# Security and sensitive files
+**/*secret*
+**/*password*
+**/*token*
+**/*credential*
+**/*oauth*
+**/*api-key*
+**/*.pem
+**/*.key
+**/*.p12
+**/*.pfx

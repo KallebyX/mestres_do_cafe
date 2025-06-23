@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Package, Star, Clock, User, TrendingUp, Coffee, ShoppingBag, Award, Target, Zap } from 'lucide-react';
+import { Package, Star, Clock, User, TrendingUp, Coffee, ShoppingBag, Award, Target, Zap, Crown } from 'lucide-react';
 import { useSupabaseAuth } from '../contexts/SupabaseAuthContext';
 import { ordersAPI } from '../lib/api';
 import { useNavigate } from 'react-router-dom';
@@ -8,17 +8,33 @@ const CustomerDashboard = () => {
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('overview');
-  const { user } = useSupabaseAuth();
+  const { user, isAdmin, profile } = useSupabaseAuth();
   const navigate = useNavigate();
 
   useEffect(() => {
-    loadOrders();
-  }, []);
+    // Verificar se o usuário é admin e redirecionar
+    if (profile && (profile.role === 'admin' || profile.role === 'super_admin' || isAdmin)) {
+      console.log('👑 Admin detectado no CustomerDashboard, redirecionando para área administrativa...');
+      navigate('/admin/crm');
+      return;
+    }
+
+    if (user?.id) {
+      loadOrders();
+    }
+  }, [user, profile, isAdmin, navigate]);
 
   const loadOrders = async () => {
+    if (!user?.id) {
+      console.warn('Usuário não logado ou sem ID');
+      setLoading(false);
+      return;
+    }
+
     try {
-      const data = await ordersAPI.getUserOrders();
-      setOrders(data.orders || []);
+      console.log('🔍 Buscando pedidos para o usuário:', user.id);
+      const data = await ordersAPI.getUserOrders(user.id);
+      setOrders(data || []);
     } catch (error) {
       console.error('Erro ao carregar pedidos:', error);
     } finally {
@@ -92,6 +108,27 @@ const CustomerDashboard = () => {
         <div className="text-center">
           <div className="w-16 h-16 border-4 border-amber-200 border-t-amber-600 rounded-full animate-spin mx-auto mb-4"></div>
           <p className="text-slate-600">Carregando dashboard...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Se é admin, mostrar mensagem de redirecionamento
+  if (profile && (profile.role === 'admin' || profile.role === 'super_admin' || isAdmin)) {
+    return (
+      <div className="min-h-screen bg-slate-50 flex items-center justify-center">
+        <div className="text-center max-w-md mx-auto p-8">
+          <div className="w-20 h-20 bg-gradient-to-br from-amber-500 to-amber-600 rounded-full flex items-center justify-center mx-auto mb-6">
+            <Crown className="w-10 h-10 text-white" />
+          </div>
+          <h2 className="text-2xl font-bold text-slate-900 mb-4">
+            Área Administrativa
+          </h2>
+          <p className="text-slate-600 mb-6">
+            Como administrador, você será redirecionado para o painel administrativo.
+          </p>
+          <div className="w-12 h-12 border-4 border-amber-200 border-t-amber-600 rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-sm text-slate-500">Redirecionando...</p>
         </div>
       </div>
     );

@@ -1,1248 +1,639 @@
-// API Configuration - Auto detect environment
-const isDevelopment = import.meta.env.DEV || window.location.hostname === 'localhost';
-const API_BASE_URL = isDevelopment 
-  ? 'http://localhost:5000' 
-  : `${window.location.protocol}//${window.location.host}`;
+// Importar APIs do Supabase em vez do backend Node.js
+import { supabase } from './supabase.js';
+import { 
+  getAdminStats, 
+  getAdminUsers, 
+  getAdminOrders, 
+  getMyOrders,
+  updateUser,
+  deleteUser,
+  updateOrderStatus,
+  getAnalyticsData,
+  getFinancialData
+} from './supabase-admin-full.js';
 
-// Helper function to make API requests
-async function apiRequest(endpoint, options = {}) {
-  const url = `${API_BASE_URL}${endpoint}`;
-  
-  const config = {
-    headers: {
-      'Content-Type': 'application/json',
-      ...options.headers,
-    },
-    ...options,
-  };
+import {
+  getAllCustomers,
+  getAdminCustomers,
+  createManualCustomer,
+  toggleAnyCustomerStatus
+} from './supabase-admin-api.js';
 
-  // Add auth token if available
-  const token = localStorage.getItem('access_token');
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`;
-  }
+import {
+  getAllProducts,
+  getAllProductsAdmin,
+  createProduct,
+  updateProduct,
+  deleteProduct,
+  toggleProductStatus,
+  updateProductStock,
+  getFeaturedProducts,
+  getProductById,
+  getProductByIdAdmin,
+  getProductsByCategory,
+  getProductsWithFilters
+} from './supabase-products.js';
 
-  try {
-    const response = await fetch(url, config);
+// =============================================
+// CONFIGURAÇÃO BASE (MANTIDA PARA COMPATIBILIDADE)
+// =============================================
 
-    if (!response.ok) {
-      let errorMessage;
-      try {
-        const errorData = await response.json();
-        errorMessage = errorData.error || `HTTP error! status: ${response.status}`;
-      } catch {
-        errorMessage = `HTTP error! status: ${response.status}`;
-      }
-      throw new Error(errorMessage);
-    }
+const API_BASE_URL = 'http://localhost:5000/api';
 
-    const data = await response.json();
-    return data;
-  } catch (error) {
-    console.error('API Request failed:', error.message);
-    throw error;
-  }
-}
+// =============================================
+// AUTH API - USANDO SUPABASE
+// =============================================
 
-// Authentication API
 export const authAPI = {
-  async register(userData) {
+  // Login
+  async login({ email, password }) {
     try {
-      const response = await apiRequest('/api/auth/register', {
-        method: 'POST',
-        body: JSON.stringify(userData),
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email,
+        password
       });
 
-      if (response.access_token) {
-        localStorage.setItem('access_token', response.access_token);
-        localStorage.setItem('user', JSON.stringify(response.user));
+      if (error) {
+        throw new Error(error.message);
       }
 
-      return {
-        success: true,
-        data: response,
-        user: response.user,
-        token: response.access_token
-      };
-    } catch (error) {
-      return {
-        success: false,
-        error: error.message
-      };
-    }
-  },
+      if (data.user) {
+        // Buscar dados completos do usuário
+        const { data: userProfile } = await supabase
+          .from('users')
+          .select('*')
+          .eq('id', data.user.id)
+          .single();
 
-  async login(credentials) {
-    try {
-      const response = await apiRequest('/api/auth/login', {
-        method: 'POST',
-        body: JSON.stringify(credentials),
-      });
+        const userData = {
+          id: data.user.id,
+          email: data.user.email,
+          ...userProfile
+        };
 
-      if (response.access_token) {
-        localStorage.setItem('access_token', response.access_token);
-        localStorage.setItem('user', JSON.stringify(response.user));
-      }
+        // Salvar no localStorage
+        localStorage.setItem('user', JSON.stringify(userData));
+        localStorage.setItem('access_token', data.session.access_token);
 
-      return {
-        success: true,
-        data: response,
-        user: response.user,
-        token: response.access_token
-      };
-    } catch (error) {
-      return {
-        success: false,
-        error: error.message
-      };
-    }
-  },
-
-  async verifyToken() {
-    try {
-      const response = await apiRequest('/api/auth/verify-token');
-      
-      if (response.valid && response.user) {
-        localStorage.setItem('user', JSON.stringify(response.user));
         return {
           success: true,
-          user: response.user
+          user: userData,
+          token: data.session.access_token
         };
       }
-      
-      return { success: false };
+
+      throw new Error('Login falhou');
     } catch (error) {
+      console.error('Erro no login:', error);
+      throw error;
+    }
+  },
+
+  // Registro
+  async register(userData) {
+    try {
+      const { data, error } = await supabase.auth.signUp({
+        email: userData.email,
+        password: userData.password,
+        options: {
+          data: {
+            name: userData.name,
+            phone: userData.phone,
+            user_type: userData.user_type || 'customer'
+          }
+        }
+      });
+
+      if (error) {
+        throw new Error(error.message);
+      }
+
+      return {
+        success: true,
+        user: data.user,
+        message: 'Usuário registrado com sucesso'
+      };
+    } catch (error) {
+      console.error('Erro no registro:', error);
+      throw error;
+    }
+  },
+
+  // Logout
+  logout() {
+    try {
+      supabase.auth.signOut();
+      localStorage.removeItem('user');
+      localStorage.removeItem('access_token');
+      return { success: true };
+    } catch (error) {
+      console.error('Erro no logout:', error);
+      throw error;
+    }
+  },
+
+  // Verificar token
+  async verifyToken() {
+    try {
+      const { data: { user }, error } = await supabase.auth.getUser();
+      
+      if (error || !user) {
+        this.logout();
+        return { success: false, error: 'Token inválido' };
+      }
+
+      return { success: true, user };
+    } catch (error) {
+      console.error('Erro ao verificar token:', error);
       this.logout();
       return { success: false, error: error.message };
     }
   },
 
-  logout() {
-    localStorage.removeItem('access_token');
-    localStorage.removeItem('user');
-  },
-
+  // Obter usuário atual
   getCurrentUser() {
-    const userStr = localStorage.getItem('user');
-    return userStr ? JSON.parse(userStr) : null;
+    try {
+      const userData = localStorage.getItem('user');
+      return userData ? JSON.parse(userData) : null;
+    } catch (error) {
+      console.error('Erro ao obter usuário atual:', error);
+      return null;
+    }
   },
 
+  // Obter token
   getToken() {
-    return localStorage.getItem('access_token');
+    try {
+      return localStorage.getItem('access_token');
+    } catch (error) {
+      console.error('Erro ao obter token:', error);
+      return null;
+    }
   },
 
   // Demo login para testes
-  async demoLogin(email = 'cliente@teste.com', password = '123456') {
+  async demoLogin() {
     try {
-      const response = await apiRequest('/api/auth/demo-login', {
-        method: 'POST',
-        body: JSON.stringify({ email, password }),
+      return await this.login({
+        email: 'daniel@mestres-do-cafe.com',
+        password: 'admin123'
+      });
+    } catch (error) {
+      console.error('Erro no demo login:', error);
+      throw error;
+    }
+  },
+
+  // Reset de senha
+  async resetPassword(email) {
+    try {
+      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: `${window.location.origin}/reset-password`
       });
 
-      if (response.access_token) {
-        localStorage.setItem('access_token', response.access_token);
-        localStorage.setItem('user', JSON.stringify(response.user));
+      if (error) {
+        throw new Error(error.message);
       }
 
       return {
         success: true,
-        data: response,
-        user: response.user,
-        token: response.access_token
+        message: 'Email de recuperação enviado'
       };
     } catch (error) {
+      console.error('Erro ao resetar senha:', error);
+      throw error;
+    }
+  },
+
+  // Atualizar senha
+  async updatePassword(newPassword) {
+    try {
+      const { error } = await supabase.auth.updateUser({
+        password: newPassword
+      });
+
+      if (error) {
+        throw new Error(error.message);
+      }
+
       return {
-        success: false,
-        error: error.message
+        success: true,
+        message: 'Senha atualizada com sucesso'
       };
+    } catch (error) {
+      console.error('Erro ao atualizar senha:', error);
+      throw error;
     }
   }
 };
 
-// Products API
-export const productsAPI = {
-  async getAll() {
-    try {
-      const response = await apiRequest('/api/products');
-      return {
-        success: true,
-        products: response.products || [],
-        total: response.total || 0
-      };
-    } catch (error) {
-      return {
-        success: false,
-        error: error.message,
-        products: [],
-        total: 0
-      };
-    }
-  },
+// =============================================
+// ADMIN API - USANDO SUPABASE
+// =============================================
 
-  async getById(id) {
-    try {
-      const response = await apiRequest(`/api/products/${id}`);
-      return {
-        success: true,
-        product: response.product
-      };
-    } catch (error) {
-      return {
-        success: false,
-        error: error.message,
-        product: null
-      };
-    }
-  },
-
-  async getFeatured() {
-    try {
-      const response = await apiRequest('/api/products/featured');
-      return {
-        success: true,
-        products: response.products || [],
-        total: response.total || 0
-      };
-    } catch (error) {
-      return {
-        success: false,
-        error: error.message,
-        products: [],
-        total: 0
-      };
-    }
-  }
-};
-
-// Admin API (geral)
 export const adminAPI = {
+  // Estatísticas do dashboard
   async getStats() {
     try {
-      const response = await apiRequest('/api/admin/stats');
-      return {
-        success: true,
-        stats: response
-      };
+      const response = await getAdminStats();
+      if (!response.success) {
+        throw new Error(response.error);
+      }
+      return { stats: response.stats };
     } catch (error) {
-      return {
-        success: false,
-        error: error.message
-      };
+      console.error('Erro ao buscar estatísticas:', error);
+      throw error;
     }
   },
 
-  async getProducts() {
-    try {
-      const response = await apiRequest('/api/admin/products');
-      return {
-        success: true,
-        products: response.products || [],
-        total: response.total || 0
-      };
-    } catch (error) {
-      return {
-        success: false,
-        error: error.message,
-        products: [],
-        total: 0
-      };
-    }
-  },
-
-  async createProduct(productData) {
-    try {
-      const response = await apiRequest('/api/admin/products', {
-        method: 'POST',
-        body: JSON.stringify(productData),
-      });
-      return {
-        success: true,
-        product: response.product,
-        message: response.message
-      };
-    } catch (error) {
-      return {
-        success: false,
-        error: error.message
-      };
-    }
-  },
-
-  async updateProduct(id, productData) {
-    try {
-      const response = await apiRequest(`/api/admin/products/${id}`, {
-        method: 'PUT',
-        body: JSON.stringify(productData),
-      });
-      return {
-        success: true,
-        product: response.product,
-        message: response.message
-      };
-    } catch (error) {
-      return {
-        success: false,
-        error: error.message
-      };
-    }
-  },
-
-  async deleteProduct(id) {
-    try {
-      const response = await apiRequest(`/api/admin/products/${id}`, {
-        method: 'DELETE',
-      });
-      return {
-        success: true,
-        message: response.message
-      };
-    } catch (error) {
-      return {
-        success: false,
-        error: error.message
-      };
-    }
-  },
-
-  // Blog management
-  async getBlogs() {
-    try {
-      const response = await apiRequest('/api/admin/blogs');
-      return {
-        success: true,
-        blogs: response.blogs || [],
-        total: response.total || 0
-      };
-    } catch (error) {
-      return {
-        success: false,
-        error: error.message,
-        blogs: [],
-        total: 0
-      };
-    }
-  },
-
-  async createBlog(blogData) {
-    try {
-      const response = await apiRequest('/api/admin/blogs', {
-        method: 'POST',
-        body: JSON.stringify(blogData),
-      });
-      return {
-        success: true,
-        blog: response.blog,
-        message: response.message
-      };
-    } catch (error) {
-      return {
-        success: false,
-        error: error.message
-      };
-    }
-  },
-
-  async updateBlog(id, blogData) {
-    try {
-      const response = await apiRequest(`/api/admin/blogs/${id}`, {
-        method: 'PUT',
-        body: JSON.stringify(blogData),
-      });
-      return {
-        success: true,
-        blog: response.blog,
-        message: response.message
-      };
-    } catch (error) {
-      return {
-        success: false,
-        error: error.message
-      };
-    }
-  },
-
-  async deleteBlog(id) {
-    try {
-      const response = await apiRequest(`/api/admin/blogs/${id}`, {
-        method: 'DELETE',
-      });
-      return {
-        success: true,
-        message: response.message
-      };
-    } catch (error) {
-      return {
-        success: false,
-        error: error.message
-      };
-    }
-  },
-
-  // Orders management
-  async getOrders() {
-    try {
-      const response = await apiRequest('/api/admin/orders');
-      return {
-        success: true,
-        orders: response.orders || [],
-        total: response.total || 0
-      };
-    } catch (error) {
-      return {
-        success: false,
-        error: error.message,
-        orders: [],
-        total: 0
-      };
-    }
-  },
-
-  async updateOrderStatus(id, status) {
-    try {
-      const response = await apiRequest(`/api/admin/orders/${id}/status`, {
-        method: 'PUT',
-        body: JSON.stringify({ status }),
-      });
-      return {
-        success: true,
-        order: response.order,
-        message: response.message
-      };
-    } catch (error) {
-      return {
-        success: false,
-        error: error.message
-      };
-    }
-  },
-
-  // Users management
+  // Gerenciamento de usuários
   async getUsers() {
     try {
-      const response = await apiRequest('/api/admin/users');
-      return {
-        success: true,
-        users: response.users || [],
-        total: response.total || 0
-      };
+      const response = await getAdminUsers();
+      if (!response.success) {
+        throw new Error(response.error);
+      }
+      return { users: response.users };
     } catch (error) {
-      return {
-        success: false,
-        error: error.message,
-        users: [],
-        total: 0
-      };
+      console.error('Erro ao buscar usuários:', error);
+      throw error;
     }
   },
 
-  async updateUser(id, userData) {
+  async updateUser(userId, userData) {
     try {
-      const response = await apiRequest(`/api/admin/users/${id}`, {
-        method: 'PUT',
-        body: JSON.stringify(userData),
-      });
-      return {
-        success: true,
-        user: response.user,
-        message: response.message
-      };
+      const response = await updateUser(userId, userData);
+      if (!response.success) {
+        throw new Error(response.error);
+      }
+      return response;
     } catch (error) {
-      return {
-        success: false,
-        error: error.message
-      };
+      console.error('Erro ao atualizar usuário:', error);
+      throw error;
     }
   },
 
-  async deleteUser(id) {
+  async deleteUser(userId) {
     try {
-      const response = await apiRequest(`/api/admin/users/${id}`, {
-        method: 'DELETE',
-      });
-      return {
-        success: true,
-        message: response.message
-      };
+      const response = await deleteUser(userId);
+      if (!response.success) {
+        throw new Error(response.error);
+      }
+      return response;
     } catch (error) {
-      return {
-        success: false,
-        error: error.message
-      };
+      console.error('Erro ao deletar usuário:', error);
+      throw error;
+    }
+  },
+
+  // Gerenciamento de pedidos
+  async getOrders() {
+    try {
+      const response = await getAdminOrders();
+      if (!response.success) {
+        throw new Error(response.error);
+      }
+      return { orders: response.orders };
+    } catch (error) {
+      console.error('Erro ao buscar pedidos:', error);
+      throw error;
+    }
+  },
+
+  async updateOrderStatus(orderId, status) {
+    try {
+      const response = await updateOrderStatus(orderId, status);
+      if (!response.success) {
+        throw new Error(response.error);
+      }
+      return response;
+    } catch (error) {
+      console.error('Erro ao atualizar status do pedido:', error);
+      throw error;
+    }
+  },
+
+  // Analytics
+  async getAnalytics(timeRange = '30d') {
+    try {
+      const response = await getAnalyticsData(timeRange);
+      if (!response.success) {
+        throw new Error(response.error);
+      }
+      return response.data;
+    } catch (error) {
+      console.error('Erro ao buscar dados de analytics:', error);
+      throw error;
+    }
+  },
+
+  // Financeiro
+  async getFinancialData(timeRange = '30d') {
+    try {
+      const response = await getFinancialData(timeRange);
+      if (!response.success) {
+        throw new Error(response.error);
+      }
+      return response.data;
+    } catch (error) {
+      console.error('Erro ao buscar dados financeiros:', error);
+      throw error;
     }
   }
 };
 
-// Blog API
-export const blogAPI = {
-  async getAll(page = 1, limit = 10, category = null) {
+// =============================================
+// ORDERS API - USANDO SUPABASE
+// =============================================
+
+export const ordersAPI = {
+  async getAll(filters = {}) {
     try {
-      let url = `/api/blog?page=${page}&limit=${limit}`;
-      if (category) url += `&category=${category}`;
+      const response = await getAdminOrders(filters);
+      if (!response.success) {
+        throw new Error(response.error);
+      }
+      return { orders: response.orders };
+    } catch (error) {
+      console.error('Erro ao buscar todos os pedidos:', error);
+      throw error;
+    }
+  },
+
+  async getUserOrders(userId) {
+    try {
+      // Validar se o userId foi fornecido
+      if (!userId || userId === 'undefined') {
+        console.error('❌ getUserOrders: userId é obrigatório:', userId);
+        throw new Error('ID do usuário é obrigatório');
+      }
+
+      console.log('📦 Buscando pedidos para usuário:', userId);
+      const response = await getMyOrders(userId);
       
-      const response = await apiRequest(url);
-      return {
-        success: true,
-        blogs: response.blogs || [],
-        total: response.total || 0,
-        currentPage: response.currentPage || 1,
-        totalPages: response.totalPages || 1
-      };
+      if (!response.success) {
+        throw new Error(response.error);
+      }
+      
+      return response.orders;
     } catch (error) {
-      return {
-        success: false,
-        error: error.message,
-        blogs: [],
-        total: 0
-      };
+      console.error('Erro ao buscar pedidos do usuário:', error);
+      throw error;
     }
   },
 
-  async getById(id) {
+  async updateStatus(orderId, newStatus) {
     try {
-      const response = await apiRequest(`/api/blog/${id}`);
-      return {
-        success: true,
-        blog: response.blog
-      };
+      const response = await updateOrderStatus(orderId, newStatus);
+      if (!response.success) {
+        throw new Error(response.error);
+      }
+      return response.order;
     } catch (error) {
-      return {
-        success: false,
-        error: error.message,
-        blog: null
-      };
+      console.error('Erro ao atualizar status do pedido:', error);
+      throw error;
+    }
+  }
+};
+
+// =============================================
+// PRODUCTS API - USANDO SUPABASE
+// =============================================
+
+export const productsAPI = {
+  // Buscar todos os produtos ativos
+  async getAll(filters = {}) {
+    try {
+      const response = filters ? await getProductsWithFilters(filters) : await getAllProducts();
+      if (!response.success) {
+        throw new Error(response.error);
+      }
+      return response.data;
+    } catch (error) {
+      console.error('Erro ao buscar produtos:', error);
+      throw error;
     }
   },
 
+  // Buscar todos os produtos (incluindo inativos) - para admin
+  async getAllAdmin() {
+    try {
+      const response = await getAllProductsAdmin();
+      if (!response.success) {
+        throw new Error(response.error);
+      }
+      return response.data;
+    } catch (error) {
+      console.error('Erro ao buscar produtos admin:', error);
+      throw error;
+    }
+  },
+
+  // Buscar produtos em destaque
   async getFeatured() {
     try {
-      const response = await apiRequest('/api/blog/featured');
-      return {
-        success: true,
-        blogs: response.blogs || []
-      };
+      const response = await getFeaturedProducts();
+      if (!response.success) {
+        throw new Error(response.error);
+      }
+      return response.data;
     } catch (error) {
-      return {
-        success: false,
-        error: error.message,
-        blogs: []
-      };
+      console.error('Erro ao buscar produtos em destaque:', error);
+      throw error;
     }
   },
 
-  async getByCategory(category, page = 1, limit = 10) {
-    try {
-      const response = await apiRequest(`/api/blog/category/${category}?page=${page}&limit=${limit}`);
-      return {
-        success: true,
-        blogs: response.blogs || [],
-        total: response.total || 0,
-        currentPage: response.currentPage || 1,
-        totalPages: response.totalPages || 1
-      };
-    } catch (error) {
-      return {
-        success: false,
-        error: error.message,
-        blogs: [],
-        total: 0
-      };
-    }
-  },
-
-  async search(query, page = 1, limit = 10) {
-    try {
-      const response = await apiRequest(`/api/blog/search?q=${encodeURIComponent(query)}&page=${page}&limit=${limit}`);
-      return {
-        success: true,
-        blogs: response.blogs || [],
-        total: response.total || 0,
-        currentPage: response.currentPage || 1,
-        totalPages: response.totalPages || 1
-      };
-    } catch (error) {
-      return {
-        success: false,
-        error: error.message,
-        blogs: [],
-        total: 0
-      };
-    }
-  },
-
-  async create(blogData) {
-    try {
-      const response = await apiRequest('/api/blog', {
-        method: 'POST',
-        body: JSON.stringify(blogData),
-      });
-      return {
-        success: true,
-        blog: response.blog,
-        message: response.message
-      };
-    } catch (error) {
-      return {
-        success: false,
-        error: error.message
-      };
-    }
-  },
-
-  async update(id, blogData) {
-    try {
-      const response = await apiRequest(`/api/blog/${id}`, {
-        method: 'PUT',
-        body: JSON.stringify(blogData),
-      });
-      return {
-        success: true,
-        blog: response.blog,
-        message: response.message
-      };
-    } catch (error) {
-      return {
-        success: false,
-        error: error.message
-      };
-    }
-  },
-
-  async delete(id) {
-    try {
-      const response = await apiRequest(`/api/blog/${id}`, {
-        method: 'DELETE',
-      });
-      return {
-        success: true,
-        message: response.message
-      };
-    } catch (error) {
-      return {
-        success: false,
-        error: error.message
-      };
-    }
-  },
-
-  async like(id) {
-    try {
-      const response = await apiRequest(`/api/blog/${id}/like`, {
-        method: 'POST',
-      });
-      return {
-        success: true,
-        likes: response.likes,
-        message: response.message
-      };
-    } catch (error) {
-      return {
-        success: false,
-        error: error.message
-      };
-    }
-  },
-
-  async addComment(id, commentData) {
-    try {
-      const response = await apiRequest(`/api/blog/${id}/comments`, {
-        method: 'POST',
-        body: JSON.stringify(commentData),
-      });
-      return {
-        success: true,
-        comment: response.comment,
-        message: response.message
-      };
-    } catch (error) {
-      return {
-        success: false,
-        error: error.message
-      };
-    }
-  },
-
-  async getComments(id, page = 1, limit = 20) {
-    try {
-      const response = await apiRequest(`/api/blog/${id}/comments?page=${page}&limit=${limit}`);
-      return {
-        success: true,
-        comments: response.comments || [],
-        total: response.total || 0
-      };
-    } catch (error) {
-      return {
-        success: false,
-        error: error.message,
-        comments: [],
-        total: 0
-      };
-    }
-  }
-};
-
-// Orders API
-export const ordersAPI = {
-  async getAll() {
-    try {
-      const response = await apiRequest('/api/admin/orders');
-      return {
-        success: true,
-        orders: response.orders || [],
-        total: response.total || 0
-      };
-    } catch (error) {
-      return {
-        success: false,
-        error: error.message,
-        orders: [],
-        total: 0
-      };
-    }
-  },
-
+  // Buscar produto por ID
   async getById(id) {
     try {
-      const response = await apiRequest(`/api/admin/orders/${id}`);
-      return {
-        success: true,
-        order: response.order
-      };
+      const response = await getProductById(id);
+      if (!response.success) {
+        throw new Error(response.error);
+      }
+      return response.data;
     } catch (error) {
-      return {
-        success: false,
-        error: error.message,
-        order: null
-      };
+      console.error('Erro ao buscar produto por ID:', error);
+      throw error;
     }
   },
 
-  async create(orderData) {
+  // Buscar produto por ID (admin)
+  async getByIdAdmin(id) {
     try {
-      const response = await apiRequest('/api/orders', {
-        method: 'POST',
-        body: JSON.stringify(orderData),
-      });
-      return {
-        success: true,
-        order: response.order,
-        message: response.message
-      };
+      const response = await getProductByIdAdmin(id);
+      if (!response.success) {
+        throw new Error(response.error);
+      }
+      return response.data;
     } catch (error) {
-      return {
-        success: false,
-        error: error.message
-      };
+      console.error('Erro ao buscar produto por ID (admin):', error);
+      throw error;
     }
   },
 
-  async updateStatus(id, status) {
+  // Buscar produtos por categoria
+  async getByCategory(category) {
     try {
-      const response = await apiRequest(`/api/admin/orders/${id}/status`, {
-        method: 'PUT',
-        body: JSON.stringify({ status }),
-      });
-      return {
-        success: true,
-        order: response.order,
-        message: response.message
-      };
+      const response = await getProductsByCategory(category);
+      if (!response.success) {
+        throw new Error(response.error);
+      }
+      return response.data;
     } catch (error) {
-      return {
-        success: false,
-        error: error.message
-      };
+      console.error('Erro ao buscar produtos por categoria:', error);
+      throw error;
     }
   },
 
+  // Criar produto
+  async create(productData) {
+    try {
+      const response = await createProduct(productData);
+      if (!response.success) {
+        throw new Error(response.error);
+      }
+      return response.data;
+    } catch (error) {
+      console.error('Erro ao criar produto:', error);
+      throw error;
+    }
+  },
+
+  // Atualizar produto
+  async update(id, productData) {
+    try {
+      const response = await updateProduct(id, productData);
+      if (!response.success) {
+        throw new Error(response.error);
+      }
+      return response.data;
+    } catch (error) {
+      console.error('Erro ao atualizar produto:', error);
+      throw error;
+    }
+  },
+
+  // Deletar produto
   async delete(id) {
     try {
-      const response = await apiRequest(`/api/admin/orders/${id}`, {
-        method: 'DELETE',
-      });
-      return {
-        success: true,
-        message: response.message
-      };
+      const response = await deleteProduct(id);
+      if (!response.success) {
+        throw new Error(response.error);
+      }
+      return response.data;
     } catch (error) {
-      return {
-        success: false,
-        error: error.message
-      };
+      console.error('Erro ao deletar produto:', error);
+      throw error;
     }
   },
 
-  async getUserOrders() {
+  // Ativar/Desativar produto
+  async toggleStatus(id, isActive) {
     try {
-      const response = await apiRequest('/api/orders/my-orders');
-      return {
-        success: true,
-        orders: response.orders || [],
-        total: response.total || 0
-      };
+      const response = await toggleProductStatus(id, isActive);
+      if (!response.success) {
+        throw new Error(response.error);
+      }
+      return response.data;
     } catch (error) {
-      return {
-        success: false,
-        error: error.message,
-        orders: [],
-        total: 0
-      };
+      console.error('Erro ao alterar status do produto:', error);
+      throw error;
+    }
+  },
+
+  // Atualizar estoque
+  async updateStock(id, stock) {
+    try {
+      const response = await updateProductStock(id, stock);
+      if (!response.success) {
+        throw new Error(response.error);
+      }
+      return response.data;
+    } catch (error) {
+      console.error('Erro ao atualizar estoque:', error);
+      throw error;
     }
   }
 };
 
-// Gamification API
-export const gamificationAPI = {
-  async getProfile() {
+// =============================================
+// CUSTOMERS API - USANDO SUPABASE 
+// =============================================
+
+export const customersAPI = {
+  async getAll(filters = {}) {
     try {
-      const response = await apiRequest('/api/gamification/profile');
-      return {
-        success: true,
-        data: response
-      };
+      const response = await getAllCustomers(filters);
+      if (!response.success) {
+        throw new Error(response.error);
+      }
+      return response.customers;
     } catch (error) {
-      return {
-        success: false,
-        error: error.message
-      };
+      console.error('Erro ao buscar todos os clientes:', error);
+      throw error;
     }
   },
 
-  async getPointsHistory() {
+  async getAdminCreated(filters = {}) {
     try {
-      const response = await apiRequest('/api/gamification/points-history');
-      return {
-        success: true,
-        history: response.history || [],
-        total: response.total || 0
-      };
+      const response = await getAdminCustomers(filters);
+      if (!response.success) {
+        throw new Error(response.error);
+      }
+      return response.customers;
     } catch (error) {
-      return {
-        success: false,
-        error: error.message,
-        history: [],
-        total: 0
-      };
+      console.error('Erro ao buscar clientes do admin:', error);
+      throw error;
     }
   },
 
-  async addPoints(points, reason) {
+  async create(customerData) {
     try {
-      const response = await apiRequest('/api/gamification/add-points', {
-        method: 'POST',
-        body: JSON.stringify({ points, reason }),
-      });
-      return {
-        success: true,
-        message: response.message,
-        user: response.user
-      };
+      const response = await createManualCustomer(customerData);
+      if (!response.success) {
+        throw new Error(response.error);
+      }
+      return response.customer;
     } catch (error) {
-      return {
-        success: false,
-        error: error.message
-      };
+      console.error('Erro ao criar cliente:', error);
+      throw error;
     }
   },
 
-  async getLeaderboard() {
+  async toggleStatus(customerId) {
     try {
-      const response = await apiRequest('/api/gamification/leaderboard');
-      return {
-        success: true,
-        leaderboard: response.leaderboard || []
-      };
+      const response = await toggleAnyCustomerStatus(customerId);
+      if (!response.success) {
+        throw new Error(response.error);
+      }
+      return response;
     } catch (error) {
-      return {
-        success: false,
-        error: error.message,
-        leaderboard: []
-      };
+      console.error('Erro ao alterar status do cliente:', error);
+      throw error;
     }
   }
 };
 
-// Cart API
-export const cartAPI = {
-  async get() {
-    try {
-      const response = await apiRequest('/api/cart');
-      return {
-        success: true,
-        cart: response
-      };
-    } catch (error) {
-      return {
-        success: false,
-        error: error.message
-      };
-    }
-  },
+// =============================================
+// LEGACY FUNCTIONS (MANTIDAS PARA COMPATIBILIDADE)
+// =============================================
 
-  async addItem(productId, quantity = 1) {
-    try {
-      const response = await apiRequest('/api/cart/add', {
-        method: 'POST',
-        body: JSON.stringify({ product_id: productId, quantity }),
-      });
-      return {
-        success: true,
-        cart: response.cart,
-        message: response.message
-      };
-    } catch (error) {
-      return {
-        success: false,
-        error: error.message
-      };
-    }
-  }
+// Função auxiliar para fazer requisições (não mais usada)
+const makeRequest = async (endpoint, options = {}) => {
+  console.warn('⚠️ makeRequest() é legacy - usando Supabase APIs diretamente');
+  throw new Error('Esta função não é mais usada. Use as APIs do Supabase diretamente.');
 };
 
-// Coupons API
-export const couponsAPI = {
-  async validate(code) {
-    try {
-      const response = await apiRequest('/api/coupons/validate', {
-        method: 'POST',
-        body: JSON.stringify({ code }),
-      });
-      return {
-        success: true,
-        valid: response.valid,
-        coupon: response.coupon
-      };
-    } catch (error) {
-      return {
-        success: false,
-        valid: false,
-        error: error.message
-      };
-    }
-  }
+// Export das funções principais
+export { makeRequest };
+
+// Export default para compatibilidade
+export default {
+  authAPI,
+  adminAPI,
+  ordersAPI,
+  productsAPI,
+  customersAPI,
+  makeRequest
 };
-
-// Notifications API
-export const notificationsAPI = {
-  async getAll() {
-    try {
-      const response = await apiRequest('/api/notifications');
-      return {
-        success: true,
-        notifications: response.notifications || [],
-        total: response.total || 0
-      };
-    } catch (error) {
-      return {
-        success: false,
-        error: error.message,
-        notifications: [],
-        total: 0
-      };
-    }
-  }
-};
-
-// WhatsApp API
-export const whatsappAPI = {
-  async getStatus() {
-    try {
-      const response = await apiRequest('/api/whatsapp/status');
-      return {
-        success: true,
-        status: response
-      };
-    } catch (error) {
-      return {
-        success: false,
-        error: error.message
-      };
-    }
-  },
-
-  async sendMessage(phone, message) {
-    try {
-      const response = await apiRequest('/api/whatsapp/send-message', {
-        method: 'POST',
-        body: JSON.stringify({ phone, message }),
-      });
-      return {
-        success: true,
-        result: response.result,
-        message: response.message
-      };
-    } catch (error) {
-      return {
-        success: false,
-        error: error.message
-      };
-    }
-  },
-
-  async sendBroadcast(phones, message) {
-    try {
-      const response = await apiRequest('/api/whatsapp/broadcast', {
-        method: 'POST',
-        body: JSON.stringify({ phones, message }),
-      });
-      return {
-        success: true,
-        message: response.message
-      };
-    } catch (error) {
-      return {
-        success: false,
-        error: error.message
-      };
-    }
-  },
-
-  async getQRCode() {
-    try {
-      const response = await apiRequest('/api/whatsapp/qr-code');
-      return {
-        success: true,
-        qrCode: response.qrCode,
-        connected: response.connected,
-        message: response.message
-      };
-    } catch (error) {
-      return {
-        success: false,
-        error: error.message
-      };
-    }
-  }
-};
-
-// Maps API
-export const mapsAPI = {
-  async getAllLocations() {
-    try {
-      const response = await apiRequest('/api/locations');
-      return {
-        success: true,
-        locations: response.locations || [],
-        total: response.total || 0,
-        center: response.center,
-        deliveryInfo: response.deliveryInfo
-      };
-    } catch (error) {
-      return {
-        success: false,
-        error: error.message,
-        locations: [],
-        total: 0
-      };
-    }
-  },
-
-  async getLocationById(id) {
-    try {
-      const response = await apiRequest(`/api/locations/${id}`);
-      return response;
-    } catch (error) {
-      return {
-        success: false,
-        error: error.message
-      };
-    }
-  },
-
-  async getLocationsByType(type) {
-    try {
-      const response = await apiRequest(`/api/locations/type/${type}`);
-      return response;
-    } catch (error) {
-      return {
-        success: false,
-        error: error.message
-      };
-    }
-  },
-
-  async findNearestLocation(latitude, longitude, type = 'loja') {
-    try {
-      const response = await apiRequest('/api/locations/nearest', {
-        method: 'POST',
-        body: JSON.stringify({ latitude, longitude, type }),
-      });
-      return response;
-    } catch (error) {
-      return {
-        success: false,
-        error: error.message
-      };
-    }
-  },
-
-  async checkDeliveryArea(address) {
-    try {
-      const response = await apiRequest('/api/delivery/check-area', {
-        method: 'POST',
-        body: JSON.stringify({ address }),
-      });
-      return response;
-    } catch (error) {
-      return {
-        success: false,
-        error: error.message
-      };
-    }
-  },
-
-  async geocodeAddress(address) {
-    try {
-      const response = await apiRequest('/api/maps/geocode', {
-        method: 'POST',
-        body: JSON.stringify({ address }),
-      });
-      return response;
-    } catch (error) {
-      return {
-        success: false,
-        error: error.message
-      };
-    }
-  },
-
-  async reverseGeocode(latitude, longitude) {
-    try {
-      const response = await apiRequest('/api/maps/reverse-geocode', {
-        method: 'POST',
-        body: JSON.stringify({ latitude, longitude }),
-      });
-      return response;
-    } catch (error) {
-      return {
-        success: false,
-        error: error.message
-      };
-    }
-  },
-
-  async getRoute(fromLat, fromLng, toLat, toLng) {
-    try {
-      const response = await apiRequest('/api/maps/route', {
-        method: 'POST',
-        body: JSON.stringify({ fromLat, fromLng, toLat, toLng }),
-      });
-      return response;
-    } catch (error) {
-      return {
-        success: false,
-        error: error.message
-      };
-    }
-  },
-
-  async findNearbyCafes(latitude, longitude, radius = 5000) {
-    try {
-      const response = await apiRequest('/api/maps/nearby-cafes', {
-        method: 'POST',
-        body: JSON.stringify({ latitude, longitude, radius }),
-      });
-      return response;
-    } catch (error) {
-      return {
-        success: false,
-        error: error.message
-      };
-    }
-  },
-
-  async getDeliveryStats() {
-    try {
-      const response = await apiRequest('/api/delivery/stats');
-      return response;
-    } catch (error) {
-      return {
-        success: false,
-        error: error.message
-      };
-    }
-  }
-};
-
-// Health Check API
-export const healthAPI = {
-  async check() {
-    try {
-      const response = await apiRequest('/api/health');
-      return {
-        success: true,
-        status: response.status,
-        timestamp: response.timestamp
-      };
-    } catch (error) {
-      return {
-        success: false,
-        error: error.message
-      };
-    }
-  }
-};
-
-// Cart utilities
-export const cartUtils = {
-  updateCartCount() {
-    const cartCount = this.getCartItemsCount();
-    const cartBadges = document.querySelectorAll('.cart-count-badge');
-    cartBadges.forEach(badge => {
-      badge.textContent = cartCount;
-      badge.style.display = cartCount > 0 ? 'inline-block' : 'none';
-    });
-  },
-
-  getCartItemsCount() {
-    const cart = localStorage.getItem('cart');
-    if (!cart) return 0;
-    
-    try {
-      const cartData = JSON.parse(cart);
-      return cartData.items?.reduce((total, item) => total + item.quantity, 0) || 0;
-    } catch {
-      return 0;
-    }
-  },
-
-  saveCart(cartData) {
-    localStorage.setItem('cart', JSON.stringify(cartData));
-    this.updateCartCount();
-  },
-
-  getCart() {
-    const cart = localStorage.getItem('cart');
-    if (!cart) return { items: [], total: 0 };
-    
-    try {
-      return JSON.parse(cart);
-    } catch {
-      return { items: [], total: 0 };
-    }
-  },
-
-  clearCart() {
-    localStorage.removeItem('cart');
-    this.updateCartCount();
-  }
-};
-
-// Export default object with all APIs
-const api = {
-  auth: authAPI,
-  products: productsAPI,
-  admin: adminAPI,
-  orders: ordersAPI,
-  blog: blogAPI,
-  gamification: gamificationAPI,
-  cart: cartAPI,
-  coupons: couponsAPI,
-  notifications: notificationsAPI,
-  whatsapp: whatsappAPI,
-  maps: mapsAPI,
-  health: healthAPI,
-  cartUtils: cartUtils
-};
-
-export default api;
 

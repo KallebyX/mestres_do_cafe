@@ -9,6 +9,9 @@ const fs = require('fs');
 const WhatsAppService = require('./services/WhatsAppService');
 const MapsService = require('./services/MapsService');
 
+// Importar rotas de administração de clientes
+const adminCustomersRoutes = require('./routes/admin-customers');
+
 const app = express();
 const PORT = process.env.PORT || 5000; // Render usa PORT dinâmico
 const JWT_SECRET = process.env.JWT_SECRET || 'mestres-cafe-super-secret-jwt-key-2025';
@@ -84,7 +87,7 @@ function validateEmail(email) {
 }
 
 // Database mock (JSON file)
-const DB_FILE = './users.json';
+const DB_FILE = './data/db.json';
 
 // Initialize users database
 if (!fs.existsSync(DB_FILE)) {
@@ -314,14 +317,25 @@ app.post('/api/auth/login', async (req, res) => {
     }
 
     // Find user in database
+    console.log('🔍 LOGIN: Buscando usuário com email:', email);
     const user = findUser(email);
+    console.log('👤 LOGIN: Usuário encontrado:', user ? 'SIM' : 'NÃO');
+    if (user) {
+      console.log('📧 LOGIN: Email do usuário:', user.email);
+      console.log('✅ LOGIN: Status ativo:', user.is_active);
+      console.log('🔑 LOGIN: Hash da senha:', user.password ? 'EXISTE' : 'NÃO EXISTE');
+    }
     if (!user) {
+      console.log('❌ LOGIN: Usuário não encontrado');
       return res.status(401).json({ error: 'Email ou senha incorretos' });
     }
 
     // Check password
+    console.log('🔐 LOGIN: Verificando senha...');
     const isValidPassword = await bcrypt.compare(password, user.password);
+    console.log('🔐 LOGIN: Senha válida:', isValidPassword);
     if (!isValidPassword) {
+      console.log('❌ LOGIN: Senha incorreta');
       return res.status(401).json({ error: 'Email ou senha incorretos' });
     }
 
@@ -399,6 +413,62 @@ app.post('/api/auth/demo-login', async (req, res) => {
   } catch (error) {
     console.error('Demo login error:', error);
     res.status(500).json({ error: 'Erro interno do servidor' });
+  }
+});
+
+// Endpoint de teste para debugar
+app.post('/api/auth/debug-login', async (req, res) => {
+  try {
+    const { email, password } = req.body;
+    
+    console.log('🔍 DEBUG: Email recebido:', email);
+    console.log('🔍 DEBUG: Senha recebida:', password);
+    
+    // Testar readDB
+    const db = readDB();
+    console.log('📊 DEBUG: Total de usuários no banco:', db.users.length);
+    console.log('📧 DEBUG: Emails no banco:', db.users.map(u => u.email));
+    
+    // Buscar usuário
+    const user = findUser(email);
+    console.log('👤 DEBUG: Usuário encontrado:', user ? 'SIM' : 'NÃO');
+    
+    if (user) {
+      console.log('📧 DEBUG: Email do usuário:', user.email);
+      console.log('🔑 DEBUG: Tem senha:', !!user.password);
+      console.log('✅ DEBUG: Status ativo:', user.is_active);
+      
+      // Testar senha
+      if (user.password) {
+        const isValid = await bcrypt.compare(password, user.password);
+        console.log('🔐 DEBUG: Senha válida:', isValid);
+        
+        return res.json({
+          success: true,
+          userFound: true,
+          hasPassword: !!user.password,
+          passwordValid: isValid,
+          isActive: user.is_active,
+          userDetails: {
+            id: user.id,
+            email: user.email,
+            user_type: user.user_type,
+            name: user.name
+          }
+        });
+      }
+    }
+    
+    res.json({
+      success: false,
+      userFound: !!user,
+      allUsers: db.users.length,
+      allEmails: db.users.map(u => u.email)
+    });
+    
+  } catch (error) {
+    console.error('❌ DEBUG ERROR:', error);
+    res.status(500).json({ error: error.message });
   }
 });
 
@@ -1012,6 +1082,199 @@ app.get('/api/admin/stats', authenticateToken, (req, res) => {
   
   res.json(stats);
 });
+
+// ===============================
+// ENDPOINTS ADMIN FALTANTES
+// ===============================
+
+// Admin Users - Lista todos os usuários
+app.get('/api/admin/users', authenticateToken, (req, res) => {
+  if (req.user.user_type !== 'admin') {
+    return res.status(403).json({ error: 'Acesso negado' });
+  }
+  
+  const db = readDB();
+  const users = db.users.filter(u => u.user_type !== 'admin').map(user => ({
+    id: user.id,
+    name: user.name,
+    email: user.email,
+    user_type: user.user_type,
+    is_active: user.is_active,
+    created_at: user.created_at,
+    points: user.points || 0,
+    total_orders: 0, // Implementar contagem real quando tiver pedidos
+    total_spent: user.total_spent || 0
+  }));
+  
+  res.json({ users, total: users.length });
+});
+
+// Admin Users - Atualizar usuário
+app.put('/api/admin/users/:id', authenticateToken, (req, res) => {
+  if (req.user.user_type !== 'admin') {
+    return res.status(403).json({ error: 'Acesso negado' });
+  }
+  
+  const { id } = req.params;
+  const updates = req.body;
+  const db = readDB();
+  
+  const userIndex = db.users.findIndex(u => u.id === id);
+  if (userIndex === -1) {
+    return res.status(404).json({ error: 'Usuário não encontrado' });
+  }
+  
+  db.users[userIndex] = { ...db.users[userIndex], ...updates };
+  writeDB(db);
+  
+  res.json({ 
+    message: 'Usuário atualizado com sucesso',
+    user: db.users[userIndex]
+  });
+});
+
+// Admin Users - Deletar usuário
+app.delete('/api/admin/users/:id', authenticateToken, (req, res) => {
+  if (req.user.user_type !== 'admin') {
+    return res.status(403).json({ error: 'Acesso negado' });
+  }
+  
+  const { id } = req.params;
+  const db = readDB();
+  
+  const userIndex = db.users.findIndex(u => u.id === id);
+  if (userIndex === -1) {
+    return res.status(404).json({ error: 'Usuário não encontrado' });
+  }
+  
+  db.users.splice(userIndex, 1);
+  writeDB(db);
+  
+  res.json({ message: 'Usuário deletado com sucesso' });
+});
+
+// Admin Orders - Lista todos os pedidos
+app.get('/api/admin/orders', authenticateToken, (req, res) => {
+  if (req.user.user_type !== 'admin') {
+    return res.status(403).json({ error: 'Acesso negado' });
+  }
+  
+  // Mock orders data - implementar com dados reais quando necessário
+  const mockOrders = [
+    {
+      id: 1,
+      user: { name: 'João Silva', email: 'joao@email.com' },
+      total_amount: 89.90,
+      status: 'delivered',
+      created_at: new Date().toISOString(),
+      items: [
+        { name: 'Café Bourbon Amarelo', quantity: 2, price: 44.95 }
+      ]
+    },
+    {
+      id: 2,
+      user: { name: 'Maria Santos', email: 'maria@email.com' },
+      total_amount: 129.80,
+      status: 'processing',
+      created_at: new Date().toISOString(),
+      items: [
+        { name: 'Blend Premium', quantity: 1, price: 129.80 }
+      ]
+    }
+  ];
+  
+  res.json({ orders: mockOrders, total: mockOrders.length });
+});
+
+// Admin Orders - Atualizar status do pedido
+app.put('/api/admin/orders/:id/status', authenticateToken, (req, res) => {
+  if (req.user.user_type !== 'admin') {
+    return res.status(403).json({ error: 'Acesso negado' });
+  }
+  
+  const { id } = req.params;
+  const { status } = req.body;
+  
+  // Mock implementation - implementar com dados reais
+  res.json({ 
+    message: 'Status do pedido atualizado com sucesso',
+    order: { id, status }
+  });
+});
+
+// Admin Orders - Obter pedido específico
+app.get('/api/admin/orders/:id', authenticateToken, (req, res) => {
+  if (req.user.user_type !== 'admin') {
+    return res.status(403).json({ error: 'Acesso negado' });
+  }
+  
+  const { id } = req.params;
+  
+  // Mock order data
+  const mockOrder = {
+    id: id,
+    user: { name: 'João Silva', email: 'joao@email.com' },
+    total_amount: 89.90,
+    status: 'delivered',
+    created_at: new Date().toISOString(),
+    items: [
+      { name: 'Café Bourbon Amarelo', quantity: 2, price: 44.95 }
+    ]
+  };
+  
+  res.json({ order: mockOrder });
+});
+
+// User Orders - Meus pedidos
+app.get('/api/orders/my-orders', authenticateToken, (req, res) => {
+  const userId = req.user.id;
+  
+  // Mock orders para o usuário logado
+  const userOrders = [
+    {
+      id: 1,
+      total_amount: 89.90,
+      status: 'delivered',
+      created_at: new Date().toISOString(),
+      items: [
+        { name: 'Café Bourbon Amarelo', quantity: 2, price: 44.95 }
+      ]
+    }
+  ];
+  
+  res.json({ orders: userOrders, total: userOrders.length });
+});
+
+// Orders API - Criar novo pedido
+app.post('/api/orders', authenticateToken, (req, res) => {
+  const { items, total_amount, payment_method, delivery_address } = req.body;
+  
+  if (!items || !items.length) {
+    return res.status(400).json({ error: 'Itens do pedido são obrigatórios' });
+  }
+  
+  const newOrder = {
+    id: Date.now(),
+    user_id: req.user.id,
+    items: items,
+    total_amount: total_amount,
+    payment_method: payment_method,
+    delivery_address: delivery_address,
+    status: 'pending',
+    created_at: new Date().toISOString()
+  };
+  
+  // Implementar salvamento real quando necessário
+  res.json({
+    message: 'Pedido criado com sucesso!',
+    order: newOrder
+  });
+});
+
+// ===============================
+// ADMINISTRAÇÃO DE CLIENTES
+// ===============================
+app.use('/api/admin/customers', adminCustomersRoutes);
 
 // 📱 ===================== WHATSAPP ENDPOINTS (API PRÓPRIA) =====================
 
