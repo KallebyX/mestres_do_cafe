@@ -25,7 +25,7 @@ vi.mock('../../../src/contexts/SupabaseAuthContext', () => ({
       email: 'joao@test.com',
       name: 'João Silva',
       pendente_ativacao: true
-    }),
+    },
     loading: false,
     error: null,
     activateAdminCreatedAccount: mockActivateAccount

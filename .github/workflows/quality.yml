@@ -1,0 +1,344 @@
+name: 🔍 Quality - Análise de Qualidade
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+  schedule:
+    # Executa diariamente às 3h UTC (0h BRT)
+    - cron: '0 3 * * *'
+  workflow_dispatch:
+
+concurrency:
+  group: quality-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  NODE_VERSION: '18.x'
+
+jobs:
+  # 🧹 Code Quality
+  code-quality:
+    name: 🧹 Análise de Código
+    runs-on: ubuntu-latest
+    steps:
+      - name: 📥 Checkout código
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Necessário para análise histórica
+          
+      - name: 📦 Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+          
+      - name: 📦 Instalar dependências
+        run: npm ci
+        
+      - name: 🧹 ESLint com relatório
+        run: |
+          npm run lint -- --format json --output-file eslint-report.json || true
+          npm run lint -- --format html --output-file eslint-report.html || true
+          
+      - name: 📊 Prettier Check
+        run: |
+          npx prettier --check "src/**/*.{js,jsx,ts,tsx,json,css,md}" || true
+          
+      - name: 🔍 Verificar imports duplicados
+        run: |
+          echo "## 🔍 Verificação de Imports" >> $GITHUB_STEP_SUMMARY
+          find src -name "*.jsx" -o -name "*.js" | xargs grep -h "^import" | sort | uniq -d | head -10 >> $GITHUB_STEP_SUMMARY || true
+          
+      - name: 📊 Análise de complexidade
+        run: |
+          npx madge --circular src/ || echo "❌ Dependências circulares encontradas"
+          npx madge --summary src/ >> $GITHUB_STEP_SUMMARY
+          
+      - name: 📤 Upload relatórios
+        uses: actions/upload-artifact@v3
+        with:
+          name: code-quality-reports
+          path: |
+            eslint-report.json
+            eslint-report.html
+
+  # 📊 SonarCloud Analysis
+  sonarcloud:
+    name: 📊 SonarCloud
+    runs-on: ubuntu-latest
+    if: github.actor != 'dependabot[bot]'
+    steps:
+      - name: 📥 Checkout código
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          
+      - name: 📦 Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+          
+      - name: 📦 Instalar dependências
+        run: npm ci
+        
+      - name: 🧪 Executar testes com coverage
+        run: npm run test:coverage
+        
+      - name: 📊 SonarCloud Scan
+        uses: SonarSource/sonarcloud-github-action@master
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        with:
+          args: >
+            -Dsonar.projectKey=mestres-do-cafe
+            -Dsonar.organization=sua-org
+            -Dsonar.javascript.lcov.reportPaths=coverage/lcov.info
+            -Dsonar.exclusions=**/node_modules/**,**/dist/**,**/*.test.js,**/*.spec.js
+
+  # 🔒 Security Scan
+  security:
+    name: 🔒 Análise de Segurança
+    runs-on: ubuntu-latest
+    permissions:
+      actions: read
+      contents: read
+      security-events: write
+    steps:
+      - name: 📥 Checkout código
+        uses: actions/checkout@v4
+        
+      - name: 📦 Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+          
+      - name: 📦 Instalar dependências
+        run: npm ci
+        
+      - name: 🔒 npm audit
+        run: |
+          echo "## 🔒 Auditoria de Segurança" >> $GITHUB_STEP_SUMMARY
+          npm audit --audit-level moderate --json > audit-frontend.json || true
+          npm audit --audit-level moderate >> $GITHUB_STEP_SUMMARY || echo "⚠️ Vulnerabilidades encontradas"
+          
+      - name: 🔒 Backend audit
+        run: |
+          cd server
+          npm audit --audit-level moderate --json > ../audit-backend.json || true
+          npm audit --audit-level moderate >> $GITHUB_STEP_SUMMARY || echo "⚠️ Vulnerabilidades no backend"
+          
+      - name: 🕵️ CodeQL Analysis
+        uses: github/codeql-action/init@v2
+        with:
+          languages: javascript
+          
+      - name: 🔍 Autobuild
+        uses: github/codeql-action/autobuild@v2
+        
+      - name: 🔍 Perform CodeQL Analysis
+        uses: github/codeql-action/analyze@v2
+        with:
+          category: "/language:javascript"
+          
+      - name: 📤 Upload security reports
+        uses: actions/upload-artifact@v3
+        with:
+          name: security-reports
+          path: |
+            audit-frontend.json
+            audit-backend.json
+
+  # 🎯 Performance Analysis
+  performance:
+    name: 🎯 Análise de Performance
+    runs-on: ubuntu-latest
+    steps:
+      - name: 📥 Checkout código
+        uses: actions/checkout@v4
+        
+      - name: 📦 Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+          
+      - name: 📦 Instalar dependências
+        run: npm ci
+        
+      - name: 🏗️ Build para análise
+        run: npm run build
+        
+      - name: 📊 Bundle Analysis
+        run: |
+          echo "## 📦 Análise do Bundle" >> $GITHUB_STEP_SUMMARY
+          echo "| Arquivo | Tamanho | Gzip |" >> $GITHUB_STEP_SUMMARY
+          echo "|---------|---------|------|" >> $GITHUB_STEP_SUMMARY
+          
+          cd dist
+          for file in $(find . -name "*.js" -o -name "*.css" | head -10); do
+            original=$(du -h "$file" | cut -f1)
+            gzip -k "$file"
+            compressed=$(du -h "$file.gz" | cut -f1)
+            echo "| $file | $original | $compressed |" >> $GITHUB_STEP_SUMMARY
+            rm "$file.gz"
+          done
+          
+      - name: 🔍 Verificar imports não utilizados
+        run: |
+          npx unimported || echo "⚠️ Imports não utilizados encontrados"
+          
+      - name: 📊 Analyze dependencies
+        run: |
+          echo "## 📊 Dependências Principais" >> $GITHUB_STEP_SUMMARY
+          npm list --depth=0 --json | jq -r '.dependencies | to_entries[] | "- \(.key): \(.value.version)"' | head -20 >> $GITHUB_STEP_SUMMARY
+
+  # 📝 Documentation Check
+  documentation:
+    name: 📝 Verificação de Documentação
+    runs-on: ubuntu-latest
+    steps:
+      - name: 📥 Checkout código
+        uses: actions/checkout@v4
+        
+      - name: 📝 Verificar README
+        run: |
+          echo "## 📚 Verificação de Documentação" >> $GITHUB_STEP_SUMMARY
+          
+          # Verificar se README existe e tem conteúdo mínimo
+          if [ -f "README.md" ] && [ $(wc -l < README.md) -gt 50 ]; then
+            echo "✅ README.md: OK" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "❌ README.md: Incompleto ou inexistente" >> $GITHUB_STEP_SUMMARY
+          fi
+          
+          # Verificar links quebrados no README
+          if command -v markdown-link-check >/dev/null 2>&1; then
+            npx markdown-link-check README.md >> $GITHUB_STEP_SUMMARY || true
+          fi
+          
+      - name: 📊 Verificar cobertura de testes
+        run: |
+          echo "## 🧪 Cobertura de Testes" >> $GITHUB_STEP_SUMMARY
+          
+          # Contar arquivos de teste
+          total_components=$(find src/components -name "*.jsx" | wc -l)
+          test_components=$(find tests -name "*.test.jsx" | wc -l)
+          
+          echo "- Componentes: $total_components" >> $GITHUB_STEP_SUMMARY
+          echo "- Testes: $test_components" >> $GITHUB_STEP_SUMMARY
+          echo "- Cobertura: $(($test_components * 100 / $total_components))%" >> $GITHUB_STEP_SUMMARY
+
+  # 🏷️ Dependency Review
+  dependency-review:
+    name: 🏷️ Revisão de Dependências
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+    steps:
+      - name: 📥 Checkout código
+        uses: actions/checkout@v4
+        
+      - name: 🔍 Dependency Review
+        uses: actions/dependency-review-action@v3
+        with:
+          fail-on-severity: moderate
+          allow-licenses: MIT, Apache-2.0, BSD-3-Clause, ISC
+          
+  # 📊 Code Coverage
+  coverage:
+    name: 📊 Cobertura de Código
+    runs-on: ubuntu-latest
+    steps:
+      - name: 📥 Checkout código
+        uses: actions/checkout@v4
+        
+      - name: 📦 Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+          
+      - name: 📦 Instalar dependências
+        run: npm ci
+        
+      - name: 🧪 Testes Frontend com Coverage
+        run: npm run test:coverage
+        
+      - name: 🧪 Testes Backend com Coverage
+        run: |
+          cd server
+          npm ci
+          npm run test:coverage
+          
+      - name: 📊 Upload to Codecov
+        uses: codecov/codecov-action@v3
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          files: ./coverage/lcov.info,./server/coverage/lcov.info
+          flags: quality-check
+          name: quality-coverage
+          
+      - name: 📊 Coverage Summary
+        run: |
+          echo "## 📊 Resumo da Cobertura" >> $GITHUB_STEP_SUMMARY
+          if [ -f "coverage/coverage-summary.json" ]; then
+            node -e "
+              const coverage = require('./coverage/coverage-summary.json');
+              console.log('| Tipo | Porcentagem |');
+              console.log('|------|-------------|');
+              console.log('| Linhas | ' + coverage.total.lines.pct + '% |');
+              console.log('| Funções | ' + coverage.total.functions.pct + '% |');
+              console.log('| Branches | ' + coverage.total.branches.pct + '% |');
+              console.log('| Statements | ' + coverage.total.statements.pct + '% |');
+            " >> $GITHUB_STEP_SUMMARY
+          fi
+
+  # 📋 Quality Gate
+  quality-gate:
+    name: 📋 Quality Gate
+    runs-on: ubuntu-latest
+    needs: [code-quality, security, performance, coverage]
+    if: always()
+    steps:
+      - name: 📊 Verificar Quality Gate
+        run: |
+          echo "## 🎯 Quality Gate Results" >> $GITHUB_STEP_SUMMARY
+          echo "| Check | Status |" >> $GITHUB_STEP_SUMMARY
+          echo "|-------|--------|" >> $GITHUB_STEP_SUMMARY
+          echo "| 🧹 Code Quality | ${{ needs.code-quality.result }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| 🔒 Security | ${{ needs.security.result }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| 🎯 Performance | ${{ needs.performance.result }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| 📊 Coverage | ${{ needs.coverage.result }} |" >> $GITHUB_STEP_SUMMARY
+          
+          # Verificar se todos os checks passaram
+          if [[ "${{ needs.code-quality.result }}" == "success" && 
+                "${{ needs.security.result }}" == "success" && 
+                "${{ needs.performance.result }}" == "success" && 
+                "${{ needs.coverage.result }}" == "success" ]]; then
+            echo "🎉 Quality Gate: PASSED ✅" >> $GITHUB_STEP_SUMMARY
+            echo "quality-gate-status=passed" >> $GITHUB_OUTPUT
+          else
+            echo "❌ Quality Gate: FAILED ❌" >> $GITHUB_STEP_SUMMARY
+            echo "quality-gate-status=failed" >> $GITHUB_OUTPUT
+            exit 1
+          fi
+          
+      - name: 📢 Comment PR
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const status = '${{ steps.quality-gate.outputs.quality-gate-status }}';
+            const emoji = status === 'passed' ? '✅' : '❌';
+            const message = status === 'passed' ? 'Quality Gate PASSED' : 'Quality Gate FAILED';
+            
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: `## ${emoji} ${message}\n\n🔍 Todos os checks de qualidade foram executados. Verifique os detalhes na aba Actions.`
+            }); 

@@ -258,77 +258,9 @@ afterEach(() => {
   localStorageMock.clear.mockClear()
 })
 
-// Mock das novas APIs de administração de clientes
-vi.mock('../src/lib/admin-customers-api', () => ({
-  createCustomer: vi.fn().mockResolvedValue({
-    success: true,
-    customer: {
-      id: 'mock-customer-id',
-      name: 'João Silva',
-      email: 'joao@test.com',
-      user_type: 'cliente_pf',
-      criado_por_admin: true,
-      pendente_ativacao: true
-    },
-    message: 'Cliente criado com sucesso!'
-  }),
-  getAdminCustomers: vi.fn().mockResolvedValue({
-    success: true,
-    customers: [
-      {
-        id: 'mock-customer-1',
-        name: 'João Silva',
-        email: 'joao@test.com',
-        user_type: 'cliente_pf',
-        criado_por_admin: true,
-        pendente_ativacao: true,
-        is_active: true,
-        admin_name: 'Administrador',
-        orders_count: 0,
-        total_spent: 0
-      }
-    ],
-    pagination: {
-      total: 1,
-      page: 1,
-      limit: 20,
-      totalPages: 1
-    }
-  }),
-  editCustomer: vi.fn().mockResolvedValue({
-    success: true,
-    message: 'Cliente atualizado com sucesso!'
-  }),
-  toggleCustomerStatus: vi.fn().mockResolvedValue({
-    success: true,
-    message: 'Status alterado com sucesso!'
-  }),
-  getAdminLogs: vi.fn().mockResolvedValue({
-    success: true,
-    logs: [
-      {
-        id: 'mock-log-1',
-        admin_name: 'Administrador',
-        customer_name: 'João Silva',
-        customer_email: 'joao@test.com',
-        action_type: 'create',
-        created_at: '2025-01-01T10:00:00Z'
-      }
-    ]
-  }),
-  validateCPF: vi.fn().mockReturnValue(true),
-  validateCNPJ: vi.fn().mockReturnValue(true),
-  formatCPF: vi.fn((cpf) => cpf?.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, '$1.$2.$3-$4') || ''),
-  formatCNPJ: vi.fn((cnpj) => cnpj?.replace(/(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})/, '$1.$2.$3/$4-$5') || ''),
-  formatPhone: vi.fn((phone) => phone?.replace(/(\d{2})(\d{4,5})(\d{4})/, '($1) $2-$3') || ''),
-  formatCEP: vi.fn((cep) => cep?.replace(/(\d{5})(\d{3})/, '$1-$2') || ''),
-  searchCEP: vi.fn().mockResolvedValue({
-    address: 'Rua das Flores',
-    neighborhood: 'Centro',
-    city: 'Santa Maria',
-    state: 'RS'
-  })
-}))
+// Comentado o mock automático da admin-customers-api para permitir testes específicos
+// O mock específico de cada teste individual terá prioridade
+// vi.mock('../src/lib/admin-customers-api', () => ({...}))
 
 // Mock do contexto de autenticação Supabase
 vi.mock('../src/contexts/SupabaseAuthContext', () => ({

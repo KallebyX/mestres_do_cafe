@@ -6,14 +6,14 @@ import { CheckCircle, XCircle, User, Shield, Coffee } from 'lucide-react';
 const AuthTestPanel = () => {
   const { user, login, logout } = useAuth();
   const [testResults, setTestResults] = useState([]);
-  const [isTesting, setIsTest] = useState(false);
+  const [isTesting, setIsTesting] = useState(false);
 
   const addTestResult = (name, success, message) => {
     setTestResults(prev => [...prev, { name, success, message, timestamp: Date.now() }]);
   };
 
   const runAuthTests = async () => {
-    setIsTest(true);
+    setIsTesting(true);
     setTestResults([]);
 
     // Test 1: API Connection
@@ -66,7 +66,7 @@ const AuthTestPanel = () => {
       addTestResult('Estado do Usuário', false, 'Nenhum usuário logado');
     }
 
-    setIsTest(false);
+    setIsTesting(false);
   };
 
   return (
@@ -99,11 +99,11 @@ const AuthTestPanel = () => {
       <div className="flex gap-3 mb-6 flex-wrap">
         <button
           onClick={runAuthTests}
-          disabled={isTest}
+          disabled={isTesting}
           className="bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white px-4 py-2 rounded-lg transition-colors flex items-center gap-2"
         >
           <Coffee className="w-4 h-4" />
-          {isTest ? 'Testando...' : 'Executar Testes'}
+          {isTesting ? 'Testando...' : 'Executar Testes'}
         </button>
 
         {user ? (

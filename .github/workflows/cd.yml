@@ -1,0 +1,388 @@
+name: 🚀 CD - Deploy Contínuo
+
+on:
+  push:
+    branches: [ main ]
+    tags: [ 'v*' ]
+  workflow_run:
+    workflows: ["🔄 CI - Integração Contínua"]
+    types: [completed]
+    branches: [ main ]
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Ambiente para deploy'
+        required: true
+        default: 'staging'
+        type: choice
+        options:
+        - staging
+        - production
+      skip_tests:
+        description: 'Pular testes (use apenas em emergência)'
+        required: false
+        type: boolean
+        default: false
+
+concurrency:
+  group: deploy-${{ github.ref }}-${{ inputs.environment || 'auto' }}
+  cancel-in-progress: false
+
+env:
+  NODE_VERSION: '18.x'
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
+
+jobs:
+  # 🔍 Pré-validações
+  pre-checks:
+    name: 🔍 Pré-validações Deploy
+    runs-on: ubuntu-latest
+    if: github.event.workflow_run.conclusion == 'success' || github.event_name == 'workflow_dispatch' || github.event_name == 'push'
+    outputs:
+      deploy-staging: ${{ steps.determine.outputs.staging }}
+      deploy-production: ${{ steps.determine.outputs.production }}
+      version: ${{ steps.version.outputs.version }}
+      is-release: ${{ steps.version.outputs.is-release }}
+    steps:
+      - name: 📥 Checkout código
+        uses: actions/checkout@v4
+        
+      - name: 🔍 Determinar ambiente
+        id: determine
+        run: |
+          if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
+            if [[ "${{ inputs.environment }}" == "production" ]]; then
+              echo "staging=false" >> $GITHUB_OUTPUT
+              echo "production=true" >> $GITHUB_OUTPUT
+            else
+              echo "staging=true" >> $GITHUB_OUTPUT
+              echo "production=false" >> $GITHUB_OUTPUT
+            fi
+          elif [[ "${{ github.ref }}" == "refs/heads/main" ]]; then
+            echo "staging=true" >> $GITHUB_OUTPUT
+            echo "production=false" >> $GITHUB_OUTPUT
+          elif [[ "${{ github.ref }}" == refs/tags/v* ]]; then
+            echo "staging=false" >> $GITHUB_OUTPUT
+            echo "production=true" >> $GITHUB_OUTPUT
+          else
+            echo "staging=false" >> $GITHUB_OUTPUT
+            echo "production=false" >> $GITHUB_OUTPUT
+          fi
+          
+      - name: 📋 Obter versão
+        id: version
+        run: |
+          if [[ "${{ github.ref }}" == refs/tags/v* ]]; then
+            VERSION=${GITHUB_REF#refs/tags/}
+            echo "version=$VERSION" >> $GITHUB_OUTPUT
+            echo "is-release=true" >> $GITHUB_OUTPUT
+          else
+            VERSION="v$(date +'%Y.%m.%d')-${GITHUB_SHA::7}"
+            echo "version=$VERSION" >> $GITHUB_OUTPUT
+            echo "is-release=false" >> $GITHUB_OUTPUT
+          fi
+          echo "📋 Versão: $VERSION"
+
+  # 🏗️ Build para Produção
+  build-production:
+    name: 🏗️ Build Produção
+    runs-on: ubuntu-latest
+    needs: pre-checks
+    if: needs.pre-checks.outputs.deploy-staging == 'true' || needs.pre-checks.outputs.deploy-production == 'true'
+    steps:
+      - name: 📥 Checkout código
+        uses: actions/checkout@v4
+        
+      - name: 📦 Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+          
+      - name: 📦 Instalar dependências
+        run: npm ci
+        
+      - name: 🏗️ Build otimizado
+        run: npm run build
+        env:
+          NODE_ENV: production
+          VITE_APP_VERSION: ${{ needs.pre-checks.outputs.version }}
+          VITE_COMMIT_SHA: ${{ github.sha }}
+          VITE_BUILD_TIME: ${{ github.run_number }}
+          
+      - name: 📊 Análise do bundle
+        run: |
+          echo "## 📦 Análise do Bundle" >> $GITHUB_STEP_SUMMARY
+          echo "| Arquivo | Tamanho |" >> $GITHUB_STEP_SUMMARY
+          echo "|---------|---------|" >> $GITHUB_STEP_SUMMARY
+          cd dist
+          for file in $(find . -name "*.js" -o -name "*.css" | head -10); do
+            size=$(du -h "$file" | cut -f1)
+            echo "| $file | $size |" >> $GITHUB_STEP_SUMMARY
+          done
+          
+      - name: 🗜️ Comprimir assets
+        run: |
+          cd dist
+          find . -type f \( -name "*.js" -o -name "*.css" -o -name "*.html" \) -exec gzip -k {} \;
+          
+      - name: 📤 Upload build artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: production-build-${{ needs.pre-checks.outputs.version }}
+          path: dist/
+          retention-days: 30
+
+  # 🐳 Build Docker
+  build-docker:
+    name: 🐳 Build Docker Image
+    runs-on: ubuntu-latest
+    needs: [pre-checks, build-production]
+    if: needs.pre-checks.outputs.deploy-production == 'true'
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - name: 📥 Checkout código
+        uses: actions/checkout@v4
+        
+      - name: 📥 Download build artifacts
+        uses: actions/download-artifact@v3
+        with:
+          name: production-build-${{ needs.pre-checks.outputs.version }}
+          path: dist/
+          
+      - name: 🐳 Setup Docker Buildx
+        uses: docker/setup-buildx-action@v3
+        
+      - name: 🔐 Login no GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+          
+      - name: 🏷️ Extrair metadados
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          tags: |
+            type=ref,event=branch
+            type=ref,event=pr
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
+            type=sha,prefix={{branch}}-
+            
+      - name: 🏗️ Build e Push Docker
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          build-args: |
+            VERSION=${{ needs.pre-checks.outputs.version }}
+            COMMIT_SHA=${{ github.sha }}
+
+  # 🌐 Deploy Staging
+  deploy-staging:
+    name: 🌐 Deploy Staging
+    runs-on: ubuntu-latest
+    needs: [pre-checks, build-production]
+    if: needs.pre-checks.outputs.deploy-staging == 'true'
+    environment:
+      name: staging
+      url: https://mestres-cafe-staging.netlify.app
+    steps:
+      - name: 📥 Checkout código
+        uses: actions/checkout@v4
+        
+      - name: 📥 Download build artifacts
+        uses: actions/download-artifact@v3
+        with:
+          name: production-build-${{ needs.pre-checks.outputs.version }}
+          path: dist/
+          
+      - name: 🌐 Deploy para Netlify
+        uses: nwtgck/actions-netlify@v2.1
+        with:
+          publish-dir: './dist'
+          production-branch: main
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          deploy-message: "Deploy ${{ needs.pre-checks.outputs.version }} - ${{ github.sha }}"
+          enable-pull-request-comment: true
+          enable-commit-comment: true
+          enable-commit-status: true
+        env:
+          NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
+          NETLIFY_SITE_ID: ${{ secrets.NETLIFY_STAGING_SITE_ID }}
+          
+      - name: 🌐 Deploy para Vercel
+        uses: amondnet/vercel-action@v25
+        with:
+          vercel-token: ${{ secrets.VERCEL_TOKEN }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          vercel-args: '--prod'
+          vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
+          vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
+          working-directory: ./
+
+  # 🚀 Deploy Produção
+  deploy-production:
+    name: 🚀 Deploy Produção
+    runs-on: ubuntu-latest
+    needs: [pre-checks, build-production, build-docker]
+    if: needs.pre-checks.outputs.deploy-production == 'true'
+    environment:
+      name: production
+      url: https://mestres-cafe.com
+    steps:
+      - name: 📥 Checkout código
+        uses: actions/checkout@v4
+        
+      - name: 📥 Download build artifacts
+        uses: actions/download-artifact@v3
+        with:
+          name: production-build-${{ needs.pre-checks.outputs.version }}
+          path: dist/
+          
+      - name: 🚀 Deploy Frontend para GitHub Pages
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./dist
+          cname: mestres-cafe.com
+          
+      - name: 🚀 Deploy Backend para Render
+        uses: johnbeynon/render-deploy-action@v0.0.8
+        with:
+          service-id: ${{ secrets.RENDER_SERVICE_ID }}
+          api-key: ${{ secrets.RENDER_API_KEY }}
+          wait-for-success: true
+          
+      - name: 📊 Notificar deploy
+        run: |
+          echo "🚀 Deploy em produção realizado com sucesso!" >> $GITHUB_STEP_SUMMARY
+          echo "- **Versão**: ${{ needs.pre-checks.outputs.version }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Commit**: ${{ github.sha }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Frontend**: https://mestres-cafe.com" >> $GITHUB_STEP_SUMMARY
+          echo "- **API**: https://mestres-cafe-api.render.com" >> $GITHUB_STEP_SUMMARY
+
+  # 🔍 Testes Pós-Deploy
+  post-deploy-tests:
+    name: 🔍 Testes Pós-Deploy
+    runs-on: ubuntu-latest
+    needs: [deploy-staging, deploy-production]
+    if: always() && (needs.deploy-staging.result == 'success' || needs.deploy-production.result == 'success')
+    steps:
+      - name: 📥 Checkout código
+        uses: actions/checkout@v4
+        
+      - name: 📦 Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          
+      - name: 🔍 Smoke Tests
+        run: |
+          if [[ "${{ needs.deploy-staging.result }}" == "success" ]]; then
+            echo "🧪 Testando staging..."
+            curl -f https://mestres-cafe-staging.netlify.app/health || exit 1
+          fi
+          
+          if [[ "${{ needs.deploy-production.result }}" == "success" ]]; then
+            echo "🧪 Testando produção..."
+            curl -f https://mestres-cafe.com/health || exit 1
+          fi
+          
+      - name: 📊 Lighthouse CI
+        if: needs.deploy-production.result == 'success'
+        uses: treosh/lighthouse-ci-action@v10
+        with:
+          urls: |
+            https://mestres-cafe.com
+            https://mestres-cafe.com/marketplace
+          uploadArtifacts: true
+          temporaryPublicStorage: true
+
+  # 🎉 Release Automation
+  create-release:
+    name: 🎉 Criar Release
+    runs-on: ubuntu-latest
+    needs: [pre-checks, deploy-production, post-deploy-tests]
+    if: needs.pre-checks.outputs.is-release == 'true' && needs.deploy-production.result == 'success'
+    permissions:
+      contents: write
+    steps:
+      - name: 📥 Checkout código
+        uses: actions/checkout@v4
+        
+      - name: 📝 Gerar changelog
+        id: changelog
+        run: |
+          echo "## 🎉 Release ${{ needs.pre-checks.outputs.version }}" > release_notes.md
+          echo "" >> release_notes.md
+          echo "### ✨ Novidades:" >> release_notes.md
+          git log --pretty=format:"- %s" $(git describe --tags --abbrev=0 HEAD~1)..HEAD >> release_notes.md
+          echo "" >> release_notes.md
+          echo "### 🔗 Links:" >> release_notes.md
+          echo "- 🌐 [Site](https://mestres-cafe.com)" >> release_notes.md
+          echo "- 📊 [Métricas Lighthouse](https://github.com/${{ github.repository }}/actions)" >> release_notes.md
+          echo "- 🐳 [Docker Image](https://ghcr.io/${{ github.repository }}:${{ needs.pre-checks.outputs.version }})" >> release_notes.md
+          
+      - name: 🎉 Criar GitHub Release
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: ${{ needs.pre-checks.outputs.version }}
+          name: "Release ${{ needs.pre-checks.outputs.version }}"
+          body_path: release_notes.md
+          draft: false
+          prerelease: false
+          generate_release_notes: true
+
+  # 📢 Notificações
+  notify:
+    name: 📢 Notificações
+    runs-on: ubuntu-latest
+    needs: [pre-checks, deploy-staging, deploy-production, post-deploy-tests]
+    if: always()
+    steps:
+      - name: 📢 Slack Notification
+        if: ${{ secrets.SLACK_WEBHOOK_URL }}
+        uses: 8398a7/action-slack@v3
+        with:
+          status: ${{ job.status }}
+          text: |
+            🚀 *Deploy ${{ needs.pre-checks.outputs.version }}*
+            
+            📊 *Status*:
+            • Staging: ${{ needs.deploy-staging.result || 'skipped' }}
+            • Produção: ${{ needs.deploy-production.result || 'skipped' }}
+            • Testes: ${{ needs.post-deploy-tests.result || 'skipped' }}
+            
+            🔗 *Links*:
+            • [GitHub Action](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})
+            • [Staging](https://mestres-cafe-staging.netlify.app)
+            • [Produção](https://mestres-cafe.com)
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+          
+      - name: 📧 Email Notification
+        if: failure()
+        uses: dawidd6/action-send-mail@v3
+        with:
+          server_address: smtp.gmail.com
+          server_port: 587
+          username: ${{ secrets.EMAIL_USERNAME }}
+          password: ${{ secrets.EMAIL_PASSWORD }}
+          subject: "❌ Deploy falhou - Mestres do Café"
+          to: ${{ secrets.NOTIFY_EMAIL }}
+          from: GitHub Actions
+          body: |
+            Deploy falhou para a versão ${{ needs.pre-checks.outputs.version }}
+            
+            Verifique: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }} 

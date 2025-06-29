@@ -133,7 +133,7 @@ describe('🧪 Demo dos Testes das Novas Funcionalidades', () => {
         const hasUpper = /[A-Z]/.test(password);
         const hasLower = /[a-z]/.test(password);
         const hasNumber = /\d/.test(password);
-        const hasSpecial = /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(password);
+        const hasSpecial = /[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?]/.test(password);
         
         const score = [hasUpper, hasLower, hasNumber, hasSpecial].filter(Boolean).length;
         
@@ -209,7 +209,7 @@ describe('🧪 Demo dos Testes das Novas Funcionalidades', () => {
 
       expect(formatCurrency(150.80)).toContain('150');
       expect(formatCurrency(0)).toContain('0');
-      expect(formatCurrency(1234.56)).toContain('1234');
+      expect(formatCurrency(1234.56)).toContain('1.234'); // Sistema formata com pontos para milhares
     });
   });
 

@@ -34,7 +34,14 @@
     "render:start": "npm run preview",
     "heroku-postbuild": "npm run build",
     "start": "node unified-server.js",
-    "unified": "npm run build && npm start"
+    "unified": "npm run build && npm start",
+    "ci:check": "chmod +x scripts/ci-check.sh && ./scripts/ci-check.sh",
+    "ci:deploy-check": "chmod +x scripts/deploy-check.sh && ./scripts/deploy-check.sh",
+    "ci:deploy-check:lighthouse": "chmod +x scripts/deploy-check.sh && ./scripts/deploy-check.sh --lighthouse",
+    "test:ci": "vitest run --coverage",
+    "format": "prettier --write \"src/**/*.{js,jsx,json,css,md}\"",
+    "format:check": "prettier --check \"src/**/*.{js,jsx,json,css,md}\"",
+    "build:analyze": "npm run build && npx vite-bundle-analyzer dist/"
   },
   "dependencies": {
     "@radix-ui/react-alert-dialog": "^1.1.2",

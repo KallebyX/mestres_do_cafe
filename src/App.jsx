@@ -13,7 +13,6 @@ import CartPage from './pages/CartPage';
 import CheckoutPage from './pages/CheckoutPage';
 import CustomerDashboard from './pages/CustomerDashboard';
 import AdminDashboard from './pages/AdminDashboard';
-import AdminDashboardTemp from './pages/AdminDashboardTemp';
 import GamificationPage from './pages/GamificationPage';
 import ProfilePage from './pages/ProfilePage';
 import OrdersPage from './pages/OrdersPage';
@@ -60,7 +59,6 @@ function App() {
                 <Route path="/dashboard" element={<CustomerDashboard />} />
                 <Route path="/admin" element={<AdminDashboard />} />
                 <Route path="/admin/dashboard" element={<AdminDashboard />} />
-                <Route path="/admin/dashboard-temp" element={<AdminDashboardTemp />} />
                 <Route path="/admin/crm" element={<AdminCRMDashboard />} />
                 <Route path="/admin/customer/:customerId" element={<CustomerDetailView />} />
                 <Route path="/admin/blog" element={<AdminBlogManager />} />

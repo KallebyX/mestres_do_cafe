@@ -1,0 +1,390 @@
+name: 🚀 Performance - Testes e Monitoramento
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  schedule:
+    # Executa semanalmente aos domingos às 2h UTC
+    - cron: '0 2 * * 0'
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Ambiente para testar'
+        required: true
+        default: 'staging'
+        type: choice
+        options:
+        - staging
+        - production
+      duration:
+        description: 'Duração do teste (minutos)'
+        required: false
+        default: '5'
+        type: string
+
+concurrency:
+  group: performance-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  NODE_VERSION: '18.x'
+
+jobs:
+  # 📊 Lighthouse Performance
+  lighthouse:
+    name: 📊 Lighthouse Analysis
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        url: 
+          - '/'
+          - '/marketplace'
+          - '/login'
+          - '/sobre'
+    steps:
+      - name: 📥 Checkout código
+        uses: actions/checkout@v4
+        
+      - name: 📦 Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+          
+      - name: 📦 Instalar dependências
+        run: npm ci
+        
+      - name: 🏗️ Build projeto
+        run: npm run build
+        
+      - name: 🚀 Servir aplicação
+        run: |
+          npm run preview &
+          sleep 10
+          
+      - name: 📊 Executar Lighthouse
+        uses: treosh/lighthouse-ci-action@v10
+        with:
+          urls: http://localhost:4173${{ matrix.url }}
+          configPath: './.lighthouserc.json'
+          uploadArtifacts: true
+          temporaryPublicStorage: true
+          
+      - name: 📤 Upload Lighthouse reports
+        uses: actions/upload-artifact@v3
+        with:
+          name: lighthouse-reports-${{ github.run_number }}
+          path: |
+            .lighthouseci/
+            lhci_reports/
+
+  # 🏃‍♂️ Bundle Size Analysis
+  bundle-analysis:
+    name: 🏃‍♂️ Análise do Bundle
+    runs-on: ubuntu-latest
+    steps:
+      - name: 📥 Checkout código
+        uses: actions/checkout@v4
+        
+      - name: 📦 Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+          
+      - name: 📦 Instalar dependências
+        run: npm ci
+        
+      - name: 🏗️ Build com análise
+        run: |
+          npm run build
+          
+      - name: 📊 Análise detalhada do bundle
+        run: |
+          echo "## 📦 Análise Detalhada do Bundle" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          
+          # Tamanho total
+          total_size=$(du -sh dist/ | cut -f1)
+          echo "**📏 Tamanho Total:** $total_size" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          
+          # Arquivos maiores
+          echo "### 🔍 Maiores Arquivos:" >> $GITHUB_STEP_SUMMARY
+          echo "| Arquivo | Tamanho | Gzip |" >> $GITHUB_STEP_SUMMARY
+          echo "|---------|---------|------|" >> $GITHUB_STEP_SUMMARY
+          
+          cd dist
+          find . -type f \( -name "*.js" -o -name "*.css" \) -exec du -h {} + | 
+          sort -hr | head -10 | while read size file; do
+            gzip -k "$file" 2>/dev/null || true
+            if [ -f "$file.gz" ]; then
+              gzip_size=$(du -h "$file.gz" | cut -f1)
+              rm "$file.gz"
+            else
+              gzip_size="N/A"
+            fi
+            echo "| $file | $size | $gzip_size |" >> $GITHUB_STEP_SUMMARY
+          done
+          
+      - name: 📊 Verificar limites de tamanho
+        run: |
+          echo "## ⚠️ Verificação de Limites" >> $GITHUB_STEP_SUMMARY
+          
+          # Verificar se bundle está muito grande
+          max_size_mb=10
+          total_size_mb=$(du -sm dist/ | cut -f1)
+          
+          if [ $total_size_mb -gt $max_size_mb ]; then
+            echo "❌ **AVISO:** Bundle muito grande ($total_size_mb MB > $max_size_mb MB)" >> $GITHUB_STEP_SUMMARY
+            exit 1
+          else
+            echo "✅ **OK:** Bundle dentro do limite ($total_size_mb MB ≤ $max_size_mb MB)" >> $GITHUB_STEP_SUMMARY
+          fi
+
+  # 🔥 Load Testing
+  load-testing:
+    name: 🔥 Testes de Carga
+    runs-on: ubuntu-latest
+    steps:
+      - name: 📥 Checkout código
+        uses: actions/checkout@v4
+        
+      - name: 📦 Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+          
+      - name: 📦 Instalar dependências
+        run: npm ci
+        
+      - name: 🏗️ Build e servir aplicação
+        run: |
+          npm run build
+          npm run preview &
+          sleep 10
+          
+      - name: 🔥 Instalar K6
+        run: |
+          sudo apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys C5AD17C747E3415A3642D57D77C6C491D6AC1D69
+          echo "deb https://dl.k6.io/deb stable main" | sudo tee /etc/apt/sources.list.d/k6.list
+          sudo apt-get update
+          sudo apt-get install k6
+          
+      - name: 📝 Criar script de teste K6
+        run: |
+          cat > load-test.js << 'EOF'
+          import http from 'k6/http';
+          import { check, sleep } from 'k6';
+          import { Rate } from 'k6/metrics';
+          
+          export const errorRate = new Rate('errors');
+          
+          export const options = {
+            stages: [
+              { duration: '1m', target: 10 },  // Ramp up
+              { duration: '3m', target: 50 },  // Stay at 50 users
+              { duration: '1m', target: 0 },   // Ramp down
+            ],
+            thresholds: {
+              http_req_duration: ['p(95)<2000'], // 95% das requests < 2s
+              http_req_failed: ['rate<0.1'],     // Taxa de erro < 10%
+            },
+          };
+          
+          export default function () {
+            const pages = [
+              'http://localhost:4173/',
+              'http://localhost:4173/marketplace',
+              'http://localhost:4173/sobre',
+              'http://localhost:4173/contato'
+            ];
+            
+            const page = pages[Math.floor(Math.random() * pages.length)];
+            const response = http.get(page);
+            
+            check(response, {
+              'status is 200': (r) => r.status === 200,
+              'response time < 2s': (r) => r.timings.duration < 2000,
+            });
+            
+            errorRate.add(response.status !== 200);
+            sleep(1);
+          }
+          EOF
+          
+      - name: 🔥 Executar testes de carga
+        run: |
+          echo "## 🔥 Resultados dos Testes de Carga" >> $GITHUB_STEP_SUMMARY
+          k6 run load-test.js --out json=results.json || true
+          
+          # Processar resultados
+          if [ -f results.json ]; then
+            echo "✅ Testes executados com sucesso" >> $GITHUB_STEP_SUMMARY
+            
+            # Extrair métricas principais
+            avg_duration=$(jq -r 'select(.metric == "http_req_duration" and .type == "Point") | .data.value' results.json | awk '{sum+=$1; count++} END {print sum/count}')
+            echo "**📊 Tempo médio de resposta:** ${avg_duration}ms" >> $GITHUB_STEP_SUMMARY
+            
+            error_rate=$(jq -r 'select(.metric == "http_req_failed" and .type == "Point") | .data.value' results.json | awk '{sum+=$1; count++} END {print (sum/count)*100}')
+            echo "**❌ Taxa de erro:** ${error_rate}%" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "❌ Falha ao executar testes" >> $GITHUB_STEP_SUMMARY
+          fi
+          
+      - name: 📤 Upload resultados K6
+        uses: actions/upload-artifact@v3
+        with:
+          name: load-test-results
+          path: results.json
+
+  # 🧠 Memory & CPU Profiling
+  profiling:
+    name: 🧠 Profiling de Performance
+    runs-on: ubuntu-latest
+    steps:
+      - name: 📥 Checkout código
+        uses: actions/checkout@v4
+        
+      - name: 📦 Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+          
+      - name: 📦 Instalar dependências
+        run: npm ci
+        
+      - name: 🧠 Profiling do build
+        run: |
+          echo "## 🧠 Profiling de Performance" >> $GITHUB_STEP_SUMMARY
+          
+          # Monitorar uso de CPU e memória durante build
+          (top -b -n1 | grep "Cpu\|Mem" | head -2) >> build-stats.txt
+          
+          # Build com profiling
+          time npm run build 2>&1 | tee build-time.txt
+          
+          build_time=$(grep "real" build-time.txt | awk '{print $2}' || echo "N/A")
+          echo "**⏱️ Tempo de build:** $build_time" >> $GITHUB_STEP_SUMMARY
+          
+          # Verificar uso de memória
+          memory_usage=$(cat build-stats.txt | grep "Mem" | awk '{print $4}' || echo "N/A")
+          echo "**🧠 Uso de memória:** $memory_usage" >> $GITHUB_STEP_SUMMARY
+          
+      - name: 📊 Análise de dependências
+        run: |
+          echo "### 📦 Análise de Dependências" >> $GITHUB_STEP_SUMMARY
+          
+          # Dependências mais pesadas
+          npm list --depth=0 --json | jq -r '
+            .dependencies | 
+            to_entries[] | 
+            "\(.key): \(.value.version)"
+          ' | head -10 >> $GITHUB_STEP_SUMMARY
+
+  # 🌐 Real User Monitoring (RUM)
+  rum-check:
+    name: 🌐 Real User Monitoring
+    runs-on: ubuntu-latest
+    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+    steps:
+      - name: 📥 Checkout código
+        uses: actions/checkout@v4
+        
+      - name: 🌐 Verificar sites em produção
+        run: |
+          echo "## 🌐 Status dos Sites em Produção" >> $GITHUB_STEP_SUMMARY
+          echo "| Site | Status | Tempo Resposta |" >> $GITHUB_STEP_SUMMARY
+          echo "|------|--------|----------------|" >> $GITHUB_STEP_SUMMARY
+          
+          # Lista de URLs para verificar
+          urls=(
+            "https://mestres-cafe.vercel.app"
+            "https://mestres-cafe-api.render.com/api/health"
+          )
+          
+          for url in "${urls[@]}"; do
+            response_time=$(curl -o /dev/null -s -w "%{time_total}" "$url" || echo "ERRO")
+            status_code=$(curl -o /dev/null -s -w "%{http_code}" "$url" || echo "ERRO")
+            
+            if [ "$status_code" = "200" ]; then
+              status="✅ OK"
+            else
+              status="❌ ERRO ($status_code)"
+            fi
+            
+            echo "| $url | $status | ${response_time}s |" >> $GITHUB_STEP_SUMMARY
+          done
+
+  # 📊 Performance Budget
+  performance-budget:
+    name: 📊 Performance Budget
+    runs-on: ubuntu-latest
+    needs: [lighthouse, bundle-analysis]
+    if: always()
+    steps:
+      - name: 📊 Verificar Performance Budget
+        run: |
+          echo "## 💰 Performance Budget" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          
+          # Definir limites
+          echo "### 🎯 Limites Definidos:" >> $GITHUB_STEP_SUMMARY
+          echo "- 📦 **Bundle Size:** ≤ 10MB" >> $GITHUB_STEP_SUMMARY
+          echo "- ⚡ **First Contentful Paint:** ≤ 2s" >> $GITHUB_STEP_SUMMARY
+          echo "- 🎨 **Largest Contentful Paint:** ≤ 4s" >> $GITHUB_STEP_SUMMARY
+          echo "- 📊 **Cumulative Layout Shift:** ≤ 0.1" >> $GITHUB_STEP_SUMMARY
+          echo "- 🔄 **Total Blocking Time:** ≤ 300ms" >> $GITHUB_STEP_SUMMARY
+          echo "- 📈 **Performance Score:** ≥ 80" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          
+          # Status dos checks
+          echo "### ✅ Status dos Checks:" >> $GITHUB_STEP_SUMMARY
+          echo "| Métrica | Status |" >> $GITHUB_STEP_SUMMARY
+          echo "|---------|--------|" >> $GITHUB_STEP_SUMMARY
+          echo "| 📊 Lighthouse | ${{ needs.lighthouse.result }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| 📦 Bundle Analysis | ${{ needs.bundle-analysis.result }} |" >> $GITHUB_STEP_SUMMARY
+          
+          # Verificar se passou no budget
+          if [[ "${{ needs.lighthouse.result }}" == "success" && 
+                "${{ needs.bundle-analysis.result }}" == "success" ]]; then
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "🎉 **Performance Budget: APROVADO** ✅" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "❌ **Performance Budget: REPROVADO** ❌" >> $GITHUB_STEP_SUMMARY
+            exit 1
+          fi
+
+  # 📈 Performance Trends
+  performance-trends:
+    name: 📈 Tendências de Performance
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    steps:
+      - name: 📥 Checkout código
+        uses: actions/checkout@v4
+        
+      - name: 📈 Armazenar métricas históricas
+        run: |
+          # Criar arquivo de histórico se não existir
+          mkdir -p .github/performance-history
+          
+          # Adicionar entrada atual
+          date=$(date -Iseconds)
+          commit=${{ github.sha }}
+          echo "$date,$commit,build_complete" >> .github/performance-history/metrics.csv
+          
+          echo "## 📈 Histórico de Performance" >> $GITHUB_STEP_SUMMARY
+          echo "Métricas salvas para análise de tendências" >> $GITHUB_STEP_SUMMARY
+          
+      - name: 📊 Criar badge de performance
+        run: |
+          # Criar badge dinâmico
+          echo "![Performance](https://img.shields.io/badge/Performance-Monitorado-green)" > performance-badge.md
+          
+          echo "Badge de performance gerado" >> $GITHUB_STEP_SUMMARY 

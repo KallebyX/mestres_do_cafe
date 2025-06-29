@@ -1,0 +1,360 @@
+name: 🔄 CI - Integração Contínua
+
+on:
+  push:
+    branches: [ main, develop, 'feature/*', 'hotfix/*' ]
+  pull_request:
+    branches: [ main, develop ]
+  workflow_dispatch:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  NODE_VERSION: '18.x'
+  CACHE_VERSION: v1
+
+jobs:
+  # 🔍 Análise de mudanças
+  changes:
+    name: 🔍 Detectar Mudanças
+    runs-on: ubuntu-latest
+    outputs:
+      frontend: ${{ steps.filter.outputs.frontend }}
+      backend: ${{ steps.filter.outputs.backend }}
+      docs: ${{ steps.filter.outputs.docs }}
+      workflows: ${{ steps.filter.outputs.workflows }}
+    steps:
+      - name: 📥 Checkout código
+        uses: actions/checkout@v4
+        
+      - name: 🔍 Verificar mudanças
+        uses: dorny/paths-filter@v2
+        id: filter
+        with:
+          filters: |
+            frontend:
+              - 'src/**'
+              - 'public/**'
+              - 'package*.json'
+              - 'vite.config.js'
+              - 'tailwind.config.js'
+            backend:
+              - 'server/**'
+              - 'database/**'
+            docs:
+              - 'docs/**'
+              - '*.md'
+            workflows:
+              - '.github/workflows/**'
+
+  # 📦 Setup e Cache
+  setup:
+    name: 📦 Setup Dependências
+    runs-on: ubuntu-latest
+    needs: changes
+    if: needs.changes.outputs.frontend == 'true' || needs.changes.outputs.backend == 'true'
+    steps:
+      - name: 📥 Checkout código
+        uses: actions/checkout@v4
+        
+      - name: 📦 Setup Node.js ${{ env.NODE_VERSION }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+          
+      - name: 🗂️ Cache node_modules frontend
+        uses: actions/cache@v3
+        id: cache-frontend
+        with:
+          path: node_modules
+          key: ${{ runner.os }}-frontend-${{ env.CACHE_VERSION }}-${{ hashFiles('package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-frontend-${{ env.CACHE_VERSION }}-
+            
+      - name: 📦 Instalar dependências frontend
+        if: steps.cache-frontend.outputs.cache-hit != 'true'
+        run: npm ci
+        
+      - name: 🗂️ Cache node_modules backend
+        uses: actions/cache@v3
+        id: cache-backend
+        with:
+          path: server/node_modules
+          key: ${{ runner.os }}-backend-${{ env.CACHE_VERSION }}-${{ hashFiles('server/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-backend-${{ env.CACHE_VERSION }}-
+            
+      - name: 📦 Instalar dependências backend
+        if: steps.cache-backend.outputs.cache-hit != 'true'
+        run: cd server && npm ci
+
+  # 🧹 Qualidade do Código
+  lint:
+    name: 🧹 Lint e Formatação
+    runs-on: ubuntu-latest
+    needs: [changes, setup]
+    if: needs.changes.outputs.frontend == 'true' || needs.changes.outputs.backend == 'true'
+    steps:
+      - name: 📥 Checkout código
+        uses: actions/checkout@v4
+        
+      - name: 📦 Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+          
+      - name: 🗂️ Restaurar cache frontend
+        uses: actions/cache@v3
+        with:
+          path: node_modules
+          key: ${{ runner.os }}-frontend-${{ env.CACHE_VERSION }}-${{ hashFiles('package-lock.json') }}
+          
+      - name: 🧹 ESLint Frontend
+        if: needs.changes.outputs.frontend == 'true'
+        run: npm run lint
+        
+      - name: 🧹 ESLint Backend
+        if: needs.changes.outputs.backend == 'true'
+        run: cd server && npm run lint --if-present
+        
+      - name: 📝 Upload lint results
+        uses: actions/upload-artifact@v3
+        if: failure()
+        with:
+          name: lint-results
+          path: |
+            eslint-report.json
+            server/eslint-report.json
+
+  # 🧪 Testes Frontend
+  test-frontend:
+    name: 🧪 Testes Frontend
+    runs-on: ubuntu-latest
+    needs: [changes, setup]
+    if: needs.changes.outputs.frontend == 'true'
+    strategy:
+      matrix:
+        node-version: ['18.x', '20.x']
+    steps:
+      - name: 📥 Checkout código
+        uses: actions/checkout@v4
+        
+      - name: 📦 Setup Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: 'npm'
+          
+      - name: 🗂️ Restaurar cache
+        uses: actions/cache@v3
+        with:
+          path: node_modules
+          key: ${{ runner.os }}-frontend-${{ env.CACHE_VERSION }}-${{ hashFiles('package-lock.json') }}
+          
+      - name: 🧪 Executar testes
+        run: npm run test:ci
+        env:
+          CI: true
+          
+      - name: 📊 Upload coverage
+        uses: codecov/codecov-action@v3
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          files: ./coverage/lcov.info
+          flags: frontend
+          name: frontend-${{ matrix.node-version }}
+
+  # 🔧 Testes Backend
+  test-backend:
+    name: 🔧 Testes Backend
+    runs-on: ubuntu-latest
+    needs: [changes, setup]
+    if: needs.changes.outputs.backend == 'true'
+    strategy:
+      matrix:
+        node-version: ['18.x', '20.x']
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: mestres_cafe_test
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+    steps:
+      - name: 📥 Checkout código
+        uses: actions/checkout@v4
+        
+      - name: 📦 Setup Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: 'npm'
+          
+      - name: 🗂️ Restaurar cache backend
+        uses: actions/cache@v3
+        with:
+          path: server/node_modules
+          key: ${{ runner.os }}-backend-${{ env.CACHE_VERSION }}-${{ hashFiles('server/package-lock.json') }}
+          
+      - name: 🗄️ Setup banco de dados
+        run: |
+          cd server
+          npm run db:setup:test
+        env:
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/mestres_cafe_test
+          
+      - name: 🧪 Executar testes backend
+        run: cd server && npm run test:ci
+        env:
+          NODE_ENV: test
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/mestres_cafe_test
+          
+      - name: 📊 Upload coverage backend
+        uses: codecov/codecov-action@v3
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          files: ./server/coverage/lcov.info
+          flags: backend
+          name: backend-${{ matrix.node-version }}
+
+  # 🏗️ Build e Validação
+  build:
+    name: 🏗️ Build e Validação
+    runs-on: ubuntu-latest
+    needs: [changes, setup, lint]
+    if: needs.changes.outputs.frontend == 'true'
+    steps:
+      - name: 📥 Checkout código
+        uses: actions/checkout@v4
+        
+      - name: 📦 Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+          
+      - name: 🗂️ Restaurar cache
+        uses: actions/cache@v3
+        with:
+          path: node_modules
+          key: ${{ runner.os }}-frontend-${{ env.CACHE_VERSION }}-${{ hashFiles('package-lock.json') }}
+          
+      - name: 🏗️ Build do projeto
+        run: npm run build
+        env:
+          NODE_ENV: production
+          
+      - name: 📦 Analisar bundle
+        run: |
+          npm run build:analyze --if-present
+          ls -lah dist/
+          
+      - name: 📤 Upload build artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: build-${{ github.sha }}
+          path: dist/
+          retention-days: 7
+
+  # 🔗 Testes de Integração
+  integration:
+    name: 🔗 Testes de Integração
+    runs-on: ubuntu-latest
+    needs: [changes, setup, test-frontend, test-backend]
+    if: always() && (needs.changes.outputs.frontend == 'true' || needs.changes.outputs.backend == 'true')
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: mestres_cafe_integration
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+    steps:
+      - name: 📥 Checkout código
+        uses: actions/checkout@v4
+        
+      - name: 📦 Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+          
+      - name: 🗂️ Restaurar caches
+        uses: actions/cache@v3
+        with:
+          path: |
+            node_modules
+            server/node_modules
+          key: ${{ runner.os }}-integration-${{ env.CACHE_VERSION }}-${{ hashFiles('**/package-lock.json') }}
+          
+      - name: 🗄️ Setup banco para integração
+        run: |
+          cd server
+          npm run db:setup:integration
+        env:
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/mestres_cafe_integration
+          
+      - name: 🚀 Iniciar backend
+        run: |
+          cd server
+          npm start &
+          sleep 10
+        env:
+          NODE_ENV: test
+          PORT: 3001
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/mestres_cafe_integration
+          
+      - name: 🧪 Executar testes de integração
+        run: npm run test:integration
+        env:
+          REACT_APP_API_URL: http://localhost:3001
+
+  # 📋 Relatório Final
+  ci-status:
+    name: 📋 Status Final CI
+    runs-on: ubuntu-latest
+    needs: [changes, lint, test-frontend, test-backend, build, integration]
+    if: always()
+    steps:
+      - name: 📊 Verificar status dos jobs
+        run: |
+          echo "## 📋 Relatório CI" >> $GITHUB_STEP_SUMMARY
+          echo "| Job | Status |" >> $GITHUB_STEP_SUMMARY
+          echo "|-----|--------|" >> $GITHUB_STEP_SUMMARY
+          echo "| 🧹 Lint | ${{ needs.lint.result }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| 🧪 Testes Frontend | ${{ needs.test-frontend.result }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| 🔧 Testes Backend | ${{ needs.test-backend.result }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| 🏗️ Build | ${{ needs.build.result }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| 🔗 Integração | ${{ needs.integration.result }} |" >> $GITHUB_STEP_SUMMARY
+          
+      - name: ✅ CI Passou
+        if: needs.lint.result == 'success' && needs.test-frontend.result == 'success' && needs.test-backend.result == 'success' && needs.build.result == 'success'
+        run: |
+          echo "🎉 Todos os testes passaram! ✅"
+          echo "✅ Lint: OK"
+          echo "✅ Testes Frontend: OK" 
+          echo "✅ Testes Backend: OK"
+          echo "✅ Build: OK"
+          echo "✅ Integração: OK"
+          
+      - name: ❌ CI Falhou
+        if: needs.lint.result == 'failure' || needs.test-frontend.result == 'failure' || needs.test-backend.result == 'failure' || needs.build.result == 'failure'
+        run: |
+          echo "❌ Alguns testes falharam!"
+          exit 1 
