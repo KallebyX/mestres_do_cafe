@@ -11,6 +11,7 @@ const MapsService = require('./services/MapsService');
 
 // Importar rotas de administração de clientes
 const adminCustomersRoutes = require('./routes/admin-customers');
+const newsletterRoutes = require('./routes/newsletter');
 
 const app = express();
 const PORT = process.env.PORT || 5000; // Render usa PORT dinâmico
@@ -1275,6 +1276,7 @@ app.post('/api/orders', authenticateToken, (req, res) => {
 // ADMINISTRAÇÃO DE CLIENTES
 // ===============================
 app.use('/api/admin/customers', adminCustomersRoutes);
+app.use('/api/newsletter', newsletterRoutes);
 
 // 📱 ===================== WHATSAPP ENDPOINTS (API PRÓPRIA) =====================
 

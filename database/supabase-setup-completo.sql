@@ -123,16 +123,43 @@ CREATE TABLE IF NOT EXISTS blog_posts (
 CREATE TABLE IF NOT EXISTS blog_comments (
   id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
   post_id UUID REFERENCES blog_posts(id) ON DELETE CASCADE,
-  user_id UUID REFERENCES users(id),
+  user_id UUID REFERENCES users(id) ON DELETE CASCADE,
   user_name TEXT NOT NULL,
-  user_email TEXT NOT NULL,
   content TEXT NOT NULL,
-  is_approved BOOLEAN DEFAULT false,
-  parent_id UUID REFERENCES blog_comments(id), -- Para respostas
+  is_approved BOOLEAN DEFAULT true,
+  parent_id UUID REFERENCES blog_comments(id) ON DELETE CASCADE, -- Para respostas
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc'::text, NOW()) NOT NULL,
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc'::text, NOW()) NOT NULL
+);
+
+-- 7. Tabela de likes do blog
+CREATE TABLE IF NOT EXISTS blog_likes (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  post_id UUID REFERENCES blog_posts(id) ON DELETE CASCADE,
+  user_id UUID REFERENCES users(id) ON DELETE CASCADE,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc'::text, NOW()) NOT NULL,
+  UNIQUE(post_id, user_id) -- Um usuário só pode curtir uma vez cada post
+);
+
+-- 8. Tabela de compartilhamentos do blog
+CREATE TABLE IF NOT EXISTS blog_shares (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  post_id UUID REFERENCES blog_posts(id) ON DELETE CASCADE,
+  platform TEXT NOT NULL, -- 'facebook', 'twitter', 'whatsapp', 'telegram', 'linkedin'
   created_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc'::text, NOW()) NOT NULL
 );
 
--- 7. Tabela de gamificação (pontos)
+-- 9. Tabela de categorias do blog
+CREATE TABLE IF NOT EXISTS blog_categories (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  name TEXT UNIQUE NOT NULL,
+  slug TEXT UNIQUE NOT NULL,
+  description TEXT,
+  color TEXT DEFAULT '#3B82F6',
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc'::text, NOW()) NOT NULL
+);
+
+-- 10. Tabela de gamificação (pontos)
 CREATE TABLE IF NOT EXISTS points_history (
   id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
   user_id UUID REFERENCES users(id),
@@ -143,7 +170,7 @@ CREATE TABLE IF NOT EXISTS points_history (
   created_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc'::text, NOW()) NOT NULL
 );
 
--- 8. Tabela de reviews/avaliações
+-- 11. Tabela de reviews/avaliações
 CREATE TABLE IF NOT EXISTS product_reviews (
   id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
   product_id UUID REFERENCES products(id),
@@ -158,19 +185,7 @@ CREATE TABLE IF NOT EXISTS product_reviews (
   created_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc'::text, NOW()) NOT NULL
 );
 
--- 9. Tabela de categorias do blog
-CREATE TABLE IF NOT EXISTS blog_categories (
-  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
-  name TEXT NOT NULL UNIQUE,
-  slug TEXT UNIQUE NOT NULL,
-  description TEXT,
-  color TEXT DEFAULT '#3B82F6',
-  posts_count INTEGER DEFAULT 0,
-  is_active BOOLEAN DEFAULT true,
-  created_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc'::text, NOW()) NOT NULL
-);
-
--- 10. Tabela de cupons de desconto
+-- 12. Tabela de cupons de desconto
 CREATE TABLE IF NOT EXISTS discount_coupons (
   id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
   code TEXT NOT NULL UNIQUE,
@@ -397,6 +412,82 @@ CREATE POLICY "Users can create own orders" ON orders FOR INSERT WITH CHECK (aut
 
 -- Políticas para blog (público para leitura)
 CREATE POLICY "Published posts are viewable by everyone" ON blog_posts FOR SELECT USING (status = 'published');
+
+-- Índices para performance das interações do blog
+CREATE INDEX IF NOT EXISTS idx_blog_comments_post_id ON blog_comments(post_id);
+CREATE INDEX IF NOT EXISTS idx_blog_comments_user_id ON blog_comments(user_id);
+CREATE INDEX IF NOT EXISTS idx_blog_comments_created_at ON blog_comments(created_at);
+CREATE INDEX IF NOT EXISTS idx_blog_likes_post_id ON blog_likes(post_id);
+CREATE INDEX IF NOT EXISTS idx_blog_likes_user_id ON blog_likes(user_id);
+CREATE INDEX IF NOT EXISTS idx_blog_shares_post_id ON blog_shares(post_id);
+CREATE INDEX IF NOT EXISTS idx_blog_posts_slug ON blog_posts(slug);
+CREATE INDEX IF NOT EXISTS idx_blog_posts_status_published_at ON blog_posts(status, published_at);
+
+-- RLS Policies para blog_comments
+ALTER TABLE blog_comments ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Qualquer um pode ver comentários aprovados" ON blog_comments
+  FOR SELECT USING (is_approved = true);
+
+CREATE POLICY "Usuários logados podem criar comentários" ON blog_comments
+  FOR INSERT WITH CHECK (auth.uid() = user_id);
+
+CREATE POLICY "Usuários podem editar seus próprios comentários" ON blog_comments
+  FOR UPDATE USING (auth.uid() = user_id);
+
+CREATE POLICY "Usuários podem deletar seus próprios comentários" ON blog_comments
+  FOR DELETE USING (auth.uid() = user_id);
+
+CREATE POLICY "Admins podem gerenciar todos os comentários" ON blog_comments
+  FOR ALL USING (
+    EXISTS (
+      SELECT 1 FROM users 
+      WHERE users.id = auth.uid() 
+      AND users.user_type = 'admin'
+    )
+  );
+
+-- RLS Policies para blog_likes
+ALTER TABLE blog_likes ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Qualquer um pode ver likes" ON blog_likes
+  FOR SELECT USING (true);
+
+CREATE POLICY "Usuários logados podem curtir" ON blog_likes
+  FOR INSERT WITH CHECK (auth.uid() = user_id);
+
+CREATE POLICY "Usuários podem remover seus próprios likes" ON blog_likes
+  FOR DELETE USING (auth.uid() = user_id);
+
+-- RLS Policies para blog_shares
+ALTER TABLE blog_shares ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Qualquer um pode registrar compartilhamentos" ON blog_shares
+  FOR INSERT USING (true);
+
+CREATE POLICY "Admins podem ver compartilhamentos" ON blog_shares
+  FOR SELECT USING (
+    EXISTS (
+      SELECT 1 FROM users 
+      WHERE users.id = auth.uid() 
+      AND users.user_type = 'admin'
+    )
+  );
+
+-- RLS Policies para blog_categories
+ALTER TABLE blog_categories ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Qualquer um pode ver categorias" ON blog_categories
+  FOR SELECT USING (true);
+
+CREATE POLICY "Apenas admins podem gerenciar categorias" ON blog_categories
+  FOR ALL USING (
+    EXISTS (
+      SELECT 1 FROM users 
+      WHERE users.id = auth.uid() 
+      AND users.user_type = 'admin'
+    )
+  );
 
 -- =========================================
 -- ÍNDICES PARA PERFORMANCE
