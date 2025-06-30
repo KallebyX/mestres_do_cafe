@@ -138,3 +138,11 @@ whatsapp-session/
 **/*.key
 **/*.p12
 **/*.pfx
+
+# Export files (podem conter dados sensíveis)
+supabase-full-export.json
+*-export.json
+backup-*.json
+export-*.json
+data-export/
+exports/
