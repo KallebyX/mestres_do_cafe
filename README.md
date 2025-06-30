@@ -100,6 +100,33 @@ Um sistema completo de e-commerce para cafés especiais com **UX/UI de nível en
 - **ESLint & Prettier** - Qualidade de código
 - **Vitest** - Testes automatizados
 
+## 📁 Estrutura do Projeto
+
+```
+mestres_do_cafe/
+├── 📚 documentation/           # Documentação técnica organizada
+│   ├── guides/                # Guias e tutoriais
+│   ├── status/                # Status e relatórios
+│   ├── technical/             # Documentação técnica
+│   └── migrations/            # Migrações e atualizações
+├── 🌐 src/                    # Código fonte principal
+│   ├── components/            # Componentes React
+│   ├── pages/                 # Páginas da aplicação
+│   ├── contexts/              # Contextos React
+│   ├── lib/                   # Bibliotecas e APIs
+│   └── hooks/                 # Custom hooks
+├── 🖼️ public/                # Arquivos públicos
+│   ├── images/                # Imagens organizadas
+│   │   ├── products/          # Imagens dos produtos
+│   │   └── README.md          # Guia de imagens
+│   └── assets/                # Assets diversos
+├── 🗄️ database/              # Scripts de banco de dados
+├── 🧪 tests/                 # Testes automatizados
+├── 📦 scripts/               # Scripts utilitários
+├── 🖥️ server/                # Servidor backend
+└── 📊 docs/                  # Documentação adicional
+```
+
 ## 🎯 Funcionalidades do Sistema
 
 ### **Para Usuários**
@@ -172,12 +199,29 @@ EMAIL_API_KEY=sua_chave_email
 ### **Desenvolvimento**
 - **Frontend**: http://localhost:5174
 - **Backend**: http://localhost:3001
-- **Documentação**: http://localhost:5174/docs
+- **Documentação**: [./documentation/](./documentation/)
 
 ### **Produção**
 - **Site Principal**: https://mestres-do-cafe.netlify.app
 - **Admin Dashboard**: https://mestres-do-cafe.netlify.app/admin
 - **API**: https://api.mestres-do-cafe.com
+
+## 📚 Documentação Técnica
+
+### **📖 Guias Principais**
+- [📊 Status Final do Projeto](./documentation/status/PROJETO_FINAL_STATUS.md)
+- [🌙 Correções do Tema Escuro](./documentation/technical/TEMA_ESCURO_FIXES.md)
+- [📧 Sistema de Newsletter](./documentation/guides/NEWSLETTER_SYSTEM_GUIDE.md)
+- [🗄️ Guia do Supabase](./documentation/guides/SUPABASE_100_PERCENT_GUIDE.md)
+
+### **🔧 Técnico**
+- [🛒 Correções do Carrinho](./documentation/technical/CART_SYSTEM_FIXES.md)
+- [🗄️ Banco de Dados](./documentation/technical/SUPABASE_DATABASE_README.md)
+- [📊 Testes Finais](./documentation/status/TEST_RESULTS_FINAL.md)
+
+### **🚀 Deploy**
+- [📤 Guia de Exportação](./documentation/guides/EXPORT_GUIDE.md)
+- [🔄 Migrações](./documentation/migrations/)
 
 ## 🎨 Design System
 
@@ -216,6 +260,7 @@ EMAIL_API_KEY=sua_chave_email
 - [x] Sistema de autenticação
 - [x] Integração com Supabase
 - [x] Deploy automatizado
+- [x] Estrutura organizada
 
 ### **🎯 Métricas de Qualidade**
 - **Performance**: 95+ no Lighthouse
@@ -223,6 +268,7 @@ EMAIL_API_KEY=sua_chave_email
 - **SEO**: Otimizado para buscadores
 - **PWA**: Progressive Web App ready
 - **Testes**: 85%+ de cobertura
+- **Organização**: Estrutura profissional
 
 ## 🤝 Contribuição
 
@@ -246,6 +292,7 @@ Este projeto está sob a licença MIT. Veja o arquivo [LICENSE](LICENSE) para ma
 - 📧 **Sistema de marketing** automatizado
 - 🔒 **Segurança enterprise** com RLS
 - ⚡ **Performance otimizada** para produção
+- 📁 **Estrutura profissional** organizada
 
 ---
 
