@@ -5,6 +5,8 @@ import { useAuth } from '../contexts/AuthContext';
 import { useCart } from '../contexts/CartContext';
 import { Header } from '../components/Header';
 import { Footer } from '../components/Footer';
+import { getById, getFiltered } from '../lib/supabaseClient';
+import { FullScreenLoading, ErrorMessage, useDataState } from '../components/LoadingStates';
 
 const ProductPage = () => {
   const { id } = useParams();
@@ -12,190 +14,93 @@ const ProductPage = () => {
   const { user: _user } = useAuth();
   const { addToCart } = useCart();
   
-  const [product, setProduct] = useState(null);
-  const [loading, setLoading] = useState(true);
   const [quantity, setQuantity] = useState(1);
   const [activeImageIndex, setActiveImageIndex] = useState(0);
   const [isFavorite, setIsFavorite] = useState(false);
-  const [relatedProducts, setRelatedProducts] = useState([]);
+
+  // Estados gerenciados pelos hooks customizados
+  const {
+    data: product,
+    loading: productLoading,
+    error: productError,
+    execute: loadProduct
+  } = useDataState(null);
+
+  const {
+    data: relatedProducts,
+    loading: relatedLoading,
+    execute: loadRelatedProducts
+  } = useDataState([]);
 
   useEffect(() => {
-    loadProduct();
-    loadRelatedProducts();
-  }, [id]); // eslint-disable-line react-hooks/exhaustive-deps
+    if (id) {
+      loadProductData();
+      loadRelatedProductsData();
+    }
+  }, [id]);
 
-  const loadProduct = async () => {
-    try {
-      const response = await fetch(`http://localhost:5000/api/products/${id}`);
-      const data = await response.json();
+  const loadProductData = async () => {
+    await loadProduct(async () => {
+      // Usar helper genérico para buscar produto
+      const response = await getById('products', id);
       
-      if (response.ok) {
-        setProduct(data.product);
+      if (response.success && response.data) {
+        console.log('✅ Produto carregado:', response.data.name);
+        return response.data;
       } else {
-        // Fallback para produto mockado
-        const mockProduct = getMockProductById(id);
-        setProduct(mockProduct);
+        throw new Error(response.error || 'Produto não encontrado');
       }
-    } catch (_error) {
-      console.error('Erro ao carregar produto:', _error);
-      const mockProduct = getMockProductById(id);
-      setProduct(mockProduct);
-    } finally {
-      setLoading(false);
-    }
+    });
   };
 
-  const loadRelatedProducts = async () => {
-    try {
-      const response = await fetch('http://localhost:5000/api/products');
-      const data = await response.json();
+  const loadRelatedProductsData = async () => {
+    await loadRelatedProducts(async () => {
+      // Primeiro buscar o produto atual para obter sua categoria
+      const currentProduct = await getById('products', id);
       
-      if (response.ok) {
-        const related = data.products?.filter(p => p.id !== id).slice(0, 4) || [];
-        setRelatedProducts(related);
-      } else {
-        const mockProducts = getMockProducts().filter(p => p.id !== id).slice(0, 4);
-        setRelatedProducts(mockProducts);
+      if (currentProduct.success && currentProduct.data) {
+        // Buscar produtos relacionados da mesma categoria
+        const response = await getFiltered('products', 
+          { 
+            category: currentProduct.data.category,
+            is_active: true 
+          },
+          { 
+            limit: 5, // Pegar 5 para depois filtrar o atual
+            orderBy: 'sca_score', 
+            ascending: false 
+          }
+        );
+        
+        if (response.success && response.data) {
+          // Filtrar produto atual e pegar apenas 4
+          const related = response.data
+            .filter(p => p.id !== parseInt(id))
+            .slice(0, 4);
+          
+          console.log('✅ Produtos relacionados carregados:', related.length);
+          return related;
+        }
       }
-    } catch (_error) { // eslint-disable-line no-unused-vars
-      const mockProducts = getMockProducts().filter(p => p.id !== id).slice(0, 4);
-      setRelatedProducts(mockProducts);
-    }
+      
+      // Fallback: buscar produtos aleatórios se não conseguir da categoria
+      const fallbackResponse = await getFiltered('products', 
+        { is_active: true }, 
+        { limit: 5, orderBy: 'created_at', ascending: false }
+      );
+      
+      if (fallbackResponse.success) {
+        const fallback = fallbackResponse.data
+          .filter(p => p.id !== parseInt(id))
+          .slice(0, 4);
+        return fallback;
+      }
+      
+      return [];
+    });
   };
 
-  const getMockProductById = (productId) => {
-    const products = getMockProducts();
-    return products.find(p => p.id === productId) || null;
-  };
 
-  const getMockProducts = () => [
-    {
-      id: '1',
-      name: 'Café Bourbon Amarelo Premium',
-      description: 'Café especial da região do Cerrado Mineiro com notas intensas de chocolate e caramelo. Cultivado em altitude de 1.200 metros, este café passou por um processo de secagem natural que intensifica seus sabores únicos.',
-      detailed_description: 'O Café Bourbon Amarelo Premium é uma verdadeira obra-prima da cafeicultura brasileira. Cultivado nas terras férteis do Cerrado Mineiro, em altitudes que variam entre 1.000 e 1.200 metros, este café especial representa o que há de melhor na tradição cafeeira nacional.\n\nAs plantas da variedade Bourbon Amarelo, conhecidas por sua baixa produtividade mas alta qualidade, são cultivadas sob condições climáticas ideais. O processo de secagem natural, realizado em terreiros suspensos, permite que os grãos desenvolvam uma complexidade sensorial excepcional.\n\nCom pontuação SCAA de 86 pontos, este café oferece um perfil sensorial rico e equilibrado, perfeito para os amantes de cafés especiais que buscam uma experiência única a cada xícara.',
-      price: 45.90,
-      original_price: 52.90,
-      origin: 'Cerrado Mineiro, MG',
-      roast_level: 'Médio',
-      flavor_notes: 'Chocolate, Caramelo, Nozes',
-      category: 'especial',
-      stock_quantity: 50,
-      rating: 4.8,
-      reviews_count: 127,
-      is_featured: true,
-      is_active: true,
-      weight: '500g',
-      roast_date: '2024-01-15',
-      altitude: '1.000-1.200m',
-      variety: 'Bourbon Amarelo',
-      process: 'Natural',
-      scaa_score: 86,
-      farm: 'Fazenda São Bento',
-      farmer: 'João Carlos Silva',
-      harvest_year: '2023',
-      certifications: ['UTZ Certified', 'Rainforest Alliance'],
-      brewing_methods: ['Espresso', 'Filtrado', 'Prensa Francesa', 'Aeropress'],
-      images: [
-        '/api/placeholder/600/600',
-        '/api/placeholder/600/600',
-        '/api/placeholder/600/600'
-      ]
-    },
-    {
-      id: '2',
-      name: 'Café Geisha Especial',
-      description: 'Variedade Geisha cultivada nas montanhas do Sul de Minas com perfil floral único.',
-      detailed_description: 'O Café Geisha Especial é considerado uma das variedades mais nobres do mundo. Originária da Etiópia e cultivada com extremo cuidado nas montanhas do Sul de Minas, esta variedade rara oferece uma experiência sensorial incomparável.',
-      price: 89.90,
-      original_price: 105.90,
-      origin: 'Sul de Minas, MG',
-      roast_level: 'Claro',
-      flavor_notes: 'Floral, Cítrico, Bergamota',
-      category: 'premium',
-      stock_quantity: 25,
-      rating: 4.9,
-      reviews_count: 89,
-      is_featured: true,
-      is_active: true,
-      weight: '250g',
-      scaa_score: 92,
-      images: ['/api/placeholder/600/600']
-    },
-    {
-      id: '3',
-      name: 'Café Arábica Torrado Artesanal',
-      description: 'Blend exclusivo de grãos selecionados com torra artesanal para um sabor equilibrado.',
-      detailed_description: 'Nosso Café Arábica Torrado Artesanal é um blend cuidadosamente elaborado que combina grãos de diferentes regiões para criar uma experiência harmoniosa e equilibrada.',
-      price: 32.90,
-      original_price: 38.90,
-      origin: 'Mogiana, SP',
-      roast_level: 'Médio-Escuro',
-      flavor_notes: 'Chocolate Amargo, Baunilha',
-      category: 'tradicional',
-      stock_quantity: 80,
-      rating: 4.6,
-      reviews_count: 156,
-      is_featured: false,
-      is_active: true,
-      weight: '500g',
-      images: ['/api/placeholder/600/600']
-    },
-    {
-      id: '4',
-      name: 'Café Fazenda Santa Helena',
-      description: 'Café especial com certificação orgânica, cultivado de forma sustentável.',
-      price: 67.90,
-      original_price: 75.90,
-      origin: 'Alta Mogiana, SP',
-      roast_level: 'Médio',
-      flavor_notes: 'Frutas Vermelhas, Chocolate',
-      category: 'especial',
-      stock_quantity: 35,
-      rating: 4.7,
-      reviews_count: 93,
-      is_featured: true,
-      is_active: true,
-      weight: '500g',
-      images: ['/api/placeholder/600/600']
-    },
-    {
-      id: '5',
-      name: 'Café Tradicional Supremo',
-      description: 'Blend tradicional perfeito para o dia a dia, com sabor equilibrado e suave.',
-      price: 28.90,
-      original_price: 32.90,
-      origin: 'Sul de Minas, MG',
-      roast_level: 'Médio-Escuro',
-      flavor_notes: 'Chocolate, Caramelo',
-      category: 'tradicional',
-      stock_quantity: 120,
-      rating: 4.4,
-      reviews_count: 203,
-      is_featured: false,
-      is_active: true,
-      weight: '500g',
-      images: ['/api/placeholder/600/600']
-    },
-    {
-      id: '6',
-      name: 'Café Microlote Especial',
-      description: 'Edição limitada de microlote especial com pontuação SCAA acima de 85 pontos.',
-      price: 120.90,
-      original_price: 135.90,
-      origin: 'Chapada Diamantina, BA',
-      roast_level: 'Claro',
-      flavor_notes: 'Frutas Tropicais, Floral, Mel',
-      category: 'premium',
-      stock_quantity: 15,
-      rating: 4.9,
-      reviews_count: 47,
-      is_featured: true,
-      is_active: true,
-      weight: '250g',
-      images: ['/api/placeholder/600/600']
-    }
-  ];
 
   const handleAddToCart = () => {
     if (!product) return;
@@ -238,45 +143,62 @@ const ProductPage = () => {
     }
   };
 
-  if (loading) {
+  // Estados de loading e erro
+  if (productLoading) {
     return (
-      <div className="min-h-screen bg-coffee-white font-montserrat">
+      <>
         <Header />
-        <main className="flex items-center justify-center min-h-[80vh]">
-          <div className="text-center">
-            <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-coffee-gold mx-auto mb-4"></div>
-            <p className="text-coffee-gray text-lg">Carregando produto...</p>
-          </div>
-        </main>
+        <FullScreenLoading 
+          title="Carregando produto..."
+          subtitle="Buscando informações detalhadas do café especial"
+        />
         <Footer />
-      </div>
+      </>
+    );
+  }
+
+  if (productError) {
+    return (
+      <>
+        <Header />
+        <div className="min-h-screen bg-slate-50 py-20 flex items-center justify-center">
+          <ErrorMessage 
+            title="Erro ao carregar produto"
+            message={productError}
+            onRetry={loadProductData}
+          />
+        </div>
+        <Footer />
+      </>
     );
   }
 
   if (!product) {
     return (
-      <div className="min-h-screen bg-coffee-white font-montserrat">
+      <>
         <Header />
-        <main className="py-8">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="text-center py-16">
-              <div className="w-24 h-24 bg-coffee-cream rounded-full flex items-center justify-center mx-auto mb-8">
-                <Coffee className="w-12 h-12 text-coffee-gold" />
-              </div>
-              <h1 className="font-cormorant font-bold text-4xl text-coffee-intense mb-4">
-                Produto não encontrado
-              </h1>
-              <p className="text-coffee-gray mb-8">
-                O produto que você está procurando não foi encontrado.
-              </p>
-              <Link to="/marketplace" className="btn-primary px-8 py-3">
-                ← Voltar ao Marketplace
+        <div className="min-h-screen bg-slate-50 py-20 flex items-center justify-center">
+          <div className="text-center">
+            <div className="text-6xl mb-4">😞</div>
+            <h2 className="text-2xl font-bold text-slate-900 mb-2">Produto não encontrado</h2>
+            <p className="text-slate-600 mb-6">O produto que você procura não existe ou foi removido.</p>
+            <div className="flex gap-4 justify-center">
+              <button 
+                onClick={loadProductData}
+                className="bg-slate-600 hover:bg-slate-700 text-white font-medium py-3 px-6 rounded-xl transition-colors"
+              >
+                Tentar Novamente
+              </button>
+              <Link to="/marketplace">
+                <button className="bg-amber-600 hover:bg-amber-700 text-white font-medium py-3 px-6 rounded-xl transition-colors">
+                  Ver Todos os Produtos
+                </button>
               </Link>
             </div>
           </div>
-        </main>
+        </div>
         <Footer />
-      </div>
+      </>
     );
   }
 
@@ -625,4 +547,5 @@ const ProductPage = () => {
 };
 
 export default ProductPage;
+
 

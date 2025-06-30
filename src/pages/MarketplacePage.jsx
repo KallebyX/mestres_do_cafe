@@ -106,7 +106,7 @@ const MarketplacePage = () => {
 
   const handleAddToCart = async (product) => {
     try {
-      await addToCart(product.id, 1);
+      await addToCart(product, 1);
       alert(`${product.name} adicionado ao carrinho!`);
     } catch (error) {
       alert('Erro ao adicionar produto ao carrinho');

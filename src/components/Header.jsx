@@ -2,13 +2,17 @@ import React, { useState, useRef, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useSupabaseAuth } from '../contexts/SupabaseAuthContext';
 import { useCart } from '../contexts/CartContext';
+import { useTheme } from '../contexts/ThemeContext';
 import { Button } from './ui/button';
 import { Menu, X, ShoppingCart, User, LogOut, Settings, Shield } from 'lucide-react';
 import Logo from './Logo';
+import CartDropdown from './CartDropdown';
+import { ThemeToggleIcon } from './ThemeToggle';
 
 export const Header = () => {
   const { user, logout, profile } = useSupabaseAuth();
-  const { getCartCount, cart } = useCart();
+  const { getCartItemsCountSafe } = useCart();
+  const { isDark } = useTheme();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
   const userMenuRef = useRef(null);
@@ -83,9 +87,17 @@ export const Header = () => {
       className={cn(
         'sticky top-0 z-50 transition-all duration-300',
         isScrolled || isMenuOpen
-          ? 'bg-brand-light/95 backdrop-blur-sm shadow-lg border-b border-brand-brown/10'
-          : 'bg-brand-light/80 backdrop-blur-none shadow-none border-b border-transparent'
+          ? 'backdrop-blur-sm shadow-lg'
+          : 'backdrop-blur-none shadow-none'
       )}
+      style={{
+        backgroundColor: isScrolled || isMenuOpen 
+          ? 'var(--color-bg-secondary)' 
+          : 'var(--color-bg-primary)',
+        borderBottom: isScrolled || isMenuOpen 
+          ? '1px solid var(--color-border-primary)' 
+          : '1px solid transparent'
+      }}
     >
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between h-16 md:h-20">
@@ -101,15 +113,19 @@ export const Header = () => {
                 to={item.href}
                 className={cn(
                   'text-sm font-medium transition-colors duration-200 relative group',
-                  isActive(item.href) ? 'text-brand-brown' : 'text-brand-dark hover:text-brand-brown'
+                  isActive(item.href) ? 'text-[var(--color-accent-primary)]' : 'hover:text-[var(--color-accent-primary)]'
                 )}
+                style={{
+                  color: isActive(item.href) ? 'var(--color-accent-primary)' : 'var(--color-text-primary)'
+                }}
               >
                 {item.label}
                 <span
                   className={cn(
-                    'absolute -bottom-1 left-0 h-[2px] bg-brand-brown transition-all duration-300',
+                    'absolute -bottom-1 left-0 h-[2px] transition-all duration-300',
                     isActive(item.href) ? 'w-full' : 'w-0 group-hover:w-full'
                   )}
+                  style={{ backgroundColor: 'var(--color-accent-primary)' }}
                   aria-hidden="true"
                 ></span>
               </Link>
@@ -117,30 +133,35 @@ export const Header = () => {
           </nav>
 
           <div className="flex items-center space-x-2">
-            <Link to="/carrinho">
-              <button
-                className="text-brand-dark hover:text-brand-brown hover:bg-brand-brown/10 hidden lg:inline-flex relative p-2 rounded-md transition-colors"
-                aria-label="Carrinho de Compras"
-              >
-                <ShoppingCart className="w-5 h-5" />
-                {cart && cart.length > 0 && (
-                  <span className="absolute -top-1 -right-1 bg-brand-brown text-white text-xs rounded-full w-5 h-5 flex items-center justify-center font-medium">
-                    {cart.length}
-                  </span>
-                )}
-              </button>
-            </Link>
+            {/* Theme Toggle */}
+            <ThemeToggleIcon size="md" className="mr-1" />
+            
+            {/* Desktop Cart Dropdown */}
+            <div className="hidden lg:block">
+              <CartDropdown />
+            </div>
             
             {!isLoggedIn ? (
               <div className="hidden lg:flex items-center space-x-1">
                 <Link to="/login">
-                  <button className="text-brand-dark hover:text-brand-brown hover:bg-brand-brown/10 px-3 py-2 text-sm rounded-md transition-colors">
+                  <button 
+                    className="px-3 py-2 text-sm rounded-md transition-colors theme-btn-secondary"
+                    style={{
+                      color: 'var(--color-text-primary)'
+                    }}
+                  >
                     Entrar
                   </button>
                 </Link>
-                <span className="text-brand-dark/30 hidden md:inline" aria-hidden="true">|</span>
+                <span className="hidden md:inline" style={{ color: 'var(--color-text-muted)' }}>|</span>
                 <Link to="/registro">
-                  <button className="bg-brand-brown hover:bg-brand-brown/90 text-brand-light px-3 py-2 text-sm shadow-md hover:shadow-lg transition-all rounded-md">
+                  <button 
+                    className="px-3 py-2 text-sm shadow-md hover:shadow-lg transition-all rounded-md"
+                    style={{
+                      backgroundColor: 'var(--color-accent-primary)',
+                      color: 'var(--color-text-inverse)'
+                    }}
+                  >
                     Cadastrar
                   </button>
                 </Link>
@@ -277,20 +298,36 @@ export const Header = () => {
               </div>
             )}
             
+            {/* Mobile Cart Link */}
             <Link to="/carrinho">
               <button
-                className="text-brand-dark hover:text-brand-brown hover:bg-brand-brown/10 flex items-center justify-start w-full mt-2 py-2.5 px-3 text-base rounded-md transition-colors"
+                className="flex items-center justify-start w-full mt-2 py-2.5 px-3 text-base rounded-md transition-colors theme-btn-secondary"
                 onClick={() => setIsMenuOpen(false)}
+                style={{ color: 'var(--color-text-primary)' }}
               >
                 <ShoppingCart className="w-5 h-5 mr-2" />
                 Carrinho
-                {cart && cart.length > 0 && (
-                  <span className="ml-auto bg-brand-brown text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
-                    {cart.length}
+                {getCartItemsCountSafe() > 0 && (
+                  <span 
+                    className="ml-auto text-xs rounded-full w-5 h-5 flex items-center justify-center"
+                    style={{
+                      backgroundColor: 'var(--color-accent-primary)',
+                      color: 'var(--color-text-inverse)'
+                    }}
+                  >
+                    {getCartItemsCountSafe()}
                   </span>
                 )}
               </button>
             </Link>
+            
+            {/* Mobile Theme Toggle */}
+            <div className="flex items-center justify-between w-full mt-2 py-2.5 px-3">
+              <span style={{ color: 'var(--color-text-primary)' }} className="text-base">
+                Tema
+              </span>
+              <ThemeToggleIcon size="md" />
+            </div>
           </nav>
         </div>
       </div>

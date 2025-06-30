@@ -69,7 +69,7 @@ const ProductDetailPage = () => {
 
   const handleAddToCart = async () => {
     try {
-      await addToCart(product.id, quantity);
+      await addToCart(product, quantity);
       alert(`${quantity}x ${product.name} adicionado ao carrinho!`);
     } catch (error) {
       alert('Erro ao adicionar produto ao carrinho');
