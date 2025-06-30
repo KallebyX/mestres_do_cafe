@@ -1,9 +1,15 @@
 version: '3.8'
 
+# 🐳 Docker Compose - Mestres do Café Production Ready
+# Sistema completo com estrutura enterprise organizada
+# Inclui toda a documentação e scripts organizados
+
 services:
-  # Aplicação principal (Frontend + Backend unificado)
+  # Aplicação principal (Frontend + Backend unificado + Estrutura Enterprise)
   mestres-cafe:
-    build: .
+    build: 
+      context: .
+      dockerfile: Dockerfile
     container_name: mestres-cafe-app
     ports:
       - "5000:5000"
@@ -12,22 +18,44 @@ services:
       - PORT=5000
       - JWT_SECRET=mestres_cafe_jwt_secret_super_seguro_2025
       - CORS_ORIGIN=http://localhost:5000
+      # Configurações do sistema organizado
+      - DOCS_PATH=/app/documentation
+      - SCRIPTS_PATH=/app/scripts
+      - PUBLIC_IMAGES_PATH=/app/public/images
     volumes:
       # Persistir dados do WhatsApp
       - whatsapp_data:/app/whatsapp-session
       # Persistir dados do servidor
       - server_data:/app/server/data
+      # Persistir logs da aplicação
+      - app_logs:/app/logs
+      # Persistir uploads de imagens
+      - uploads_data:/app/public/uploads
+      # Bind mount para desenvolvimento (comentado para produção)
+      # - ./documentation:/app/documentation:ro
+      # - ./public/images:/app/public/images:ro
     restart: unless-stopped
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:5000/health"]
+      test: ["CMD", "node", "-e", "require('http').get('http://localhost:5000/health', (res) => process.exit(res.statusCode === 200 ? 0 : 1)).on('error', () => process.exit(1))"]
       interval: 30s
       timeout: 10s
       retries: 3
       start_period: 40s
     networks:
       - mestres-network
+    depends_on:
+      - postgres
+      - redis
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+          cpus: '0.5'
+        reservations:
+          memory: 512M
+          cpus: '0.25'
 
-  # Banco de dados PostgreSQL (opcional para desenvolvimento local)
+  # Banco de dados PostgreSQL - Estrutura Enterprise
   postgres:
     image: postgres:15-alpine
     container_name: mestres-cafe-db
@@ -35,19 +63,29 @@ services:
       - POSTGRES_DB=mestres_cafe
       - POSTGRES_USER=mestres
       - POSTGRES_PASSWORD=cafe123
+      - POSTGRES_INITDB_ARGS=--encoding=UTF-8 --lc-collate=C --lc-ctype=C
     volumes:
       - postgres_data:/var/lib/postgresql/data
-      - ./server/database/init.sql:/docker-entrypoint-initdb.d/init.sql
+      # Scripts de inicialização organizados
+      - ./database/supabase-setup-completo.sql:/docker-entrypoint-initdb.d/01-setup.sql:ro
+      - ./database/blog-functions.sql:/docker-entrypoint-initdb.d/02-blog.sql:ro
+      - postgres_backups:/var/backups
     ports:
       - "5432:5432"
     restart: unless-stopped
     networks:
       - mestres-network
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+          cpus: '0.3'
 
-  # Redis para cache (opcional)
+  # Redis para cache e sessões
   redis:
     image: redis:7-alpine
     container_name: mestres-cafe-redis
+    command: redis-server --appendonly yes --requirepass cafe123redis
     ports:
       - "6379:6379"
     volumes:
@@ -55,8 +93,13 @@ services:
     restart: unless-stopped
     networks:
       - mestres-network
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+          cpus: '0.2'
 
-  # Nginx para proxy reverso em produção (opcional)
+  # Nginx para proxy reverso em produção
   nginx:
     image: nginx:alpine
     container_name: mestres-cafe-nginx
@@ -66,6 +109,7 @@ services:
     volumes:
       - ./nginx.conf:/etc/nginx/nginx.conf:ro
       - ./ssl:/etc/nginx/ssl:ro
+      - nginx_logs:/var/log/nginx
     depends_on:
       - mestres-cafe
     restart: unless-stopped
@@ -73,18 +117,82 @@ services:
       - mestres-network
     profiles:
       - production
+    deploy:
+      resources:
+        limits:
+          memory: 128M
+          cpus: '0.1'
+
+  # Backup service para dados críticos
+  backup:
+    image: postgres:15-alpine
+    container_name: mestres-cafe-backup
+    environment:
+      - PGPASSWORD=cafe123
+    volumes:
+      - postgres_backups:/backups
+      - ./scripts:/scripts:ro
+    command: >
+      sh -c "
+        while true; do
+          sleep 3600;
+          pg_dump -h postgres -U mestres -d mestres_cafe > /backups/backup_$$(date +%Y%m%d_%H%M%S).sql;
+          find /backups -name '*.sql' -mtime +7 -delete;
+        done
+      "
+    depends_on:
+      - postgres
+    restart: unless-stopped
+    networks:
+      - mestres-network
+    profiles:
+      - production
 
 volumes:
+  # Volume para dados do PostgreSQL
   postgres_data:
     driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ./data/postgres
+  
+  # Volume para backups
+  postgres_backups:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ./data/backups
+  
+  # Volume para cache Redis
   redis_data:
     driver: local
+  
+  # Volume para sessão WhatsApp
   whatsapp_data:
     driver: local
+  
+  # Volume para dados do servidor
   server_data:
+    driver: local
+  
+  # Volume para logs da aplicação
+  app_logs:
+    driver: local
+  
+  # Volume para uploads de usuários
+  uploads_data:
+    driver: local
+  
+  # Volume para logs do Nginx
+  nginx_logs:
     driver: local
 
 networks:
   mestres-network:
     driver: bridge
-    name: mestres-cafe-network 
+    name: mestres-cafe-network
+    ipam:
+      config:
+        - subnet: 172.20.0.0/16 
