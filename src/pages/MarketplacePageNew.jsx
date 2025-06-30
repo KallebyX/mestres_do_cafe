@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { Search, Filter, Plus, Edit3, Trash2, ShoppingCart, Star, Coffee } from 'lucide-react';
+import { getAllProducts } from '../lib/supabase-products';
 
 const MarketplacePageNew = () => {
   const [products, setProducts] = useState([]);
@@ -37,71 +38,25 @@ const MarketplacePageNew = () => {
 
   const loadProducts = useCallback(async () => {
     try {
-      const response = await fetch('http://localhost:5000/api/products');
-      const data = await response.json();
+      // Usar API do Supabase para carregar produtos
+      const response = await getAllProducts();
       
-      if (response.ok) {
-        setProducts(data.products || []);
+      if (response.success && response.data) {
+        setProducts(response.data);
+        console.log('✅ Produtos carregados do Supabase:', response.data.length);
       } else {
-        console.error('Erro ao carregar produtos:', data.error);
-        // Fallback para produtos mockados
-        setProducts(getMockProducts());
+        console.error('❌ Erro ao carregar produtos do Supabase:', response.error);
+        setProducts([]);
       }
     } catch (error) {
-      console.error('Erro ao carregar produtos:', error);
-      setProducts(getMockProducts());
+      console.error('❌ Erro ao carregar produtos:', error);
+      setProducts([]);
     } finally {
       setLoading(false);
     }
   }, []);
 
-  const getMockProducts = () => [
-    {
-      id: '1',
-      name: 'Café Bourbon Amarelo Premium',
-      description: 'Café especial da região do Cerrado Mineiro com notas intensas de chocolate e caramelo.',
-      price: 45.90,
-      original_price: 52.90,
-      origin: 'Cerrado Mineiro, MG',
-      roast_level: 'Médio',
-      flavor_notes: 'Chocolate, Caramelo, Nozes',
-      category: 'especial',
-      stock_quantity: 50,
-      rating: 4.8,
-      is_featured: true,
-      is_active: true
-    },
-    {
-      id: '2',
-      name: 'Café Geisha Especial',
-      description: 'Variedade Geisha cultivada nas montanhas do Sul de Minas com perfil floral único.',
-      price: 89.90,
-      original_price: 105.90,
-      origin: 'Sul de Minas, MG',
-      roast_level: 'Claro',
-      flavor_notes: 'Floral, Cítrico, Bergamota',
-      category: 'premium',
-      stock_quantity: 25,
-      rating: 4.9,
-      is_featured: true,
-      is_active: true
-    },
-    {
-      id: '3',
-      name: 'Café Arábica Torrado Artesanal',
-      description: 'Blend exclusivo de grãos selecionados com torra artesanal para um sabor equilibrado.',
-      price: 32.90,
-      original_price: 38.90,
-      origin: 'Mogiana, SP',
-      roast_level: 'Médio-Escuro',
-      flavor_notes: 'Chocolate Amargo, Baunilha',
-      category: 'tradicional',
-      stock_quantity: 80,
-      rating: 4.6,
-      is_featured: false,
-      is_active: true
-    }
-  ];
+
 
   const filterProducts = useCallback(() => {
     let filtered = [...products];

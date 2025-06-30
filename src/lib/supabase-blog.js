@@ -44,6 +44,28 @@ export const getBlogPostById = async (id) => {
   }
 };
 
+// Buscar post por slug
+export const getBlogPostBySlug = async (slug) => {
+  try {
+    const { data, error } = await supabase
+      .from('blog_posts')
+      .select('*')
+      .eq('slug', slug)
+      .eq('status', 'published')
+      .single();
+
+    if (error) {
+      console.error('Erro ao buscar post por slug:', error);
+      return { success: false, error: error.message, data: null };
+    }
+
+    return { success: true, data };
+  } catch (error) {
+    console.error('Erro ao buscar post por slug:', error);
+    return { success: false, error: error.message, data: null };
+  }
+};
+
 // Buscar posts por categoria
 export const getBlogPostsByCategory = async (category, limit = 10, offset = 0) => {
   try {
@@ -225,6 +247,193 @@ export const incrementPostViews = async (id) => {
     }
   } catch (error) {
     console.error('Erro ao incrementar visualizações:', error);
+  }
+};
+
+// FUNCIONALIDADES DE INTERAÇÃO SOCIAL
+
+// Curtir/descurtir post
+export const togglePostLike = async (postId, userId) => {
+  try {
+    // Verificar se já curtiu
+    const { data: existingLike, error: checkError } = await supabase
+      .from('blog_likes')
+      .select('id')
+      .eq('post_id', postId)
+      .eq('user_id', userId)
+      .single();
+
+    if (checkError && checkError.code !== 'PGRST116') {
+      console.error('Erro ao verificar like:', checkError);
+      return { success: false, error: checkError.message };
+    }
+
+    if (existingLike) {
+      // Remover like
+      const { error: deleteError } = await supabase
+        .from('blog_likes')
+        .delete()
+        .eq('post_id', postId)
+        .eq('user_id', userId);
+
+      if (deleteError) {
+        console.error('Erro ao remover like:', deleteError);
+        return { success: false, error: deleteError.message };
+      }
+
+      // O contador será atualizado automaticamente pelo trigger
+
+      return { success: true, liked: false, message: 'Like removido!' };
+    } else {
+      // Adicionar like
+      const { error: insertError } = await supabase
+        .from('blog_likes')
+        .insert([{ post_id: postId, user_id: userId }]);
+
+      if (insertError) {
+        console.error('Erro ao adicionar like:', insertError);
+        return { success: false, error: insertError.message };
+      }
+
+      // O contador será atualizado automaticamente pelo trigger
+
+      return { success: true, liked: true, message: 'Post curtido!' };
+    }
+  } catch (error) {
+    console.error('Erro ao curtir/descurtir post:', error);
+    return { success: false, error: error.message };
+  }
+};
+
+// Verificar se usuário curtiu o post
+export const checkUserLiked = async (postId, userId) => {
+  try {
+    const { data, error } = await supabase
+      .from('blog_likes')
+      .select('id')
+      .eq('post_id', postId)
+      .eq('user_id', userId)
+      .single();
+
+    if (error && error.code !== 'PGRST116') {
+      console.error('Erro ao verificar like:', error);
+      return { success: false, error: error.message, liked: false };
+    }
+
+    return { success: true, liked: !!data };
+  } catch (error) {
+    console.error('Erro ao verificar like:', error);
+    return { success: false, error: error.message, liked: false };
+  }
+};
+
+// Adicionar comentário
+export const addComment = async (postId, userId, content, userName) => {
+  try {
+    const { data, error } = await supabase
+      .from('blog_comments')
+      .insert([{
+        post_id: postId,
+        user_id: userId,
+        content: content,
+        user_name: userName
+      }])
+      .select()
+      .single();
+
+    if (error) {
+      console.error('Erro ao adicionar comentário:', error);
+      return { success: false, error: error.message };
+    }
+
+    // O contador será atualizado automaticamente pelo trigger
+
+    return { success: true, data, message: 'Comentário adicionado!' };
+  } catch (error) {
+    console.error('Erro ao adicionar comentário:', error);
+    return { success: false, error: error.message };
+  }
+};
+
+// Buscar comentários do post
+export const getPostComments = async (postId) => {
+  try {
+    const { data, error } = await supabase
+      .from('blog_comments')
+      .select('*')
+      .eq('post_id', postId)
+      .order('created_at', { ascending: false });
+
+    if (error) {
+      console.error('Erro ao buscar comentários:', error);
+      return { success: false, error: error.message, data: [] };
+    }
+
+    return { success: true, data: data || [] };
+  } catch (error) {
+    console.error('Erro ao buscar comentários:', error);
+    return { success: false, error: error.message, data: [] };
+  }
+};
+
+// Remover comentário (apenas o autor ou admin)
+export const deleteComment = async (commentId, userId) => {
+  try {
+    // Buscar o comentário para verificar se é do usuário
+    const { data: comment, error: fetchError } = await supabase
+      .from('blog_comments')
+      .select('user_id, post_id')
+      .eq('id', commentId)
+      .single();
+
+    if (fetchError) {
+      console.error('Erro ao buscar comentário:', fetchError);
+      return { success: false, error: fetchError.message };
+    }
+
+    // Verificar se é o autor do comentário
+    if (comment.user_id !== userId) {
+      return { success: false, error: 'Você só pode deletar seus próprios comentários' };
+    }
+
+    const { error } = await supabase
+      .from('blog_comments')
+      .delete()
+      .eq('id', commentId);
+
+    if (error) {
+      console.error('Erro ao deletar comentário:', error);
+      return { success: false, error: error.message };
+    }
+
+    // O contador será atualizado automaticamente pelo trigger
+
+    return { success: true, message: 'Comentário removido!' };
+  } catch (error) {
+    console.error('Erro ao deletar comentário:', error);
+    return { success: false, error: error.message };
+  }
+};
+
+// Registrar compartilhamento
+export const recordShare = async (postId, platform) => {
+  try {
+    const { error } = await supabase
+      .from('blog_shares')
+      .insert([{
+        post_id: postId,
+        platform: platform
+      }]);
+
+    if (error) {
+      console.error('Erro ao registrar compartilhamento:', error);
+      return { success: false, error: error.message };
+    }
+
+    return { success: true, message: 'Compartilhamento registrado!' };
+  } catch (error) {
+    console.error('Erro ao registrar compartilhamento:', error);
+    return { success: false, error: error.message };
   }
 };
 
