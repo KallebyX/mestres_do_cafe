@@ -4,6 +4,9 @@ const cors = require('cors');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const fs = require('fs');
+const rateLimit = require('express-rate-limit');
+const slowDown = require('express-slow-down');
+const helmet = require('helmet');
 
 // Importar serviços próprios (APIs gratuitas)
 const WhatsAppService = require('./services/WhatsAppService');
@@ -115,20 +118,103 @@ if (!fs.existsSync(DB_FILE)) {
   fs.writeFileSync(DB_FILE, JSON.stringify(initialData, null, 2));
 }
 
-// CORS - Configuração para produção e desenvolvimento
+// Secure CORS - Configuration for production and development
 const allowedOrigins = [
   'http://localhost:5173',
   'http://localhost:5174',
+  'http://localhost:3000',
   'https://mestres-cafe-frontend.onrender.com',
-  process.env.CORS_ORIGIN
+  process.env.CORS_ORIGIN,
+  process.env.FRONTEND_URL
 ].filter(Boolean);
 
 app.use(cors({
-  origin: allowedOrigins,
+  origin: function (origin, callback) {
+    // Allow requests with no origin (like mobile apps, curl, or same-origin)
+    if (!origin) return callback(null, true);
+    
+    // Check if the origin is in the allowed list
+    if (allowedOrigins.includes(origin)) {
+      return callback(null, true);
+    }
+    
+    // Allow specific Render.com domains for this project
+    if (origin.includes('.onrender.com') && origin.includes('mestres-cafe')) {
+      return callback(null, true);
+    }
+    
+    console.warn(`🚫 CORS blocked unauthorized origin: ${origin}`);
+    return callback(new Error('Not allowed by CORS policy'));
+  },
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization']
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
+  exposedHeaders: ['Content-Length', 'X-Foo', 'X-Bar'],
+  maxAge: 86400, // Cache preflight for 24 hours
+  preflightContinue: false,
+  optionsSuccessStatus: 204
 }));
+
+// Security middleware
+app.use(helmet({
+  contentSecurityPolicy: {
+    directives: {
+      defaultSrc: ["'self'"],
+      styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
+      fontSrc: ["'self'", "https://fonts.gstatic.com"],
+      imgSrc: ["'self'", "data:", "https:"],
+      scriptSrc: ["'self'"],
+      connectSrc: ["'self'", "https://api.mestrescafe.com"]
+    }
+  },
+  crossOriginEmbedderPolicy: false
+}));
+
+// Rate limiting for authentication endpoints
+const authLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 5, // Limit each IP to 5 auth requests per windowMs
+  message: {
+    error: 'Muitas tentativas de login. Tente novamente em 15 minutos.',
+    retryAfter: 15 * 60
+  },
+  standardHeaders: true,
+  legacyHeaders: false,
+  skip: (req) => {
+    // Skip rate limiting in test environment
+    return process.env.NODE_ENV === 'test';
+  }
+});
+
+// General API rate limiting
+const apiLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 100, // Limit each IP to 100 requests per windowMs
+  message: {
+    error: 'Muitas requisições. Tente novamente em 15 minutos.',
+    retryAfter: 15 * 60
+  },
+  standardHeaders: true,
+  legacyHeaders: false,
+  skip: (req) => {
+    return process.env.NODE_ENV === 'test';
+  }
+});
+
+// Speed limiter for all requests
+const speedLimiter = slowDown({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  delayAfter: 50, // Allow 50 requests per 15 minutes at full speed
+  delayMs: () => 500, // Add 500ms delay per request after delayAfter
+  maxDelayMs: 20000, // Maximum delay of 20 seconds
+  skip: (req) => {
+    return process.env.NODE_ENV === 'test';
+  }
+});
+
+// Apply rate limiting
+app.use('/api/', apiLimiter);
+app.use(speedLimiter);
 
 // Body parsing
 app.use(express.json({ limit: '10mb' }));
@@ -199,7 +285,7 @@ app.get('/api/health', (req, res) => {
 });
 
 // Register
-app.post('/api/auth/register', async (req, res) => {
+app.post('/api/auth/register', authLimiter, async (req, res) => {
   try {
     const { 
       name, 
@@ -315,7 +401,7 @@ app.post('/api/auth/register', async (req, res) => {
 });
 
 // Login
-app.post('/api/auth/login', async (req, res) => {
+app.post('/api/auth/login', authLimiter, async (req, res) => {
   try {
     const { email, password } = req.body;
 
@@ -330,7 +416,7 @@ app.post('/api/auth/login', async (req, res) => {
     if (user) {
       console.log('📧 LOGIN: Email do usuário:', user.email);
       console.log('✅ LOGIN: Status ativo:', user.is_active);
-      console.log('🔑 LOGIN: Hash da senha:', user.password ? 'EXISTE' : 'NÃO EXISTE');
+      console.log('🔑 LOGIN: Hash da senha disponível:', user.password ? 'SIM' : 'NÃO'); // Security fix: don't log hash presence details
     }
     if (!user) {
       console.log('❌ LOGIN: Usuário não encontrado');
@@ -373,7 +459,7 @@ app.post('/api/auth/login', async (req, res) => {
 });
 
 // Simplified login for demo - TEMPORARY
-app.post('/api/auth/demo-login', async (req, res) => {
+app.post('/api/auth/demo-login', authLimiter, async (req, res) => {
   try {
     const { email, password } = req.body;
 
@@ -423,61 +509,68 @@ app.post('/api/auth/demo-login', async (req, res) => {
   }
 });
 
-// Endpoint de teste para debugar
-app.post('/api/auth/debug-login', async (req, res) => {
-  try {
-    const { email, password } = req.body;
-    
-    console.log('🔍 DEBUG: Email recebido:', email);
-    console.log('🔍 DEBUG: Senha recebida:', password);
-    
-    // Testar readDB
-    const db = readDB();
-    console.log('📊 DEBUG: Total de usuários no banco:', db.users.length);
-    console.log('📧 DEBUG: Emails no banco:', db.users.map(u => u.email));
-    
-    // Buscar usuário
-    const user = findUser(email);
-    console.log('👤 DEBUG: Usuário encontrado:', user ? 'SIM' : 'NÃO');
-    
-    if (user) {
-      console.log('📧 DEBUG: Email do usuário:', user.email);
-      console.log('🔑 DEBUG: Tem senha:', !!user.password);
-      console.log('✅ DEBUG: Status ativo:', user.is_active);
+// Debug endpoint - only available in development
+if (process.env.NODE_ENV === 'development' || process.env.NODE_ENV === 'test') {
+  app.post('/api/auth/debug-login', authLimiter, async (req, res) => {
+    try {
+      const { email, password } = req.body;
       
-      // Testar senha
-      if (user.password) {
-        const isValid = await bcrypt.compare(password, user.password);
-        console.log('🔐 DEBUG: Senha válida:', isValid);
+      console.log('🔍 DEBUG: Email recebido:', email);
+      console.log('🔍 DEBUG: Senha recebida: [REDACTED]'); // Security fix: never log passwords
+      
+      // Testar readDB
+      const db = readDB();
+      console.log('📊 DEBUG: Total de usuários no banco:', db.users.length);
+      console.log('📧 DEBUG: Emails no banco:', db.users.map(u => u.email));
+      
+      // Buscar usuário
+      const user = findUser(email);
+      console.log('👤 DEBUG: Usuário encontrado:', user ? 'SIM' : 'NÃO');
+      
+      if (user) {
+        console.log('📧 DEBUG: Email do usuário:', user.email);
+        console.log('🔑 DEBUG: Tem senha:', !!user.password);
+        console.log('✅ DEBUG: Status ativo:', user.is_active);
         
-        return res.json({
-          success: true,
-          userFound: true,
-          hasPassword: !!user.password,
-          passwordValid: isValid,
-          isActive: user.is_active,
-          userDetails: {
-            id: user.id,
-            email: user.email,
-            user_type: user.user_type,
-            name: user.name
-          }
-        });
+        // Testar senha
+        if (user.password) {
+          const isValid = await bcrypt.compare(password, user.password);
+          console.log('🔐 DEBUG: Senha válida:', isValid);
+          
+          return res.json({
+            success: true,
+            userFound: true,
+            hasPassword: !!user.password,
+            passwordValid: isValid,
+            isActive: user.is_active,
+            userDetails: {
+              id: user.id,
+              email: user.email,
+              user_type: user.user_type,
+              name: user.name
+            }
+          });
+        }
       }
+      
+      res.json({
+        success: false,
+        userFound: !!user,
+        allUsers: db.users.length,
+        allEmails: db.users.map(u => u.email)
+      });
+      
+    } catch (error) {
+      console.error('❌ DEBUG ERROR:', error);
+      res.status(500).json({ error: error.message });
     }
-    
-    res.json({
-      success: false,
-      userFound: !!user,
-      allUsers: db.users.length,
-      allEmails: db.users.map(u => u.email)
-    });
-    
-  } catch (error) {
-    console.error('❌ DEBUG ERROR:', error);
-    res.status(500).json({ error: error.message });
-  }
-});
+  });
+} else {
+  // In production, return 404 for debug endpoints
+  app.post('/api/auth/debug-login', (req, res) => {
+    res.status(404).json({ error: 'Endpoint not available in production' });
+  });
+}
 
 // Verify token
 app.get('/api/auth/verify-token', authenticateToken, (req, res) => {

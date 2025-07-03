@@ -318,57 +318,64 @@ router.put('/profile', authenticateToken, [
   res.json({ message: 'Perfil atualizado com sucesso' });
 });
 
-// Endpoint de teste para debugar login
-router.post('/test-login', async (req, res) => {
-  try {
-    const { email, password } = req.body;
-    
-    console.log('🔍 TEST LOGIN - Email:', email);
-    console.log('🔍 TEST LOGIN - Password:', password);
-    
-    const database = readDB();
-    console.log('📊 Total users:', database.users.length);
-    
-    const allUsers = database.users.map(u => ({
-      id: u.id,
-      email: u.email,
-      user_type: u.user_type,
-      is_active: u.is_active
-    }));
-    console.log('👥 All users:', JSON.stringify(allUsers, null, 2));
-    
-    const user = database.users.find(u => u.email === email);
-    console.log('👤 User found by email:', user ? 'YES' : 'NO');
-    
-    if (user) {
-      console.log('🔑 Stored password hash:', user.password);
-      const passwordMatch = await bcrypt.compare(password, user.password);
-      console.log('🔐 Password matches:', passwordMatch);
+// Debug endpoint - only available in development/test
+if (process.env.NODE_ENV === 'development' || process.env.NODE_ENV === 'test') {
+  router.post('/test-login', async (req, res) => {
+    try {
+      const { email, password } = req.body;
       
-      return res.json({
-        success: true,
-        userFound: true,
-        passwordMatch,
-        userDetails: {
-          id: user.id,
-          email: user.email,
-          user_type: user.user_type,
-          is_active: user.is_active
-        }
+      console.log('🔍 TEST LOGIN - Email:', email);
+      console.log('🔍 TEST LOGIN - Password: [REDACTED]'); // Security fix: never log passwords
+      
+      const database = readDB();
+      console.log('📊 Total users:', database.users.length);
+      
+      const allUsers = database.users.map(u => ({
+        id: u.id,
+        email: u.email,
+        user_type: u.user_type,
+        is_active: u.is_active
+      }));
+      console.log('👥 All users:', JSON.stringify(allUsers, null, 2));
+      
+      const user = database.users.find(u => u.email === email);
+      console.log('👤 User found by email:', user ? 'YES' : 'NO');
+      
+      if (user) {
+        console.log('🔑 Password hash available:', !!user.password); // Security fix: don't log actual hash
+        const passwordMatch = await bcrypt.compare(password, user.password);
+        console.log('🔐 Password matches:', passwordMatch);
+        
+        return res.json({
+          success: true,
+          userFound: true,
+          passwordMatch,
+          userDetails: {
+            id: user.id,
+            email: user.email,
+            user_type: user.user_type,
+            is_active: user.is_active
+          }
+        });
+      }
+      
+      res.json({
+        success: false,
+        userFound: false,
+        passwordMatch: false,
+        allEmails: database.users.map(u => u.email)
       });
+      
+    } catch (error) {
+      console.error('❌ Test login error:', error);
+      res.status(500).json({ error: error.message });
     }
-    
-    res.json({
-      success: false,
-      userFound: false,
-      passwordMatch: false,
-      allEmails: database.users.map(u => u.email)
-    });
-    
-  } catch (error) {
-    console.error('❌ Test login error:', error);
-    res.status(500).json({ error: error.message });
-  }
-});
+  });
+} else {
+  // In production, return 404 for debug endpoints
+  router.post('/test-login', (req, res) => {
+    res.status(404).json({ error: 'Debug endpoint not available in production' });
+  });
+}
 
 module.exports = router; 
