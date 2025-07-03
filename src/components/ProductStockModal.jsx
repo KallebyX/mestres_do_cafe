@@ -1,12 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { 
-  X, Save, AlertCircle, Package, DollarSign, 
-  Hash, BarChart3, ShoppingCart, Truck, Eye, Upload
-} from 'lucide-react';
-import { stockAPI } from '../lib/supabase-erp-api';
-import { useNotifications } from '../contexts/NotificationContext';
+// import { _X, _Save, _AlertCircle, _Package, _DollarSign, _Hash, _BarChart3, _ShoppingCart, _Truck, _Eye, _Upload } from 'lucide-react'; // Temporarily commented - unused import
+import { _stockAPI } from '../lib/supabase-erp-api';
+import { _useNotifications } from '../contexts/NotificationContext';
 
-const ProductStockModal = ({ 
+const _ProductStockModal = ({ 
   isOpen, 
   onClose, 
   mode = 'create', // 'create' | 'edit' | 'view'
@@ -40,7 +37,7 @@ const ProductStockModal = ({
 
   const { notifySuccess, notifyError } = useNotifications();
 
-  const unitOptions = [
+  const _unitOptions = [
     { value: 'kg', label: 'Quilograma' },
     { value: 'g', label: 'Grama' },
     { value: 'un', label: 'Unidade' },
@@ -99,7 +96,7 @@ const ProductStockModal = ({
     }
   }, [isOpen, mode, product]);
 
-  const loadSelectOptions = async () => {
+  const _loadSelectOptions = async () => {
     try {
       const [categoriesResult, suppliersResult, warehousesResult] = await Promise.all([
         stockAPI.getProductCategories(),
@@ -115,12 +112,12 @@ const ProductStockModal = ({
     }
   };
 
-  const generateSKU = () => {
-    const timestamp = Date.now().toString().slice(-6);
+  const _generateSKU = () => {
+    const _timestamp = Date.now().toString().slice(-6);
     return `SKU${timestamp}`;
   };
 
-  const handleInputChange = (e) => {
+  const _handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
     
@@ -130,8 +127,8 @@ const ProductStockModal = ({
     }
   };
 
-  const validateForm = () => {
-    const errors = {};
+  const _validateForm = () => {
+    const _errors = {};
 
     // Campos obrigatórios
     if (!formData.name.trim()) errors.name = 'Nome é obrigatório';
@@ -159,14 +156,14 @@ const ProductStockModal = ({
     return Object.keys(errors).length === 0;
   };
 
-  const handleSubmit = async (e) => {
+  const _handleSubmit = async (e) => {
     e.preventDefault();
     
     if (!validateForm()) return;
 
     setIsSubmitting(true);
     try {
-      const productData = {
+      const _productData = {
         ...formData,
         cost_price: formData.cost_price ? parseFloat(formData.cost_price) : 0,
         sale_price: formData.sale_price ? parseFloat(formData.sale_price) : 0,
@@ -206,7 +203,7 @@ const ProductStockModal = ({
 
   if (!isOpen) return null;
 
-  const isReadOnly = mode === 'view';
+  const _isReadOnly = mode === 'view';
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">

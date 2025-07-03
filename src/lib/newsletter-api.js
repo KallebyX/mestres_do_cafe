@@ -3,16 +3,16 @@
  * Integração completa para envio de newsletters via Email e WhatsApp
  */
 
-const API_BASE_URL = process.env.NODE_ENV === 'production' 
+const _API_BASE_URL = process.env.NODE_ENV === 'production' 
   ? 'https://seu-dominio.com/api' 
   : 'http://localhost:3001/api';
 
 /**
  * 📤 Enviar newsletter por email
  */
-export const sendEmailNewsletter = async (recipients, subject, message) => {
+export const _sendEmailNewsletter = async (recipients, subject, message) => {
   try {
-    const response = await fetch(`${API_BASE_URL}/newsletter/email`, {
+    const _response = await fetch(`${API_BASE_URL}/newsletter/email`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -25,7 +25,7 @@ export const sendEmailNewsletter = async (recipients, subject, message) => {
       })
     });
 
-    const result = await response.json();
+    const _result = await response.json();
     return result;
   } catch (error) {
     console.error('Erro ao enviar newsletter por email:', error);
@@ -36,9 +36,9 @@ export const sendEmailNewsletter = async (recipients, subject, message) => {
 /**
  * 📱 Enviar newsletter por WhatsApp
  */
-export const sendWhatsAppNewsletter = async (recipients, message) => {
+export const _sendWhatsAppNewsletter = async (recipients, message) => {
   try {
-    const response = await fetch(`${API_BASE_URL}/newsletter/whatsapp`, {
+    const _response = await fetch(`${API_BASE_URL}/newsletter/whatsapp`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -50,7 +50,7 @@ export const sendWhatsAppNewsletter = async (recipients, message) => {
       })
     });
 
-    const result = await response.json();
+    const _result = await response.json();
     return result;
   } catch (error) {
     console.error('Erro ao enviar newsletter por WhatsApp:', error);
@@ -61,10 +61,10 @@ export const sendWhatsAppNewsletter = async (recipients, message) => {
 /**
  * 🔄 Verificar status do WhatsApp
  */
-export const getWhatsAppStatus = async () => {
+export const _getWhatsAppStatus = async () => {
   try {
-    const response = await fetch(`${API_BASE_URL}/newsletter/whatsapp/status`);
-    const result = await response.json();
+    const _response = await fetch(`${API_BASE_URL}/newsletter/whatsapp/status`);
+    const _result = await response.json();
     return result;
   } catch (error) {
     console.error('Erro ao verificar status do WhatsApp:', error);
@@ -75,10 +75,10 @@ export const getWhatsAppStatus = async () => {
 /**
  * 📊 Obter estatísticas de newsletter
  */
-export const getNewsletterStats = async () => {
+export const _getNewsletterStats = async () => {
   try {
-    const response = await fetch(`${API_BASE_URL}/newsletter/stats`);
-    const result = await response.json();
+    const _response = await fetch(`${API_BASE_URL}/newsletter/stats`);
+    const _result = await response.json();
     return result;
   } catch (error) {
     console.error('Erro ao obter estatísticas da newsletter:', error);
@@ -89,21 +89,21 @@ export const getNewsletterStats = async () => {
 /**
  * 🎯 Enviar newsletter completa (email + WhatsApp)
  */
-export const sendCompleteNewsletter = async (newsletterData, customers) => {
-  const results = {
+export const _sendCompleteNewsletter = async (newsletterData, customers) => {
+  const _results = {
     email: { success: 0, failed: 0, errors: [] },
     whatsapp: { success: 0, failed: 0, errors: [] },
     total: customers.length
   };
 
   // Preparar dados dos destinatários
-  const emailRecipients = customers.map(customer => ({
+  const _emailRecipients = customers.map(customer => ({
     name: customer.name,
     email: customer.email,
     message: newsletterData.message.replace(/\[NOME\]/g, customer.name).replace(/\[DATA\]/g, new Date().toLocaleDateString('pt-BR'))
   }));
 
-  const whatsappRecipients = customers
+  const _whatsappRecipients = customers
     .filter(customer => customer.phone)
     .map(customer => ({
       name: customer.name,
@@ -115,7 +115,7 @@ export const sendCompleteNewsletter = async (newsletterData, customers) => {
     // Enviar por email se selecionado
     if (newsletterData.sendMethod === 'email' || newsletterData.sendMethod === 'both') {
       try {
-        const emailResult = await sendEmailNewsletter(emailRecipients, newsletterData.title, newsletterData.message);
+        const _emailResult = await sendEmailNewsletter(emailRecipients, newsletterData.title, newsletterData.message);
         if (emailResult.success) {
           results.email.success = emailResult.sent || emailRecipients.length;
         } else {
@@ -131,7 +131,7 @@ export const sendCompleteNewsletter = async (newsletterData, customers) => {
     // Enviar por WhatsApp se selecionado
     if (newsletterData.sendMethod === 'whatsapp' || newsletterData.sendMethod === 'both') {
       try {
-        const whatsappResult = await sendWhatsAppNewsletter(whatsappRecipients, newsletterData.message);
+        const _whatsappResult = await sendWhatsAppNewsletter(whatsappRecipients, newsletterData.message);
         if (whatsappResult.success) {
           results.whatsapp.success = whatsappResult.sent || whatsappRecipients.length;
         } else {
@@ -162,8 +162,8 @@ export const sendCompleteNewsletter = async (newsletterData, customers) => {
 /**
  * 🔧 Validar configurações da newsletter
  */
-export const validateNewsletterData = (newsletterData, customers) => {
-  const errors = [];
+export const _validateNewsletterData = (newsletterData, customers) => {
+  const _errors = [];
 
   if (!newsletterData.title || newsletterData.title.trim() === '') {
     errors.push('Título é obrigatório');
@@ -178,14 +178,14 @@ export const validateNewsletterData = (newsletterData, customers) => {
   }
 
   if (newsletterData.sendMethod === 'email' || newsletterData.sendMethod === 'both') {
-    const customersWithoutEmail = customers.filter(c => !c.email);
+    const _customersWithoutEmail = customers.filter(c => !c.email);
     if (customersWithoutEmail.length > 0) {
       errors.push(`${customersWithoutEmail.length} cliente(s) sem email cadastrado`);
     }
   }
 
   if (newsletterData.sendMethod === 'whatsapp' || newsletterData.sendMethod === 'both') {
-    const customersWithoutPhone = customers.filter(c => !c.phone);
+    const _customersWithoutPhone = customers.filter(c => !c.phone);
     if (customersWithoutPhone.length === customers.length) {
       errors.push('Nenhum cliente possui telefone cadastrado para WhatsApp');
     }
@@ -200,7 +200,7 @@ export const validateNewsletterData = (newsletterData, customers) => {
 /**
  * 📝 Templates de newsletter pré-definidos
  */
-export const getNewsletterTemplates = () => {
+export const _getNewsletterTemplates = () => {
   return {
     promotion: {
       title: '🔥 OFERTA IMPERDÍVEL | Mestres do Café',

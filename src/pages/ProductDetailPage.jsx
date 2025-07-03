@@ -1,19 +1,16 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, Link, useNavigate } from 'react-router-dom';
-import { 
-  Star, ShoppingCart, Heart, Share2, Minus, Plus, Coffee, 
-  Award, Truck, Shield, ChevronLeft, ChevronRight, Eye, ArrowLeft
-} from 'lucide-react';
-import { useCart } from '../contexts/CartContext';
-import { useAuth } from '../contexts/AuthContext';
-import { useSupabaseAuth } from '../contexts/SupabaseAuthContext';
-import { productsAPI } from '../lib/api';
-import { Badge } from '../components/ui/badge';
-import { getProductById, getAllProducts } from '../lib/supabase-products';
+import { _useParams, _Link, _useNavigate } from 'react-router-dom';
+// import { _Star, _ShoppingCart, _Heart, _Share2, _Minus, _Plus, _Coffee, _Award, _Truck, _Shield, _ChevronLeft, _ChevronRight, _Eye, _ArrowLeft } from 'lucide-react'; // Temporarily commented - unused import
+import { _useCart } from '../contexts/CartContext';
+import { _useAuth } from '../contexts/AuthContext';
+import { _useSupabaseAuth } from '../contexts/SupabaseAuthContext';
+import { _productsAPI } from '../lib/api';
+// import { _Badge } from '../components/ui/badge'; // Temporarily commented - unused import
+import { _getProductById, _getAllProducts } from '../lib/supabase-products';
 
-const ProductDetailPage = () => {
+const _ProductDetailPage = () => {
   const { id } = useParams();
-  const navigate = useNavigate();
+  const _navigate = useNavigate();
   const { addToCart } = useCart();
   const { user } = useSupabaseAuth();
   const [product, setProduct] = useState(null);
@@ -34,17 +31,17 @@ const ProductDetailPage = () => {
   // Definir peso inicial quando produto for carregado
   useEffect(() => {
     if (product && !selectedWeight) {
-      const firstWeight = product?.available_weights?.[0]?.size || '250g';
+      const _firstWeight = product?.available_weights?.[0]?.size || '250g';
       setSelectedWeight(firstWeight);
     }
   }, [product, selectedWeight]);
 
-  const loadProductDetails = async () => {
+  const _loadProductDetails = async () => {
     setLoading(true);
     setError(null);
     
     try {
-      const result = await getProductById(id);
+      const _result = await getProductById(id);
       
       if (result.success) {
         console.log('✅ Produto carregado:', result.data);
@@ -61,11 +58,11 @@ const ProductDetailPage = () => {
     }
   };
 
-  const loadRelatedProducts = async (category) => {
+  const _loadRelatedProducts = async (category) => {
     try {
-      const result = await getAllProducts();
+      const _result = await getAllProducts();
       if (result.success) {
-        const related = result.data
+        const _related = result.data
           .filter(p => p.id !== id && p.category === category)
           .slice(0, 4);
         setRelatedProducts(related);
@@ -75,7 +72,7 @@ const ProductDetailPage = () => {
     }
   };
 
-  const handleAddToCart = async () => {
+  const _handleAddToCart = async () => {
     try {
       await addToCart(product, quantity);
       alert(`${quantity}x ${product.name} adicionado ao carrinho!`);
@@ -84,15 +81,15 @@ const ProductDetailPage = () => {
     }
   };
 
-  const handleQuantityChange = (delta) => {
-    const newQuantity = quantity + delta;
+  const _handleQuantityChange = (delta) => {
+    const _newQuantity = quantity + delta;
     if (newQuantity >= 1 && newQuantity <= 10) {
       setQuantity(newQuantity);
     }
   };
 
   // Opções de peso dinâmicas do produto ou fallback padrão
-  const weightOptions = product?.available_weights ? 
+  const _weightOptions = product?.available_weights ? 
     product.available_weights.map(weight => ({
       value: weight.size,
       label: weight.size,
@@ -104,24 +101,24 @@ const ProductDetailPage = () => {
       { value: '1kg', label: '1kg', priceMultiplier: 3.5 }
     ];
 
-  const currentWeightOption = weightOptions.find(w => w.value === selectedWeight) || weightOptions[0];
-  const currentPrice = product && currentWeightOption ? product.price * currentWeightOption.priceMultiplier : 0;
+  const _currentWeightOption = weightOptions.find(w => w.value === selectedWeight) || weightOptions[0];
+  const _currentPrice = product && currentWeightOption ? product.price * currentWeightOption.priceMultiplier : 0;
 
-  const productImages = product?.images || [product?.image || '/default-coffee.jpg'];
+  const _productImages = product?.images || [product?.image || '/default-coffee.jpg'];
 
-  const toggleFavorite = () => {
+  const _toggleFavorite = () => {
     setIsFavorite(!isFavorite);
     // Aqui você poderia salvar no backend se logado
   };
 
-  const formatPrice = (price) => {
+  const _formatPrice = (price) => {
     return new Intl.NumberFormat('pt-BR', {
       style: 'currency',
       currency: 'BRL'
     }).format(price);
   };
 
-  const getDiscountPercentage = (originalPrice, currentPrice) => {
+  const _getDiscountPercentage = (originalPrice, currentPrice) => {
     if (!originalPrice || originalPrice <= currentPrice) return 0;
     return Math.round(((originalPrice - currentPrice) / originalPrice) * 100);
   };
@@ -162,8 +159,8 @@ const ProductDetailPage = () => {
     );
   }
 
-  const discount = getDiscountPercentage(product.original_price, product.price);
-  const isInStock = product.stock > 0;
+  const _discount = getDiscountPercentage(product.original_price, product.price);
+  const _isInStock = product.stock > 0;
 
   return (
     <div className="min-h-screen bg-slate-50 font-inter">

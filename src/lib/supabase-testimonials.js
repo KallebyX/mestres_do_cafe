@@ -3,7 +3,7 @@
  * Sistema dos Mestres do Café - Supabase
  */
 
-import { supabase } from './supabase';
+import { _supabase } from './supabase';
 
 // ============================================
 // 📖 BUSCAR TESTIMONIALS
@@ -14,7 +14,7 @@ import { supabase } from './supabase';
  * @param {number} limit - Quantidade máxima de testimonials (padrão: 3)
  * @returns {Promise<{success: boolean, data: array}>}
  */
-export const getFeaturedTestimonials = async (limit = 3) => {
+export const _getFeaturedTestimonials = async (limit = 3) => {
   try {
     console.log('🌟 Buscando testimonials em destaque...');
 
@@ -45,7 +45,7 @@ export const getFeaturedTestimonials = async (limit = 3) => {
  * @param {number} limit - Quantidade máxima de testimonials (padrão: 10)
  * @returns {Promise<{success: boolean, data: array}>}
  */
-export const getAllTestimonials = async (limit = 10) => {
+export const _getAllTestimonials = async (limit = 10) => {
   try {
     console.log('🌟 Buscando todos os testimonials...');
 
@@ -77,7 +77,7 @@ export const getAllTestimonials = async (limit = 10) => {
  * @param {number} limit - Quantidade máxima de testimonials (padrão: 5)
  * @returns {Promise<{success: boolean, data: array}>}
  */
-export const getTestimonialsByRating = async (minRating = 4, limit = 5) => {
+export const _getTestimonialsByRating = async (minRating = 4, limit = 5) => {
   try {
     console.log(`🌟 Buscando testimonials com rating >= ${minRating}...`);
 
@@ -112,7 +112,7 @@ export const getTestimonialsByRating = async (minRating = 4, limit = 5) => {
  * Obter estatísticas dos testimonials
  * @returns {Promise<{success: boolean, data: object}>}
  */
-export const getTestimonialsStats = async () => {
+export const _getTestimonialsStats = async () => {
   try {
     console.log('📊 Calculando estatísticas de testimonials...');
 
@@ -126,7 +126,7 @@ export const getTestimonialsStats = async () => {
       return { success: false, error: error.message, data: {} };
     }
 
-    const stats = {
+    const _stats = {
       total: data.length,
       featured: data.filter(t => t.is_featured).length,
       averageRating: data.length > 0 ? 
@@ -158,7 +158,7 @@ export const getTestimonialsStats = async () => {
  * @param {object} testimonialData - Dados do testimonial
  * @returns {Promise<{success: boolean, data: object}>}
  */
-export const createTestimonial = async (testimonialData) => {
+export const _createTestimonial = async (testimonialData) => {
   try {
     console.log('✍️ Criando novo testimonial...');
 
@@ -188,7 +188,7 @@ export const createTestimonial = async (testimonialData) => {
  * @param {object} updates - Dados para atualizar
  * @returns {Promise<{success: boolean, data: object}>}
  */
-export const updateTestimonial = async (id, updates) => {
+export const _updateTestimonial = async (id, updates) => {
   try {
     console.log(`✍️ Atualizando testimonial ${id}...`);
 
@@ -218,7 +218,7 @@ export const updateTestimonial = async (id, updates) => {
  * @param {number} id - ID do testimonial
  * @returns {Promise<{success: boolean}>}
  */
-export const deleteTestimonial = async (id) => {
+export const _deleteTestimonial = async (id) => {
   try {
     console.log(`🗑️ Deletando testimonial ${id}...`);
 
@@ -246,7 +246,7 @@ export const deleteTestimonial = async (id) => {
  * @param {number} id - ID do testimonial
  * @returns {Promise<{success: boolean, data: object}>}
  */
-export const toggleFeaturedTestimonial = async (id) => {
+export const _toggleFeaturedTestimonial = async (id) => {
   try {
     console.log(`⭐ Alternando status de destaque do testimonial ${id}...`);
 
@@ -292,7 +292,7 @@ export const toggleFeaturedTestimonial = async (id) => {
  * Verificar se a tabela testimonials existe
  * @returns {Promise<boolean>}
  */
-export const testimonialsTableExists = async () => {
+export const _testimonialsTableExists = async () => {
   try {
     const { data, error } = await supabase
       .from('testimonials')

@@ -1,25 +1,7 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useSupabaseAuth } from '../contexts/SupabaseAuthContext';
-import { 
-  User, 
-  Mail, 
-  Lock, 
-  Eye, 
-  EyeOff, 
-  Phone, 
-  FileText, 
-  Building, 
-  ChevronRight, 
-  ChevronLeft,
-  Coffee,
-  Shield,
-  Star,
-  CheckCircle,
-  Award,
-  Truck,
-  Target
-} from 'lucide-react';
+import { User, Mail, Lock, Eye, EyeOff, Phone, FileText, Building, ChevronRight, ChevronLeft, Coffee, Shield, Star, CheckCircle, Award, Truck, Target } from 'lucide-react';
 import Logo from '../components/Logo';
 
 const RegisterPage = () => {

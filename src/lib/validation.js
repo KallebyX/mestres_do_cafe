@@ -1,7 +1,7 @@
 // Funções de validação para CPF e CNPJ
 
 // Validar CPF
-export function validateCPF(cpf) {
+export function validateCPF(_cpf) {
   if (!cpf) return false;
   
   // Remove caracteres não numéricos
@@ -14,12 +14,12 @@ export function validateCPF(cpf) {
   if (/^(\d)\1{10}$/.test(cpf)) return false;
   
   // Validação do primeiro dígito verificador
-  let sum = 0;
+  let _sum = 0;
   for (let i = 0; i < 9; i++) {
     sum += parseInt(cpf.charAt(i)) * (10 - i);
   }
-  let remainder = 11 - (sum % 11);
-  let digit1 = remainder < 10 ? remainder : 0;
+  let _remainder = 11 - (sum % 11);
+  let _digit1 = remainder < 10 ? remainder : 0;
   
   if (parseInt(cpf.charAt(9)) !== digit1) return false;
   
@@ -29,13 +29,13 @@ export function validateCPF(cpf) {
     sum += parseInt(cpf.charAt(i)) * (11 - i);
   }
   remainder = 11 - (sum % 11);
-  let digit2 = remainder < 10 ? remainder : 0;
+  let _digit2 = remainder < 10 ? remainder : 0;
   
   return parseInt(cpf.charAt(10)) === digit2;
 }
 
 // Validar CNPJ
-export function validateCNPJ(cnpj) {
+export function validateCNPJ(_cnpj) {
   if (!cnpj) return false;
   
   // Remove caracteres não numéricos
@@ -48,15 +48,15 @@ export function validateCNPJ(cnpj) {
   if (/^(\d)\1{13}$/.test(cnpj)) return false;
   
   // Validação do primeiro dígito verificador
-  let weights = [5, 4, 3, 2, 9, 8, 7, 6, 5, 4, 3, 2];
-  let sum = 0;
+  let _weights = [5, 4, 3, 2, 9, 8, 7, 6, 5, 4, 3, 2];
+  let _sum = 0;
   
   for (let i = 0; i < 12; i++) {
     sum += parseInt(cnpj.charAt(i)) * weights[i];
   }
   
-  let remainder = sum % 11;
-  let digit1 = remainder < 2 ? 0 : 11 - remainder;
+  let _remainder = sum % 11;
+  let _digit1 = remainder < 2 ? 0 : 11 - remainder;
   
   if (parseInt(cnpj.charAt(12)) !== digit1) return false;
   
@@ -69,13 +69,13 @@ export function validateCNPJ(cnpj) {
   }
   
   remainder = sum % 11;
-  let digit2 = remainder < 2 ? 0 : 11 - remainder;
+  let _digit2 = remainder < 2 ? 0 : 11 - remainder;
   
   return parseInt(cnpj.charAt(13)) === digit2;
 }
 
 // Formatação de CPF
-export function formatCPF(cpf) {
+export function formatCPF(_cpf) {
   if (!cpf) return '';
   
   cpf = cpf.replace(/[^\d]/g, '');
@@ -90,7 +90,7 @@ export function formatCPF(cpf) {
 }
 
 // Formatação de CNPJ
-export function formatCNPJ(cnpj) {
+export function formatCNPJ(_cnpj) {
   if (!cnpj) return '';
   
   cnpj = cnpj.replace(/[^\d]/g, '');
@@ -106,7 +106,7 @@ export function formatCNPJ(cnpj) {
 }
 
 // Formatação de telefone
-export function formatPhone(phone) {
+export function formatPhone(_phone) {
   if (!phone) return '';
   
   phone = phone.replace(/[^\d]/g, '');
@@ -127,7 +127,7 @@ export function formatPhone(phone) {
 }
 
 // Formatação de CEP
-export function formatCEP(cep) {
+export function formatCEP(_cep) {
   if (!cep) return '';
   
   cep = cep.replace(/[^\d]/g, '');
@@ -140,13 +140,13 @@ export function formatCEP(cep) {
 }
 
 // Função para remover máscaras
-export function removeMask(value) {
+export function removeMask(_value) {
   if (!value) return '';
   return value.replace(/[^\w]/g, '');
 }
 
 // Máscara de entrada para CPF
-export function maskCPF(value) {
+export function maskCPF(_value) {
   value = value.replace(/[^\d]/g, '');
   value = value.substring(0, 11);
   value = value.replace(/(\d{3})(\d)/, '$1.$2');
@@ -156,7 +156,7 @@ export function maskCPF(value) {
 }
 
 // Máscara de entrada para CNPJ
-export function maskCNPJ(value) {
+export function maskCNPJ(_value) {
   value = value.replace(/[^\d]/g, '');
   value = value.substring(0, 14);
   value = value.replace(/(\d{2})(\d)/, '$1.$2');
@@ -167,14 +167,14 @@ export function maskCNPJ(value) {
 }
 
 // Validação de email
-export function validateEmail(email) {
+export function validateEmail(_email) {
   if (!email) return false;
   
   // Remove espaços em branco
   email = email.trim();
   
   // Regex mais restritiva para email
-  const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+  const _emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
   
   // Verifica se não tem pontos consecutivos
   if (email.includes('..')) return false;
@@ -183,11 +183,11 @@ export function validateEmail(email) {
 }
 
 // Validação de telefone brasileiro
-export function validatePhone(phone) {
+export function validatePhone(_phone) {
   if (!phone) return false;
   
   // Remove caracteres não numéricos
-  const phoneNumbers = phone.replace(/[^\d]/g, '');
+  const _phoneNumbers = phone.replace(/[^\d]/g, '');
   
   // Aceita telefones com 10 ou 11 dígitos
   if (phoneNumbers.length === 10) {
@@ -202,7 +202,7 @@ export function validatePhone(phone) {
 }
 
 // Máscara de telefone
-export function maskPhone(value) {
+export function maskPhone(_value) {
   value = value.replace(/[^\d]/g, '');
   value = value.substring(0, 11);
   value = value.replace(/(\d{2})(\d)/, '($1) $2');
@@ -212,18 +212,18 @@ export function maskPhone(value) {
 }
 
 // Validação de CEP
-export function validateCEP(cep) {
+export function validateCEP(_cep) {
   if (!cep) return false;
   
   // Remove caracteres não numéricos
-  const cepNumbers = cep.replace(/[^\d]/g, '');
+  const _cepNumbers = cep.replace(/[^\d]/g, '');
   
   // Verifica se tem exatamente 8 dígitos
   return cepNumbers.length === 8;
 }
 
 // Máscara de CEP
-export function maskCEP(value) {
+export function maskCEP(_value) {
   value = value.replace(/[^\d]/g, '');
   value = value.substring(0, 8);
   value = value.replace(/(\d{5})(\d)/, '$1-$2');

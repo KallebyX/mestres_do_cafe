@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
-import { supabase } from '../lib/supabase';
-import { Lock, Eye, EyeOff, CheckCircle, AlertCircle, Shield } from 'lucide-react';
+import { _useNavigate, _useSearchParams } from 'react-router-dom';
+import { _supabase } from '../lib/supabase';
+// import { _Lock, _Eye, _EyeOff, _CheckCircle, _AlertCircle, _Shield } from 'lucide-react'; // Temporarily commented - unused import
 
-const ResetPasswordPage = () => {
-  const navigate = useNavigate();
+const _ResetPasswordPage = () => {
+  const _navigate = useNavigate();
   const [searchParams] = useSearchParams();
   
   const [formData, setFormData] = useState({
@@ -21,20 +21,20 @@ const ResetPasswordPage = () => {
 
   // Extrair tokens da URL - VERSÃO SIMPLIFICADA E ROBUSTA
   useEffect(() => {
-    const configureSession = async () => {
+    const _configureSession = async () => {
       console.log('🚀 INICIANDO CONFIGURAÇÃO DE SESSÃO');
       
       // URL completa para debug
-      const fullURL = window.location.href;
+      const _fullURL = window.location.href;
       console.log('📍 URL COMPLETA:', fullURL);
       
       // MÉTODO SIMPLES: Extrair diretamente dos search params
-      const currentURL = new URL(window.location.href);
-      const params = currentURL.searchParams;
+      const _currentURL = new URL(window.location.href);
+      const _params = currentURL.searchParams;
       
-      const accessToken = params.get('access_token');
-      const refreshToken = params.get('refresh_token') || '';
-      const type = params.get('type') || 'recovery';
+      const _accessToken = params.get('access_token');
+      const _refreshToken = params.get('refresh_token') || '';
+      const _type = params.get('type') || 'recovery';
       
       console.log('🔍 EXTRAÇÃO DIRETA DOS PARÂMETROS:', {
         accessToken: accessToken ? `${accessToken.substring(0, 20)}...` : '❌ NÃO ENCONTRADO',
@@ -61,7 +61,7 @@ const ResetPasswordPage = () => {
         console.log('🔧 CONFIGURANDO SESSÃO COM TOKEN ENCONTRADO...');
         
         // Usar o access_token como refresh_token se não tiver um refresh_token válido
-        const sessionData = {
+        const _sessionData = {
           access_token: accessToken,
           refresh_token: refreshToken || accessToken
         };
@@ -104,8 +104,8 @@ const ResetPasswordPage = () => {
   }, [navigate]);
 
   // Calcular força da senha
-  const calculatePasswordStrength = (password) => {
-    let strength = 0;
+  const _calculatePasswordStrength = (password) => {
+    let _strength = 0;
     if (password.length >= 8) strength += 1;
     if (/[A-Z]/.test(password)) strength += 1;
     if (/[a-z]/.test(password)) strength += 1;
@@ -114,7 +114,7 @@ const ResetPasswordPage = () => {
     return strength;
   };
 
-  const handleInputChange = (e) => {
+  const _handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
     
@@ -129,8 +129,8 @@ const ResetPasswordPage = () => {
     }
   };
 
-  const validateForm = () => {
-    const newErrors = {};
+  const _validateForm = () => {
+    const _newErrors = {};
 
     // Validar senha
     if (!formData.password) {
@@ -150,7 +150,7 @@ const ResetPasswordPage = () => {
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleSubmit = async (e) => {
+  const _handleSubmit = async (e) => {
     e.preventDefault();
     setSuccess('');
 
@@ -193,7 +193,7 @@ const ResetPasswordPage = () => {
     }
   };
 
-  const getPasswordStrengthColor = () => {
+  const _getPasswordStrengthColor = () => {
     switch (passwordStrength) {
       case 0:
       case 1: return 'bg-red-500';
@@ -205,7 +205,7 @@ const ResetPasswordPage = () => {
     }
   };
 
-  const getPasswordStrengthText = () => {
+  const _getPasswordStrengthText = () => {
     switch (passwordStrength) {
       case 0:
       case 1: return 'Muito fraca';

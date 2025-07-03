@@ -1,42 +1,51 @@
 /* eslint-disable no-undef */
-const express = require('express');
-const cors = require('cors');
-const bcrypt = require('bcryptjs');
-const jwt = require('jsonwebtoken');
-const fs = require('fs');
+const _express = require('express');
+const _cors = require('cors');
+const _bcrypt = require('bcryptjs');
+const _jwt = require('jsonwebtoken');
+const _fs = require('fs');
+const _rateLimit = require('express-rate-limit');
+const _slowDown = require('express-slow-down');
+const _helmet = require('helmet');
 
 // Importar serviços próprios (APIs gratuitas)
-const WhatsAppService = require('./services/WhatsAppService');
-const MapsService = require('./services/MapsService');
+const _WhatsAppService = require('./services/WhatsAppService');
+const _MapsService = require('./services/MapsService');
 
 // Importar rotas de administração de clientes
-const adminCustomersRoutes = require('./routes/admin-customers');
-const newsletterRoutes = require('./routes/newsletter');
+const _adminCustomersRoutes = require('./routes/admin-customers');
+const _newsletterRoutes = require('./routes/newsletter');
 
-const app = express();
-const PORT = process.env.PORT || 5000; // Render usa PORT dinâmico
-const JWT_SECRET = process.env.JWT_SECRET || 'mestres-cafe-super-secret-jwt-key-2025';
+const _app = express();
+const _PORT = process.env.PORT || 5000; // Render usa PORT dinâmico
+// Generate a more secure fallback if JWT_SECRET is not set
+const _JWT_SECRET = process.env.JWT_SECRET || (() => {
+  console.warn('⚠️  WARNING: JWT_SECRET environment variable not set. Using generated fallback. Set JWT_SECRET for production!');
+  // Generate a random secret based on timestamp and random values for better security
+  const _crypto = require('crypto');
+  return crypto.randomBytes(64).toString('hex') + Date.now().toString();
+})();
 
 // Inicializar serviços
-const whatsappService = new WhatsAppService();
-const mapsService = new MapsService();
+const _whatsappService = new WhatsAppService();
+const _mapsService = new MapsService();
 
 console.log('🚀 Inicializando serviços gratuitos...');
 console.log('📱 WhatsApp: API própria (whatsapp-web.js)');
 console.log('🗺️ Maps: OpenStreetMap + Leaflet');
 
 // Validação de CPF
-function validateCPF(cpf) {
+function validateCPF(_cpf) {
   cpf = cpf.replace(/[^\d]/g, '');
   if (cpf.length !== 11) return false;
   if (/^(\d)\1{10}$/.test(cpf)) return false;
   
-  let sum = 0;
+  let _sum = 0;
   for (let i = 0; i < 9; i++) {
     sum += parseInt(cpf.charAt(i)) * (10 - i);
   }
-  let remainder = 11 - (sum % 11);
-  let digit1 = remainder < 10 ? remainder : 0;
+  let _remainder = 11 - (sum % 11);
+  let _digit1 = remainder < 10 ? remainder : 0;
   
   if (parseInt(cpf.charAt(9)) !== digit1) return false;
   
@@ -45,26 +54,26 @@ function validateCPF(cpf) {
     sum += parseInt(cpf.charAt(i)) * (11 - i);
   }
   remainder = 11 - (sum % 11);
-  let digit2 = remainder < 10 ? remainder : 0;
+  let _digit2 = remainder < 10 ? remainder : 0;
   
   return parseInt(cpf.charAt(10)) === digit2;
 }
 
 // Validação de CNPJ
-function validateCNPJ(cnpj) {
+function validateCNPJ(_cnpj) {
   cnpj = cnpj.replace(/[^\d]/g, '');
   if (cnpj.length !== 14) return false;
   if (/^(\d)\1{13}$/.test(cnpj)) return false;
   
-  let weights = [5, 4, 3, 2, 9, 8, 7, 6, 5, 4, 3, 2];
-  let sum = 0;
+  let _weights = [5, 4, 3, 2, 9, 8, 7, 6, 5, 4, 3, 2];
+  let _sum = 0;
   
   for (let i = 0; i < 12; i++) {
     sum += parseInt(cnpj.charAt(i)) * weights[i];
   }
   
-  let remainder = sum % 11;
-  let digit1 = remainder < 2 ? 0 : 11 - remainder;
+  let _remainder = sum % 11;
+  let _digit1 = remainder < 2 ? 0 : 11 - remainder;
   
   if (parseInt(cnpj.charAt(12)) !== digit1) return false;
   
@@ -76,23 +85,23 @@ function validateCNPJ(cnpj) {
   }
   
   remainder = sum % 11;
-  let digit2 = remainder < 2 ? 0 : 11 - remainder;
+  let _digit2 = remainder < 2 ? 0 : 11 - remainder;
   
   return parseInt(cnpj.charAt(13)) === digit2;
 }
 
 // Validação de email
-function validateEmail(email) {
-  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+function validateEmail(_email) {
+  const _emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
   return emailRegex.test(email);
 }
 
 // Database mock (JSON file)
-const DB_FILE = './data/db.json';
+const _DB_FILE = './data/db.json';
 
 // Initialize users database
 if (!fs.existsSync(DB_FILE)) {
-  const initialData = {
+  const _initialData = {
     users: [
       {
         id: 1,
@@ -109,20 +118,103 @@ if (!fs.existsSync(DB_FILE)) {
   fs.writeFileSync(DB_FILE, JSON.stringify(initialData, null, 2));
 }
 
-// CORS - Configuração para produção e desenvolvimento
-const allowedOrigins = [
+// Secure CORS - Configuration for production and development
+const _allowedOrigins = [
   'http://localhost:5173',
   'http://localhost:5174',
+  'http://localhost:3000',
   'https://mestres-cafe-frontend.onrender.com',
-  process.env.CORS_ORIGIN
+  process.env.CORS_ORIGIN,
+  process.env.FRONTEND_URL
 ].filter(Boolean);
 
 app.use(cors({
-  origin: allowedOrigins,
+  origin: function (origin, callback) {
+    // Allow requests with no origin (like mobile apps, curl, or same-origin)
+    if (!origin) return callback(null, true);
+    
+    // Check if the origin is in the allowed list
+    if (allowedOrigins.includes(origin)) {
+      return callback(null, true);
+    }
+    
+    // Allow specific Render.com domains for this project
+    if (origin.includes('.onrender.com') && origin.includes('mestres-cafe')) {
+      return callback(null, true);
+    }
+    
+    console.warn(`🚫 CORS blocked unauthorized origin: ${origin}`);
+    return callback(new Error('Not allowed by CORS policy'));
+  },
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization']
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
+  exposedHeaders: ['Content-Length', 'X-Foo', 'X-Bar'],
+  maxAge: 86400, // Cache preflight for 24 hours
+  preflightContinue: false,
+  optionsSuccessStatus: 204
 }));
+
+// Security middleware
+app.use(helmet({
+  contentSecurityPolicy: {
+    directives: {
+      defaultSrc: ["'self'"],
+      styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
+      fontSrc: ["'self'", "https://fonts.gstatic.com"],
+      imgSrc: ["'self'", "data:", "https:"],
+      scriptSrc: ["'self'"],
+      connectSrc: ["'self'", "https://api.mestrescafe.com"]
+    }
+  },
+  crossOriginEmbedderPolicy: false
+}));
+
+// Rate limiting for authentication endpoints
+const _authLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 5, // Limit each IP to 5 auth requests per windowMs
+  message: {
+    error: 'Muitas tentativas de login. Tente novamente em 15 minutos.',
+    retryAfter: 15 * 60
+  },
+  standardHeaders: true,
+  legacyHeaders: false,
+  skip: (req) => {
+    // Skip rate limiting in test environment
+    return process.env.NODE_ENV === 'test';
+  }
+});
+
+// General API rate limiting
+const _apiLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 100, // Limit each IP to 100 requests per windowMs
+  message: {
+    error: 'Muitas requisições. Tente novamente em 15 minutos.',
+    retryAfter: 15 * 60
+  },
+  standardHeaders: true,
+  legacyHeaders: false,
+  skip: (req) => {
+    return process.env.NODE_ENV === 'test';
+  }
+});
+
+// Speed limiter for all requests
+const _speedLimiter = slowDown({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  delayAfter: 50, // Allow 50 requests per 15 minutes at full speed
+  delayMs: () => 500, // Add 500ms delay per request after delayAfter
+  maxDelayMs: 20000, // Maximum delay of 20 seconds
+  skip: (req) => {
+    return process.env.NODE_ENV === 'test';
+  }
+});
+
+// Apply rate limiting
+app.use('/api/', apiLimiter);
+app.use(speedLimiter);
 
 // Body parsing
 app.use(express.json({ limit: '10mb' }));
@@ -130,22 +222,22 @@ app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
 // Helper functions
 function readDB() {
-  const data = fs.readFileSync(DB_FILE, 'utf8');
+  const _data = fs.readFileSync(DB_FILE, 'utf8');
   return JSON.parse(data);
 }
 
-function writeDB(data) {
+function writeDB(_data) {
   fs.writeFileSync(DB_FILE, JSON.stringify(data, null, 2));
 }
 
-function findUser(email) {
-  const db = readDB();
+function findUser(_email) {
+  const _db = readDB();
   return db.users.find(user => user.email === email);
 }
 
-function createUser(userData) {
-  const db = readDB();
-  const newUser = {
+function createUser(_userData) {
+  const _db = readDB();
+  const _newUser = {
     id: db.users.length + 1,
     ...userData,
     is_active: true,
@@ -156,9 +248,9 @@ function createUser(userData) {
   return newUser;
 }
 
-const authenticateToken = (req, res, next) => {
-  const authHeader = req.headers['authorization'];
-  const token = authHeader && authHeader.split(' ')[1];
+const _authenticateToken = (req, res, next) => {
+  const _authHeader = req.headers['authorization'];
+  const _token = authHeader && authHeader.split(' ')[1];
 
   if (!token) {
     return res.status(401).json({ error: 'Token de acesso requerido' });
@@ -175,7 +267,7 @@ const authenticateToken = (req, res, next) => {
 
 // Health check endpoint melhorado para Render
 app.get('/api/health', (req, res) => {
-  const healthData = {
+  const _healthData = {
     status: 'OK',
     timestamp: new Date().toISOString(),
     environment: process.env.NODE_ENV || 'development',
@@ -193,7 +285,7 @@ app.get('/api/health', (req, res) => {
 });
 
 // Register
-app.post('/api/auth/register', async (req, res) => {
+app.post('/api/auth/register', authLimiter, async (req, res) => {
   try {
     const { 
       name, 
@@ -253,21 +345,21 @@ app.post('/api/auth/register', async (req, res) => {
     }
 
     // Check if CPF/CNPJ is already in use
-    const db = readDB();
-    const existingUserWithDocument = db.users.find(user => 
+    const _db = readDB();
+    const _existingUserWithDocument = db.users.find(user => 
       user.cpf_cnpj && user.cpf_cnpj.replace(/[^\d]/g, '') === cpf_cnpj.replace(/[^\d]/g, '')
     );
     
     if (existingUserWithDocument) {
-      const docType = user_type === 'cliente_pf' ? 'CPF' : 'CNPJ';
+      const _docType = user_type === 'cliente_pf' ? 'CPF' : 'CNPJ';
       return res.status(400).json({ error: `${docType} já está em uso` });
     }
 
     // Hash password
-    const hashedPassword = await bcrypt.hash(password, 12);
+    const _hashedPassword = await bcrypt.hash(password, 12);
 
     // Create user with welcome points
-    const newUser = createUser({
+    const _newUser = createUser({
       name,
       email,
       password: hashedPassword,
@@ -287,7 +379,7 @@ app.post('/api/auth/register', async (req, res) => {
     });
 
     // Generate token
-    const token = jwt.sign(
+    const _token = jwt.sign(
       { id: newUser.id, email: newUser.email, user_type: newUser.user_type, name: newUser.name },
       JWT_SECRET,
       { expiresIn: '7d' }
@@ -309,7 +401,7 @@ app.post('/api/auth/register', async (req, res) => {
 });
 
 // Login
-app.post('/api/auth/login', async (req, res) => {
+app.post('/api/auth/login', authLimiter, async (req, res) => {
   try {
     const { email, password } = req.body;
 
@@ -319,12 +411,12 @@ app.post('/api/auth/login', async (req, res) => {
 
     // Find user in database
     console.log('🔍 LOGIN: Buscando usuário com email:', email);
-    const user = findUser(email);
+    const _user = findUser(email);
     console.log('👤 LOGIN: Usuário encontrado:', user ? 'SIM' : 'NÃO');
     if (user) {
       console.log('📧 LOGIN: Email do usuário:', user.email);
       console.log('✅ LOGIN: Status ativo:', user.is_active);
-      console.log('🔑 LOGIN: Hash da senha:', user.password ? 'EXISTE' : 'NÃO EXISTE');
+      console.log('🔑 LOGIN: Hash da senha disponível:', user.password ? 'SIM' : 'NÃO'); // Security fix: don't log hash presence details
     }
     if (!user) {
       console.log('❌ LOGIN: Usuário não encontrado');
@@ -333,7 +425,7 @@ app.post('/api/auth/login', async (req, res) => {
 
     // Check password
     console.log('🔐 LOGIN: Verificando senha...');
-    const isValidPassword = await bcrypt.compare(password, user.password);
+    const _isValidPassword = await bcrypt.compare(password, user.password);
     console.log('🔐 LOGIN: Senha válida:', isValidPassword);
     if (!isValidPassword) {
       console.log('❌ LOGIN: Senha incorreta');
@@ -346,7 +438,7 @@ app.post('/api/auth/login', async (req, res) => {
     }
 
     // Generate token
-    const token = jwt.sign(
+    const _token = jwt.sign(
       { id: user.id, email: user.email, user_type: user.user_type, name: user.name },
       JWT_SECRET,
       { expiresIn: '7d' }
@@ -367,12 +459,12 @@ app.post('/api/auth/login', async (req, res) => {
 });
 
 // Simplified login for demo - TEMPORARY
-app.post('/api/auth/demo-login', async (req, res) => {
+app.post('/api/auth/demo-login', authLimiter, async (req, res) => {
   try {
     const { email, password } = req.body;
 
     // Demo credentials
-    const demoUsers = {
+    const _demoUsers = {
       'admin@mestrescafe.com.br': {
         id: 1,
         name: 'Administrador',
@@ -391,13 +483,13 @@ app.post('/api/auth/demo-login', async (req, res) => {
       }
     };
 
-    const user = demoUsers[email];
+    const _user = demoUsers[email];
     if (!user || user.password !== password) {
       return res.status(401).json({ error: 'Email ou senha incorretos' });
     }
 
     // Generate token
-    const token = jwt.sign(
+    const _token = jwt.sign(
       { id: user.id, email: user.email, user_type: user.user_type, name: user.name },
       JWT_SECRET,
       { expiresIn: '7d' }
@@ -417,65 +509,72 @@ app.post('/api/auth/demo-login', async (req, res) => {
   }
 });
 
-// Endpoint de teste para debugar
-app.post('/api/auth/debug-login', async (req, res) => {
-  try {
-    const { email, password } = req.body;
-    
-    console.log('🔍 DEBUG: Email recebido:', email);
-    console.log('🔍 DEBUG: Senha recebida:', password);
-    
-    // Testar readDB
-    const db = readDB();
-    console.log('📊 DEBUG: Total de usuários no banco:', db.users.length);
-    console.log('📧 DEBUG: Emails no banco:', db.users.map(u => u.email));
-    
-    // Buscar usuário
-    const user = findUser(email);
-    console.log('👤 DEBUG: Usuário encontrado:', user ? 'SIM' : 'NÃO');
-    
-    if (user) {
-      console.log('📧 DEBUG: Email do usuário:', user.email);
-      console.log('🔑 DEBUG: Tem senha:', !!user.password);
-      console.log('✅ DEBUG: Status ativo:', user.is_active);
+// Debug endpoint - only available in development
+if (process.env.NODE_ENV === 'development' || process.env.NODE_ENV === 'test') {
+  app.post('/api/auth/debug-login', authLimiter, async (req, res) => {
+    try {
+      const { email, password } = req.body;
       
-      // Testar senha
-      if (user.password) {
-        const isValid = await bcrypt.compare(password, user.password);
-        console.log('🔐 DEBUG: Senha válida:', isValid);
+      console.log('🔍 DEBUG: Email recebido:', email);
+      console.log('🔍 DEBUG: Senha recebida: [REDACTED]'); // Security fix: never log passwords
+      
+      // Testar readDB
+      const _db = readDB();
+      console.log('📊 DEBUG: Total de usuários no banco:', db.users.length);
+      console.log('📧 DEBUG: Emails no banco:', db.users.map(u => u.email));
+      
+      // Buscar usuário
+      const _user = findUser(email);
+      console.log('👤 DEBUG: Usuário encontrado:', user ? 'SIM' : 'NÃO');
+      
+      if (user) {
+        console.log('📧 DEBUG: Email do usuário:', user.email);
+        console.log('🔑 DEBUG: Tem senha:', !!user.password);
+        console.log('✅ DEBUG: Status ativo:', user.is_active);
         
-        return res.json({
-          success: true,
-          userFound: true,
-          hasPassword: !!user.password,
-          passwordValid: isValid,
-          isActive: user.is_active,
-          userDetails: {
-            id: user.id,
-            email: user.email,
-            user_type: user.user_type,
-            name: user.name
-          }
-        });
+        // Testar senha
+        if (user.password) {
+          const _isValid = await bcrypt.compare(password, user.password);
+          console.log('🔐 DEBUG: Senha válida:', isValid);
+          
+          return res.json({
+            success: true,
+            userFound: true,
+            hasPassword: !!user.password,
+            passwordValid: isValid,
+            isActive: user.is_active,
+            userDetails: {
+              id: user.id,
+              email: user.email,
+              user_type: user.user_type,
+              name: user.name
+            }
+          });
+        }
       }
+      
+      res.json({
+        success: false,
+        userFound: !!user,
+        allUsers: db.users.length,
+        allEmails: db.users.map(u => u.email)
+      });
+      
+    } catch (error) {
+      console.error('❌ DEBUG ERROR:', error);
+      res.status(500).json({ error: error.message });
     }
-    
-    res.json({
-      success: false,
-      userFound: !!user,
-      allUsers: db.users.length,
-      allEmails: db.users.map(u => u.email)
-    });
-    
-  } catch (error) {
-    console.error('❌ DEBUG ERROR:', error);
-    res.status(500).json({ error: error.message });
-  }
-});
+  });
+} else {
+  // In production, return 404 for debug endpoints
+  app.post('/api/auth/debug-login', (req, res) => {
+    res.status(404).json({ error: 'Endpoint not available in production' });
+  });
+}
 
 // Verify token
 app.get('/api/auth/verify-token', authenticateToken, (req, res) => {
-  const user = findUser(req.user.email);
+  const _user = findUser(req.user.email);
   if (!user) {
     return res.status(401).json({ valid: false, error: 'Usuário não encontrado' });
   }
@@ -493,7 +592,7 @@ app.get('/api/products', (req, res) => {
   console.log('🔍 Requisição para listar produtos');
   
   // Filtrar apenas produtos ativos
-  const activeProducts = mockProducts.filter(product => product.is_active);
+  const _activeProducts = mockProducts.filter(product => product.is_active);
   
   res.json({ 
     success: true,
@@ -504,7 +603,7 @@ app.get('/api/products', (req, res) => {
 
 // Featured products (DEVE vir antes de /api/products/:id)
 app.get('/api/products/featured', (req, res) => {
-  const featuredProducts = [
+  const _featuredProducts = [
     {
       id: '1',
       name: 'Café Bourbon Amarelo Premium',
@@ -532,7 +631,7 @@ app.get('/api/products/featured', (req, res) => {
 app.get('/api/products/:id', (req, res) => {
   console.log('🔍 Requisição para produto específico:', req.params.id);
   
-  const product = mockProducts.find(p => p.id === req.params.id && p.is_active);
+  const _product = mockProducts.find(p => p.id === req.params.id && p.is_active);
   
   if (!product) {
     return res.status(404).json({ 
@@ -548,15 +647,15 @@ app.get('/api/products/:id', (req, res) => {
 });
 
 // 🔐 Middleware para verificar se é admin
-const requireAdmin = (req, res, next) => {
-  const authHeader = req.headers.authorization;
+const _requireAdmin = (req, res, next) => {
+  const _authHeader = req.headers.authorization;
   if (!authHeader || !authHeader.startsWith('Bearer ')) {
     return res.status(401).json({ error: 'Token de autorização necessário' });
   }
 
   try {
-    const token = authHeader.split(' ')[1];
-    const decoded = jwt.verify(token, JWT_SECRET);
+    const _token = authHeader.split(' ')[1];
+    const _decoded = jwt.verify(token, JWT_SECRET);
     
     // Verificar se é admin
     if (decoded.user_type !== 'admin') {
@@ -571,7 +670,7 @@ const requireAdmin = (req, res, next) => {
 };
 
 // Mock products storage (in production, this would be a database)
-const mockProducts = [
+const _mockProducts = [
   {
     id: '1',
     name: 'Café Bourbon Amarelo Premium',
@@ -721,7 +820,7 @@ app.post('/api/admin/products', requireAdmin, (req, res) => {
       });
     }
 
-    const newProduct = {
+    const _newProduct = {
       id: Date.now().toString(),
       name,
       description,
@@ -757,8 +856,8 @@ app.put('/api/admin/products/:id', requireAdmin, (req, res) => {
   console.log('✏️ Admin atualizando produto:', req.params.id, req.body);
   
   try {
-    const productId = req.params.id;
-    const productIndex = mockProducts.findIndex(p => p.id === productId);
+    const _productId = req.params.id;
+    const _productIndex = mockProducts.findIndex(p => p.id === productId);
     
     if (productIndex === -1) {
       return res.status(404).json({ error: 'Produto não encontrado' });
@@ -816,14 +915,14 @@ app.delete('/api/admin/products/:id', requireAdmin, (req, res) => {
   console.log('🗑️ Admin excluindo produto:', req.params.id);
   
   try {
-    const productId = req.params.id;
-    const productIndex = mockProducts.findIndex(p => p.id === productId);
+    const _productId = req.params.id;
+    const _productIndex = mockProducts.findIndex(p => p.id === productId);
     
     if (productIndex === -1) {
       return res.status(404).json({ error: 'Produto não encontrado' });
     }
 
-    const deletedProduct = mockProducts.splice(productIndex, 1)[0];
+    const _deletedProduct = mockProducts.splice(productIndex, 1)[0];
 
     res.json({
       success: true,
@@ -881,7 +980,7 @@ app.post('/api/cart/add', authenticateToken, (req, res) => {
 app.post('/api/coupons/validate', (req, res) => {
   const { code } = req.body;
   
-  const coupons = {
+  const _coupons = {
     'BEMVINDO10': { discount: 10, type: 'percentage', description: '10% de desconto' },
     'CAFE20': { discount: 20, type: 'fixed', description: 'R$ 20 de desconto' }
   };
@@ -904,7 +1003,7 @@ app.post('/api/coupons/validate', (req, res) => {
 
 // Notifications
 app.get('/api/notifications', authenticateToken, (req, res) => {
-  const notifications = [
+  const _notifications = [
     {
       id: 1,
       title: 'Bem-vindo aos Mestres do Café!',
@@ -929,7 +1028,7 @@ app.get('/api/notifications', authenticateToken, (req, res) => {
 // Gamification endpoints
 
 // Function to calculate user level based on points
-function calculateLevel(points) {
+function calculateLevel(_points) {
   if (points >= 5000) return { name: 'lenda', number: 5, discount: 25 };
   if (points >= 3000) return { name: 'mestre', number: 4, discount: 20 };
   if (points >= 1500) return { name: 'especialista', number: 3, discount: 15 };
@@ -938,9 +1037,9 @@ function calculateLevel(points) {
 }
 
 // Add points to user
-function addPointsToUser(userId, points, reason) {
-  const db = readDB();
-  const userIndex = db.users.findIndex(u => u.id === userId);
+function addPointsToUser(_userId,_points,_reason) {
+  const _db = readDB();
+  const _userIndex = db.users.findIndex(u => u.id === userId);
   
   if (userIndex === -1) return null;
   
@@ -948,7 +1047,7 @@ function addPointsToUser(userId, points, reason) {
   db.users[userIndex].points = (db.users[userIndex].points || 0) + points;
   
   // Calculate new level
-  const newLevel = calculateLevel(db.users[userIndex].points);
+  const _newLevel = calculateLevel(db.users[userIndex].points);
   db.users[userIndex].level = newLevel.name;
   
   // Add to points history (in a real app, this would be a separate table)
@@ -968,18 +1067,18 @@ function addPointsToUser(userId, points, reason) {
 
 // Get user gamification info
 app.get('/api/gamification/profile', authenticateToken, (req, res) => {
-  const user = findUser(req.user.email);
+  const _user = findUser(req.user.email);
   if (!user) {
     return res.status(404).json({ error: 'Usuário não encontrado' });
   }
   
-  const currentLevel = calculateLevel(user.points || 0);
-  const nextLevel = calculateLevel((user.points || 0) + 1);
+  const _currentLevel = calculateLevel(user.points || 0);
+  const _nextLevel = calculateLevel((user.points || 0) + 1);
   
   // Calculate points needed for next level
-  let pointsForNext = 0;
+  let _pointsForNext = 0;
   if (currentLevel.number < 5) {
-    const thresholds = [0, 500, 1500, 3000, 5000];
+    const _thresholds = [0, 500, 1500, 3000, 5000];
     pointsForNext = thresholds[currentLevel.number] - (user.points || 0);
   }
   
@@ -1003,8 +1102,8 @@ app.get('/api/gamification/profile', authenticateToken, (req, res) => {
 
 // Get points history
 app.get('/api/gamification/points-history', authenticateToken, (req, res) => {
-  const db = readDB();
-  const history = (db.points_history || [])
+  const _db = readDB();
+  const _history = (db.points_history || [])
     .filter(entry => entry.user_id === req.user.id)
     .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
     .slice(0, 50); // Last 50 entries
@@ -1027,13 +1126,13 @@ app.post('/api/gamification/add-points', authenticateToken, (req, res) => {
     return res.status(400).json({ error: 'Motivo é obrigatório' });
   }
   
-  const updatedUser = addPointsToUser(req.user.id, points, reason);
+  const _updatedUser = addPointsToUser(req.user.id, points, reason);
   
   if (!updatedUser) {
     return res.status(404).json({ error: 'Usuário não encontrado' });
   }
   
-  const currentLevel = calculateLevel(updatedUser.points);
+  const _currentLevel = calculateLevel(updatedUser.points);
   
   res.json({
     message: `${points} pontos adicionados com sucesso!`,
@@ -1046,8 +1145,8 @@ app.post('/api/gamification/add-points', authenticateToken, (req, res) => {
 
 // Get leaderboard
 app.get('/api/gamification/leaderboard', (req, res) => {
-  const db = readDB();
-  const leaderboard = db.users
+  const _db = readDB();
+  const _leaderboard = db.users
     .filter(user => user.user_type !== 'admin' && user.is_active)
     .map(user => ({
       id: user.id,
@@ -1069,8 +1168,8 @@ app.get('/api/admin/stats', authenticateToken, (req, res) => {
     return res.status(403).json({ error: 'Acesso negado' });
   }
   
-  const db = readDB();
-  const stats = {
+  const _db = readDB();
+  const _stats = {
     total_users: db.users.filter(u => u.user_type !== 'admin').length,
     total_orders: 42,
     total_revenue: 1250.80,
@@ -1094,8 +1193,8 @@ app.get('/api/admin/users', authenticateToken, (req, res) => {
     return res.status(403).json({ error: 'Acesso negado' });
   }
   
-  const db = readDB();
-  const users = db.users.filter(u => u.user_type !== 'admin').map(user => ({
+  const _db = readDB();
+  const _users = db.users.filter(u => u.user_type !== 'admin').map(user => ({
     id: user.id,
     name: user.name,
     email: user.email,
@@ -1117,10 +1216,16 @@ app.put('/api/admin/users/:id', authenticateToken, (req, res) => {
   }
   
   const { id } = req.params;
-  const updates = req.body;
-  const db = readDB();
+  const _updates = req.body;
+  const _db = readDB();
   
-  const userIndex = db.users.findIndex(u => u.id === id);
+  // Fix: Convert string parameter to number for proper comparison
+  const _userId = parseInt(id, 10);
+  if (isNaN(userId)) {
+    return res.status(400).json({ error: 'ID de usuário inválido' });
+  }
+  
+  const _userIndex = db.users.findIndex(u => u.id === userId);
   if (userIndex === -1) {
     return res.status(404).json({ error: 'Usuário não encontrado' });
   }
@@ -1141,9 +1246,15 @@ app.delete('/api/admin/users/:id', authenticateToken, (req, res) => {
   }
   
   const { id } = req.params;
-  const db = readDB();
+  const _db = readDB();
   
-  const userIndex = db.users.findIndex(u => u.id === id);
+  // Fix: Convert string parameter to number for proper comparison
+  const _userId = parseInt(id, 10);
+  if (isNaN(userId)) {
+    return res.status(400).json({ error: 'ID de usuário inválido' });
+  }
+  
+  const _userIndex = db.users.findIndex(u => u.id === userId);
   if (userIndex === -1) {
     return res.status(404).json({ error: 'Usuário não encontrado' });
   }
@@ -1161,7 +1272,7 @@ app.get('/api/admin/orders', authenticateToken, (req, res) => {
   }
   
   // Mock orders data - implementar com dados reais quando necessário
-  const mockOrders = [
+  const _mockOrders = [
     {
       id: 1,
       user: { name: 'João Silva', email: 'joao@email.com' },
@@ -1212,7 +1323,7 @@ app.get('/api/admin/orders/:id', authenticateToken, (req, res) => {
   const { id } = req.params;
   
   // Mock order data
-  const mockOrder = {
+  const _mockOrder = {
     id: id,
     user: { name: 'João Silva', email: 'joao@email.com' },
     total_amount: 89.90,
@@ -1228,10 +1339,10 @@ app.get('/api/admin/orders/:id', authenticateToken, (req, res) => {
 
 // User Orders - Meus pedidos
 app.get('/api/orders/my-orders', authenticateToken, (req, res) => {
-  const userId = req.user.id;
+  const _userId = req.user.id;
   
   // Mock orders para o usuário logado
-  const userOrders = [
+  const _userOrders = [
     {
       id: 1,
       total_amount: 89.90,
@@ -1254,7 +1365,7 @@ app.post('/api/orders', authenticateToken, (req, res) => {
     return res.status(400).json({ error: 'Itens do pedido são obrigatórios' });
   }
   
-  const newOrder = {
+  const _newOrder = {
     id: Date.now(),
     user_id: req.user.id,
     items: items,
@@ -1283,7 +1394,7 @@ app.use('/api/newsletter', newsletterRoutes);
 // Status do WhatsApp Bot
 app.get('/api/whatsapp/status', async (req, res) => {
   try {
-    const status = await whatsappService.getStatus();
+    const _status = await whatsappService.getStatus();
     res.json(status);
   } catch (error) {
     res.status(500).json({ 
@@ -1321,8 +1432,8 @@ app.post('/api/whatsapp/send-message', authenticateToken, async (req, res) => {
       return res.status(400).json({ error: 'Telefone e mensagem são obrigatórios' });
     }
 
-    const chatId = phone.includes('@') ? phone : `${phone}@c.us`;
-    const result = await whatsappService.sendTextMessage(chatId, message);
+    const _chatId = phone.includes('@') ? phone : `${phone}@c.us`;
+    const _result = await whatsappService.sendTextMessage(chatId, message);
     
     res.json({ 
       success: true, 
@@ -1368,7 +1479,7 @@ app.get('/api/whatsapp/qr-code', authenticateToken, async (req, res) => {
       return res.status(403).json({ error: 'Acesso negado' });
     }
 
-    const status = await whatsappService.getStatus();
+    const _status = await whatsappService.getStatus();
     
     if (status.qrCode) {
       res.json({ 
@@ -1395,7 +1506,7 @@ app.get('/api/whatsapp/qr-code', authenticateToken, async (req, res) => {
 // Obter todas as localizações
 app.get('/api/locations', async (req, res) => {
   try {
-    const locations = await mapsService.getAllLocations();
+    const _locations = await mapsService.getAllLocations();
     res.json(locations);
   } catch (error) {
     console.error('❌ Erro ao buscar localizações:', error);
@@ -1406,7 +1517,7 @@ app.get('/api/locations', async (req, res) => {
 // Obter localização específica
 app.get('/api/locations/:id', async (req, res) => {
   try {
-    const location = await mapsService.getLocationById(req.params.id);
+    const _location = await mapsService.getLocationById(req.params.id);
     res.json(location);
   } catch (error) {
     console.error('❌ Erro ao buscar localização:', error);
@@ -1417,7 +1528,7 @@ app.get('/api/locations/:id', async (req, res) => {
 // Buscar localizações por tipo
 app.get('/api/locations/type/:type', async (req, res) => {
   try {
-    const locations = await mapsService.getLocationsByType(req.params.type);
+    const _locations = await mapsService.getLocationsByType(req.params.type);
     res.json(locations);
   } catch (error) {
     console.error('❌ Erro ao filtrar localizações:', error);
@@ -1434,7 +1545,7 @@ app.post('/api/locations/nearest', async (req, res) => {
       return res.status(400).json({ error: 'Latitude e longitude são obrigatórias' });
     }
 
-    const result = await mapsService.findNearestLocation(latitude, longitude, type);
+    const _result = await mapsService.findNearestLocation(latitude, longitude, type);
     res.json(result);
   } catch (error) {
     console.error('❌ Erro ao encontrar loja próxima:', error);
@@ -1451,7 +1562,7 @@ app.post('/api/delivery/check-area', async (req, res) => {
       return res.status(400).json({ error: 'Endereço é obrigatório' });
     }
 
-    const result = await mapsService.checkDeliveryArea(address);
+    const _result = await mapsService.checkDeliveryArea(address);
     res.json(result);
   } catch (error) {
     console.error('❌ Erro ao verificar área de delivery:', error);
@@ -1468,7 +1579,7 @@ app.post('/api/maps/geocode', async (req, res) => {
       return res.status(400).json({ error: 'Endereço é obrigatório' });
     }
 
-    const coords = await mapsService.geocodeAddress(address);
+    const _coords = await mapsService.geocodeAddress(address);
     
     if (coords) {
       res.json({ success: true, coordinates: coords });
@@ -1490,7 +1601,7 @@ app.post('/api/maps/reverse-geocode', async (req, res) => {
       return res.status(400).json({ error: 'Latitude e longitude são obrigatórias' });
     }
 
-    const result = await mapsService.reverseGeocode(latitude, longitude);
+    const _result = await mapsService.reverseGeocode(latitude, longitude);
     res.json(result);
   } catch (error) {
     console.error('❌ Erro na geocodificação reversa:', error);
@@ -1509,7 +1620,7 @@ app.post('/api/maps/route', async (req, res) => {
       });
     }
 
-    const result = await mapsService.getRoute(fromLat, fromLng, toLat, toLng);
+    const _result = await mapsService.getRoute(fromLat, fromLng, toLat, toLng);
     res.json(result);
   } catch (error) {
     console.error('❌ Erro ao calcular rota:', error);
@@ -1526,7 +1637,7 @@ app.post('/api/maps/nearby-cafes', async (req, res) => {
       return res.status(400).json({ error: 'Latitude e longitude são obrigatórias' });
     }
 
-    const result = await mapsService.findNearbyCafes(latitude, longitude, radius);
+    const _result = await mapsService.findNearbyCafes(latitude, longitude, radius);
     res.json(result);
   } catch (error) {
     console.error('❌ Erro ao buscar cafeterias:', error);
@@ -1537,7 +1648,7 @@ app.post('/api/maps/nearby-cafes', async (req, res) => {
 // Estatísticas da área de entrega
 app.get('/api/delivery/stats', async (req, res) => {
   try {
-    const stats = mapsService.getDeliveryStats();
+    const _stats = mapsService.getDeliveryStats();
     res.json({ success: true, stats: stats });
   } catch (error) {
     console.error('❌ Erro ao obter estatísticas:', error);

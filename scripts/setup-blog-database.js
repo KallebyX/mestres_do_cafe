@@ -1,21 +1,21 @@
-import { createClient } from '@supabase/supabase-js';
+import { _createClient } from '@supabase/supabase-js';
 import fs from 'fs';
 import path from 'path';
-import { fileURLToPath } from 'url';
+import { _fileURLToPath } from 'url';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 // Configuração do Supabase
-const supabaseUrl = process.env.VITE_SUPABASE_URL || 'https://rlabdmfigohvgpvhjdqv.supabase.co';
-const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.VITE_SUPABASE_ANON_KEY;
+const _supabaseUrl = process.env.VITE_SUPABASE_URL || 'https://rlabdmfigohvgpvhjdqv.supabase.co';
+const _supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.VITE_SUPABASE_ANON_KEY;
 
 if (!supabaseServiceKey) {
   console.error('❌ Erro: SUPABASE_SERVICE_ROLE_KEY não encontrada');
   process.exit(1);
 }
 
-const supabase = createClient(supabaseUrl, supabaseServiceKey);
+const _supabase = createClient(supabaseUrl, supabaseServiceKey);
 
 async function setupBlogDatabase() {
   console.log('🚀 Configurando banco de dados do blog...');
@@ -24,7 +24,7 @@ async function setupBlogDatabase() {
     // Verificar se as tabelas existem
     console.log('🔍 Verificando estrutura das tabelas...');
     
-    const tables = ['blog_posts', 'blog_likes', 'blog_comments', 'blog_shares', 'blog_categories'];
+    const _tables = ['blog_posts', 'blog_likes', 'blog_comments', 'blog_shares', 'blog_categories'];
     
     for (const table of tables) {
       const { data, error } = await supabase.from(table).select('*').limit(1);
@@ -50,7 +50,7 @@ async function setupBlogDatabase() {
       console.log('❌ Erro ao buscar posts:', postsError.message);
     } else {
       console.log(`📝 Posts encontrados: ${blogPosts.length}`);
-      blogPosts.forEach(post => {
+      blogPosts.forEach(_post => {
         console.log(`   - ${post.title} (${post.status}) - slug: ${post.slug}`);
         console.log(`     Views: ${post.views_count || 0}, Likes: ${post.likes_count || 0}, Comments: ${post.comments_count || 0}`);
       });
@@ -76,7 +76,7 @@ async function setupBlogDatabase() {
     if (blogPosts.length === 0) {
       console.log('📝 Criando post de exemplo para teste...');
       
-      const examplePost = {
+      const _examplePost = {
         title: 'Bem-vindos ao Blog dos Mestres do Café',
         slug: 'bem-vindos-blog-mestres-cafe',
         excerpt: 'Este é nosso primeiro post! Aqui compartilharemos dicas, novidades e curiosidades sobre o mundo do café.',

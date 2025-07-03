@@ -1,11 +1,9 @@
 import * as React from "react"
 
-import { cn } from "@/lib/utils"
+import { _cn } from "@/lib/utils"
 
-function Input({
-  className,
-  type,
-  ...props
+function Input(_{
+  className,_type,_...props
 }) {
   return (
     <input

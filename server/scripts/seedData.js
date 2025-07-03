@@ -6,9 +6,9 @@ async function seedData() {
 
   try {
     // Criar usuário admin
-    const adminPassword = await bcrypt.hash('admin123', 12);
+    const _adminPassword = await bcrypt.hash('admin123', 12);
     
-    const adminSql = `INSERT OR IGNORE INTO users (
+    const _adminSql = `INSERT OR IGNORE INTO users (
       name, email, password, user_type, phone, is_active
     ) VALUES (?, ?, ?, ?, ?, ?)`;
     
@@ -30,7 +30,7 @@ async function seedData() {
     });
 
     // Criar categorias
-    const categories = [
+    const _categories = [
       {
         name: 'Cafés Especiais',
         description: 'Cafés com pontuação acima de 80 pontos pela SCA',
@@ -53,7 +53,7 @@ async function seedData() {
       }
     ];
 
-    const categoryIds = [];
+    const _categoryIds = [];
     for (const category of categories) {
       await new Promise((resolve, reject) => {
         db.run('INSERT OR IGNORE INTO categories (name, description, image_url) VALUES (?, ?, ?)',
@@ -69,7 +69,7 @@ async function seedData() {
     }
 
     // Criar produtos
-    const products = [
+    const _products = [
       {
         name: 'Café Bourbon Amarelo Premium',
         description: 'Café especial da região do Cerrado Mineiro, com notas de chocolate e caramelo. Pontuação SCA: 84 pontos.',
@@ -164,7 +164,7 @@ async function seedData() {
 
     for (const product of products) {
       await new Promise((resolve, reject) => {
-        const sql = `INSERT OR IGNORE INTO products (
+        const _sql = `INSERT OR IGNORE INTO products (
           name, description, price, original_price, category_id,
           image_url, origin, roast_level, flavor_notes, processing_method,
           altitude, stock_quantity, is_featured

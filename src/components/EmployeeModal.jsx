@@ -1,12 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { 
-  X, Save, AlertCircle, User, Calendar, DollarSign, 
-  Phone, Mail, MapPin, Building, UserCheck, Shield
-} from 'lucide-react';
-import { hrAPI } from '../lib/supabase-erp-api';
-import { useNotifications } from '../contexts/NotificationContext';
+// import { _X, _Save, _AlertCircle, _User, _Calendar, _DollarSign, _Phone, _Mail, _MapPin, _Building, _UserCheck, _Shield } from 'lucide-react'; // Temporarily commented - unused import
+import { _hrAPI } from '../lib/supabase-erp-api';
+import { _useNotifications } from '../contexts/NotificationContext';
 
-const EmployeeModal = ({ 
+const _EmployeeModal = ({ 
   isOpen, 
   onClose, 
   mode = 'create', // 'create' | 'edit' | 'view'
@@ -43,14 +40,14 @@ const EmployeeModal = ({
 
   const { notifySuccess, notifyError } = useNotifications();
 
-  const statusOptions = [
+  const _statusOptions = [
     { value: 'ativo', label: 'Ativo' },
     { value: 'inativo', label: 'Inativo' },
     { value: 'demitido', label: 'Demitido' },
     { value: 'licenca', label: 'Licença' }
   ];
 
-  const departmentOptions = [
+  const _departmentOptions = [
     'Administrativo',
     'Vendas',
     'Produção',
@@ -61,7 +58,7 @@ const EmployeeModal = ({
     'TI'
   ];
 
-  const stateOptions = [
+  const _stateOptions = [
     'AC', 'AL', 'AP', 'AM', 'BA', 'CE', 'DF', 'ES', 'GO', 
     'MA', 'MT', 'MS', 'MG', 'PA', 'PB', 'PR', 'PE', 'PI', 
     'RJ', 'RN', 'RS', 'RO', 'RR', 'SC', 'SP', 'SE', 'TO'
@@ -125,9 +122,9 @@ const EmployeeModal = ({
     }
   }, [isOpen, mode, employee]);
 
-  const loadEmployees = async () => {
+  const _loadEmployees = async () => {
     try {
-      const result = await hrAPI.getEmployees();
+      const _result = await hrAPI.getEmployees();
       if (result.success) {
         setEmployees(result.data);
       }
@@ -136,12 +133,12 @@ const EmployeeModal = ({
     }
   };
 
-  const generateEmployeeCode = () => {
-    const timestamp = Date.now().toString().slice(-4);
+  const _generateEmployeeCode = () => {
+    const _timestamp = Date.now().toString().slice(-4);
     return `EMP${timestamp}`;
   };
 
-  const handleInputChange = (e) => {
+  const _handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
     
@@ -151,7 +148,7 @@ const EmployeeModal = ({
     }
   };
 
-  const formatCPF = (value) => {
+  const _formatCPF = (value) => {
     return value
       .replace(/\D/g, '')
       .replace(/(\d{3})(\d)/, '$1.$2')
@@ -160,41 +157,41 @@ const EmployeeModal = ({
       .replace(/(-\d{2})\d+?$/, '$1');
   };
 
-  const formatPhone = (value) => {
+  const _formatPhone = (value) => {
     return value
       .replace(/\D/g, '')
       .replace(/(\d{2})(\d)/, '($1) $2')
       .replace(/(\d{4,5})(\d{4})/, '$1-$2');
   };
 
-  const formatCEP = (value) => {
+  const _formatCEP = (value) => {
     return value
       .replace(/\D/g, '')
       .replace(/(\d{5})(\d)/, '$1-$2');
   };
 
-  const handleCPFChange = (e) => {
-    const formatted = formatCPF(e.target.value);
+  const _handleCPFChange = (e) => {
+    const _formatted = formatCPF(e.target.value);
     setFormData(prev => ({ ...prev, cpf: formatted }));
   };
 
-  const handlePhoneChange = (e) => {
-    const formatted = formatPhone(e.target.value);
+  const _handlePhoneChange = (e) => {
+    const _formatted = formatPhone(e.target.value);
     setFormData(prev => ({ ...prev, phone: formatted }));
   };
 
-  const handleEmergencyPhoneChange = (e) => {
-    const formatted = formatPhone(e.target.value);
+  const _handleEmergencyPhoneChange = (e) => {
+    const _formatted = formatPhone(e.target.value);
     setFormData(prev => ({ ...prev, emergency_phone: formatted }));
   };
 
-  const handleCEPChange = (e) => {
-    const formatted = formatCEP(e.target.value);
+  const _handleCEPChange = (e) => {
+    const _formatted = formatCEP(e.target.value);
     setFormData(prev => ({ ...prev, zip_code: formatted }));
   };
 
-  const validateForm = () => {
-    const errors = {};
+  const _validateForm = () => {
+    const _errors = {};
 
     // Campos obrigatórios
     if (!formData.name.trim()) errors.name = 'Nome é obrigatório';
@@ -204,7 +201,7 @@ const EmployeeModal = ({
     if (!formData.hire_date) errors.hire_date = 'Data de admissão é obrigatória';
 
     // Validação de email
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    const _emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (formData.email && !emailRegex.test(formData.email)) {
       errors.email = 'Email inválido';
     }
@@ -223,14 +220,14 @@ const EmployeeModal = ({
     return Object.keys(errors).length === 0;
   };
 
-  const handleSubmit = async (e) => {
+  const _handleSubmit = async (e) => {
     e.preventDefault();
     
     if (!validateForm()) return;
 
     setIsSubmitting(true);
     try {
-      const employeeData = {
+      const _employeeData = {
         ...formData,
         salary: formData.salary ? parseFloat(formData.salary) : null,
         cpf: formData.cpf.replace(/\D/g, ''),
@@ -268,7 +265,7 @@ const EmployeeModal = ({
 
   if (!isOpen) return null;
 
-  const isReadOnly = mode === 'view';
+  const _isReadOnly = mode === 'view';
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">

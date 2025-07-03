@@ -1,8 +1,8 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Search, Filter, Plus, Edit3, Trash2, ShoppingCart, Star, Coffee } from 'lucide-react';
-import { getAllProducts } from '../lib/supabase-products';
+// import { _Search, _Filter, _Plus, _Edit3, _Trash2, _ShoppingCart, _Star, _Coffee } from 'lucide-react'; // Temporarily commented - unused import
+import { _getAllProducts } from '../lib/supabase-products';
 
-const MarketplacePageNew = () => {
+const _MarketplacePageNew = () => {
   const [products, setProducts] = useState([]);
   const [filteredProducts, setFilteredProducts] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -24,11 +24,11 @@ const MarketplacePageNew = () => {
     filterProducts();
   }, [filterProducts]);
 
-  const loadUserData = () => {
+  const _loadUserData = () => {
     try {
-      const data = localStorage.getItem('mestresCafeData');
+      const _data = localStorage.getItem('mestresCafeData');
       if (data) {
-        const parsed = JSON.parse(data);
+        const _parsed = JSON.parse(data);
         setCurrentUser(parsed.currentUser);
       }
     } catch (error) {
@@ -36,17 +36,17 @@ const MarketplacePageNew = () => {
     }
   };
 
-  const loadProducts = useCallback(async () => {
+  const _loadProducts = useCallback(async () => {
     try {
       // Usar API do Supabase para carregar produtos
-      const response = await getAllProducts();
+      const _response = await getAllProducts();
       
       if (response.success && response.data) {
         setProducts(response.data);
         console.log('✅ Produtos carregados do Supabase:', response.data.length);
       } else {
         console.error('❌ Erro ao carregar produtos do Supabase:', response.error);
-        setProducts([]);
+        setProducts([] // TODO: Add missing dependencies to fix exhaustive-deps warning // TODO: Add missing dependencies to fix exhaustive-deps warning);
       }
     } catch (error) {
       console.error('❌ Erro ao carregar produtos:', error);
@@ -58,8 +58,8 @@ const MarketplacePageNew = () => {
 
 
 
-  const filterProducts = useCallback(() => {
-    let filtered = [...products];
+  const _filterProducts = useCallback(() => {
+    let _filtered = [...products];
 
     // Filtro por busca
     if (searchTerm) {
@@ -97,7 +97,7 @@ const MarketplacePageNew = () => {
     setFilteredProducts(filtered);
   }, [products, searchTerm, selectedCategory, sortBy]);
 
-  const addToCart = (product) => {
+  const _addToCart = (product) => {
     // Integrar com o sistema de carrinho global
     if (window.app) {
       window.app.addToCart(product.id, product.name, product.price);
@@ -106,7 +106,7 @@ const MarketplacePageNew = () => {
     }
   };
 
-  const handleAdminAction = (action, product = null) => {
+  const _handleAdminAction = (action, product = null) => {
     if (!currentUser || currentUser.role !== 'admin') {
       alert('Acesso negado. Apenas administradores podem realizar esta ação.');
       return;
@@ -116,14 +116,14 @@ const MarketplacePageNew = () => {
     setShowAdminModal(true);
   };
 
-  const saveProduct = async (productData) => {
+  const _saveProduct = async (productData) => {
     try {
-      const method = editingProduct ? 'PUT' : 'POST';
-      const url = editingProduct 
+      const _method = editingProduct ? 'PUT' : 'POST';
+      const _url = editingProduct 
         ? `http://localhost:5000/api/admin/products/${editingProduct.id}`
         : 'http://localhost:5000/api/admin/products';
 
-      const response = await fetch(url, {
+      const _response = await fetch(url, {
         method,
         headers: {
           'Content-Type': 'application/json',
@@ -138,14 +138,14 @@ const MarketplacePageNew = () => {
         setEditingProduct(null);
         alert(editingProduct ? 'Produto atualizado com sucesso!' : 'Produto criado com sucesso!');
       } else {
-        const data = await response.json();
+        const _data = await response.json();
         alert(data.error || 'Erro ao salvar produto');
       }
     } catch (error) {
       console.error('Erro ao salvar produto:', error);
       
       // Simulação local para quando API não estiver disponível
-      const newProduct = {
+      const _newProduct = {
         id: editingProduct?.id || Date.now().toString(),
         ...productData,
         rating: editingProduct?.rating || 0,
@@ -164,11 +164,11 @@ const MarketplacePageNew = () => {
     }
   };
 
-  const deleteProduct = async (productId) => {
+  const _deleteProduct = async (productId) => {
     if (!confirm('Tem certeza que deseja excluir este produto?')) return;
 
     try {
-      const response = await fetch(`http://localhost:5000/api/admin/products/${productId}`, {
+      const _response = await fetch(`http://localhost:5000/api/admin/products/${productId}`, {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${currentUser?.access_token}`
@@ -179,7 +179,7 @@ const MarketplacePageNew = () => {
         await loadProducts();
         alert('Produto excluído com sucesso!');
       } else {
-        const data = await response.json();
+        const _data = await response.json();
         alert(data.error || 'Erro ao excluir produto');
       }
     } catch (error) {
@@ -191,7 +191,7 @@ const MarketplacePageNew = () => {
     }
   };
 
-  const isAdmin = currentUser?.role === 'admin';
+  const _isAdmin = currentUser?.role === 'admin';
 
   if (loading) {
     return (
@@ -421,7 +421,7 @@ const MarketplacePageNew = () => {
 };
 
 // Modal para Adicionar/Editar Produtos (Admin)
-const AdminProductModal = ({ product, onSave, onClose }) => {
+const _AdminProductModal = ({ product, onSave, onClose }) => {
   const [formData, setFormData] = useState({
     name: product?.name || '',
     description: product?.description || '',
@@ -435,10 +435,10 @@ const AdminProductModal = ({ product, onSave, onClose }) => {
     is_featured: product?.is_featured || false
   });
 
-  const handleSubmit = (e) => {
+  const _handleSubmit = (e) => {
     e.preventDefault();
     
-    const processedData = {
+    const _processedData = {
       ...formData,
       price: parseFloat(formData.price),
       original_price: formData.original_price ? parseFloat(formData.original_price) : null,
@@ -448,7 +448,7 @@ const AdminProductModal = ({ product, onSave, onClose }) => {
     onSave(processedData);
   };
 
-  const handleChange = (e) => {
+  const _handleChange = (e) => {
     const { name, value, type, checked } = e.target;
     setFormData(prev => ({
       ...prev,

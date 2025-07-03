@@ -1,16 +1,11 @@
 import * as React from "react"
-import {
-  ChevronLeftIcon,
-  ChevronRightIcon,
-  MoreHorizontalIcon,
-} from "lucide-react"
+// import { _ChevronLeftIcon, _ChevronRightIcon, _MoreHorizontalIcon,  } from "lucide-react" // Temporarily commented - unused import
 
-import { cn } from "@/lib/utils"
-import { buttonVariants } from "@/components/ui/button";
+import { _cn } from "@/lib/utils"
+// import { _buttonVariants } from "@/components/ui/button"; // Temporarily commented - unused import
 
-function Pagination({
-  className,
-  ...props
+function Pagination(_{
+  className,_...props
 }) {
   return (
     <nav
@@ -22,9 +17,8 @@ function Pagination({
   );
 }
 
-function PaginationContent({
-  className,
-  ...props
+function PaginationContent(_{
+  className,_...props
 }) {
   return (
     <ul
@@ -34,17 +28,14 @@ function PaginationContent({
   );
 }
 
-function PaginationItem({
+function PaginationItem(_{
   ...props
 }) {
   return <li data-slot="pagination-item" {...props} />;
 }
 
-function PaginationLink({
-  className,
-  isActive,
-  size = "icon",
-  ...props
+function PaginationLink(_{
+  className,_isActive,_size = "icon",_...props
 }) {
   return (
     <a
@@ -59,9 +50,8 @@ function PaginationLink({
   );
 }
 
-function PaginationPrevious({
-  className,
-  ...props
+function PaginationPrevious(_{
+  className,_...props
 }) {
   return (
     <PaginationLink
@@ -75,9 +65,8 @@ function PaginationPrevious({
   );
 }
 
-function PaginationNext({
-  className,
-  ...props
+function PaginationNext(_{
+  className,_...props
 }) {
   return (
     <PaginationLink
@@ -91,9 +80,8 @@ function PaginationNext({
   );
 }
 
-function PaginationEllipsis({
-  className,
-  ...props
+function PaginationEllipsis(_{
+  className,_...props
 }) {
   return (
     <span

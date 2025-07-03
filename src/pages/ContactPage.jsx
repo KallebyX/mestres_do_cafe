@@ -1,22 +1,7 @@
 import React, { useState } from 'react';
-import { 
-  Phone, 
-  Mail, 
-  MapPin, 
-  Clock, 
-  MessageCircle, 
-  Send,
-  CheckCircle,
-  Star,
-  User,
-  Building,
-  HelpCircle,
-  Shield,
-  Award,
-  Coffee
-} from 'lucide-react';
+// import { _Phone, _Mail, _MapPin, _Clock, _MessageCircle, _Send, _CheckCircle, _Star, _User, _Building, _HelpCircle, _Shield, _Award, _Coffee } from 'lucide-react'; // Temporarily commented - unused import
 
-const ContactPage = () => {
+const _ContactPage = () => {
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -27,7 +12,7 @@ const ContactPage = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
 
-  const contactMethods = [
+  const _contactMethods = [
     {
       icon: MessageCircle,
       title: "WhatsApp Premium",
@@ -60,7 +45,7 @@ const ContactPage = () => {
     }
   ];
 
-  const subjects = [
+  const _subjects = [
     { value: 'geral', label: 'Informações Gerais' },
     { value: 'pedidos', label: 'Pedidos e Entregas' },
     { value: 'qualidade', label: 'Qualidade dos Produtos' },
@@ -69,7 +54,7 @@ const ContactPage = () => {
     { value: 'suporte', label: 'Suporte Técnico' }
   ];
 
-  const faq = [
+  const _faq = [
     {
       question: "Qual o prazo de entrega?",
       answer: "Para Santa Maria: 24-48h. Demais regiões: 3-7 dias úteis. Frete grátis acima de R$ 99."
@@ -88,7 +73,7 @@ const ContactPage = () => {
     }
   ];
 
-  const handleSubmit = async (e) => {
+  const _handleSubmit = async (e) => {
     e.preventDefault();
     setIsSubmitting(true);
     
@@ -111,7 +96,7 @@ const ContactPage = () => {
     }, 3000);
   };
 
-  const handleChange = (e) => {
+  const _handleChange = (e) => {
     setFormData({
       ...formData,
       [e.target.name]: e.target.value

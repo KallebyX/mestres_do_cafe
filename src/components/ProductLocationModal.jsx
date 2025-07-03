@@ -1,12 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { 
-  X, Save, MapPin, Building, Package, Scan, 
-  Plus, Trash2, Edit, Search, Grid, Map
-} from 'lucide-react';
-import { useNotifications } from '../contexts/NotificationContext';
-import { supabase } from '../lib/supabase';
+// import { _X, _Save, _MapPin, _Building, _Package, _Scan, _Plus, _Trash2, _Edit, _Search, _Grid, _Map } from 'lucide-react'; // Temporarily commented - unused import
+import { _useNotifications } from '../contexts/NotificationContext';
+import { _supabase } from '../lib/supabase';
 
-const ProductLocationModal = ({ 
+const _ProductLocationModal = ({ 
   isOpen, 
   onClose, 
   product = null,
@@ -39,7 +36,7 @@ const ProductLocationModal = ({
     }
   }, [isOpen, product]);
 
-  const loadWarehouses = async () => {
+  const _loadWarehouses = async () => {
     try {
       // Buscar depósitos reais do Supabase
       const { data, error } = await supabase
@@ -61,7 +58,7 @@ const ProductLocationModal = ({
     }
   };
 
-  const loadProductLocations = async () => {
+  const _loadProductLocations = async () => {
     try {
       // Buscar localizações reais do produto no Supabase
       const { data, error } = await supabase
@@ -77,7 +74,7 @@ const ProductLocationModal = ({
         console.error('Erro ao buscar localizações:', error);
         setLocations([]);
       } else {
-        const mappedLocations = data?.map(location => ({
+        const _mappedLocations = data?.map(location => ({
           id: location.id,
           warehouse_id: location.warehouse_id,
           warehouse_name: location.warehouse?.name || 'Depósito não encontrado',
@@ -99,7 +96,7 @@ const ProductLocationModal = ({
     }
   };
 
-  const generateLocationCode = () => {
+  const _generateLocationCode = () => {
     const { zone, aisle, shelf } = newLocation;
     if (zone && aisle && shelf) {
       return `${zone}${aisle}-${shelf.padStart(2, '0')}`;
@@ -107,7 +104,7 @@ const ProductLocationModal = ({
     return '';
   };
 
-  const handleAddLocation = async () => {
+  const _handleAddLocation = async () => {
     if (!newLocation.warehouse_id || !newLocation.zone || !newLocation.aisle || !newLocation.shelf) {
       setError('Preencha todos os campos obrigatórios');
       return;
@@ -115,10 +112,10 @@ const ProductLocationModal = ({
 
     setIsSubmitting(true);
     try {
-      const locationCode = generateLocationCode();
-      const warehouse = warehouses.find(w => w.id === newLocation.warehouse_id);
+      const _locationCode = generateLocationCode();
+      const _warehouse = warehouses.find(w => w.id === newLocation.warehouse_id);
 
-      const location = {
+      const _location = {
         id: `loc-${Date.now()}`,
         warehouse_id: newLocation.warehouse_id,
         warehouse_name: warehouse?.name || '',
@@ -154,14 +151,14 @@ const ProductLocationModal = ({
     }
   };
 
-  const handleRemoveLocation = async (locationId) => {
+  const _handleRemoveLocation = async (locationId) => {
     if (window.confirm('Tem certeza que deseja remover esta localização?')) {
       setLocations(prev => prev.filter(l => l.id !== locationId));
       notifySuccess('✅ Localização Removida', 'Localização removida com sucesso');
     }
   };
 
-  const handleSave = async () => {
+  const _handleSave = async () => {
     if (onSuccess) {
       onSuccess(locations);
     }

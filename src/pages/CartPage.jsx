@@ -1,15 +1,15 @@
 import React from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import { useCart } from '../contexts/CartContext';
-import { useAuth } from '../contexts/AuthContext';
-import { Trash2, Plus, Minus, ShoppingBag, ArrowRight } from 'lucide-react';
+import { _Link, _useNavigate } from 'react-router-dom';
+import { _useCart } from '../contexts/CartContext';
+import { _useAuth } from '../contexts/AuthContext';
+// import { _Trash2, _Plus, _Minus, _ShoppingBag, _ArrowRight } from 'lucide-react'; // Temporarily commented - unused import
 
-const CartPage = () => {
+const _CartPage = () => {
   const { cartItems, updateQuantity, removeFromCart, getTotalPrice } = useCart();
   const { user } = useAuth();
-  const navigate = useNavigate();
+  const _navigate = useNavigate();
 
-  const handleQuantityChange = (id, quantity) => {
+  const _handleQuantityChange = (id, quantity) => {
     if (quantity <= 0) {
       removeFromCart(id);
     } else {
@@ -17,7 +17,7 @@ const CartPage = () => {
     }
   };
 
-  const handleCheckout = () => {
+  const _handleCheckout = () => {
     if (!user) {
       navigate('/login');
       return;

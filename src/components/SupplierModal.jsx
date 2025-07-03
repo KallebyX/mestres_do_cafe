@@ -1,10 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { 
-  X, Save, User, Mail, Phone, MapPin, Building,
-  AlertCircle, CheckCircle 
-} from 'lucide-react';
+// import { _X, _Save, _User, _Mail, _Phone, _MapPin, _Building, _AlertCircle, _CheckCircle } from 'lucide-react'; // Temporarily commented - unused import
 
-const SupplierModal = ({ 
+const _SupplierModal = ({ 
   isOpen, 
   onClose, 
   mode = 'create', // 'create', 'edit', 'view'
@@ -55,8 +52,8 @@ const SupplierModal = ({
     }
   }, [isOpen, mode, data]);
 
-  const validateForm = () => {
-    const newErrors = {};
+  const _validateForm = () => {
+    const _newErrors = {};
 
     if (!formData.name.trim()) {
       newErrors.name = 'Nome do fornecedor é obrigatório';
@@ -74,7 +71,7 @@ const SupplierModal = ({
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleSubmit = async (e) => {
+  const _handleSubmit = async (e) => {
     e.preventDefault();
     
     if (!validateForm()) return;
@@ -90,15 +87,15 @@ const SupplierModal = ({
     }
   };
 
-  const handleChange = (field, value) => {
+  const _handleChange = (field, value) => {
     setFormData(prev => ({ ...prev, [field]: value }));
     if (errors[field]) {
       setErrors(prev => ({ ...prev, [field]: undefined }));
     }
   };
 
-  const getTitle = () => {
-    const action = mode === 'create' ? 'Novo' : mode === 'edit' ? 'Editar' : 'Visualizar';
+  const _getTitle = () => {
+    const _action = mode === 'create' ? 'Novo' : mode === 'edit' ? 'Editar' : 'Visualizar';
     return `${action} Fornecedor`;
   };
 

@@ -1,5 +1,5 @@
 import React from 'react';
-import { Coffee, AlertCircle, RefreshCw, Wifi, WifiOff } from 'lucide-react';
+// import { _Coffee, _AlertCircle, _RefreshCw, _Wifi, _WifiOff } from 'lucide-react'; // Temporarily commented - unused import
 
 // =============================================
 // LOADING COMPONENTS
@@ -8,8 +8,8 @@ import { Coffee, AlertCircle, RefreshCw, Wifi, WifiOff } from 'lucide-react';
 /**
  * Loading Spinner simples
  */
-export const LoadingSpinner = ({ size = 'md', className = '' }) => {
-  const sizeClasses = {
+export const _LoadingSpinner = ({ size = 'md', className = '' }) => {
+  const _sizeClasses = {
     sm: 'w-4 h-4',
     md: 'w-8 h-8', 
     lg: 'w-12 h-12',
@@ -26,7 +26,7 @@ export const LoadingSpinner = ({ size = 'md', className = '' }) => {
 /**
  * Loading Skeleton para produtos
  */
-export const ProductSkeleton = ({ count = 3 }) => {
+export const _ProductSkeleton = ({ count = 3 }) => {
   return (
     <>
       {Array.from({ length: count }).map((_, index) => (
@@ -54,7 +54,7 @@ export const ProductSkeleton = ({ count = 3 }) => {
 /**
  * Loading Skeleton para tabelas
  */
-export const TableSkeleton = ({ rows = 5, cols = 4 }) => {
+export const _TableSkeleton = ({ rows = 5, cols = 4 }) => {
   return (
     <div className="animate-pulse">
       <div className="grid grid-cols-4 gap-4 mb-4">
@@ -76,7 +76,7 @@ export const TableSkeleton = ({ rows = 5, cols = 4 }) => {
 /**
  * Loading de tela completa
  */
-export const FullScreenLoading = ({ 
+export const _FullScreenLoading = ({ 
   title = 'Carregando...', 
   subtitle = 'Aguarde enquanto buscamos os dados',
   showProgress = false,
@@ -109,20 +109,20 @@ export const FullScreenLoading = ({
 /**
  * Componente de erro genérico
  */
-export const ErrorMessage = ({ 
+export const _ErrorMessage = ({ 
   title = 'Ops! Algo deu errado',
   message,
   onRetry,
   showRetry = true,
   type = 'error' // 'error', 'warning', 'info'
 }) => {
-  const typeStyles = {
+  const _typeStyles = {
     error: 'bg-red-50 border-red-200 text-red-800',
     warning: 'bg-yellow-50 border-yellow-200 text-yellow-800',
     info: 'bg-blue-50 border-blue-200 text-blue-800'
   };
 
-  const icons = {
+  const _icons = {
     error: <AlertCircle className="w-8 h-8 text-red-600" />,
     warning: <AlertCircle className="w-8 h-8 text-yellow-600" />,
     info: <AlertCircle className="w-8 h-8 text-blue-600" />
@@ -150,7 +150,7 @@ export const ErrorMessage = ({
 /**
  * Erro de conexão específico
  */
-export const ConnectionError = ({ onRetry }) => {
+export const _ConnectionError = ({ onRetry }) => {
   return (
     <div className="bg-red-50 border border-red-200 rounded-2xl p-8 max-w-md mx-auto text-center">
       <WifiOff className="w-12 h-12 text-red-600 mx-auto mb-4" />
@@ -175,7 +175,7 @@ export const ConnectionError = ({ onRetry }) => {
 /**
  * Estado vazio (sem dados)
  */
-export const EmptyState = ({ 
+export const _EmptyState = ({ 
   title = 'Nenhum resultado encontrado',
   subtitle = 'Tente ajustar os filtros ou adicionar novos dados',
   icon = <Coffee className="w-16 h-16 text-slate-400" />,
@@ -198,20 +198,20 @@ export const EmptyState = ({
 /**
  * Hook para gerenciar estados de loading, erro e dados
  */
-export const useDataState = (initialData = null) => {
+export const _useDataState = (initialData = null) => {
   const [data, setData] = React.useState(initialData);
   const [loading, setLoading] = React.useState(false);
   const [error, setError] = React.useState(null);
 
-  const execute = React.useCallback(async (asyncFunction) => {
+  const _execute = React.useCallback(async (asyncFunction) => {
     try {
       setLoading(true);
       setError(null);
-      const result = await asyncFunction();
+      const _result = await asyncFunction();
       setData(result);
       return result;
     } catch (err) {
-      const errorMessage = err.message || 'Erro desconhecido';
+      const _errorMessage = err.message || 'Erro desconhecido';
       setError(errorMessage);
       console.error('useDataState error:', err);
       throw err;
@@ -220,7 +220,7 @@ export const useDataState = (initialData = null) => {
     }
   }, []);
 
-  const reset = React.useCallback(() => {
+  const _reset = React.useCallback(() => {
     setData(initialData);
     setError(null);
     setLoading(false);
@@ -245,7 +245,7 @@ export const useDataState = (initialData = null) => {
 /**
  * Wrapper que automatiza loading e error states
  */
-export const AsyncDataWrapper = ({ 
+export const _AsyncDataWrapper = ({ 
   loading,
   error,
   data,

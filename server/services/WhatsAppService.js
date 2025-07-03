@@ -6,10 +6,10 @@
 
 // Importações condicionais para evitar erros
 let Client, LocalAuth, MessageMedia, qrcode;
-let puppeteerAvailable = true;
+let _puppeteerAvailable = true;
 
 try {
-  const whatsappWeb = require('whatsapp-web.js');
+  const _whatsappWeb = require('whatsapp-web.js');
   Client = whatsappWeb.Client;
   LocalAuth = whatsappWeb.LocalAuth;
   MessageMedia = whatsappWeb.MessageMedia;
@@ -19,8 +19,8 @@ try {
   puppeteerAvailable = false;
 }
 
-const fs = require('fs');
-const path = require('path');
+const _fs = require('fs');
+const _path = require('path');
 
 class WhatsAppService {
   constructor() {
@@ -105,7 +105,7 @@ Cadastre-se em: https://mestrescafe.com.br/registro`;
 
     // Inicializar automaticamente se disponível
     if (!this.mockMode) {
-      this.initialize().catch(error => {
+      this.initialize().catch(_error => {
         console.log('❌ Erro ao inicializar WhatsApp, ativando modo mock:', error.message);
         this.mockMode = true;
       });
@@ -157,8 +157,8 @@ Cadastre-se em: https://mestrescafe.com.br/registro`;
       this.loadConversationStates();
       
       // Inicializar cliente com timeout
-      const initPromise = this.client.initialize();
-      const timeoutPromise = new Promise((_, reject) => {
+      const _initPromise = this.client.initialize();
+      const _timeoutPromise = new Promise((_, reject) => {
         setTimeout(() => reject(new Error('Timeout na inicialização')), 15000);
       });
 
@@ -188,7 +188,7 @@ Cadastre-se em: https://mestrescafe.com.br/registro`;
       
       // Salvar QR em arquivo para interface web
       try {
-        const qrPath = path.join(__dirname, '../public/whatsapp-qr.txt');
+        const _qrPath = path.join(__dirname, '../public/whatsapp-qr.txt');
         fs.writeFileSync(qrPath, qr);
       } catch (error) {
         console.log('⚠️ Erro ao salvar QR code:', error.message);
@@ -203,7 +203,7 @@ Cadastre-se em: https://mestrescafe.com.br/registro`;
       
       // Remover QR code salvo
       try {
-        const qrPath = path.join(__dirname, '../public/whatsapp-qr.txt');
+        const _qrPath = path.join(__dirname, '../public/whatsapp-qr.txt');
         if (fs.existsSync(qrPath)) {
           fs.unlinkSync(qrPath);
         }
@@ -256,7 +256,7 @@ Cadastre-se em: https://mestrescafe.com.br/registro`;
         };
       }
 
-      const info = await this.client.info;
+      const _info = await this.client.info;
       return {
         connected: this.isReady,
         phone: info?.wid?.user || 'Não conectado',
@@ -289,7 +289,7 @@ Cadastre-se em: https://mestrescafe.com.br/registro`;
         throw new Error('WhatsApp não está conectado');
       }
 
-      const chat = await this.client.getChatById(chatId);
+      const _chat = await this.client.getChatById(chatId);
       await chat.sendMessage(message);
       
       console.log(`✅ Mensagem enviada para ${chatId}:`, message.substring(0, 50) + '...');
@@ -314,8 +314,8 @@ Cadastre-se em: https://mestrescafe.com.br/registro`;
         throw new Error('WhatsApp não está conectado');
       }
 
-      const media = MessageMedia.fromFilePath(imagePath);
-      const chat = await this.client.getChatById(chatId);
+      const _media = MessageMedia.fromFilePath(imagePath);
+      const _chat = await this.client.getChatById(chatId);
       await chat.sendMessage(media, { caption: caption });
       
       console.log(`📸 Imagem enviada para ${chatId}`);
@@ -340,10 +340,10 @@ Cadastre-se em: https://mestrescafe.com.br/registro`;
         throw new Error('WhatsApp não está conectado');
       }
 
-      const media = MessageMedia.fromFilePath(documentPath);
+      const _media = MessageMedia.fromFilePath(documentPath);
       media.filename = filename;
       
-      const chat = await this.client.getChatById(chatId);
+      const _chat = await this.client.getChatById(chatId);
       await chat.sendMessage(media);
       
       console.log(`📄 Documento enviado para ${chatId}`);
@@ -369,15 +369,15 @@ Cadastre-se em: https://mestrescafe.com.br/registro`;
         return;
       }
 
-      const chatId = message.from;
-      const messageText = message.body || '';
-      const contact = await message.getContact();
-      const contactName = contact.pushname || contact.name || 'Cliente';
+      const _chatId = message.from;
+      const _messageText = message.body || '';
+      const _contact = await message.getContact();
+      const _contactName = contact.pushname || contact.name || 'Cliente';
       
       console.log(`📥 Mensagem de ${contactName} (${chatId}): ${messageText}`);
 
       // Obter estado da conversa
-      const currentState = this.conversationStates.get(chatId) || 'MENU_PRINCIPAL';
+      const _currentState = this.conversationStates.get(chatId) || 'MENU_PRINCIPAL';
       
       // Processar baseado no estado atual
       await this.handleUserInput(chatId, messageText, currentState, contactName);
@@ -394,7 +394,7 @@ Cadastre-se em: https://mestrescafe.com.br/registro`;
    * 🎯 Gerenciar entrada do usuário baseada no estado
    */
   async handleUserInput(chatId, input, currentState, contactName) {
-    const userInput = input.toLowerCase().trim();
+    const _userInput = input.toLowerCase().trim();
 
     switch (currentState) {
       case 'MENU_PRINCIPAL':
@@ -455,8 +455,8 @@ Cadastre-se em: https://mestrescafe.com.br/registro`;
       case 'boa tarde':
       case 'boa noite':
         if (!this.mockMode) {
-          const contact = await this.client.getChatById(chatId);
-          const contactInfo = await contact.getContact();
+          const _contact = await this.client.getChatById(chatId);
+          const _contactInfo = await contact.getContact();
           await this.sendWelcomeMessage(chatId, contactInfo.pushname || 'Cliente');
         } else {
           await this.sendWelcomeMessage(chatId, 'Cliente');
@@ -472,7 +472,7 @@ Cadastre-se em: https://mestrescafe.com.br/registro`;
    * 📦 Verificar status do pedido
    */
   async handleOrderStatus(chatId) {
-    const message = `📦 *Status do Pedido*
+    const _message = `📦 *Status do Pedido*
 
 Para consultar seu pedido, me informe:
 
@@ -491,10 +491,10 @@ Digite uma das opções acima:`;
    */
   async handleOrderNumber(chatId, input) {
     // Simular busca de pedido
-    const orderNumber = input.replace(/[^\d]/g, '');
+    const _orderNumber = input.replace(/[^\d]/g, '');
     
     if (orderNumber.length >= 3) {
-      const message = `✅ *Pedido #${orderNumber} encontrado!*
+      const _message = `✅ *Pedido #${orderNumber} encontrado!*
 
 📦 *Status:* Em preparação
 🕒 *Estimativa:* 2-3 dias úteis
@@ -522,7 +522,7 @@ Para mais detalhes: https://mestrescafe.com.br/pedidos`;
    * 👨‍💼 Transferir para atendimento humano
    */
   async transferToHuman(chatId) {
-    const message = `👨‍💼 *Conectando com especialista...*
+    const _message = `👨‍💼 *Conectando com especialista...*
 
 Um dos nossos mestres do café entrará em contato em breve!
 
@@ -546,9 +546,9 @@ Aguarde que logo alguém te atenderá! ☕`;
    * 🎁 Enviar promoções especiais
    */
   async sendPromotions(chatId) {
-    const validUntil = new Date(Date.now() + 7*24*60*60*1000).toLocaleDateString('pt-BR');
+    const _validUntil = new Date(Date.now() + 7*24*60*60*1000).toLocaleDateString('pt-BR');
     
-    const message = `🎁 *Promoções Especiais de Janeiro!*
+    const _message = `🎁 *Promoções Especiais de Janeiro!*
 
 🔥 *OFERTA RELÂMPAGO*
 💥 15% OFF em todos os cafés especiais
@@ -574,7 +574,7 @@ Para aproveitar, digite *QUERO PROMOCAO*`;
    * 🏠 Enviar menu principal
    */
   async sendMainMenu(chatId, name = 'Cliente') {
-    const welcomeText = `Olá ${name}! 👋\n\n${this.mainMenu}`;
+    const _welcomeText = `Olá ${name}! 👋\n\n${this.mainMenu}`;
     await this.sendTextMessage(chatId, welcomeText);
     this.conversationStates.set(chatId, 'MENU_PRINCIPAL');
   }
@@ -583,7 +583,7 @@ Para aproveitar, digite *QUERO PROMOCAO*`;
    * 🚀 Enviar mensagem de boas-vindas
    */
   async sendWelcomeMessage(chatId, name) {
-    const message = `🎉 *Olá ${name}!*
+    const _message = `🎉 *Olá ${name}!*
 
 Bem-vindo aos Mestres do Café! ☕
 
@@ -603,7 +603,7 @@ ${this.mainMenu}`;
    * 📈 Notificar sobre pontos ganhos
    */
   async sendPointsNotification(phone, name, points, level) {
-    const message = `🎉 *Parabéns ${name}!*
+    const _message = `🎉 *Parabéns ${name}!*
 
 Você ganhou *${points} pontos* com sua compra!
 
@@ -613,7 +613,7 @@ Você ganhou *${points} pontos* com sua compra!
 Digite 2 para ver todos os benefícios! 🚀`;
 
     // Converter telefone para chatId
-    const chatId = phone.includes('@') ? phone : `${phone}@c.us`;
+    const _chatId = phone.includes('@') ? phone : `${phone}@c.us`;
     await this.sendTextMessage(chatId, message);
   }
 
@@ -622,12 +622,12 @@ Digite 2 para ver todos os benefícios! 🚀`;
    */
   saveConversationStates() {
     try {
-      const dataDir = path.dirname(this.statesFile);
+      const _dataDir = path.dirname(this.statesFile);
       if (!fs.existsSync(dataDir)) {
         fs.mkdirSync(dataDir, { recursive: true });
       }
       
-      const states = Object.fromEntries(this.conversationStates);
+      const _states = Object.fromEntries(this.conversationStates);
       fs.writeFileSync(this.statesFile, JSON.stringify(states, null, 2));
     } catch (error) {
       console.error('❌ Erro ao salvar estados:', error);
@@ -640,7 +640,7 @@ Digite 2 para ver todos os benefícios! 🚀`;
   loadConversationStates() {
     try {
       if (fs.existsSync(this.statesFile)) {
-        const states = JSON.parse(fs.readFileSync(this.statesFile, 'utf8'));
+        const _states = JSON.parse(fs.readFileSync(this.statesFile, 'utf8'));
         this.conversationStates = new Map(Object.entries(states));
         console.log('✅ Estados de conversa carregados');
       }
@@ -657,7 +657,7 @@ Digite 2 para ver todos os benefícios! 🚀`;
     
     for (const phone of phoneList) {
       try {
-        const chatId = phone.includes('@') ? phone : `${phone}@c.us`;
+        const _chatId = phone.includes('@') ? phone : `${phone}@c.us`;
         await this.sendTextMessage(chatId, message);
         
         // Delay entre mensagens para evitar spam

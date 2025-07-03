@@ -3,30 +3,29 @@
 import * as React from "react"
 import * as AlertDialogPrimitive from "@radix-ui/react-alert-dialog"
 
-import { cn } from "@/lib/utils"
-import { buttonVariants } from "@/components/ui/button"
+import { _cn } from "@/lib/utils"
+// import { _buttonVariants } from "@/components/ui/button" // Temporarily commented - unused import
 
-function AlertDialog({
+function AlertDialog(_{
   ...props
 }) {
   return <AlertDialogPrimitive.Root data-slot="alert-dialog" {...props} />;
 }
 
-function AlertDialogTrigger({
+function AlertDialogTrigger(_{
   ...props
 }) {
   return (<AlertDialogPrimitive.Trigger data-slot="alert-dialog-trigger" {...props} />);
 }
 
-function AlertDialogPortal({
+function AlertDialogPortal(_{
   ...props
 }) {
   return (<AlertDialogPrimitive.Portal data-slot="alert-dialog-portal" {...props} />);
 }
 
-function AlertDialogOverlay({
-  className,
-  ...props
+function AlertDialogOverlay(_{
+  className,_...props
 }) {
   return (
     <AlertDialogPrimitive.Overlay
@@ -39,9 +38,8 @@ function AlertDialogOverlay({
   );
 }
 
-function AlertDialogContent({
-  className,
-  ...props
+function AlertDialogContent(_{
+  className,_...props
 }) {
   return (
     <AlertDialogPortal>
@@ -57,9 +55,8 @@ function AlertDialogContent({
   );
 }
 
-function AlertDialogHeader({
-  className,
-  ...props
+function AlertDialogHeader(_{
+  className,_...props
 }) {
   return (
     <div
@@ -69,9 +66,8 @@ function AlertDialogHeader({
   );
 }
 
-function AlertDialogFooter({
-  className,
-  ...props
+function AlertDialogFooter(_{
+  className,_...props
 }) {
   return (
     <div
@@ -81,9 +77,8 @@ function AlertDialogFooter({
   );
 }
 
-function AlertDialogTitle({
-  className,
-  ...props
+function AlertDialogTitle(_{
+  className,_...props
 }) {
   return (
     <AlertDialogPrimitive.Title
@@ -93,9 +88,8 @@ function AlertDialogTitle({
   );
 }
 
-function AlertDialogDescription({
-  className,
-  ...props
+function AlertDialogDescription(_{
+  className,_...props
 }) {
   return (
     <AlertDialogPrimitive.Description
@@ -105,16 +99,14 @@ function AlertDialogDescription({
   );
 }
 
-function AlertDialogAction({
-  className,
-  ...props
+function AlertDialogAction(_{
+  className,_...props
 }) {
   return (<AlertDialogPrimitive.Action className={cn(buttonVariants(), className)} {...props} />);
 }
 
-function AlertDialogCancel({
-  className,
-  ...props
+function AlertDialogCancel(_{
+  className,_...props
 }) {
   return (
     <AlertDialogPrimitive.Cancel

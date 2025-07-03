@@ -1,10 +1,10 @@
-import { supabase } from './supabase.js';
+import { _supabase } from './supabase.js';
 
 // =============================================
 // SINCRONIZAÇÃO DESABILITADA (precisa service role key)
 // =============================================
 
-export const syncAuthUsersToPublic = async () => {
+export const _syncAuthUsersToPublic = async () => {
   console.log('⚠️ Sincronização auth->public desabilitada (precisa service role key)');
   return { success: true, synced: 0, total: 0, message: 'Sincronização não disponível' };
 };
@@ -13,11 +13,11 @@ export const syncAuthUsersToPublic = async () => {
 // CLIENTES - BUSCAR E LISTAR (SEM AUTH ADMIN)
 // =============================================
 
-export const getAllCustomers = async (filters = {}) => {
+export const _getAllCustomers = async (filters = {}) => {
   try {
     console.log('🔍 Buscando todos os clientes da tabela public.users...');
     
-    let query = supabase
+    let _query = supabase
       .from('users')
       .select('*')
       .neq('role', 'admin')
@@ -62,11 +62,11 @@ export const getAllCustomers = async (filters = {}) => {
   }
 };
 
-export const getAdminCustomers = async (filters = {}) => {
+export const _getAdminCustomers = async (filters = {}) => {
   try {
     console.log('🔍 Buscando clientes criados pelo admin...');
     
-    let query = supabase
+    let _query = supabase
       .from('users')
       .select('*')
       .neq('role', 'admin')
@@ -106,18 +106,18 @@ export const getAdminCustomers = async (filters = {}) => {
 // CRIAR CLIENTE MANUAL
 // =============================================
 
-export const createManualCustomer = async (customerData) => {
+export const _createManualCustomer = async (customerData) => {
   try {
     console.log('👤 Criando cliente manual:', customerData);
 
     // Validar dados básicos
-    const validation = validateCustomerData(customerData);
+    const _validation = validateCustomerData(customerData);
     if (!validation.isValid) {
       return { success: false, error: validation.errors.join(', ') };
     }
 
     // Preparar dados para inserção (usando schema correto)
-    const insertData = {
+    const _insertData = {
       name: customerData.name,
       email: customerData.email,
       user_type: customerData.user_type || 'cliente_pf',
@@ -135,7 +135,7 @@ export const createManualCustomer = async (customerData) => {
     };
 
     // Remover campos undefined/null
-    Object.keys(insertData).forEach(key => {
+    Object.keys(insertData).forEach(_key => {
       if (insertData[key] === undefined || insertData[key] === null || insertData[key] === '') {
         delete insertData[key];
       }
@@ -164,7 +164,7 @@ export const createManualCustomer = async (customerData) => {
 // ATIVAR/DESATIVAR CLIENTE
 // =============================================
 
-export const toggleAnyCustomerStatus = async (customerId, newStatus) => {
+export const _toggleAnyCustomerStatus = async (customerId, newStatus) => {
   try {
     console.log(`🔄 Alterando status do cliente ${customerId} para: ${newStatus}`);
 
@@ -204,8 +204,8 @@ export const toggleAnyCustomerStatus = async (customerId, newStatus) => {
 // VALIDAÇÕES E UTILIDADES
 // =============================================
 
-export const validateCustomerData = (data) => {
-  const errors = [];
+export const _validateCustomerData = (data) => {
+  const _errors = [];
 
   // Nome obrigatório
   if (!data.name) {
@@ -220,9 +220,9 @@ export const validateCustomerData = (data) => {
   }
 
   // Validar CPF/CNPJ se fornecido
-  const document = data.cpf || data.cnpj || data.cpf_cnpj;
+  const _document = data.cpf || data.cnpj || data.cpf_cnpj;
   if (document) {
-    const cleanDoc = document.replace(/[^\d]/g, '');
+    const _cleanDoc = document.replace(/[^\d]/g, '');
     if (cleanDoc.length === 11) {
       if (!isValidCPF(cleanDoc)) {
         errors.push('CPF inválido');
@@ -238,7 +238,7 @@ export const validateCustomerData = (data) => {
 
   // Validar telefone se fornecido
   if (data.phone) {
-    const cleanPhone = data.phone.replace(/[^\d]/g, '');
+    const _cleanPhone = data.phone.replace(/[^\d]/g, '');
     if (cleanPhone.length < 10 || cleanPhone.length > 11) {
       errors.push('Telefone deve ter 10 ou 11 dígitos');
     }
@@ -251,14 +251,14 @@ export const validateCustomerData = (data) => {
 };
 
 // Funções auxiliares de validação
-const isValidCPF = (cpf) => {
+const _isValidCPF = (cpf) => {
   if (cpf.length !== 11 || /^(\d)\1{10}$/.test(cpf)) return false;
   
-  let sum = 0;
+  let _sum = 0;
   for (let i = 0; i < 9; i++) {
     sum += parseInt(cpf.charAt(i)) * (10 - i);
   }
-  let checkDigit = 11 - (sum % 11);
+  let _checkDigit = 11 - (sum % 11);
   if (checkDigit === 10 || checkDigit === 11) checkDigit = 0;
   if (checkDigit !== parseInt(cpf.charAt(9))) return false;
   
@@ -272,20 +272,20 @@ const isValidCPF = (cpf) => {
   return checkDigit === parseInt(cpf.charAt(10));
 };
 
-const isValidCNPJ = (cnpj) => {
+const _isValidCNPJ = (cnpj) => {
   if (cnpj.length !== 14 || /^(\d)\1{13}$/.test(cnpj)) return false;
   
-  let sum = 0;
-  const weights1 = [5, 4, 3, 2, 9, 8, 7, 6, 5, 4, 3, 2];
+  let _sum = 0;
+  const _weights1 = [5, 4, 3, 2, 9, 8, 7, 6, 5, 4, 3, 2];
   for (let i = 0; i < 12; i++) {
     sum += parseInt(cnpj.charAt(i)) * weights1[i];
   }
-  let checkDigit = sum % 11;
+  let _checkDigit = sum % 11;
   checkDigit = checkDigit < 2 ? 0 : 11 - checkDigit;
   if (checkDigit !== parseInt(cnpj.charAt(12))) return false;
   
   sum = 0;
-  const weights2 = [6, 5, 4, 3, 2, 9, 8, 7, 6, 5, 4, 3, 2];
+  const _weights2 = [6, 5, 4, 3, 2, 9, 8, 7, 6, 5, 4, 3, 2];
   for (let i = 0; i < 13; i++) {
     sum += parseInt(cnpj.charAt(i)) * weights2[i];
   }
@@ -296,13 +296,13 @@ const isValidCNPJ = (cnpj) => {
 };
 
 // Alias para compatibilidade
-export const toggleCustomerStatus = toggleAnyCustomerStatus;
+export const _toggleCustomerStatus = toggleAnyCustomerStatus;
 
 // =============================================
 // CUSTOMER DETAILS - CRM AVANÇADO
 // =============================================
 
-export const getCustomerDetails = async (customerId) => {
+export const _getCustomerDetails = async (customerId) => {
   try {
     console.log(`🔍 Buscando detalhes completos do cliente ${customerId}...`);
 
@@ -378,11 +378,11 @@ export const getCustomerDetails = async (customerId) => {
     }
 
     // Calcular estatísticas
-    const totalSpent = orders?.reduce((sum, order) => sum + parseFloat(order.total_amount || 0), 0) || 0;
-    const ordersCount = orders?.length || 0;
-    const lastOrderDate = orders?.[0]?.created_at || null;
+    const _totalSpent = orders?.reduce((sum, order) => sum + parseFloat(order.total_amount || 0), 0) || 0;
+    const _ordersCount = orders?.length || 0;
+    const _lastOrderDate = orders?.[0]?.created_at || null;
 
-    const customerDetails = {
+    const _customerDetails = {
       ...customer,
       orders: orders || [],
       orders_count: ordersCount,
@@ -411,7 +411,7 @@ export const getCustomerDetails = async (customerId) => {
   }
 };
 
-export const updateCustomerNotes = async (customerId, noteContent) => {
+export const _updateCustomerNotes = async (customerId, noteContent) => {
   try {
     console.log(`📝 Adicionando nota para cliente ${customerId}...`);
 
@@ -445,7 +445,7 @@ export const updateCustomerNotes = async (customerId, noteContent) => {
   }
 };
 
-export const addCustomerInteraction = async (customerId, interactionData) => {
+export const _addCustomerInteraction = async (customerId, interactionData) => {
   try {
     console.log(`🤝 Registrando interação para cliente ${customerId}...`);
 
@@ -480,7 +480,7 @@ export const addCustomerInteraction = async (customerId, interactionData) => {
   }
 };
 
-export const addCustomerTask = async (customerId, taskData) => {
+export const _addCustomerTask = async (customerId, taskData) => {
   try {
     console.log(`📋 Criando tarefa para cliente ${customerId}...`);
 
@@ -518,7 +518,7 @@ export const addCustomerTask = async (customerId, taskData) => {
   }
 };
 
-export const updateTaskStatus = async (taskId, status) => {
+export const _updateTaskStatus = async (taskId, status) => {
   try {
     console.log(`📋 Atualizando status da tarefa ${taskId} para ${status}...`);
 
@@ -547,7 +547,7 @@ export const updateTaskStatus = async (taskId, status) => {
   }
 };
 
-export const resetCustomerPassword = async (customerId, newPassword) => {
+export const _resetCustomerPassword = async (customerId, newPassword) => {
   try {
     console.log(`🔐 Redefinindo senha do cliente ${customerId}...`);
 
@@ -589,13 +589,13 @@ export const resetCustomerPassword = async (customerId, newPassword) => {
   }
 };
 
-export const getCustomerAnalytics = async (customerId, timeRange = '90d') => {
+export const _getCustomerAnalytics = async (customerId, timeRange = '90d') => {
   try {
     console.log(`📊 Buscando analytics do cliente ${customerId}...`);
 
     // Calcular data limite
-    const getDateLimit = (range) => {
-      const now = new Date();
+    const _getDateLimit = (range) => {
+      const _now = new Date();
       switch (range) {
         case '30d': return new Date(now.setDate(now.getDate() - 30));
         case '90d': return new Date(now.setDate(now.getDate() - 90));
@@ -604,11 +604,11 @@ export const getCustomerAnalytics = async (customerId, timeRange = '90d') => {
       }
     };
 
-    const dateLimit = getDateLimit(timeRange);
+    const _dateLimit = getDateLimit(timeRange);
 
     // Verificar se tabelas existem
-    const ordersExists = await tableExists('orders');
-    const orderItemsExists = await tableExists('order_items');
+    const _ordersExists = await tableExists('orders');
+    const _orderItemsExists = await tableExists('order_items');
     
     if (!ordersExists) {
       console.log('⚠️ Tabela orders não existe');
@@ -616,7 +616,7 @@ export const getCustomerAnalytics = async (customerId, timeRange = '90d') => {
     }
 
     // Buscar pedidos no período
-    let ordersQuery = supabase
+    let _ordersQuery = supabase
       .from('orders')
       .select(orderItemsExists ? `
         *,
@@ -637,39 +637,39 @@ export const getCustomerAnalytics = async (customerId, timeRange = '90d') => {
     }
 
     // Calcular métricas
-    const totalSpent = orders?.reduce((sum, order) => sum + parseFloat(order.total_amount || 0), 0) || 0;
-    const totalOrders = orders?.length || 0;
-    const avgOrderValue = totalOrders > 0 ? totalSpent / totalOrders : 0;
+    const _totalSpent = orders?.reduce((sum, order) => sum + parseFloat(order.total_amount || 0), 0) || 0;
+    const _totalOrders = orders?.length || 0;
+    const _avgOrderValue = totalOrders > 0 ? totalSpent / totalOrders : 0;
 
     // Frequência de compras por mês
-    const ordersByMonth = {};
-    orders?.forEach(order => {
-      const month = new Date(order.created_at).toISOString().substring(0, 7);
+    const _ordersByMonth = {};
+    orders?.forEach(_order => {
+      const _month = new Date(order.created_at).toISOString().substring(0, 7);
       ordersByMonth[month] = (ordersByMonth[month] || 0) + 1;
     });
 
     // Produtos mais comprados
-    const productCounts = {};
-    orders?.forEach(order => {
-      order.order_items?.forEach(item => {
-        const productName = item.products?.name || 'Produto';
+    const _productCounts = {};
+    orders?.forEach(_order => {
+      order.order_items?.forEach(_item => {
+        const _productName = item.products?.name || 'Produto';
         productCounts[productName] = (productCounts[productName] || 0) + item.quantity;
       });
     });
 
-    const topProducts = Object.entries(productCounts)
+    const _topProducts = Object.entries(productCounts)
       .map(([name, count]) => ({ name, count }))
       .sort((a, b) => b.count - a.count)
       .slice(0, 5);
 
     // Evolução de gastos
-    const spendingByMonth = {};
-    orders?.forEach(order => {
-      const month = new Date(order.created_at).toISOString().substring(0, 7);
+    const _spendingByMonth = {};
+    orders?.forEach(_order => {
+      const _month = new Date(order.created_at).toISOString().substring(0, 7);
       spendingByMonth[month] = (spendingByMonth[month] || 0) + parseFloat(order.total_amount || 0);
     });
 
-    const analytics = {
+    const _analytics = {
       summary: {
         totalSpent,
         totalOrders,
@@ -703,7 +703,7 @@ export const getCustomerAnalytics = async (customerId, timeRange = '90d') => {
   }
 };
 
-export const updateCustomerProfile = async (customerId, profileData) => {
+export const _updateCustomerProfile = async (customerId, profileData) => {
   try {
     console.log(`👤 Atualizando perfil do cliente ${customerId}...`);
 
@@ -737,7 +737,7 @@ export const updateCustomerProfile = async (customerId, profileData) => {
   }
 };
 
-export const addCustomerPoints = async (customerId, points, reason = 'Ajuste manual') => {
+export const _addCustomerPoints = async (customerId, points, reason = 'Ajuste manual') => {
   try {
     console.log(`⭐ Adicionando ${points} pontos para cliente ${customerId}...`);
 
@@ -753,8 +753,8 @@ export const addCustomerPoints = async (customerId, points, reason = 'Ajuste man
       return { success: false, error: 'Cliente não encontrado' };
     }
 
-    const currentPoints = customer.points || 0;
-    const newPoints = currentPoints + points;
+    const _currentPoints = customer.points || 0;
+    const _newPoints = currentPoints + points;
 
     // Atualizar pontos
     const { data, error } = await supabase
@@ -802,17 +802,17 @@ export const addCustomerPoints = async (customerId, points, reason = 'Ajuste man
 // DASHBOARD STATS - ESTATÍSTICAS GERAIS
 // =============================================
 
-export const getStats = async () => {
+export const _getStats = async () => {
   try {
     console.log('📊 Buscando estatísticas gerais do dashboard...');
 
     // Verificar quais tabelas existem
-    const usersExists = await tableExists('users');
-    const ordersExists = await tableExists('orders');
-    const productsExists = await tableExists('products');
+    const _usersExists = await tableExists('users');
+    const _ordersExists = await tableExists('orders');
+    const _productsExists = await tableExists('products');
 
     // Buscar dados em paralelo apenas das tabelas que existem
-    const promises = [];
+    const _promises = [];
     
     if (usersExists) {
       promises.push(supabase.from('users').select('id, role, created_at, total_spent, orders_count').neq('role', 'admin'));
@@ -835,28 +835,28 @@ export const getStats = async () => {
     const [usersResponse, ordersResponse, productsResponse] = await Promise.allSettled(promises);
 
     // Processar usuários
-    const users = usersResponse.status === 'fulfilled' ? usersResponse.value.data || [] : [];
-    const totalUsers = users.length;
-    const activeUsers = users.filter(u => u.role === 'customer').length;
-    const newUsersThisMonth = users.filter(u => {
-      const created = new Date(u.created_at);
-      const now = new Date();
+    const _users = usersResponse.status === 'fulfilled' ? usersResponse.value.data || [] : [];
+    const _totalUsers = users.length;
+    const _activeUsers = users.filter(u => u.role === 'customer').length;
+    const _newUsersThisMonth = users.filter(_u => {
+      const _created = new Date(u.created_at);
+      const _now = new Date();
       return created.getMonth() === now.getMonth() && created.getFullYear() === now.getFullYear();
     }).length;
 
     // Processar pedidos
-    const orders = ordersResponse.status === 'fulfilled' ? ordersResponse.value.data || [] : [];
-    const totalOrders = orders.length;
-    const pendingOrders = orders.filter(o => o.status === 'pending').length;
-    const completedOrders = orders.filter(o => o.status === 'completed' || o.status === 'delivered').length;
-    const totalRevenue = orders.reduce((sum, o) => sum + (parseFloat(o.total_amount) || 0), 0);
+    const _orders = ordersResponse.status === 'fulfilled' ? ordersResponse.value.data || [] : [];
+    const _totalOrders = orders.length;
+    const _pendingOrders = orders.filter(o => o.status === 'pending').length;
+    const _completedOrders = orders.filter(o => o.status === 'completed' || o.status === 'delivered').length;
+    const _totalRevenue = orders.reduce((sum, o) => sum + (parseFloat(o.total_amount) || 0), 0);
     
     // Receita mensal
-    const thisMonth = new Date().getMonth();
-    const thisYear = new Date().getFullYear();
-    const monthlyRevenue = orders
-      .filter(o => {
-        const orderDate = new Date(o.created_at);
+    const _thisMonth = new Date().getMonth();
+    const _thisYear = new Date().getFullYear();
+    const _monthlyRevenue = orders
+      .filter(_o => {
+        const _orderDate = new Date(o.created_at);
         return orderDate.getMonth() === thisMonth && 
                orderDate.getFullYear() === thisYear &&
                (o.status === 'completed' || o.status === 'delivered');
@@ -864,12 +864,12 @@ export const getStats = async () => {
       .reduce((sum, o) => sum + (parseFloat(o.total_amount) || 0), 0);
 
     // Processar produtos
-    const products = productsResponse.status === 'fulfilled' ? productsResponse.value.data || [] : [];
-    const totalProducts = products.length;
-    const activeProducts = products.filter(p => p.is_active).length;
-    const lowStockProducts = products.filter(p => (p.stock || 0) < 10).length;
+    const _products = productsResponse.status === 'fulfilled' ? productsResponse.value.data || [] : [];
+    const _totalProducts = products.length;
+    const _activeProducts = products.filter(p => p.is_active).length;
+    const _lowStockProducts = products.filter(p => (p.stock || 0) < 10).length;
 
-    const stats = {
+    const _stats = {
       users: {
         total: totalUsers,
         active: activeUsers,
@@ -906,12 +906,12 @@ export const getStats = async () => {
   }
 };
 
-export const getUsers = async (limit = null) => {
+export const _getUsers = async (limit = null) => {
   try {
     console.log('👥 Buscando usuários da tabela public.users...');
     
     // Verificar se tabela users existe
-    const usersExists = await tableExists('users');
+    const _usersExists = await tableExists('users');
     
     if (!usersExists) {
       console.log('⚠️ Tabela users não existe, retornando lista vazia');
@@ -919,9 +919,9 @@ export const getUsers = async (limit = null) => {
     }
 
     // Verificar se coluna created_at existe
-    const hasCreatedAt = await columnExists('users', 'created_at');
+    const _hasCreatedAt = await columnExists('users', 'created_at');
     
-    let query = supabase
+    let _query = supabase
       .from('users')
       .select('*')
       .neq('role', 'admin')
@@ -951,12 +951,12 @@ export const getUsers = async (limit = null) => {
 // TOP PRODUTOS COM VENDAS REAIS
 // =============================================
 
-export const getTopProductsByRevenue = async (limit = 5) => {
+export const _getTopProductsByRevenue = async (limit = 5) => {
   try {
     console.log('🏆 Buscando top produtos por receita real...');
 
     // Verificar se tabela order_items existe
-    const orderItemsExists = await tableExists('order_items');
+    const _orderItemsExists = await tableExists('order_items');
     
     if (!orderItemsExists) {
       console.log('⚠️ Tabela order_items não existe, usando dados demo');
@@ -964,12 +964,12 @@ export const getTopProductsByRevenue = async (limit = 5) => {
     }
 
     // Verificar quais colunas existem
-    const hasTotalPrice = await columnExists('order_items', 'total_price');
-    const hasUnitPrice = await columnExists('order_items', 'unit_price');
-    const hasPrice = await columnExists('order_items', 'price');
+    const _hasTotalPrice = await columnExists('order_items', 'total_price');
+    const _hasUnitPrice = await columnExists('order_items', 'unit_price');
+    const _hasPrice = await columnExists('order_items', 'price');
 
     // Definir colunas baseado no que está disponível
-    let priceColumn = '';
+    let _priceColumn = '';
     if (hasTotalPrice) {
       priceColumn = 'total_price';
     } else if (hasUnitPrice) {
@@ -1002,11 +1002,11 @@ export const getTopProductsByRevenue = async (limit = 5) => {
     }
 
     // Calcular vendas por produto
-    const productSales = {};
+    const _productSales = {};
     
-    orderItems.forEach(item => {
+    orderItems.forEach(_item => {
       if (item.products) {
-        const productId = item.products.id;
+        const _productId = item.products.id;
         
         if (!productSales[productId]) {
           productSales[productId] = {
@@ -1019,7 +1019,7 @@ export const getTopProductsByRevenue = async (limit = 5) => {
         productSales[productId].totalQuantity += item.quantity || 0;
         
         // Calcular receita baseado na coluna disponível
-        let itemRevenue = 0;
+        let _itemRevenue = 0;
         if (priceColumn === 'total_price') {
           itemRevenue = item.total_price || 0;
         } else if (priceColumn === 'unit_price') {
@@ -1033,7 +1033,7 @@ export const getTopProductsByRevenue = async (limit = 5) => {
     });
 
     // Converter para array e ordenar por receita
-    const topProducts = Object.values(productSales)
+    const _topProducts = Object.values(productSales)
       .map(({ product, totalQuantity, totalRevenue }) => ({
         id: product.id,
         name: product.name,
@@ -1055,7 +1055,7 @@ export const getTopProductsByRevenue = async (limit = 5) => {
 };
 
 // Função utilitária para verificar se tabela/coluna existe
-const tableExists = async (tableName) => {
+const _tableExists = async (tableName) => {
   try {
     const { data, error } = await supabase
       .from(tableName)
@@ -1069,7 +1069,7 @@ const tableExists = async (tableName) => {
 };
 
 // Função para verificar colunas específicas
-const columnExists = async (tableName, columnName) => {
+const _columnExists = async (tableName, columnName) => {
   try {
     const { data, error } = await supabase
       .from(tableName)

@@ -1,16 +1,16 @@
 const sqlite3 = require('sqlite3').verbose();
-const path = require('path');
-const fs = require('fs');
+const _path = require('path');
+const _fs = require('fs');
 
-const dbPath = process.env.DATABASE_PATH || './database/mestres_cafe.db';
-const dbDir = path.dirname(dbPath);
+const _dbPath = process.env.DATABASE_PATH || './database/mestres_cafe.db';
+const _dbDir = path.dirname(dbPath);
 
 // Ensure database directory exists
 if (!fs.existsSync(dbDir)) {
   fs.mkdirSync(dbDir, { recursive: true });
 }
 
-const db = new sqlite3.Database(dbPath, (err) => {
+const _db = new sqlite3.Database(dbPath, (err) => {
   if (err) {
     console.error('❌ Erro ao conectar com o banco de dados:', err.message);
   } else {
@@ -18,7 +18,7 @@ const db = new sqlite3.Database(dbPath, (err) => {
   }
 });
 
-const initializeDatabase = () => {
+const _initializeDatabase = () => {
   return new Promise((resolve, reject) => {
     db.serialize(() => {
       // Tabela de usuários

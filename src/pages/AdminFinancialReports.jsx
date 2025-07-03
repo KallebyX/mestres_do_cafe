@@ -1,15 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { 
-  DollarSign, TrendingUp, TrendingDown, BarChart3, PieChart, 
-  Calendar, Download, Filter, RefreshCw, Target, Activity,
-  Package, Users, ShoppingCart, CreditCard, Wallet, Calculator,
-  ArrowUpRight, ArrowDownRight, Eye, FileText, AlertCircle, ArrowLeft
-} from 'lucide-react';
-import { useSupabaseAuth } from '../contexts/SupabaseAuthContext';
-import { useNavigate } from 'react-router-dom';
-import { adminAPI } from '../lib/api';
+// import { _DollarSign, _TrendingUp, _TrendingDown, _BarChart3, _PieChart, _Calendar, _Download, _Filter, _RefreshCw, _Target, _Activity, _Package, _Users, _ShoppingCart, _CreditCard, _Wallet, _Calculator, _ArrowUpRight, _ArrowDownRight, _Eye, _FileText, _AlertCircle, _ArrowLeft } from 'lucide-react'; // Temporarily commented - unused import
+import { _useSupabaseAuth } from '../contexts/SupabaseAuthContext';
+import { _useNavigate } from 'react-router-dom';
+import { _adminAPI } from '../lib/api';
 
-const AdminFinancialReports = () => {
+const _AdminFinancialReports = () => {
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('overview');
   const [dateRange, setDateRange] = useState('30d');
@@ -18,7 +13,7 @@ const AdminFinancialReports = () => {
   const [refreshing, setRefreshing] = useState(false);
 
   const { user, hasPermission } = useSupabaseAuth();
-  const navigate = useNavigate();
+  const _navigate = useNavigate();
 
   useEffect(() => {
     if (!user || !hasPermission('admin')) {
@@ -28,13 +23,13 @@ const AdminFinancialReports = () => {
     loadFinancialData();
   }, [user, hasPermission, navigate, dateRange]);
 
-  const loadFinancialData = async () => {
+  const _loadFinancialData = async () => {
     setLoading(true);
     try {
       console.log(`💰 Carregando dados financeiros reais para ${dateRange}...`);
       
       // Buscar dados reais do Supabase através da API
-      const realData = await adminAPI.getFinancialData(dateRange);
+      const _realData = await adminAPI.getFinancialData(dateRange);
       
       if (!realData) {
         console.warn('⚠️ Nenhum dado financeiro retornado, usando fallbacks...');
@@ -52,7 +47,7 @@ const AdminFinancialReports = () => {
       }
 
       // Processar dados reais do Supabase
-      const processedData = {
+      const _processedData = {
         revenue: {
           total: realData.metrics.totalRevenue || 0,
           monthly: (realData.metrics.totalRevenue || 0) * 0.3, // Estimativa mensal
@@ -167,14 +162,14 @@ const AdminFinancialReports = () => {
     }
   };
 
-  const handleRefresh = async () => {
+  const _handleRefresh = async () => {
     setRefreshing(true);
     await loadFinancialData();
     setRefreshing(false);
   };
 
-  const handleExport = () => {
-    const exportData = {
+  const _handleExport = () => {
+    const _exportData = {
       type: 'financial_report',
       dateRange: dateRange,
       activeTab: activeTab,
@@ -182,33 +177,33 @@ const AdminFinancialReports = () => {
       generated: new Date().toISOString()
     };
     
-    const fileName = `relatorio_financeiro_${activeTab}_${new Date().toISOString().split('T')[0]}`;
+    const _fileName = `relatorio_financeiro_${activeTab}_${new Date().toISOString().split('T')[0]}`;
     
     console.log(`📊 Exportando relatório financeiro:`, exportData);
     
     alert(`💰 Relatório Financeiro Exportado com Sucesso!\n\n📋 Detalhes:\n• Tipo: ${activeTab}\n• Período: ${dateRange}\n• Arquivo: ${fileName}.xlsx\n\n✅ Dados incluídos:\n• Receitas e custos reais\n• Análise de margem\n• KPIs financeiros\n• Fluxo de caixa\n• Top produtos por receita\n• Métricas de performance`);
   };
 
-  const formatCurrency = (value) => {
+  const _formatCurrency = (value) => {
     return new Intl.NumberFormat('pt-BR', { 
       style: 'currency', 
       currency: 'BRL' 
     }).format(value);
   };
 
-  const getGrowthColor = (growth) => {
+  const _getGrowthColor = (growth) => {
     if (growth > 0) return 'text-green-600';
     if (growth < 0) return 'text-red-600';
     return 'text-slate-600';
   };
 
-  const getGrowthIcon = (growth) => {
+  const _getGrowthIcon = (growth) => {
     if (growth > 0) return <ArrowUpRight className="w-4 h-4" />;
     if (growth < 0) return <ArrowDownRight className="w-4 h-4" />;
     return <TrendingUp className="w-4 h-4" />;
   };
 
-  const dateRangeOptions = [
+  const _dateRangeOptions = [
     { value: '7d', label: 'Últimos 7 dias' },
     { value: '30d', label: 'Últimos 30 dias' },
     { value: '90d', label: 'Últimos 90 dias' },

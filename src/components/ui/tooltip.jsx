@@ -1,16 +1,15 @@
 import * as React from "react"
 import * as TooltipPrimitive from "@radix-ui/react-tooltip"
 
-import { cn } from "@/lib/utils"
+import { _cn } from "@/lib/utils"
 
-function TooltipProvider({
-  delayDuration = 0,
-  ...props
+function TooltipProvider(_{
+  delayDuration = 0,_...props
 }) {
   return (<TooltipPrimitive.Provider data-slot="tooltip-provider" delayDuration={delayDuration} {...props} />);
 }
 
-function Tooltip({
+function Tooltip(_{
   ...props
 }) {
   return (
@@ -20,17 +19,14 @@ function Tooltip({
   );
 }
 
-function TooltipTrigger({
+function TooltipTrigger(_{
   ...props
 }) {
   return <TooltipPrimitive.Trigger data-slot="tooltip-trigger" {...props} />;
 }
 
-function TooltipContent({
-  className,
-  sideOffset = 0,
-  children,
-  ...props
+function TooltipContent(_{
+  className,_sideOffset = 0,_children,_...props
 }) {
   return (
     <TooltipPrimitive.Portal>

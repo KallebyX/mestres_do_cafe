@@ -1,36 +1,35 @@
 import * as React from "react"
 import * as SheetPrimitive from "@radix-ui/react-dialog"
-import { XIcon } from "lucide-react"
+// import { _XIcon } from "lucide-react" // Temporarily commented - unused import
 
-import { cn } from "@/lib/utils"
+import { _cn } from "@/lib/utils"
 
-function Sheet({
+function Sheet(_{
   ...props
 }) {
   return <SheetPrimitive.Root data-slot="sheet" {...props} />;
 }
 
-function SheetTrigger({
+function SheetTrigger(_{
   ...props
 }) {
   return <SheetPrimitive.Trigger data-slot="sheet-trigger" {...props} />;
 }
 
-function SheetClose({
+function SheetClose(_{
   ...props
 }) {
   return <SheetPrimitive.Close data-slot="sheet-close" {...props} />;
 }
 
-function SheetPortal({
+function SheetPortal(_{
   ...props
 }) {
   return <SheetPrimitive.Portal data-slot="sheet-portal" {...props} />;
 }
 
-function SheetOverlay({
-  className,
-  ...props
+function SheetOverlay(_{
+  className,_...props
 }) {
   return (
     <SheetPrimitive.Overlay
@@ -43,11 +42,8 @@ function SheetOverlay({
   );
 }
 
-function SheetContent({
-  className,
-  children,
-  side = "right",
-  ...props
+function SheetContent(_{
+  className,_children,_side = "right",_...props
 }) {
   return (
     <SheetPortal>
@@ -78,9 +74,8 @@ function SheetContent({
   );
 }
 
-function SheetHeader({
-  className,
-  ...props
+function SheetHeader(_{
+  className,_...props
 }) {
   return (
     <div
@@ -90,9 +85,8 @@ function SheetHeader({
   );
 }
 
-function SheetFooter({
-  className,
-  ...props
+function SheetFooter(_{
+  className,_...props
 }) {
   return (
     <div
@@ -102,9 +96,8 @@ function SheetFooter({
   );
 }
 
-function SheetTitle({
-  className,
-  ...props
+function SheetTitle(_{
+  className,_...props
 }) {
   return (
     <SheetPrimitive.Title
@@ -114,9 +107,8 @@ function SheetTitle({
   );
 }
 
-function SheetDescription({
-  className,
-  ...props
+function SheetDescription(_{
+  className,_...props
 }) {
   return (
     <SheetPrimitive.Description

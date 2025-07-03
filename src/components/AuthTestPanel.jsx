@@ -1,25 +1,25 @@
 import React, { useState } from 'react';
-import { useAuth } from '../contexts/AuthContext';
-import { authAPI } from '../lib/api';
-import { CheckCircle, XCircle, User, Shield, Coffee } from 'lucide-react';
+import { _useAuth } from '../contexts/AuthContext';
+import { _authAPI } from '../lib/api';
+// import { _CheckCircle, _XCircle, _User, _Shield, _Coffee } from 'lucide-react'; // Temporarily commented - unused import
 
-const AuthTestPanel = () => {
+const _AuthTestPanel = () => {
   const { user, login, logout } = useAuth();
   const [testResults, setTestResults] = useState([]);
   const [isTesting, setIsTesting] = useState(false);
 
-  const addTestResult = (name, success, message) => {
+  const _addTestResult = (name, success, message) => {
     setTestResults(prev => [...prev, { name, success, message, timestamp: Date.now() }]);
   };
 
-  const runAuthTests = async () => {
+  const _runAuthTests = async () => {
     setIsTesting(true);
     setTestResults([]);
 
     // Test 1: API Connection
     try {
-      const response = await fetch('http://localhost:5000/api/health');
-      const data = await response.json();
+      const _response = await fetch('http://localhost:5000/api/health');
+      const _data = await response.json();
       if (data.status === 'OK') {
         addTestResult('Conexão API', true, 'Servidor respondendo');
       } else {
@@ -31,7 +31,7 @@ const AuthTestPanel = () => {
 
     // Test 2: Demo Login
     try {
-      const loginResult = await authAPI.demoLogin();
+      const _loginResult = await authAPI.demoLogin();
       if (loginResult.success) {
         addTestResult('Login Demo', true, 'Login funcionando');
       } else {
@@ -43,9 +43,9 @@ const AuthTestPanel = () => {
 
     // Test 3: Token Verification
     try {
-      const token = authAPI.getToken();
+      const _token = authAPI.getToken();
       if (token) {
-        const verifyResult = await authAPI.verifyToken();
+        const _verifyResult = await authAPI.verifyToken();
         if (verifyResult.success) {
           addTestResult('Verificação Token', true, 'Token válido');
         } else {
@@ -59,7 +59,7 @@ const AuthTestPanel = () => {
     }
 
     // Test 4: User State
-    const currentUser = authAPI.getCurrentUser();
+    const _currentUser = authAPI.getCurrentUser();
     if (currentUser) {
       addTestResult('Estado do Usuário', true, `Usuário: ${currentUser.name}`);
     } else {

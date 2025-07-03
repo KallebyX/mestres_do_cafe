@@ -1,9 +1,9 @@
 import '@testing-library/jest-dom'
-import { vi, beforeAll, afterAll, afterEach } from 'vitest'
-import { cleanup } from '@testing-library/react'
+import { _vi, _beforeAll, _afterAll, _afterEach } from 'vitest'
+import { _cleanup } from '@testing-library/react'
 
 // Mock do localStorage
-const localStorageMock = {
+const _localStorageMock = {
   getItem: vi.fn(),
   setItem: vi.fn(),
   removeItem: vi.fn(),
@@ -14,7 +14,7 @@ Object.defineProperty(window, 'localStorage', {
 })
 
 // Mock do sessionStorage
-const sessionStorageMock = {
+const _sessionStorageMock = {
   getItem: vi.fn(),
   setItem: vi.fn(),
   removeItem: vi.fn(),
@@ -73,7 +73,7 @@ vi.mock('react-router-dom', () => ({
 }))
 
 // Mock das APIs com dados de teste realistas baseados na implementação
-const mockUser = {
+const _mockUser = {
   id: 1,
   email: 'test@example.com',
   name: 'Test User',
@@ -82,7 +82,7 @@ const mockUser = {
   level: 'Bronze'
 }
 
-const mockProducts = [
+const _mockProducts = [
   { 
     id: 1, 
     name: 'Bourbon Amarelo Premium', 
@@ -233,7 +233,7 @@ vi.mock('../src/lib/api', () => ({
     }),
     getCart: vi.fn(() => {
       // Simular carregamento real do localStorage
-      const cart = localStorage.getItem('cart')
+      const _cart = localStorage.getItem('cart')
       if (!cart) return { items: [], total: 0 }
       try {
         return JSON.parse(cart)

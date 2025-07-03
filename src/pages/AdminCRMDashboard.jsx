@@ -1,31 +1,13 @@
 import React, { useState, useEffect } from 'react';
-import { 
-  Users, Search, Download, UserPlus, Mail, Phone, 
-  TrendingUp, DollarSign, Edit, Eye, UserCheck, 
-  BarChart3, PieChart, Activity, Target, Award,
-  AlertCircle, CheckCircle, User, Building, Clock,
-  MoreVertical, Filter, ChevronLeft, ChevronRight, 
-  Shield, Globe, ArrowLeft, Send, MessageSquare,
-  FileText, Image, Zap, Calendar, Copy, Trash2
-} from 'lucide-react';
-import { Toggle } from '../components/ui/toggle';
-import { useSupabaseAuth } from '../contexts/SupabaseAuthContext';
-import { useNavigate } from 'react-router-dom';
+// import { _Users, _Search, _Download, _UserPlus, _Mail, _Phone, _TrendingUp, _DollarSign, _Edit, _Eye, _UserCheck, _BarChart3, _PieChart, _Activity, _Target, _Award, _AlertCircle, _CheckCircle, _User, _Building, _Clock, _MoreVertical, _Filter, _ChevronLeft, _ChevronRight, _Shield, _Globe, _ArrowLeft, _Send, _MessageSquare, _FileText, _Image, _Zap, _Calendar, _Copy, _Trash2 } from 'lucide-react'; // Temporarily commented - unused import
+// import { _Toggle } from '../components/ui/toggle'; // Temporarily commented - unused import
+import { _useSupabaseAuth } from '../contexts/SupabaseAuthContext';
+import { _useNavigate } from 'react-router-dom';
 import CustomerCreateModal from '../components/CustomerCreateModal';
-import { 
-  getAdminCustomers, 
-  toggleCustomerStatus,
-  getAllCustomers,
-  toggleAnyCustomerStatus,
-  syncAuthUsersToPublic
-} from '../lib/supabase-admin-api';
-import { 
-  sendCompleteNewsletter, 
-  validateNewsletterData,
-  getNewsletterTemplates
-} from '../lib/newsletter-api';
+import { _getAdminCustomers, _toggleCustomerStatus, _getAllCustomers, _toggleAnyCustomerStatus, _syncAuthUsersToPublic } from '../lib/supabase-admin-api';
+import { _sendCompleteNewsletter, _validateNewsletterData, _getNewsletterTemplates } from '../lib/newsletter-api';
 
-const AdminCRMDashboard = () => {
+const _AdminCRMDashboard = () => {
   const [activeTab, setActiveTab] = useState('admin-only'); // 'admin-only', 'all-customers', 'newsletter'
   const [customers, setCustomers] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -53,7 +35,7 @@ const AdminCRMDashboard = () => {
   const [syncLoading, setSyncLoading] = useState(false);
 
   // Templates pré-definidos
-  const newsletterTemplates = {
+  const _newsletterTemplates = {
     promotion: {
       title: '🔥 OFERTA IMPERDÍVEL | Mestres do Café',
       message: `┌─────────────────────────────┐
@@ -255,7 +237,7 @@ Olá, [NOME]! 🎭☕
   };
 
   const { user, hasPermission } = useSupabaseAuth();
-  const navigate = useNavigate();
+  const _navigate = useNavigate();
 
   useEffect(() => {
     if (!user || !hasPermission('admin')) {
@@ -267,7 +249,7 @@ Olá, [NOME]! 🎭☕
     }
   }, [user, hasPermission, navigate, pagination.page, searchTerm, filterSource, activeTab]);
 
-  const loadCustomersData = async () => {
+  const _loadCustomersData = async () => {
     console.log('🔄 Iniciando carregamento de clientes...');
     console.log('📊 Parâmetros:', { activeTab, pagination, searchTerm, filterSource });
     
@@ -317,30 +299,30 @@ Olá, [NOME]! 🎭☕
     }
   };
 
-  const handleCreateCustomer = () => {
+  const _handleCreateCustomer = () => {
     setSelectedCustomer(null);
     setModalMode('create');
     setShowCustomerModal(true);
   };
 
-  const handleEditCustomer = (customer) => {
+  const _handleEditCustomer = (customer) => {
     setSelectedCustomer(customer);
     setModalMode('edit');
     setShowCustomerModal(true);
   };
 
-  const handleModalSuccess = () => {
+  const _handleModalSuccess = () => {
     loadCustomersData();
     setSuccess('Operação realizada com sucesso!');
     setTimeout(() => setSuccess(''), 3000);
   };
 
-  const handleToggleStatus = async (customerId, currentIsActive, isAdminCreated) => {
+  const _handleToggleStatus = async (customerId, currentIsActive, isAdminCreated) => {
     try {
       let result;
       
       // Simular toggle do status baseado no campo is_active ou role
-      const newStatus = currentIsActive ? 'inactive' : 'active';
+      const _newStatus = currentIsActive ? 'inactive' : 'active';
       
       if (isAdminCreated) {
         // Usar a API específica para clientes criados pelo admin
@@ -364,12 +346,12 @@ Olá, [NOME]! 🎭☕
     }
   };
 
-  const handlePageChange = (newPage) => {
+  const _handlePageChange = (newPage) => {
     setPagination(prev => ({ ...prev, page: newPage }));
   };
 
   // Resetar filtros ao mudar de aba
-  const handleTabChange = (newTab) => {
+  const _handleTabChange = (newTab) => {
     setActiveTab(newTab);
     setSearchTerm('');
     setFilterSource('all');
@@ -382,10 +364,10 @@ Olá, [NOME]! 🎭☕
   };
 
   // Carregar clientes para newsletter
-  const loadCustomersForNewsletter = async () => {
+  const _loadCustomersForNewsletter = async () => {
     setLoading(true);
     try {
-      const result = await getAllCustomers({
+      const _result = await getAllCustomers({
         page: 1,
         limit: 1000, // Carregar todos para newsletter
         search: ''
@@ -402,7 +384,7 @@ Olá, [NOME]! 🎭☕
   };
 
   // Funções da Newsletter
-  const handleTemplateChange = (templateKey) => {
+  const _handleTemplateChange = (templateKey) => {
     if (templateKey === 'custom') {
       setNewsletterData(prev => ({
         ...prev,
@@ -411,7 +393,7 @@ Olá, [NOME]! 🎭☕
         message: ''
       }));
     } else {
-      const template = newsletterTemplates[templateKey];
+      const _template = newsletterTemplates[templateKey];
       setNewsletterData(prev => ({
         ...prev,
         template: templateKey,
@@ -421,8 +403,8 @@ Olá, [NOME]! 🎭☕
     }
   };
 
-  const handleAudienceChange = (audience) => {
-    let filteredCustomers = [...customers];
+  const _handleAudienceChange = (audience) => {
+    let _filteredCustomers = [...customers];
     
     switch (audience) {
       case 'admin-created':
@@ -445,15 +427,15 @@ Olá, [NOME]! 🎭☕
     setNewsletterData(prev => ({ ...prev, audience }));
   };
 
-  const processMessageTemplate = (message, customerName) => {
+  const _processMessageTemplate = (message, customerName) => {
     return message
       .replace(/\[NOME\]/g, customerName)
       .replace(/\[DATA\]/g, new Date().toLocaleDateString('pt-BR'));
   };
 
-  const sendNewsletter = async () => {
+  const _sendNewsletter = async () => {
     // Validar dados da newsletter
-    const validation = validateNewsletterData(newsletterData, selectedCustomers);
+    const _validation = validateNewsletterData(newsletterData, selectedCustomers);
     if (!validation.isValid) {
       setError(validation.errors.join(', '));
       return;
@@ -468,7 +450,7 @@ Olá, [NOME]! 🎭☕
         title: newsletterData.title
       });
 
-      const result = await sendCompleteNewsletter(newsletterData, selectedCustomers);
+      const _result = await sendCompleteNewsletter(newsletterData, selectedCustomers);
       
       if (result.success) {
         setSuccess(result.message);
@@ -503,13 +485,13 @@ Olá, [NOME]! 🎭☕
   };
 
   // Cálculos para KPIs
-  const totalCustomers = customers.length;
-  const pendingCustomers = customers.filter(c => c.pendente_ativacao).length;
-  const activeCustomers = customers.filter(c => c.is_active).length;
-  const adminCreatedCustomers = customers.filter(c => c.criado_por_admin).length;
-  const selfRegisteredCustomers = customers.filter(c => !c.criado_por_admin).length;
-  const totalRevenue = customers.reduce((sum, c) => sum + (c.total_spent || 0), 0);
-  const avgLifetimeValue = totalCustomers > 0 ? totalRevenue / totalCustomers : 0;
+  const _totalCustomers = customers.length;
+  const _pendingCustomers = customers.filter(c => c.pendente_ativacao).length;
+  const _activeCustomers = customers.filter(c => c.is_active).length;
+  const _adminCreatedCustomers = customers.filter(c => c.criado_por_admin).length;
+  const _selfRegisteredCustomers = customers.filter(c => !c.criado_por_admin).length;
+  const _totalRevenue = customers.reduce((sum, c) => sum + (c.total_spent || 0), 0);
+  const _avgLifetimeValue = totalCustomers > 0 ? totalRevenue / totalCustomers : 0;
 
   return (
     <div className="min-h-screen bg-slate-50 py-20">
@@ -551,7 +533,7 @@ Olá, [NOME]! 🎭☕
                   
                   try {
                     console.log('🔄 Forçando sincronização manual de usuários...');
-                    const result = await syncAuthUsersToPublic();
+                    const _result = await syncAuthUsersToPublic();
                     
                     if (result.success) {
                       setSuccess(`✅ Sincronização concluída! ${result.synced} usuários sincronizados de ${result.total} total`);

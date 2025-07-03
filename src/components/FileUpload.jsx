@@ -1,21 +1,9 @@
 import React, { useState, useRef, useCallback } from 'react';
-import { 
-  Upload, 
-  X, 
-  File, 
-  Image, 
-  FileText, 
-  Download, 
-  Trash2,
-  Eye,
-  CheckCircle,
-  AlertCircle,
-  Loader
-} from 'lucide-react';
-import { supabase } from '../lib/supabase';
-import { useNotifications } from '../contexts/NotificationContext';
+// import { _Upload, _X, _File, _Image, _FileText, _Download, _Trash2, _Eye, _CheckCircle, _AlertCircle, _Loader } from 'lucide-react'; // Temporarily commented - unused import
+import { _supabase } from '../lib/supabase';
+import { _useNotifications } from '../contexts/NotificationContext';
 
-const FileUpload = ({
+const _FileUpload = ({
   bucket = 'documents',
   path = '',
   allowMultiple = true,
@@ -40,15 +28,15 @@ const FileUpload = ({
   const [files, setFiles] = useState(initialFiles);
   const [uploading, setUploading] = useState(false);
   const [dragActive, setDragActive] = useState(false);
-  const fileInputRef = useRef(null);
+  const _fileInputRef = useRef(null);
   const { notifySuccess, notifyError, notifyInfo } = useNotifications();
 
   // Validar tipo de arquivo
-  const isValidFileType = (file) => {
-    const acceptedTypesArray = Object.keys(acceptedTypes);
-    return acceptedTypesArray.some(type => {
+  const _isValidFileType = (file) => {
+    const _acceptedTypesArray = Object.keys(acceptedTypes);
+    return acceptedTypesArray.some(_type => {
       if (type.includes('*')) {
-        const baseType = type.split('/')[0];
+        const _baseType = type.split('/')[0];
         return file.type.startsWith(baseType);
       }
       return file.type === type;
@@ -56,21 +44,21 @@ const FileUpload = ({
   };
 
   // Validar tamanho do arquivo
-  const isValidFileSize = (file) => {
+  const _isValidFileSize = (file) => {
     return file.size <= maxFileSize;
   };
 
   // Formatar tamanho do arquivo
-  const formatFileSize = (bytes) => {
+  const _formatFileSize = (bytes) => {
     if (bytes === 0) return '0 Bytes';
-    const k = 1024;
-    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
-    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    const _k = 1024;
+    const _sizes = ['Bytes', 'KB', 'MB', 'GB'];
+    const _i = Math.floor(Math.log(bytes) / Math.log(k));
     return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
   };
 
   // Obter ícone do arquivo baseado no tipo
-  const getFileIcon = (fileType) => {
+  const _getFileIcon = (fileType) => {
     if (fileType.startsWith('image/')) {
       return <Image className="w-6 h-6 text-blue-500" />;
     } else if (fileType === 'application/pdf') {
@@ -85,11 +73,11 @@ const FileUpload = ({
   };
 
   // Upload de arquivo para o Supabase Storage
-  const uploadFileToStorage = async (file) => {
+  const _uploadFileToStorage = async (file) => {
     try {
-      const fileExt = file.name.split('.').pop();
-      const fileName = `${Date.now()}-${Math.random().toString(36).substring(2)}.${fileExt}`;
-      const filePath = path ? `${path}/${fileName}` : fileName;
+      const _fileExt = file.name.split('.').pop();
+      const _fileName = `${Date.now()}-${Math.random().toString(36).substring(2)}.${fileExt}`;
+      const _filePath = path ? `${path}/${fileName}` : fileName;
 
       const { data, error } = await supabase.storage
         .from(bucket)
@@ -127,10 +115,10 @@ const FileUpload = ({
   };
 
   // Processar arquivos selecionados
-  const processFiles = useCallback(async (selectedFiles) => {
-    const fileArray = Array.from(selectedFiles);
-    const validFiles = [];
-    const errors = [];
+  const _processFiles = useCallback(async (selectedFiles) => {
+    const _fileArray = Array.from(selectedFiles);
+    const _validFiles = [];
+    const _errors = [];
 
     // Validar cada arquivo
     fileArray.forEach((file) => {
@@ -176,7 +164,7 @@ const FileUpload = ({
   }, [allowMultiple, maxFileSize, notifyError]);
 
   // Fazer upload dos arquivos
-  const uploadFiles = async (filesToUpload) => {
+  const _uploadFiles = async (filesToUpload) => {
     setUploading(true);
 
     for (const fileItem of filesToUpload) {
@@ -189,7 +177,7 @@ const FileUpload = ({
         ));
 
         // Fazer upload
-        const result = await uploadFileToStorage(fileItem.file);
+        const _result = await uploadFileToStorage(fileItem.file);
 
         if (result.success) {
           // Atualizar com sucesso
@@ -232,8 +220,8 @@ const FileUpload = ({
   };
 
   // Remover arquivo
-  const removeFile = async (fileId) => {
-    const fileToRemove = files.find(f => f.id === fileId);
+  const _removeFile = async (fileId) => {
+    const _fileToRemove = files.find(f => f.id === fileId);
     
     if (fileToRemove && fileToRemove.path) {
       try {
@@ -256,7 +244,7 @@ const FileUpload = ({
   };
 
   // Preview de arquivo
-  const previewFile = (file) => {
+  const _previewFile = (file) => {
     if (file.url && file.type.startsWith('image/')) {
       window.open(file.url, '_blank');
     } else if (file.url) {
@@ -265,9 +253,9 @@ const FileUpload = ({
   };
 
   // Download de arquivo
-  const downloadFile = (file) => {
+  const _downloadFile = (file) => {
     if (file.url) {
-      const link = document.createElement('a');
+      const _link = document.createElement('a');
       link.href = file.url;
       link.download = file.name;
       document.body.appendChild(link);
@@ -277,7 +265,7 @@ const FileUpload = ({
   };
 
   // Drag & Drop handlers
-  const handleDrag = useCallback((e) => {
+  const _handleDrag = useCallback((e) => {
     e.preventDefault();
     e.stopPropagation();
     if (e.type === 'dragenter' || e.type === 'dragover') {
@@ -287,7 +275,7 @@ const FileUpload = ({
     }
   }, []);
 
-  const handleDrop = useCallback((e) => {
+  const _handleDrop = useCallback((e) => {
     e.preventDefault();
     e.stopPropagation();
     setDragActive(false);
@@ -298,12 +286,12 @@ const FileUpload = ({
   }, [processFiles]);
 
   // Abrir seletor de arquivos
-  const openFileSelector = () => {
+  const _openFileSelector = () => {
     fileInputRef.current?.click();
   };
 
   // Handler para seleção de arquivos
-  const handleFileSelect = (e) => {
+  const _handleFileSelect = (e) => {
     if (e.target.files && e.target.files[0]) {
       processFiles(e.target.files);
     }

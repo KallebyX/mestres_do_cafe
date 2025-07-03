@@ -1,23 +1,23 @@
-import { createClient } from '@supabase/supabase-js';
+import { _createClient } from '@supabase/supabase-js';
 
 // Configurações do Supabase
 // Suporte tanto para Vite (frontend) quanto Node.js (scripts)
-const isNode = typeof window === 'undefined' && typeof process !== 'undefined';
-const isBrowser = typeof window !== 'undefined';
+const _isNode = typeof window === 'undefined' && typeof process !== 'undefined';
+const _isBrowser = typeof window !== 'undefined';
 
 // Credenciais padrão para fallback
-const DEFAULT_SUPABASE_URL = 'https://uicpqeruwwbnqbykymaj.supabase.co';
-const DEFAULT_SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVpY3BxZXJ1d3dibnFieWt5bWFqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTAzODM3NjksImV4cCI6MjA2NTk1OTc2OX0.hn-R8WzjKEqnusblaIWKZjCbm-nDqfBP5VQKymshMsM';
+const _DEFAULT_SUPABASE_URL = 'https://uicpqeruwwbnqbykymaj.supabase.co';
+const _DEFAULT_SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVpY3BxZXJ1d3dibnFieWt5bWFqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTAzODM3NjksImV4cCI6MjA2NTk1OTc2OX0.hn-R8WzjKEqnusblaIWKZjCbm-nDqfBP5VQKymshMsM';
 
-const supabaseUrl = isBrowser 
+const _supabaseUrl = isBrowser 
   ? (import.meta.env.VITE_SUPABASE_URL || DEFAULT_SUPABASE_URL)
   : (isNode ? (process.env.VITE_SUPABASE_URL || process.env.SUPABASE_URL || DEFAULT_SUPABASE_URL) : DEFAULT_SUPABASE_URL);
 
-const supabaseAnonKey = isBrowser 
+const _supabaseAnonKey = isBrowser 
   ? (import.meta.env.VITE_SUPABASE_ANON_KEY || DEFAULT_SUPABASE_ANON_KEY)
   : (isNode ? (process.env.VITE_SUPABASE_ANON_KEY || process.env.SUPABASE_ANON_KEY || DEFAULT_SUPABASE_ANON_KEY) : DEFAULT_SUPABASE_ANON_KEY);
 
-const supabaseServiceKey = isBrowser 
+const _supabaseServiceKey = isBrowser 
   ? import.meta.env.VITE_SUPABASE_SERVICE_ROLE_KEY 
   : (isNode ? (process.env.VITE_SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY) : null);
 
@@ -29,7 +29,7 @@ if (!supabaseUrl || !supabaseAnonKey) {
 }
 
 // Cliente principal para operações normais (frontend)
-export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
+export const _supabase = createClient(supabaseUrl, supabaseAnonKey, {
   auth: {
     autoRefreshToken: true,
     persistSession: true,
@@ -43,7 +43,7 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
 });
 
 // Cliente administrativo para operações que necessitam Service Role
-export const supabaseAdmin = supabaseServiceKey 
+export const _supabaseAdmin = supabaseServiceKey 
   ? createClient(supabaseUrl, supabaseServiceKey, {
       auth: {
         autoRefreshToken: false,
@@ -67,7 +67,7 @@ export const supabaseAdmin = supabaseServiceKey
  * @param {object} options - Opções de ordenação e limite
  * @returns {Promise<{success: boolean, data: any[], error?: string}>}
  */
-export const getAll = async (tableName, options = {}) => {
+export const _getAll = async (tableName, options = {}) => {
   try {
     const { 
       orderBy = 'created_at', 
@@ -76,7 +76,7 @@ export const getAll = async (tableName, options = {}) => {
       select = '*'
     } = options;
 
-    let query = supabase
+    let _query = supabase
       .from(tableName)
       .select(select)
       .order(orderBy, { ascending });
@@ -107,7 +107,7 @@ export const getAll = async (tableName, options = {}) => {
  * @param {string} select - Campos a selecionar
  * @returns {Promise<{success: boolean, data: any, error?: string}>}
  */
-export const getById = async (tableName, id, select = '*') => {
+export const _getById = async (tableName, id, select = '*') => {
   try {
     const { data, error } = await supabase
       .from(tableName)
@@ -135,7 +135,7 @@ export const getById = async (tableName, id, select = '*') => {
  * @param {object} options - Opções adicionais
  * @returns {Promise<{success: boolean, data: any[], error?: string}>}
  */
-export const getFiltered = async (tableName, filters = {}, options = {}) => {
+export const _getFiltered = async (tableName, filters = {}, options = {}) => {
   try {
     const { 
       orderBy = 'created_at', 
@@ -144,7 +144,7 @@ export const getFiltered = async (tableName, filters = {}, options = {}) => {
       select = '*'
     } = options;
 
-    let query = supabase.from(tableName).select(select);
+    let _query = supabase.from(tableName).select(select);
 
     // Aplicar filtros
     Object.entries(filters).forEach(([key, value]) => {
@@ -190,7 +190,7 @@ export const getFiltered = async (tableName, filters = {}, options = {}) => {
  * @param {object} data - Dados a inserir
  * @returns {Promise<{success: boolean, data: any, error?: string}>}
  */
-export const insertRecord = async (tableName, data) => {
+export const _insertRecord = async (tableName, data) => {
   try {
     const { data: result, error } = await supabase
       .from(tableName)
@@ -218,7 +218,7 @@ export const insertRecord = async (tableName, data) => {
  * @param {object} data - Dados a atualizar
  * @returns {Promise<{success: boolean, data: any, error?: string}>}
  */
-export const updateRecord = async (tableName, id, data) => {
+export const _updateRecord = async (tableName, id, data) => {
   try {
     const { data: result, error } = await supabase
       .from(tableName)
@@ -247,7 +247,7 @@ export const updateRecord = async (tableName, id, data) => {
  * @param {boolean} softDelete - Se deve fazer soft delete
  * @returns {Promise<{success: boolean, data: any, error?: string}>}
  */
-export const deleteRecord = async (tableName, id, softDelete = true) => {
+export const _deleteRecord = async (tableName, id, softDelete = true) => {
   try {
     let result;
     
@@ -297,7 +297,7 @@ export const deleteRecord = async (tableName, id, softDelete = true) => {
  * @param {string} path - Caminho do arquivo
  * @returns {string} URL pública
  */
-export const getPublicURL = (bucket, path) => {
+export const _getPublicURL = (bucket, path) => {
   if (!path) return null;
   
   const { data } = supabase.storage
@@ -314,7 +314,7 @@ export const getPublicURL = (bucket, path) => {
  * @param {File} file - Arquivo a fazer upload
  * @returns {Promise<{success: boolean, data: any, error?: string}>}
  */
-export const uploadFile = async (bucket, path, file) => {
+export const _uploadFile = async (bucket, path, file) => {
   try {
     const { data, error } = await supabase.storage
       .from(bucket)
@@ -344,7 +344,7 @@ export const uploadFile = async (bucket, path, file) => {
  * Verificar se Supabase está conectado
  * @returns {Promise<boolean>}
  */
-export const checkConnection = async () => {
+export const _checkConnection = async () => {
   try {
     const { data, error } = await supabase
       .from('products')
@@ -362,13 +362,13 @@ export const checkConnection = async () => {
  * @param {string} tableName - Nome da tabela
  * @returns {Promise<{total: number, active?: number}>}
  */
-export const getTableStats = async (tableName) => {
+export const _getTableStats = async (tableName) => {
   try {
     const { count: total } = await supabase
       .from(tableName)
       .select('*', { count: 'exact', head: true });
 
-    let active = null;
+    let _active = null;
     
     // Se a tabela tem campo is_active, contar apenas ativos
     try {

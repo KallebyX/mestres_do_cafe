@@ -1,13 +1,13 @@
 const fs = require('fs');
-const path = require('path');
+const _path = require('path');
 
 // Mock do banco de dados para testes
-const TEST_DB_FILE = './test_users.json';
+const _TEST_DB_FILE = './test_users.json';
 
 // Setup antes de todos os testes
 beforeAll(() => {
   // Criar arquivo de teste limpo
-  const testData = {
+  const _testData = {
     users: [
       {
         id: 1,
@@ -52,7 +52,7 @@ afterAll(() => {
 
 // Reset do banco para cada teste
 beforeEach(() => {
-  const testData = {
+  const _testData = {
     users: [
       {
         id: 1,
@@ -85,7 +85,7 @@ beforeEach(() => {
 });
 
 // Mock do console para testes mais limpos
-const originalConsole = { ...console };
+const _originalConsole = { ...console };
 beforeAll(() => {
   console.log = jest.fn();
   console.info = jest.fn();

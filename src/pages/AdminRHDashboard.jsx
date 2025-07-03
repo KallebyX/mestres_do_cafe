@@ -1,21 +1,15 @@
 import React, { useState, useEffect } from 'react';
-import { 
-  Users, UserCheck, Calendar, Clock, DollarSign, TrendingUp, Award,
-  FileText, CheckCircle, AlertTriangle, Plus, Search, Edit, Eye, Trash2,
-  Target, Activity, Star, BookOpen, Coffee, MapPin, Phone, Mail,
-  Download, Filter, BarChart3, User, UserPlus, Settings, UserX, ChevronDown,
-  PieChart, AlertCircle
-} from 'lucide-react';
-import { useSupabaseAuth } from '../contexts/SupabaseAuthContext';
-import { useNavigate } from 'react-router-dom';
-import { supabase } from '../lib/supabase';
+// import { _Users, _UserCheck, _Calendar, _Clock, _DollarSign, _TrendingUp, _Award, _FileText, _CheckCircle, _AlertTriangle, _Plus, _Search, _Edit, _Eye, _Trash2, _Target, _Activity, _Star, _BookOpen, _Coffee, _MapPin, _Phone, _Mail, _Download, _Filter, _BarChart3, _User, _UserPlus, _Settings, _UserX, _ChevronDown, _PieChart, _AlertCircle } from 'lucide-react'; // Temporarily commented - unused import
+import { _useSupabaseAuth } from '../contexts/SupabaseAuthContext';
+import { _useNavigate } from 'react-router-dom';
+import { _supabase } from '../lib/supabase';
 import EmployeeModal from '../components/EmployeeModal';
-import { useNotifications } from '../contexts/NotificationContext';
-import { PieChartComponent, BarChartComponent } from '../components/AdvancedCharts';
-import { StockReport } from '../components/PDFReports';
-import { hrAPI } from '../lib/supabase-erp-api';
+import { _useNotifications } from '../contexts/NotificationContext';
+import { _PieChartComponent, _BarChartComponent } from '../components/AdvancedCharts';
+import { _StockReport } from '../components/PDFReports';
+import { _hrAPI } from '../lib/supabase-erp-api';
 
-const AdminRHDashboard = () => {
+const _AdminRHDashboard = () => {
   const [activeTab, setActiveTab] = useState('overview');
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
@@ -39,7 +33,7 @@ const AdminRHDashboard = () => {
   const [departmentFilter, setDepartmentFilter] = useState('todos');
 
   const { user, hasPermission } = useSupabaseAuth();
-  const navigate = useNavigate();
+  const _navigate = useNavigate();
   const { notifySuccess, notifyError, notifyInfo } = useNotifications();
 
   // Estados do modal
@@ -55,7 +49,7 @@ const AdminRHDashboard = () => {
     loadHRData();
   }, [user, hasPermission, navigate, activeTab]);
 
-  const loadHRData = async () => {
+  const _loadHRData = async () => {
     setLoading(true);
     try {
       // Carregar dados reais do Supabase
@@ -122,29 +116,29 @@ const AdminRHDashboard = () => {
   // APIs integradas com hrAPI do supabase-erp-api.js
 
   // Funções CRUD para funcionários
-  const handleCreateEmployee = () => {
+  const _handleCreateEmployee = () => {
     setSelectedEmployee(null);
     setModalMode('create');
     setShowEmployeeModal(true);
   };
 
-  const handleEditEmployee = (employee) => {
+  const _handleEditEmployee = (employee) => {
     setSelectedEmployee(employee);
     setModalMode('edit');
     setShowEmployeeModal(true);
   };
 
-  const handleViewEmployee = (employee) => {
+  const _handleViewEmployee = (employee) => {
     setSelectedEmployee(employee);
     setModalMode('view');
     setShowEmployeeModal(true);
   };
 
-  const handleDeleteEmployee = async (employeeId) => {
+  const _handleDeleteEmployee = async (employeeId) => {
     if (window.confirm('Tem certeza que deseja excluir este funcionário?')) {
       try {
         // Usar soft delete - marcar como inativo
-        const result = await hrAPI.updateEmployee(employeeId, { is_active: false });
+        const _result = await hrAPI.updateEmployee(employeeId, { is_active: false });
 
         if (result.success) {
           notifySuccess('✅ Funcionário Excluído', 'Funcionário excluído com sucesso');
@@ -159,24 +153,24 @@ const AdminRHDashboard = () => {
     }
   };
 
-  const handleEmployeeModalSuccess = () => {
+  const _handleEmployeeModalSuccess = () => {
     loadHRData();
     setShowEmployeeModal(false);
   };
 
   // Utilitários
-  const formatCurrency = (value) => {
+  const _formatCurrency = (value) => {
     return new Intl.NumberFormat('pt-BR', {
       style: 'currency',
       currency: 'BRL'
     }).format(value);
   };
 
-  const formatDate = (dateString) => {
+  const _formatDate = (dateString) => {
     return new Date(dateString).toLocaleDateString('pt-BR');
   };
 
-  const getStatusColor = (status) => {
+  const _getStatusColor = (status) => {
     switch (status) {
       case 'ativo':
         return 'text-green-700 bg-green-100';
@@ -202,13 +196,13 @@ const AdminRHDashboard = () => {
   };
 
   // Cálculos - com verificações de segurança
-  const totalFuncionarios = funcionarios ? funcionarios.length : 0;
-  const funcionariosAtivos = funcionarios ? funcionarios.filter(f => f && f.status === 'ativo').length : 0;
-  const folhaPagamentoTotal = funcionarios ? funcionarios.reduce((total, func) => total + (func && func.salario ? parseFloat(func.salario) : 0), 0) : 0;
-  const salarioMedio = totalFuncionarios > 0 ? folhaPagamentoTotal / totalFuncionarios : 0;
+  const _totalFuncionarios = funcionarios ? funcionarios.length : 0;
+  const _funcionariosAtivos = funcionarios ? funcionarios.filter(f => f && f.status === 'ativo').length : 0;
+  const _folhaPagamentoTotal = funcionarios ? funcionarios.reduce((total, func) => total + (func && func.salario ? parseFloat(func.salario) : 0), 0) : 0;
+  const _salarioMedio = totalFuncionarios > 0 ? folhaPagamentoTotal / totalFuncionarios : 0;
 
   // Componentes de renderização
-  const renderOverview = () => (
+  const _renderOverview = () => (
     <div className="space-y-6">
       {/* Cards de Resumo */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -333,7 +327,7 @@ const AdminRHDashboard = () => {
     </div>
   );
 
-  const renderFuncionarios = () => (
+  const _renderFuncionarios = () => (
     <div className="space-y-6">
       {/* Controles */}
       <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
@@ -398,16 +392,16 @@ const AdminRHDashboard = () => {
             </thead>
             <tbody className="divide-y divide-gray-200">
               {Array.isArray(funcionarios) && funcionarios.length > 0 ? funcionarios
-                .filter(func => {
+                .filter(_func => {
                   // Verificar se func e suas propriedades existem
                   if (!func || !func.nome || !func.email) {
                     return false;
                   }
                   
-                  const matchSearch = func.nome.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                  const _matchSearch = func.nome.toLowerCase().includes(searchTerm.toLowerCase()) ||
                                    func.email.toLowerCase().includes(searchTerm.toLowerCase());
-                  const matchStatus = statusFilter === 'todos' || func.status === statusFilter;
-                  const matchDept = departmentFilter === 'todos' || func.departamento === departmentFilter;
+                  const _matchStatus = statusFilter === 'todos' || func.status === statusFilter;
+                  const _matchDept = departmentFilter === 'todos' || func.departamento === departmentFilter;
                   return matchSearch && matchStatus && matchDept;
                 })
                 .map((funcionario) => (
@@ -497,7 +491,7 @@ const AdminRHDashboard = () => {
     </div>
   );
 
-  const renderRelatorios = () => (
+  const _renderRelatorios = () => (
     <div className="space-y-6">
       <h2 className="text-2xl font-bold text-gray-900">Relatórios de RH</h2>
       

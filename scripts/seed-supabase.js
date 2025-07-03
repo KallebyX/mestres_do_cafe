@@ -1,5 +1,5 @@
 import 'dotenv/config';
-import { supabaseAdmin, insertRecord, getAll } from '../src/lib/supabaseClient.js';
+import { _supabaseAdmin, _insertRecord, _getAll } from '../src/lib/supabaseClient.js';
 
 console.log('🌱 Iniciando seed do Supabase...');
 
@@ -13,7 +13,7 @@ if (!supabaseAdmin) {
 // DADOS DE SEED
 // =============================================
 
-const seedProducts = [
+const _seedProducts = [
   {
     name: 'Café Bourbon Amarelo Premium',
     description: 'Café especial da região do Cerrado Mineiro com notas intensas de chocolate e caramelo.',
@@ -112,7 +112,7 @@ const seedProducts = [
   }
 ];
 
-const seedBlogPosts = [
+const _seedBlogPosts = [
   {
     title: 'Guia Completo para Iniciantes no Café Especial',
     content: 'O mundo dos cafés especiais pode parecer complexo no início, mas com as informações certas, qualquer pessoa pode aprender a apreciar essas bebidas excepcionais...',
@@ -142,7 +142,7 @@ const seedBlogPosts = [
   }
 ];
 
-const seedUsers = [
+const _seedUsers = [
   {
     email: 'admin@mestrescafe.com',
     name: 'Administrador',
@@ -165,32 +165,32 @@ const seedUsers = [
 // FUNÇÕES DE SEED
 // =============================================
 
-async function seedTable(tableName, data, options = {}) {
+async function seedTable(_tableName,_data,_options = {}) {
   const { skipIfExists = true, identifierField = 'name' } = options;
   
   console.log(`\n📦 Seeding tabela: ${tableName}`);
   
   // Verificar se já existem dados
   if (skipIfExists) {
-    const existing = await getAll(tableName);
+    const _existing = await getAll(tableName);
     if (existing.success && existing.data.length > 0) {
       console.log(`⏭️ Tabela ${tableName} já possui ${existing.data.length} registros, pulando...`);
       return existing.data;
     }
   }
   
-  const results = [];
+  const _results = [];
   
   for (const item of data) {
     try {
       // Adicionar timestamps
-      const record = {
+      const _record = {
         ...item,
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString()
       };
       
-      const result = await insertRecord(tableName, record);
+      const _result = await insertRecord(tableName, record);
       
       if (result.success) {
         results.push(result.data);
@@ -210,7 +210,7 @@ async function seedTable(tableName, data, options = {}) {
   return results;
 }
 
-async function clearTable(tableName) {
+async function clearTable(_tableName) {
   console.log(`🗑️ Limpando tabela: ${tableName}`);
   
   try {
@@ -233,10 +233,10 @@ async function showStats() {
   console.log('\n📊 ESTATÍSTICAS FINAIS:');
   console.log('==================================================');
   
-  const tables = ['products', 'blog_posts', 'users', 'orders'];
+  const _tables = ['products', 'blog_posts', 'users', 'orders'];
   
   for (const table of tables) {
-    const result = await getAll(table);
+    const _result = await getAll(table);
     if (result.success) {
       console.log(`📋 ${table}: ${result.data.length} registros`);
     }
@@ -254,9 +254,9 @@ async function main() {
     console.log('🚀 Iniciando processo de seed...');
     console.log('==================================================');
     
-    const args = process.argv.slice(2);
-    const shouldClear = args.includes('--clear');
-    const shouldForce = args.includes('--force');
+    const _args = process.argv.slice(2);
+    const _shouldClear = args.includes('--clear');
+    const _shouldForce = args.includes('--force');
     
     if (shouldClear) {
       console.log('🗑️ Limpando dados existentes...');

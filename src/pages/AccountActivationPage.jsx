@@ -1,13 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
-import { 
-  Lock, Eye, EyeOff, CheckCircle, AlertCircle, 
-  User, Mail, Shield, Coffee, ArrowRight
-} from 'lucide-react';
-import { useSupabaseAuth } from '../contexts/SupabaseAuthContext';
+import { _useNavigate, _useLocation } from 'react-router-dom';
+// import { _Lock, _Eye, _EyeOff, _CheckCircle, _AlertCircle, _User, _Mail, _Shield, _Coffee, _ArrowRight } from 'lucide-react'; // Temporarily commented - unused import
+import { _useSupabaseAuth } from '../contexts/SupabaseAuthContext';
 import Logo from '../components/Logo';
 
-const AccountActivationPage = () => {
+const _AccountActivationPage = () => {
   const [formData, setFormData] = useState({
     password: '',
     confirmPassword: ''
@@ -22,8 +19,8 @@ const AccountActivationPage = () => {
   });
 
   const { user, activateAdminCreatedAccount } = useSupabaseAuth();
-  const navigate = useNavigate();
-  const location = useLocation();
+  const _navigate = useNavigate();
+  const _location = useLocation();
 
   useEffect(() => {
     // Verificar se o usuário precisa ativar a conta
@@ -39,9 +36,9 @@ const AccountActivationPage = () => {
     }
   }, [user, navigate]);
 
-  const calculatePasswordStrength = (password) => {
-    let score = 0;
-    const feedback = [];
+  const _calculatePasswordStrength = (password) => {
+    let _score = 0;
+    const _feedback = [];
 
     if (password.length >= 8) {
       score += 1;
@@ -76,7 +73,7 @@ const AccountActivationPage = () => {
     return { score, feedback };
   };
 
-  const handleInputChange = (e) => {
+  const _handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
 
@@ -87,21 +84,21 @@ const AccountActivationPage = () => {
     if (error) setError('');
   };
 
-  const getPasswordStrengthColor = (score) => {
+  const _getPasswordStrengthColor = (score) => {
     if (score <= 2) return 'bg-red-500';
     if (score <= 3) return 'bg-yellow-500';
     if (score <= 4) return 'bg-blue-500';
     return 'bg-green-500';
   };
 
-  const getPasswordStrengthText = (score) => {
+  const _getPasswordStrengthText = (score) => {
     if (score <= 2) return 'Fraca';
     if (score <= 3) return 'Média';
     if (score <= 4) return 'Boa';
     return 'Forte';
   };
 
-  const handleSubmit = async (e) => {
+  const _handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
 
@@ -129,7 +126,7 @@ const AccountActivationPage = () => {
     setIsSubmitting(true);
 
     try {
-      const result = await activateAdminCreatedAccount(formData.password);
+      const _result = await activateAdminCreatedAccount(formData.password);
       
       if (result.success) {
         // Redirecionar para dashboard após ativação

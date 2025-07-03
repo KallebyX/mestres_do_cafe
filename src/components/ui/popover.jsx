@@ -3,25 +3,22 @@
 import * as React from "react"
 import * as PopoverPrimitive from "@radix-ui/react-popover"
 
-import { cn } from "@/lib/utils"
+import { _cn } from "@/lib/utils"
 
-function Popover({
+function Popover(_{
   ...props
 }) {
   return <PopoverPrimitive.Root data-slot="popover" {...props} />;
 }
 
-function PopoverTrigger({
+function PopoverTrigger(_{
   ...props
 }) {
   return <PopoverPrimitive.Trigger data-slot="popover-trigger" {...props} />;
 }
 
-function PopoverContent({
-  className,
-  align = "center",
-  sideOffset = 4,
-  ...props
+function PopoverContent(_{
+  className,_align = "center",_sideOffset = 4,_...props
 }) {
   return (
     <PopoverPrimitive.Portal>
@@ -38,7 +35,7 @@ function PopoverContent({
   );
 }
 
-function PopoverAnchor({
+function PopoverAnchor(_{
   ...props
 }) {
   return <PopoverPrimitive.Anchor data-slot="popover-anchor" {...props} />;

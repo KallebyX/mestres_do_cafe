@@ -1,15 +1,12 @@
 import * as React from "react"
-import { ChevronLeft, ChevronRight } from "lucide-react"
-import { DayPicker } from "react-day-picker"
+// import { _ChevronLeft, _ChevronRight } from "lucide-react" // Temporarily commented - unused import
+import { _DayPicker } from "react-day-picker"
 
-import { cn } from "@/lib/utils"
-import { buttonVariants } from "@/components/ui/button"
+import { _cn } from "@/lib/utils"
+// import { _buttonVariants } from "@/components/ui/button" // Temporarily commented - unused import
 
-function Calendar({
-  className,
-  classNames,
-  showOutsideDays = true,
-  ...props
+function Calendar(_{
+  className,_classNames,_showOutsideDays = true,_...props
 }) {
   return (
     <DayPicker

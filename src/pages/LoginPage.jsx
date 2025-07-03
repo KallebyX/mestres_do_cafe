@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import { useSupabaseAuth } from '../contexts/SupabaseAuthContext';
-import { Mail, Lock, Eye, EyeOff, Coffee, Shield, Star, CheckCircle, ArrowRight } from 'lucide-react';
+import { _Link, _useNavigate } from 'react-router-dom';
+import { _useSupabaseAuth } from '../contexts/SupabaseAuthContext';
+// import { _Mail, _Lock, _Eye, _EyeOff, _Coffee, _Shield, _Star, _CheckCircle, _ArrowRight } from 'lucide-react'; // Temporarily commented - unused import
 import Logo from '../components/Logo';
 
-const LoginPage = () => {
+const _LoginPage = () => {
   const [formData, setFormData] = useState({
     email: '',
     password: ''
@@ -14,9 +14,9 @@ const LoginPage = () => {
   const [showPassword, setShowPassword] = useState(false);
   
   const { login, loginWithGoogle, profile, getUserProfile, isAdmin } = useSupabaseAuth();
-  const navigate = useNavigate();
+  const _navigate = useNavigate();
 
-  const features = [
+  const _features = [
     {
       icon: Coffee,
       title: "Cafés Premium",
@@ -34,7 +34,7 @@ const LoginPage = () => {
     }
   ];
 
-  const handleChange = (e) => {
+  const _handleChange = (e) => {
     setFormData({
       ...formData,
       [e.target.name]: e.target.value
@@ -42,17 +42,17 @@ const LoginPage = () => {
     if (error) setError('');
   };
 
-  const handleSubmit = async (e) => {
+  const _handleSubmit = async (e) => {
     e.preventDefault();
     setIsLoading(true);
     setError('');
 
     try {
-      const result = await login(formData.email, formData.password);
+      const _result = await login(formData.email, formData.password);
       
       if (result.success) {
         setTimeout(() => {
-          const currentProfile = getUserProfile();
+          const _currentProfile = getUserProfile();
           
           // Verificar se é uma conta criada pelo admin que precisa ser ativada
           if (currentProfile?.criado_por_admin && currentProfile?.pendente_ativacao) {
@@ -81,12 +81,12 @@ const LoginPage = () => {
 
 
 
-  const handleGoogleLogin = async () => {
+  const _handleGoogleLogin = async () => {
     setIsLoading(true);
     setError('');
     
     try {
-      const result = await loginWithGoogle();
+      const _result = await loginWithGoogle();
       
       if (result.success) {
         // O redirecionamento será feito automaticamente pelo Google OAuth

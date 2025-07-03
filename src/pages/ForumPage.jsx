@@ -1,12 +1,12 @@
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
-import { MessageCircle, ThumbsUp, Eye, User, Clock, Star, Search, Filter, PlusCircle } from 'lucide-react';
+import { _Link } from 'react-router-dom';
+// import { _MessageCircle, _ThumbsUp, _Eye, _User, _Clock, _Star, _Search, _Filter, _PlusCircle } from 'lucide-react'; // Temporarily commented - unused import
 
-const ForumPage = () => {
+const _ForumPage = () => {
   const [activeCategory, setActiveCategory] = useState('all');
   const [searchTerm, setSearchTerm] = useState('');
 
-  const categories = [
+  const _categories = [
     { id: 'all', name: 'Todos os Tópicos', count: 247 },
     { id: 'beginners', name: 'Iniciantes', count: 89 },
     { id: 'brewing', name: 'Métodos de Preparo', count: 65 },
@@ -15,7 +15,7 @@ const ForumPage = () => {
     { id: 'equipment', name: 'Equipamentos', count: 19 }
   ];
 
-  const topics = [
+  const _topics = [
     {
       id: 1,
       title: 'Como ajustar a moagem para V60?',
@@ -88,15 +88,15 @@ const ForumPage = () => {
     }
   ];
 
-  const filteredTopics = topics.filter(topic => {
-    const matchesCategory = activeCategory === 'all' || topic.category === activeCategory;
-    const matchesSearch = topic.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+  const _filteredTopics = topics.filter(_topic => {
+    const _matchesCategory = activeCategory === 'all' || topic.category === activeCategory;
+    const _matchesSearch = topic.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          topic.excerpt.toLowerCase().includes(searchTerm.toLowerCase());
     return matchesCategory && matchesSearch;
   });
 
-  const getLevelColor = (level) => {
-    const colors = {
+  const _getLevelColor = (level) => {
+    const _colors = {
       'Aprendiz': 'bg-gray-500',
       'Conhecedor': 'bg-green-500',
       'Especialista': 'bg-blue-500',

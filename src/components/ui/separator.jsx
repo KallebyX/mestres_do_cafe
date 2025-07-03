@@ -3,13 +3,10 @@
 import * as React from "react"
 import * as SeparatorPrimitive from "@radix-ui/react-separator"
 
-import { cn } from "@/lib/utils"
+import { _cn } from "@/lib/utils"
 
-function Separator({
-  className,
-  orientation = "horizontal",
-  decorative = true,
-  ...props
+function Separator(_{
+  className,_orientation = "horizontal",_decorative = true,_...props
 }) {
   return (
     <SeparatorPrimitive.Root

@@ -4,14 +4,14 @@
  */
 
 import React from 'react';
-import { Sun, Moon } from 'lucide-react';
-import { useTheme } from '../contexts/ThemeContext';
+// import { _Sun, _Moon } from 'lucide-react'; // Temporarily commented - unused import
+import { _useTheme } from '../contexts/ThemeContext';
 
-const ThemeToggle = ({ size = 'md', className = '' }) => {
+const _ThemeToggle = ({ size = 'md', className = '' }) => {
   const { currentTheme, toggleTheme, isDark } = useTheme();
 
   // Tamanhos disponíveis
-  const sizes = {
+  const _sizes = {
     sm: {
       button: 'w-10 h-10',
       icon: 'w-4 h-4'
@@ -26,7 +26,7 @@ const ThemeToggle = ({ size = 'md', className = '' }) => {
     }
   };
 
-  const sizeClasses = sizes[size] || sizes.md;
+  const _sizeClasses = sizes[size] || sizes.md;
 
   return (
     <button
@@ -132,7 +132,7 @@ const ThemeToggle = ({ size = 'md', className = '' }) => {
 };
 
 // Versão compacta para uso em menus
-export const ThemeToggleCompact = ({ className = '' }) => {
+export const _ThemeToggleCompact = ({ className = '' }) => {
   const { isDark, toggleTheme } = useTheme();
 
   return (
@@ -169,10 +169,10 @@ export const ThemeToggleCompact = ({ className = '' }) => {
 };
 
 // Versão apenas ícone para barras de ferramentas
-export const ThemeToggleIcon = ({ size = 'md', className = '' }) => {
+export const _ThemeToggleIcon = ({ size = 'md', className = '' }) => {
   const { isDark, toggleTheme } = useTheme();
   
-  const sizeClasses = {
+  const _sizeClasses = {
     sm: 'w-8 h-8',
     md: 'w-10 h-10',
     lg: 'w-12 h-12'

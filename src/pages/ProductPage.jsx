@@ -1,16 +1,16 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate, Link } from 'react-router-dom';
-import { ArrowLeft, ShoppingCart, Star, Coffee, Package, Truck, Shield, Heart, Share2, Plus, Minus } from 'lucide-react';
-import { useAuth } from '../contexts/AuthContext';
-import { useCart } from '../contexts/CartContext';
-import { Header } from '../components/Header';
-import { Footer } from '../components/Footer';
-import { getById, getFiltered } from '../lib/supabaseClient';
-import { FullScreenLoading, ErrorMessage, useDataState } from '../components/LoadingStates';
+import { _useParams, _useNavigate, _Link } from 'react-router-dom';
+// import { _ArrowLeft, _ShoppingCart, _Star, _Coffee, _Package, _Truck, _Shield, _Heart, _Share2, _Plus, _Minus } from 'lucide-react'; // Temporarily commented - unused import
+import { _useAuth } from '../contexts/AuthContext';
+import { _useCart } from '../contexts/CartContext';
+import { _Header } from '../components/Header';
+import { _Footer } from '../components/Footer';
+import { _getById, _getFiltered } from '../lib/supabaseClient';
+import { _FullScreenLoading, _ErrorMessage, _useDataState } from '../components/LoadingStates';
 
-const ProductPage = () => {
+const _ProductPage = () => {
   const { id } = useParams();
-  const navigate = useNavigate();
+  const _navigate = useNavigate();
   const { user: _user } = useAuth();
   const { addToCart } = useCart();
   
@@ -39,10 +39,10 @@ const ProductPage = () => {
     }
   }, [id]);
 
-  const loadProductData = async () => {
+  const _loadProductData = async () => {
     await loadProduct(async () => {
       // Usar helper genérico para buscar produto
-      const response = await getById('products', id);
+      const _response = await getById('products', id);
       
       if (response.success && response.data) {
         console.log('✅ Produto carregado:', response.data.name);
@@ -53,14 +53,14 @@ const ProductPage = () => {
     });
   };
 
-  const loadRelatedProductsData = async () => {
+  const _loadRelatedProductsData = async () => {
     await loadRelatedProducts(async () => {
       // Primeiro buscar o produto atual para obter sua categoria
-      const currentProduct = await getById('products', id);
+      const _currentProduct = await getById('products', id);
       
       if (currentProduct.success && currentProduct.data) {
         // Buscar produtos relacionados da mesma categoria
-        const response = await getFiltered('products', 
+        const _response = await getFiltered('products', 
           { 
             category: currentProduct.data.category,
             is_active: true 
@@ -74,7 +74,7 @@ const ProductPage = () => {
         
         if (response.success && response.data) {
           // Filtrar produto atual e pegar apenas 4
-          const related = response.data
+          const _related = response.data
             .filter(p => p.id !== parseInt(id))
             .slice(0, 4);
           
@@ -84,13 +84,13 @@ const ProductPage = () => {
       }
       
       // Fallback: buscar produtos aleatórios se não conseguir da categoria
-      const fallbackResponse = await getFiltered('products', 
+      const _fallbackResponse = await getFiltered('products', 
         { is_active: true }, 
         { limit: 5, orderBy: 'created_at', ascending: false }
       );
       
       if (fallbackResponse.success) {
-        const fallback = fallbackResponse.data
+        const _fallback = fallbackResponse.data
           .filter(p => p.id !== parseInt(id))
           .slice(0, 4);
         return fallback;
@@ -102,7 +102,7 @@ const ProductPage = () => {
 
 
 
-  const handleAddToCart = () => {
+  const _handleAddToCart = () => {
     if (!product) return;
     
     for (let i = 0; i < quantity; i++) {
@@ -117,9 +117,9 @@ const ProductPage = () => {
     }
     
     // Feedback visual
-    const button = document.querySelector('#add-to-cart-btn');
+    const _button = document.querySelector('#add-to-cart-btn');
     if (button) {
-      const originalText = button.textContent;
+      const _originalText = button.textContent;
       button.textContent = 'Adicionado!';
       button.disabled = true;
       setTimeout(() => {
@@ -129,7 +129,7 @@ const ProductPage = () => {
     }
   };
 
-  const handleShare = () => {
+  const _handleShare = () => {
     if (navigator.share) {
       navigator.share({
         title: product.name,

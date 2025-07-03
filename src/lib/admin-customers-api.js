@@ -1,21 +1,21 @@
 // API para gerenciamento de clientes criados pelo admin
-import { supabase } from './supabase.js';
+import { _supabase } from './supabase.js';
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+const _API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
 
 // Função auxiliar para fazer requests com auth
-const apiRequest = async (endpoint, options = {}) => {
+const _apiRequest = async (endpoint, options = {}) => {
   // Usar token JWT próprio em vez do Supabase
-  const token = localStorage.getItem('access_token');
+  const _token = localStorage.getItem('access_token');
   
-  const defaultOptions = {
+  const _defaultOptions = {
     headers: {
       'Content-Type': 'application/json',
       ...(token && { Authorization: `Bearer ${token}` })
     }
   };
 
-  const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+  const _response = await fetch(`${API_BASE_URL}${endpoint}`, {
     ...defaultOptions,
     ...options,
     headers: {
@@ -25,7 +25,7 @@ const apiRequest = async (endpoint, options = {}) => {
   });
 
   if (!response.ok) {
-    const error = await response.json().catch(() => ({ error: 'Erro desconhecido' }));
+    const _error = await response.json().catch(() => ({ error: 'Erro desconhecido' }));
     throw new Error(error.error || `HTTP ${response.status}`);
   }
 
@@ -33,9 +33,9 @@ const apiRequest = async (endpoint, options = {}) => {
 };
 
 // Criar cliente manual
-export const createManualCustomer = async (customerData) => {
+export const _createManualCustomer = async (customerData) => {
   try {
-    const response = await apiRequest('/api/admin/customers/create-customer', {
+    const _response = await apiRequest('/api/admin/customers/create-customer', {
       method: 'POST',
       body: JSON.stringify(customerData)
     });
@@ -55,16 +55,16 @@ export const createManualCustomer = async (customerData) => {
 };
 
 // Listar clientes criados pelo admin
-export const getAdminCustomers = async (params = {}) => {
+export const _getAdminCustomers = async (params = {}) => {
   try {
-    const queryParams = new URLSearchParams();
+    const _queryParams = new URLSearchParams();
     
     if (params.page) queryParams.append('page', params.page);
     if (params.limit) queryParams.append('limit', params.limit);
     if (params.search) queryParams.append('search', params.search);
     if (params.status) queryParams.append('status', params.status);
     
-    const response = await apiRequest(`/api/admin/customers/admin-customers?${queryParams}`);
+    const _response = await apiRequest(`/api/admin/customers/admin-customers?${queryParams}`);
     
     return {
       success: true,
@@ -83,9 +83,9 @@ export const getAdminCustomers = async (params = {}) => {
 };
 
 // Editar cliente criado pelo admin
-export const editAdminCustomer = async (customerId, customerData) => {
+export const _editAdminCustomer = async (customerId, customerData) => {
   try {
-    const response = await apiRequest(`/api/admin/customers/edit-customer/${customerId}`, {
+    const _response = await apiRequest(`/api/admin/customers/edit-customer/${customerId}`, {
       method: 'PUT',
       body: JSON.stringify(customerData)
     });
@@ -104,9 +104,9 @@ export const editAdminCustomer = async (customerId, customerData) => {
 };
 
 // Ativar/desativar cliente
-export const toggleCustomerStatus = async (customerId, isActive) => {
+export const _toggleCustomerStatus = async (customerId, isActive) => {
   try {
-    const response = await apiRequest(`/api/admin/customers/toggle-status/${customerId}`, {
+    const _response = await apiRequest(`/api/admin/customers/toggle-status/${customerId}`, {
       method: 'PATCH',
       body: JSON.stringify({ is_active: isActive })
     });
@@ -125,16 +125,16 @@ export const toggleCustomerStatus = async (customerId, isActive) => {
 };
 
 // Buscar logs de ações do admin
-export const getAdminLogs = async (params = {}) => {
+export const _getAdminLogs = async (params = {}) => {
   try {
-    const queryParams = new URLSearchParams();
+    const _queryParams = new URLSearchParams();
     
     if (params.page) queryParams.append('page', params.page);
     if (params.limit) queryParams.append('limit', params.limit);
     if (params.customer_id) queryParams.append('customer_id', params.customer_id);
     if (params.action_type) queryParams.append('action_type', params.action_type);
     
-    const response = await apiRequest(`/api/admin/customers/admin-logs?${queryParams}`);
+    const _response = await apiRequest(`/api/admin/customers/admin-logs?${queryParams}`);
     
     return {
       success: true,
@@ -151,19 +151,19 @@ export const getAdminLogs = async (params = {}) => {
 };
 
 // Funções de validação
-export const validateCPF = (cpf) => {
+export const _validateCPF = (cpf) => {
   if (!cpf) return false;
   
   cpf = cpf.replace(/[^\d]/g, '');
   if (cpf.length !== 11) return false;
   if (/^(\d)\1{10}$/.test(cpf)) return false;
   
-  let sum = 0;
+  let _sum = 0;
   for (let i = 0; i < 9; i++) {
     sum += parseInt(cpf.charAt(i)) * (10 - i);
   }
-  let remainder = 11 - (sum % 11);
-  let digit1 = remainder < 10 ? remainder : 0;
+  let _remainder = 11 - (sum % 11);
+  let _digit1 = remainder < 10 ? remainder : 0;
   
   if (parseInt(cpf.charAt(9)) !== digit1) return false;
   
@@ -172,27 +172,27 @@ export const validateCPF = (cpf) => {
     sum += parseInt(cpf.charAt(i)) * (11 - i);
   }
   remainder = 11 - (sum % 11);
-  let digit2 = remainder < 10 ? remainder : 0;
+  let _digit2 = remainder < 10 ? remainder : 0;
   
   return parseInt(cpf.charAt(10)) === digit2;
 };
 
-export const validateCNPJ = (cnpj) => {
+export const _validateCNPJ = (cnpj) => {
   if (!cnpj) return false;
   
   cnpj = cnpj.replace(/[^\d]/g, '');
   if (cnpj.length !== 14) return false;
   if (/^(\d)\1{13}$/.test(cnpj)) return false;
   
-  let weights = [5, 4, 3, 2, 9, 8, 7, 6, 5, 4, 3, 2];
-  let sum = 0;
+  let _weights = [5, 4, 3, 2, 9, 8, 7, 6, 5, 4, 3, 2];
+  let _sum = 0;
   
   for (let i = 0; i < 12; i++) {
     sum += parseInt(cnpj.charAt(i)) * weights[i];
   }
   
-  let remainder = sum % 11;
-  let digit1 = remainder < 2 ? 0 : 11 - remainder;
+  let _remainder = sum % 11;
+  let _digit1 = remainder < 2 ? 0 : 11 - remainder;
   
   if (parseInt(cnpj.charAt(12)) !== digit1) return false;
   
@@ -204,29 +204,29 @@ export const validateCNPJ = (cnpj) => {
   }
   
   remainder = sum % 11;
-  let digit2 = remainder < 2 ? 0 : 11 - remainder;
+  let _digit2 = remainder < 2 ? 0 : 11 - remainder;
   
   return parseInt(cnpj.charAt(13)) === digit2;
 };
 
-export const validateEmail = (email) => {
-  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+export const _validateEmail = (email) => {
+  const _emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
   return emailRegex.test(email);
 };
 
-export const formatCPF = (cpf) => {
+export const _formatCPF = (cpf) => {
   if (!cpf) return '';
   cpf = cpf.replace(/[^\d]/g, '');
   return cpf.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, '$1.$2.$3-$4');
 };
 
-export const formatCNPJ = (cnpj) => {
+export const _formatCNPJ = (cnpj) => {
   if (!cnpj) return '';
   cnpj = cnpj.replace(/[^\d]/g, '');
   return cnpj.replace(/(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})/, '$1.$2.$3/$4-$5');
 };
 
-export const formatPhone = (phone) => {
+export const _formatPhone = (phone) => {
   if (!phone) return '';
   phone = phone.replace(/[^\d]/g, '');
   if (phone.length === 11) {
@@ -237,22 +237,22 @@ export const formatPhone = (phone) => {
   return phone;
 };
 
-export const formatCEP = (cep) => {
+export const _formatCEP = (cep) => {
   if (!cep) return '';
   cep = cep.replace(/[^\d]/g, '');
   return cep.replace(/(\d{5})(\d{3})/, '$1-$2');
 };
 
 // Função para buscar CEP (ViaCEP API gratuita)
-export const fetchAddressByCEP = async (cep) => {
+export const _fetchAddressByCEP = async (cep) => {
   try {
     cep = cep.replace(/[^\d]/g, '');
     if (cep.length !== 8) {
       throw new Error('CEP deve ter 8 dígitos');
     }
     
-    const response = await fetch(`https://viacep.com.br/ws/${cep}/json/`);
-    const data = await response.json();
+    const _response = await fetch(`https://viacep.com.br/ws/${cep}/json/`);
+    const _data = await response.json();
     
     if (data.erro) {
       throw new Error('CEP não encontrado');
@@ -277,9 +277,9 @@ export const fetchAddressByCEP = async (cep) => {
 };
 
 // Listar TODOS os clientes do sistema (admin + auto-cadastrados)
-export const getAllCustomers = async (params = {}) => {
+export const _getAllCustomers = async (params = {}) => {
   try {
-    const queryParams = new URLSearchParams();
+    const _queryParams = new URLSearchParams();
     
     if (params.page) queryParams.append('page', params.page);
     if (params.limit) queryParams.append('limit', params.limit);
@@ -287,7 +287,7 @@ export const getAllCustomers = async (params = {}) => {
     if (params.source) queryParams.append('source', params.source);
     if (params.status) queryParams.append('status', params.status);
     
-    const response = await apiRequest(`/api/admin/customers/all-customers?${queryParams}`);
+    const _response = await apiRequest(`/api/admin/customers/all-customers?${queryParams}`);
     
     return {
       success: true,
@@ -306,9 +306,9 @@ export const getAllCustomers = async (params = {}) => {
 };
 
 // Ativar/desativar qualquer cliente (admin ou auto-cadastrado)
-export const toggleAnyCustomerStatus = async (customerId, isActive) => {
+export const _toggleAnyCustomerStatus = async (customerId, isActive) => {
   try {
-    const response = await apiRequest(`/api/admin/customers/toggle-any-customer-status/${customerId}`, {
+    const _response = await apiRequest(`/api/admin/customers/toggle-any-customer-status/${customerId}`, {
       method: 'PATCH',
       body: JSON.stringify({ is_active: isActive })
     });

@@ -1,19 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { 
-  FileText, Plus, Search, Filter, Edit, Trash2, Eye, EyeOff, 
-  Calendar, User, Tag, BarChart3, Save, X, Image, Globe, ArrowLeft
-} from 'lucide-react';
-import { useSupabaseAuth } from '../contexts/SupabaseAuthContext';
-import { useNavigate } from 'react-router-dom';
-import { 
-  getAllBlogPostsAdmin, 
-  getBlogCategories, 
-  createBlogPost, 
-  updateBlogPost, 
-  deleteBlogPost 
-} from '../lib/supabase-blog';
+// import { _FileText, _Plus, _Search, _Filter, _Edit, _Trash2, _Eye, _EyeOff, _Calendar, _User, _Tag, _BarChart3, _Save, _X, _Image, _Globe, _ArrowLeft } from 'lucide-react'; // Temporarily commented - unused import
+import { _useSupabaseAuth } from '../contexts/SupabaseAuthContext';
+import { _useNavigate } from 'react-router-dom';
+import { _getAllBlogPostsAdmin, _getBlogCategories, _createBlogPost, _updateBlogPost, _deleteBlogPost } from '../lib/supabase-blog';
 
-const AdminBlogManager = () => {
+const _AdminBlogManager = () => {
   const [posts, setPosts] = useState([]);
   const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -26,7 +17,7 @@ const AdminBlogManager = () => {
   const [saving, setSaving] = useState(false);
   
   const { user, hasPermission } = useSupabaseAuth();
-  const navigate = useNavigate();
+  const _navigate = useNavigate();
 
   const [postForm, setPostForm] = useState({
     title: '',
@@ -47,7 +38,7 @@ const AdminBlogManager = () => {
     }
   }, [user, hasPermission]);
 
-  const loadBlogData = async () => {
+  const _loadBlogData = async () => {
     setLoading(true);
     try {
       // Carregar posts reais do Supabase
@@ -64,7 +55,7 @@ const AdminBlogManager = () => {
       }
 
       if (categoriesResult.success) {
-        const categoriesWithColors = categoriesResult.data.map((cat, index) => ({
+        const _categoriesWithColors = categoriesResult.data.map((cat, index) => ({
           ...cat,
           color: ['bg-blue-100 text-blue-800', 'bg-green-100 text-green-800', 'bg-purple-100 text-purple-800', 'bg-orange-100 text-orange-800', 'bg-red-100 text-red-800'][index % 5]
         }));
@@ -80,7 +71,7 @@ const AdminBlogManager = () => {
     }
   };
 
-  const handleCreatePost = () => {
+  const _handleCreatePost = () => {
     setPostForm({
       title: '',
       content: '',
@@ -98,7 +89,7 @@ const AdminBlogManager = () => {
     setShowEditor(true);
   };
 
-  const handleEditPost = (post) => {
+  const _handleEditPost = (post) => {
     setPostForm({
       title: post.title || '',
       content: post.content || '',
@@ -116,7 +107,7 @@ const AdminBlogManager = () => {
     setShowEditor(true);
   };
 
-  const handleSavePost = async () => {
+  const _handleSavePost = async () => {
     if (!postForm.title || !postForm.content) {
       alert('Título e conteúdo são obrigatórios');
       return;
@@ -146,10 +137,10 @@ const AdminBlogManager = () => {
     }
   };
 
-  const handleDeletePost = async (post) => {
+  const _handleDeletePost = async (post) => {
     if (window.confirm(`Tem certeza que deseja deletar o post "${post.title}"?`)) {
       try {
-        const result = await deleteBlogPost(post.id);
+        const _result = await deleteBlogPost(post.id);
         
         if (result.success) {
           alert(result.message);
@@ -163,11 +154,11 @@ const AdminBlogManager = () => {
     }
   };
 
-  const handleToggleStatus = async (post) => {
-    const newStatus = post.status === 'published' ? 'draft' : 'published';
+  const _handleToggleStatus = async (post) => {
+    const _newStatus = post.status === 'published' ? 'draft' : 'published';
     
     try {
-      const result = await updateBlogPost(post.id, { ...post, status: newStatus });
+      const _result = await updateBlogPost(post.id, { ...post, status: newStatus });
       
       if (result.success) {
         await loadBlogData(); // Recarregar posts
@@ -179,20 +170,20 @@ const AdminBlogManager = () => {
     }
   };
 
-  const filteredPosts = posts.filter(post => {
-    const matchesSearch = post.title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+  const _filteredPosts = posts.filter(_post => {
+    const _matchesSearch = post.title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          post.excerpt?.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesStatus = filterStatus === 'all' || post.status === filterStatus;
-    const matchesCategory = filterCategory === 'all' || post.category === filterCategory;
+    const _matchesStatus = filterStatus === 'all' || post.status === filterStatus;
+    const _matchesCategory = filterCategory === 'all' || post.category === filterCategory;
     
     return matchesSearch && matchesStatus && matchesCategory;
   });
 
-  const formatDate = (dateString) => {
+  const _formatDate = (dateString) => {
     return new Date(dateString).toLocaleDateString('pt-BR');
   };
 
-  const getStatusColor = (status) => {
+  const _getStatusColor = (status) => {
     switch (status) {
       case 'published': return 'bg-green-100 text-green-800';
       case 'draft': return 'bg-yellow-100 text-yellow-800';

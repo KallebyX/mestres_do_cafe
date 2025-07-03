@@ -1,10 +1,10 @@
-import { supabase } from './supabase.js';
+import { _supabase } from './supabase.js';
 
 // =============================================
 // DASHBOARD - ESTATÍSTICAS
 // =============================================
 
-export const getAdminStats = async () => {
+export const _getAdminStats = async () => {
   try {
     console.log('📊 Buscando estatísticas do dashboard...');
 
@@ -16,25 +16,25 @@ export const getAdminStats = async () => {
     ]);
 
     // Processar usuários
-    const totalUsers = usersData.data?.length || 0;
-    const activeUsers = usersData.data?.filter(u => u.role === 'customer').length || 0;
-    const newUsersThisMonth = usersData.data?.filter(u => {
-      const created = new Date(u.created_at);
-      const now = new Date();
+    const _totalUsers = usersData.data?.length || 0;
+    const _activeUsers = usersData.data?.filter(u => u.role === 'customer').length || 0;
+    const _newUsersThisMonth = usersData.data?.filter(_u => {
+      const _created = new Date(u.created_at);
+      const _now = new Date();
       return created.getMonth() === now.getMonth() && created.getFullYear() === now.getFullYear();
     }).length || 0;
 
     // Processar pedidos
-    const totalOrders = ordersData.data?.length || 0;
-    const pendingOrders = ordersData.data?.filter(o => o.status === 'pending').length || 0;
-    const completedOrders = ordersData.data?.filter(o => o.status === 'completed').length || 0;
-    const totalRevenue = ordersData.data?.reduce((sum, o) => sum + (parseFloat(o.total_amount) || 0), 0) || 0;
+    const _totalOrders = ordersData.data?.length || 0;
+    const _pendingOrders = ordersData.data?.filter(o => o.status === 'pending').length || 0;
+    const _completedOrders = ordersData.data?.filter(o => o.status === 'completed').length || 0;
+    const _totalRevenue = ordersData.data?.reduce((sum, o) => sum + (parseFloat(o.total_amount) || 0), 0) || 0;
 
     // Processar produtos
-    const totalProducts = productsData.data?.length || 0;
-    const activeProducts = productsData.data?.filter(p => p.is_active).length || 0;
+    const _totalProducts = productsData.data?.length || 0;
+    const _activeProducts = productsData.data?.filter(p => p.is_active).length || 0;
 
-    const stats = {
+    const _stats = {
       users: {
         total: totalUsers,
         active: activeUsers,
@@ -73,13 +73,13 @@ export const getAdminStats = async () => {
 // ANALYTICS - DADOS AVANÇADOS REAIS
 // =============================================
 
-export const getAnalyticsData = async (timeRange = '30d') => {
+export const _getAnalyticsData = async (timeRange = '30d') => {
   try {
     console.log(`📈 Buscando dados de analytics para ${timeRange}...`);
 
     // Calcular data limite baseada no timeRange
-    const getDateLimit = (range) => {
-      const now = new Date();
+    const _getDateLimit = (range) => {
+      const _now = new Date();
       switch (range) {
         case '7d': return new Date(now.setDate(now.getDate() - 7));
         case '30d': return new Date(now.setDate(now.getDate() - 30));
@@ -89,7 +89,7 @@ export const getAnalyticsData = async (timeRange = '30d') => {
       }
     };
 
-    const dateLimit = getDateLimit(timeRange);
+    const _dateLimit = getDateLimit(timeRange);
 
     // Buscar dados base
     const [ordersData, usersData, productsData, orderItemsData] = await Promise.all([
@@ -99,30 +99,30 @@ export const getAnalyticsData = async (timeRange = '30d') => {
       supabase.from('order_items').select('*, orders!inner(created_at, status), products(name)').gte('orders.created_at', dateLimit.toISOString())
     ]);
 
-    const orders = ordersData.data || [];
-    const users = usersData.data || [];
-    const products = productsData.data || [];
-    const orderItems = orderItemsData.data || [];
+    const _orders = ordersData.data || [];
+    const _users = usersData.data || [];
+    const _products = productsData.data || [];
+    const _orderItems = orderItemsData.data || [];
 
     // Métricas principais
-    const totalRevenue = orders.reduce((sum, order) => sum + parseFloat(order.total_amount || 0), 0);
-    const totalOrders = orders.length;
-    const totalUsers = users.length;
-    const avgOrderValue = totalOrders > 0 ? totalRevenue / totalOrders : 0;
-    const conversionRate = totalUsers > 0 ? (totalOrders / totalUsers) * 100 : 0;
+    const _totalRevenue = orders.reduce((sum, order) => sum + parseFloat(order.total_amount || 0), 0);
+    const _totalOrders = orders.length;
+    const _totalUsers = users.length;
+    const _avgOrderValue = totalOrders > 0 ? totalRevenue / totalOrders : 0;
+    const _conversionRate = totalUsers > 0 ? (totalOrders / totalUsers) * 100 : 0;
 
     // Dados de receita por dia
-    const revenueByDay = [];
-    const days = timeRange === '7d' ? 7 : timeRange === '30d' ? 30 : timeRange === '90d' ? 90 : 365;
+    const _revenueByDay = [];
+    const _days = timeRange === '7d' ? 7 : timeRange === '30d' ? 30 : timeRange === '90d' ? 90 : 365;
     
     for (let i = days - 1; i >= 0; i--) {
-      const date = new Date();
+      const _date = new Date();
       date.setDate(date.getDate() - i);
-      const dayOrders = orders.filter(order => {
-        const orderDate = new Date(order.created_at);
+      const _dayOrders = orders.filter(_order => {
+        const _orderDate = new Date(order.created_at);
         return orderDate.toDateString() === date.toDateString();
       });
-      const dayRevenue = dayOrders.reduce((sum, order) => sum + parseFloat(order.total_amount || 0), 0);
+      const _dayRevenue = dayOrders.reduce((sum, order) => sum + parseFloat(order.total_amount || 0), 0);
       
       revenueByDay.push({
         label: date.getDate().toString(),
@@ -132,8 +132,8 @@ export const getAnalyticsData = async (timeRange = '30d') => {
     }
 
     // Funil de conversão (simulado baseado em dados reais)
-    const totalVisitors = totalUsers * 10; // Estimativa: 1 usuário para cada 10 visitantes
-    const conversionFunnel = [
+    const _totalVisitors = totalUsers * 10; // Estimativa: 1 usuário para cada 10 visitantes
+    const _conversionFunnel = [
       { label: 'Visitantes', value: totalVisitors, percentage: 100 },
       { label: 'Visualizaram Produtos', value: Math.floor(totalVisitors * 0.7), percentage: 70 },
       { label: 'Adicionaram ao Carrinho', value: Math.floor(totalVisitors * 0.3), percentage: 30 },
@@ -142,9 +142,9 @@ export const getAnalyticsData = async (timeRange = '30d') => {
     ];
 
     // Top produtos por vendas
-    const productSales = {};
-    orderItems.forEach(item => {
-      const productName = item.products?.name || 'Produto';
+    const _productSales = {};
+    orderItems.forEach(_item => {
+      const _productName = item.products?.name || 'Produto';
       if (!productSales[productName]) {
         productSales[productName] = { sales: 0, revenue: 0 };
       }
@@ -152,19 +152,19 @@ export const getAnalyticsData = async (timeRange = '30d') => {
       productSales[productName].revenue += parseFloat(item.total_price || 0);
     });
 
-    const topProducts = Object.entries(productSales)
+    const _topProducts = Object.entries(productSales)
       .map(([name, data]) => ({ label: name, value: data.sales, revenue: data.revenue }))
       .sort((a, b) => b.value - a.value)
       .slice(0, 5);
 
     // Status dos pedidos
-    const orderStatuses = orders.reduce((acc, order) => {
-      const status = order.status || 'pending';
+    const _orderStatuses = orders.reduce((acc, order) => {
+      const _status = order.status || 'pending';
       acc[status] = (acc[status] || 0) + 1;
       return acc;
     }, {});
 
-    const statusDistribution = [
+    const _statusDistribution = [
       { label: 'Entregues', value: Math.max(0, orderStatuses.delivered || 0) },
       { label: 'Processando', value: Math.max(0, orderStatuses.processing || 0) },
       { label: 'Pendentes', value: Math.max(0, orderStatuses.pending || 0) },
@@ -172,14 +172,14 @@ export const getAnalyticsData = async (timeRange = '30d') => {
     ].filter(item => item.value > 0); // Filtrar valores zero para evitar gráficos vazios
 
     // Crescimento de usuários por mês
-    const userGrowth = [];
-    const months = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'];
+    const _userGrowth = [];
+    const _months = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'];
     
     for (let i = 5; i >= 0; i--) {
-      const date = new Date();
+      const _date = new Date();
       date.setMonth(date.getMonth() - i);
-      const monthUsers = users.filter(user => {
-        const userDate = new Date(user.created_at);
+      const _monthUsers = users.filter(_user => {
+        const _userDate = new Date(user.created_at);
         return userDate.getMonth() === date.getMonth() && userDate.getFullYear() === date.getFullYear();
       });
       
@@ -189,7 +189,7 @@ export const getAnalyticsData = async (timeRange = '30d') => {
       });
     }
 
-    const analyticsData = {
+    const _analyticsData = {
       metrics: {
         totalRevenue: Math.max(0, totalRevenue),
         totalOrders: Math.max(0, totalOrders),
@@ -239,13 +239,13 @@ export const getAnalyticsData = async (timeRange = '30d') => {
 // FINANCEIRO - DADOS REAIS
 // =============================================
 
-export const getFinancialData = async (timeRange = '30d') => {
+export const _getFinancialData = async (timeRange = '30d') => {
   try {
     console.log(`💰 Buscando dados financeiros para ${timeRange}...`);
 
     // Calcular data limite
-    const getDateLimit = (range) => {
-      const now = new Date();
+    const _getDateLimit = (range) => {
+      const _now = new Date();
       switch (range) {
         case '7d': return new Date(now.setDate(now.getDate() - 7));
         case '30d': return new Date(now.setDate(now.getDate() - 30));
@@ -254,7 +254,7 @@ export const getFinancialData = async (timeRange = '30d') => {
       }
     };
 
-    const dateLimit = getDateLimit(timeRange);
+    const _dateLimit = getDateLimit(timeRange);
 
     // Buscar dados base
     const [ordersData, orderItemsData] = await Promise.all([
@@ -262,38 +262,38 @@ export const getFinancialData = async (timeRange = '30d') => {
       supabase.from('order_items').select('*, orders!inner(created_at, status), products(name, price)').gte('orders.created_at', dateLimit.toISOString())
     ]);
 
-    const orders = ordersData.data || [];
-    const orderItems = orderItemsData.data || [];
+    const _orders = ordersData.data || [];
+    const _orderItems = orderItemsData.data || [];
 
     // Métricas financeiras principais
-    const totalRevenue = orders.reduce((sum, order) => sum + parseFloat(order.total_amount || 0), 0);
-    const totalShipping = orders.reduce((sum, order) => sum + parseFloat(order.shipping_cost || 0), 0);
-    const totalDiscounts = orders.reduce((sum, order) => sum + parseFloat(order.discount_amount || 0), 0);
-    const netRevenue = totalRevenue - totalDiscounts;
+    const _totalRevenue = orders.reduce((sum, order) => sum + parseFloat(order.total_amount || 0), 0);
+    const _totalShipping = orders.reduce((sum, order) => sum + parseFloat(order.shipping_cost || 0), 0);
+    const _totalDiscounts = orders.reduce((sum, order) => sum + parseFloat(order.discount_amount || 0), 0);
+    const _netRevenue = totalRevenue - totalDiscounts;
 
     // Estimativa de custos (baseado em percentuais típicos)
-    const costOfGoods = totalRevenue * 0.45; // 45% dos produtos
-    const shippingCosts = totalShipping * 0.8; // 80% do frete é custo
-    const marketingCosts = totalRevenue * 0.15; // 15% em marketing
-    const operationalCosts = totalRevenue * 0.12; // 12% operacional
-    const personnelCosts = totalRevenue * 0.08; // 8% pessoal
+    const _costOfGoods = totalRevenue * 0.45; // 45% dos produtos
+    const _shippingCosts = totalShipping * 0.8; // 80% do frete é custo
+    const _marketingCosts = totalRevenue * 0.15; // 15% em marketing
+    const _operationalCosts = totalRevenue * 0.12; // 12% operacional
+    const _personnelCosts = totalRevenue * 0.08; // 8% pessoal
 
-    const totalCosts = costOfGoods + shippingCosts + marketingCosts + operationalCosts + personnelCosts;
-    const grossProfit = netRevenue - totalCosts;
-    const profitMargin = netRevenue > 0 ? (grossProfit / netRevenue) * 100 : 0;
+    const _totalCosts = costOfGoods + shippingCosts + marketingCosts + operationalCosts + personnelCosts;
+    const _grossProfit = netRevenue - totalCosts;
+    const _profitMargin = netRevenue > 0 ? (grossProfit / netRevenue) * 100 : 0;
 
     // Receita por dia
-    const revenueByDay = [];
-    const days = timeRange === '7d' ? 7 : timeRange === '30d' ? 30 : 90;
+    const _revenueByDay = [];
+    const _days = timeRange === '7d' ? 7 : timeRange === '30d' ? 30 : 90;
     
     for (let i = days - 1; i >= 0; i--) {
-      const date = new Date();
+      const _date = new Date();
       date.setDate(date.getDate() - i);
-      const dayOrders = orders.filter(order => {
-        const orderDate = new Date(order.created_at);
+      const _dayOrders = orders.filter(_order => {
+        const _orderDate = new Date(order.created_at);
         return orderDate.toDateString() === date.toDateString();
       });
-      const dayRevenue = dayOrders.reduce((sum, order) => sum + parseFloat(order.total_amount || 0), 0);
+      const _dayRevenue = dayOrders.reduce((sum, order) => sum + parseFloat(order.total_amount || 0), 0);
       
       revenueByDay.push({
         label: (i + 1).toString(),
@@ -302,7 +302,7 @@ export const getFinancialData = async (timeRange = '30d') => {
     }
 
     // Breakdown de custos
-    const expensesByCategory = [
+    const _expensesByCategory = [
       { label: 'Matéria Prima', value: totalCosts > 0 ? Math.max(0, (costOfGoods / totalCosts * 100)) : 0, amount: Math.max(0, costOfGoods) },
       { label: 'Logística', value: totalCosts > 0 ? Math.max(0, (shippingCosts / totalCosts * 100)) : 0, amount: Math.max(0, shippingCosts) },
       { label: 'Marketing', value: totalCosts > 0 ? Math.max(0, (marketingCosts / totalCosts * 100)) : 0, amount: Math.max(0, marketingCosts) },
@@ -316,7 +316,7 @@ export const getFinancialData = async (timeRange = '30d') => {
     }
 
     // Fontes de receita
-    const revenueStreams = totalRevenue > 0 ? [
+    const _revenueStreams = totalRevenue > 0 ? [
       { label: 'E-commerce', value: 85.2, amount: Math.max(0, totalRevenue * 0.852) },
       { label: 'Assinaturas', value: 8.8, amount: Math.max(0, totalRevenue * 0.088) },
       { label: 'Marketplace', value: 4.5, amount: Math.max(0, totalRevenue * 0.045) },
@@ -326,19 +326,19 @@ export const getFinancialData = async (timeRange = '30d') => {
     ];
 
     // Fluxo de caixa por mês (últimos 6 meses)
-    const cashFlowData = [];
-    const months = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun'];
+    const _cashFlowData = [];
+    const _months = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun'];
     
     for (let i = 5; i >= 0; i--) {
-      const date = new Date();
+      const _date = new Date();
       date.setMonth(date.getMonth() - i);
-      const monthOrders = orders.filter(order => {
-        const orderDate = new Date(order.created_at);
+      const _monthOrders = orders.filter(_order => {
+        const _orderDate = new Date(order.created_at);
         return orderDate.getMonth() === date.getMonth() && orderDate.getFullYear() === date.getFullYear();
       });
       
-      const monthRevenue = monthOrders.reduce((sum, order) => sum + parseFloat(order.total_amount || 0), 0);
-      const monthCosts = monthRevenue * 0.7; // 70% de custos estimados
+      const _monthRevenue = monthOrders.reduce((sum, order) => sum + parseFloat(order.total_amount || 0), 0);
+      const _monthCosts = monthRevenue * 0.7; // 70% de custos estimados
       
       cashFlowData.push({
         label: months[date.getMonth()],
@@ -349,12 +349,12 @@ export const getFinancialData = async (timeRange = '30d') => {
     }
 
     // KPIs financeiros
-    const avgOrderValue = orders.length > 0 ? Math.max(0, totalRevenue / orders.length) : 0;
-    const customerLifetimeValue = Math.max(0, avgOrderValue * 3.5); // Estimativa
-    const paybackPeriod = 4.2; // Meses
-    const roas = marketingCosts > 0 ? Math.max(0, totalRevenue / marketingCosts) : 0;
+    const _avgOrderValue = orders.length > 0 ? Math.max(0, totalRevenue / orders.length) : 0;
+    const _customerLifetimeValue = Math.max(0, avgOrderValue * 3.5); // Estimativa
+    const _paybackPeriod = 4.2; // Meses
+    const _roas = marketingCosts > 0 ? Math.max(0, totalRevenue / marketingCosts) : 0;
 
-    const financialData = {
+    const _financialData = {
       metrics: {
         totalRevenue: Math.max(0, totalRevenue),
         netRevenue: Math.max(0, netRevenue),
@@ -416,11 +416,11 @@ export const getFinancialData = async (timeRange = '30d') => {
 // USUÁRIOS - GERENCIAMENTO
 // =============================================
 
-export const getAdminUsers = async (filters = {}) => {
+export const _getAdminUsers = async (filters = {}) => {
   try {
     console.log('👥 Buscando usuários para gerenciamento...');
 
-    let query = supabase
+    let _query = supabase
       .from('users')
       .select('*')
       .neq('role', 'admin')
@@ -450,12 +450,12 @@ export const getAdminUsers = async (filters = {}) => {
   }
 };
 
-export const updateUser = async (userId, userData) => {
+export const _updateUser = async (userId, userData) => {
   try {
     console.log(`📝 Atualizando usuário ${userId}:`, userData);
 
     // Preparar dados usando schema correto
-    const updateData = {
+    const _updateData = {
       name: userData.name,
       email: userData.email,
       phone: userData.phone,
@@ -470,7 +470,7 @@ export const updateUser = async (userId, userData) => {
     };
 
     // Remover campos undefined/null
-    Object.keys(updateData).forEach(key => {
+    Object.keys(updateData).forEach(_key => {
       if (updateData[key] === undefined || updateData[key] === null || updateData[key] === '') {
         delete updateData[key];
       }
@@ -496,7 +496,7 @@ export const updateUser = async (userId, userData) => {
   }
 };
 
-export const deleteUser = async (userId) => {
+export const _deleteUser = async (userId) => {
   try {
     console.log(`🗑️ Excluindo usuário ${userId}...`);
 
@@ -522,11 +522,11 @@ export const deleteUser = async (userId) => {
 // PEDIDOS - GERENCIAMENTO
 // =============================================
 
-export const getAdminOrders = async (filters = {}) => {
+export const _getAdminOrders = async (filters = {}) => {
   try {
     console.log('📦 Buscando pedidos para gerenciamento...');
 
-    let query = supabase
+    let _query = supabase
       .from('orders')
       .select(`
         *,
@@ -558,7 +558,7 @@ export const getAdminOrders = async (filters = {}) => {
   }
 };
 
-export const getMyOrders = async (userId) => {
+export const _getMyOrders = async (userId) => {
   try {
     console.log(`📦 Buscando pedidos do usuário ${userId}...`);
 
@@ -597,7 +597,7 @@ export const getMyOrders = async (userId) => {
   }
 };
 
-export const updateOrderStatus = async (orderId, newStatus) => {
+export const _updateOrderStatus = async (orderId, newStatus) => {
   try {
     console.log(`📝 Atualizando status do pedido ${orderId} para: ${newStatus}`);
 

@@ -1,18 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
-import { 
-  ArrowLeft, User, Mail, Phone, MapPin, Calendar, CreditCard, Star,
-  Package, DollarSign, TrendingUp, Activity, MessageCircle, Bell,
-  Settings, Shield, Eye, EyeOff, Lock, Plus, Edit, Save, X,
-  Building, FileText, Clock, AlertTriangle, CheckCircle, Target,
-  BarChart3, PieChart, Users, Coffee, Award, Tag, Heart, Gift
-} from 'lucide-react';
-import { useSupabaseAuth } from '../contexts/SupabaseAuthContext';
-import { getCustomerDetails, updateCustomerNotes, resetCustomerPassword, addCustomerInteraction, addCustomerTask, updateTaskStatus } from '../lib/supabase-admin-api';
+import { _useParams, _useNavigate } from 'react-router-dom';
+// import { _ArrowLeft, _User, _Mail, _Phone, _MapPin, _Calendar, _CreditCard, _Star, _Package, _DollarSign, _TrendingUp, _Activity, _MessageCircle, _Bell, _Settings, _Shield, _Eye, _EyeOff, _Lock, _Plus, _Edit, _Save, _X, _Building, _FileText, _Clock, _AlertTriangle, _CheckCircle, _Target, _BarChart3, _PieChart, _Users, _Coffee, _Award, _Tag, _Heart, _Gift } from 'lucide-react'; // Temporarily commented - unused import
+import { _useSupabaseAuth } from '../contexts/SupabaseAuthContext';
+import { _getCustomerDetails, _updateCustomerNotes, _resetCustomerPassword, _addCustomerInteraction, _addCustomerTask, _updateTaskStatus } from '../lib/supabase-admin-api';
 
-const CustomerDetailView = () => {
+const _CustomerDetailView = () => {
   const { customerId } = useParams();
-  const navigate = useNavigate();
+  const _navigate = useNavigate();
   const { user, hasPermission } = useSupabaseAuth();
   
   const [loading, setLoading] = useState(true);
@@ -37,10 +31,10 @@ const CustomerDetailView = () => {
     }
   }, [customerId, user, hasPermission, navigate]);
 
-  const loadCustomerDetails = async () => {
+  const _loadCustomerDetails = async () => {
     setLoading(true);
     try {
-      const result = await getCustomerDetails(customerId);
+      const _result = await getCustomerDetails(customerId);
       if (result.success) {
         setCustomer(result.customer);
       } else {
@@ -53,12 +47,12 @@ const CustomerDetailView = () => {
     }
   };
 
-  const handleSaveNote = async () => {
+  const _handleSaveNote = async () => {
     if (!newNote.trim()) return;
     
     setSaving(true);
     try {
-      const result = await updateCustomerNotes(customerId, newNote);
+      const _result = await updateCustomerNotes(customerId, newNote);
       if (result.success) {
         setNewNote('');
         loadCustomerDetails();
@@ -74,12 +68,12 @@ const CustomerDetailView = () => {
     }
   };
 
-  const handleAddInteraction = async () => {
+  const _handleAddInteraction = async () => {
     if (!newInteraction.description.trim()) return;
     
     setSaving(true);
     try {
-      const result = await addCustomerInteraction(customerId, newInteraction);
+      const _result = await addCustomerInteraction(customerId, newInteraction);
       if (result.success) {
         setNewInteraction({ type: 'call', description: '' });
         loadCustomerDetails();
@@ -95,7 +89,7 @@ const CustomerDetailView = () => {
     }
   };
 
-  const handleResetPassword = async () => {
+  const _handleResetPassword = async () => {
     if (passwordResetData.newPassword !== passwordResetData.confirmPassword) {
       setError('As senhas não coincidem');
       return;
@@ -108,7 +102,7 @@ const CustomerDetailView = () => {
 
     setSaving(true);
     try {
-      const result = await resetCustomerPassword(customerId, passwordResetData.newPassword);
+      const _result = await resetCustomerPassword(customerId, passwordResetData.newPassword);
       if (result.success) {
         setShowPasswordReset(false);
         setPasswordResetData({ newPassword: '', confirmPassword: '' });
@@ -124,12 +118,12 @@ const CustomerDetailView = () => {
     }
   };
 
-  const handleAddTask = async () => {
+  const _handleAddTask = async () => {
     if (!newTask.title.trim()) return;
     
     setSaving(true);
     try {
-      const result = await addCustomerTask(customerId, newTask);
+      const _result = await addCustomerTask(customerId, newTask);
       if (result.success) {
         setNewTask({ title: '', description: '', priority: 'medium', due_date: '' });
         loadCustomerDetails();
@@ -145,10 +139,10 @@ const CustomerDetailView = () => {
     }
   };
 
-  const handleUpdateTaskStatus = async (taskId, status) => {
+  const _handleUpdateTaskStatus = async (taskId, status) => {
     setSaving(true);
     try {
-      const result = await updateTaskStatus(taskId, status);
+      const _result = await updateTaskStatus(taskId, status);
       if (result.success) {
         loadCustomerDetails();
         setSuccess('Status da tarefa atualizado com sucesso!');
@@ -163,13 +157,13 @@ const CustomerDetailView = () => {
     }
   };
 
-  const handleDeleteTask = async (taskId) => {
+  const _handleDeleteTask = async (taskId) => {
     if (!confirm('Tem certeza que deseja excluir esta tarefa?')) return;
     
     setSaving(true);
     try {
       // Como não temos uma função deleteTask, vamos marcar como cancelada
-      const result = await updateTaskStatus(taskId, 'cancelled');
+      const _result = await updateTaskStatus(taskId, 'cancelled');
       if (result.success) {
         loadCustomerDetails();
         setSuccess('Tarefa removida com sucesso!');
@@ -213,7 +207,7 @@ const CustomerDetailView = () => {
     );
   }
 
-  const tabs = [
+  const _tabs = [
     { id: 'overview', label: 'Visão Geral', icon: User },
     { id: 'orders', label: 'Pedidos', icon: Package },
     { id: 'interactions', label: 'Interações', icon: MessageCircle },

@@ -2,7 +2,7 @@ const express = require('express');
 const { db } = require('../database/init');
 const { authenticateToken } = require('../middleware/auth');
 
-const router = express.Router();
+const _router = express.Router();
 
 // Criar pedido
 router.post('/', authenticateToken, (req, res) => {
@@ -13,7 +13,7 @@ router.post('/', authenticateToken, (req, res) => {
   }
 
   // Buscar itens do carrinho
-  const cartSql = `SELECT ci.*, p.name, p.price, p.stock_quantity
+  const _cartSql = `SELECT ci.*, p.name, p.price, p.stock_quantity
                    FROM cart_items ci
                    JOIN products p ON ci.product_id = p.id
                    WHERE ci.user_id = ? AND p.is_active = 1`;
@@ -37,10 +37,10 @@ router.post('/', authenticateToken, (req, res) => {
       }
     }
 
-    const totalAmount = cartItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+    const _totalAmount = cartItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
 
     // Criar pedido
-    const orderSql = `INSERT INTO orders (user_id, total_amount, payment_method, shipping_address) 
+    const _orderSql = `INSERT INTO orders (user_id, total_amount, payment_method, shipping_address) 
                       VALUES (?, ?, ?, ?)`;
 
     db.run(orderSql, [req.user.id, totalAmount, payment_method, shipping_address], function(err) {
@@ -49,14 +49,14 @@ router.post('/', authenticateToken, (req, res) => {
         return res.status(500).json({ error: 'Erro ao criar pedido' });
       }
 
-      const orderId = this.lastID;
+      const _orderId = this.lastID;
 
       // Inserir itens do pedido
-      const orderItemPromises = cartItems.map(item => {
+      const _orderItemPromises = cartItems.map(_item => {
         return new Promise((resolve, reject) => {
-          const itemSql = `INSERT INTO order_items (order_id, product_id, quantity, unit_price, total_price) 
+          const _itemSql = `INSERT INTO order_items (order_id, product_id, quantity, unit_price, total_price) 
                            VALUES (?, ?, ?, ?, ?)`;
-          const totalPrice = item.price * item.quantity;
+          const _totalPrice = item.price * item.quantity;
           
           db.run(itemSql, [orderId, item.product_id, item.quantity, item.price, totalPrice], (err) => {
             if (err) {
@@ -103,8 +103,8 @@ router.post('/', authenticateToken, (req, res) => {
 router.get('/', authenticateToken, (req, res) => {
   const { status, limit = 10, offset = 0 } = req.query;
   
-  let sql = 'SELECT * FROM orders WHERE user_id = ?';
-  const params = [req.user.id];
+  let _sql = 'SELECT * FROM orders WHERE user_id = ?';
+  const _params = [req.user.id];
 
   if (status) {
     sql += ' AND status = ?';
@@ -126,7 +126,7 @@ router.get('/', authenticateToken, (req, res) => {
 
 // Obter pedido específico
 router.get('/:id', authenticateToken, (req, res) => {
-  const orderSql = 'SELECT * FROM orders WHERE id = ? AND user_id = ?';
+  const _orderSql = 'SELECT * FROM orders WHERE id = ? AND user_id = ?';
   
   db.get(orderSql, [req.params.id, req.user.id], (err, order) => {
     if (err) {
@@ -139,7 +139,7 @@ router.get('/:id', authenticateToken, (req, res) => {
     }
 
     // Buscar itens do pedido
-    const itemsSql = `SELECT oi.*, p.name, p.image_url
+    const _itemsSql = `SELECT oi.*, p.name, p.image_url
                       FROM order_items oi
                       JOIN products p ON oi.product_id = p.id
                       WHERE oi.order_id = ?`;
@@ -185,14 +185,14 @@ router.put('/:id/cancel', authenticateToken, (req, res) => {
       }
 
       // Restaurar estoque
-      const itemsSql = 'SELECT product_id, quantity FROM order_items WHERE order_id = ?';
+      const _itemsSql = 'SELECT product_id, quantity FROM order_items WHERE order_id = ?';
       db.all(itemsSql, [req.params.id], (err, items) => {
         if (err) {
           console.error('Database error:', err);
           return res.status(500).json({ error: 'Erro ao restaurar estoque' });
         }
 
-        const restorePromises = items.map(item => {
+        const _restorePromises = items.map(_item => {
           return new Promise((resolve, reject) => {
             db.run('UPDATE products SET stock_quantity = stock_quantity + ? WHERE id = ?',
                    [item.quantity, item.product_id], (err) => {

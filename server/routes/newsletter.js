@@ -3,16 +3,16 @@
  * Rotas para envio de newsletters via Email e WhatsApp
  */
 
-const express = require('express');
-const router = express.Router();
-const nodemailer = require('nodemailer');
+const _express = require('express');
+const _router = express.Router();
+const _nodemailer = require('nodemailer');
 
 // Importar o WhatsApp Service existente
-const WhatsAppService = require('../services/WhatsAppService');
+const _WhatsAppService = require('../services/WhatsAppService');
 
 // Inicializar serviços
-let whatsappService = null;
-let emailTransporter = null;
+let _whatsappService = null;
+let _emailTransporter = null;
 
 // Inicializar WhatsApp Service
 try {
@@ -23,7 +23,7 @@ try {
 }
 
 // Configurar transporter de email (usando variáveis de ambiente)
-const initEmailService = () => {
+const _initEmailService = () => {
   try {
     emailTransporter = nodemailer.createTransporter({
       host: process.env.SMTP_HOST || 'smtp.gmail.com',
@@ -78,14 +78,14 @@ router.post('/email', async (req, res) => {
       });
     }
 
-    let successCount = 0;
-    let errorCount = 0;
-    const errors = [];
+    let _successCount = 0;
+    let _errorCount = 0;
+    const _errors = [];
 
     // Enviar emails
     for (const recipient of recipients) {
       try {
-        const personalizedMessage = recipient.message || message;
+        const _personalizedMessage = recipient.message || message;
         
         await emailTransporter.sendMail({
           from: `"Mestres do Café" <${process.env.SMTP_USER}>`,
@@ -168,18 +168,18 @@ router.post('/whatsapp', async (req, res) => {
       });
     }
 
-    let successCount = 0;
-    let errorCount = 0;
-    const errors = [];
+    let _successCount = 0;
+    let _errorCount = 0;
+    const _errors = [];
 
     // Enviar mensagens WhatsApp
     for (const recipient of recipients) {
       try {
         // Formatear número para WhatsApp
-        const cleanPhone = recipient.phone.replace(/\D/g, '');
-        const whatsappId = `55${cleanPhone}@c.us`; // Formato Brasil
+        const _cleanPhone = recipient.phone.replace(/\D/g, '');
+        const _whatsappId = `55${cleanPhone}@c.us`; // Formato Brasil
         
-        const personalizedMessage = recipient.message || message;
+        const _personalizedMessage = recipient.message || message;
         
         await whatsappService.sendTextMessage(whatsappId, personalizedMessage);
         
@@ -230,7 +230,7 @@ router.get('/whatsapp/status', async (req, res) => {
       });
     }
 
-    const status = await whatsappService.getStatus();
+    const _status = await whatsappService.getStatus();
     res.json(status);
   } catch (error) {
     console.error('❌ Erro ao obter status do WhatsApp:', error);
@@ -270,7 +270,7 @@ router.get('/stats', async (req, res) => {
  * 🧪 Testar conexões
  */
 router.get('/test', async (req, res) => {
-  const tests = {
+  const _tests = {
     whatsapp: false,
     email: false,
     timestamp: new Date().toISOString()
@@ -279,7 +279,7 @@ router.get('/test', async (req, res) => {
   // Testar WhatsApp
   try {
     if (whatsappService) {
-      const status = await whatsappService.getStatus();
+      const _status = await whatsappService.getStatus();
       tests.whatsapp = status.connected || status.mockMode;
     }
   } catch (error) {
@@ -307,7 +307,7 @@ router.get('/test', async (req, res) => {
  * 📝 Templates disponíveis
  */
 router.get('/templates', (req, res) => {
-  const templates = {
+  const _templates = {
     promotion: {
       title: '🔥 OFERTA IMPERDÍVEL | Mestres do Café',
       category: 'marketing',
