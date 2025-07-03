@@ -536,4 +536,29 @@ router.get('/test-customers', async (req, res) => {
   }
 });
 
+// Listar logs de ações do admin
+router.get('/admin-logs', validateAdmin, async (req, res) => {
+  const { customer_id, action_type, limit = 50 } = req.query;
+  
+  try {
+    // Como estamos usando um banco JSON simples, vamos simular logs
+    // Em produção, isso viria de uma tabela de logs no banco
+    const mockLogs = [];
+    
+    // Se houver filtros específicos, retornar vazio
+    // Em produção, isso filtraria os logs reais
+    
+    res.json({
+      success: true,
+      logs: mockLogs
+    });
+    
+  } catch (error) {
+    console.error('Erro ao buscar logs de admin:', error);
+    res.status(500).json({ 
+      error: 'Erro interno do servidor ao buscar logs' 
+    });
+  }
+});
+
 module.exports = router; 

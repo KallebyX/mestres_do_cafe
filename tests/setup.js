@@ -2,6 +2,48 @@ import '@testing-library/jest-dom'
 import { vi, beforeAll, afterAll, afterEach } from 'vitest'
 import { cleanup } from '@testing-library/react'
 
+// Mock do Supabase ANTES de importar qualquer coisa que o use
+vi.mock('../src/lib/supabase', () => {
+  const mockFrom = () => ({
+    select: vi.fn().mockReturnThis(),
+    insert: vi.fn().mockReturnThis(),
+    update: vi.fn().mockReturnThis(),
+    delete: vi.fn().mockReturnThis(),
+    eq: vi.fn().mockReturnThis(),
+    gte: vi.fn().mockReturnThis(),
+    lte: vi.fn().mockReturnThis(),
+    ilike: vi.fn().mockReturnThis(),
+    or: vi.fn().mockReturnThis(),
+    order: vi.fn().mockReturnThis(),
+    limit: vi.fn().mockReturnThis(),
+    single: vi.fn().mockReturnValue({
+      data: null,
+      error: null
+    }),
+    then: vi.fn((resolve) => resolve({ data: [], error: null }))
+  });
+
+  const mockSupabase = {
+    from: vi.fn(mockFrom),
+    auth: {
+      signUp: vi.fn().mockResolvedValue({ data: { user: {} }, error: null }),
+      signIn: vi.fn().mockResolvedValue({ data: { user: {} }, error: null }),
+      signOut: vi.fn().mockResolvedValue({ error: null }),
+      getUser: vi.fn().mockResolvedValue({ data: { user: null }, error: null }),
+      onAuthStateChange: vi.fn(() => ({ unsubscribe: vi.fn() }))
+    },
+    storage: {
+      from: vi.fn(() => ({
+        upload: vi.fn().mockResolvedValue({ data: { path: 'test-path' }, error: null }),
+        download: vi.fn().mockResolvedValue({ data: {}, error: null }),
+        getPublicUrl: vi.fn().mockReturnValue({ data: { publicUrl: 'test-url' } })
+      }))
+    }
+  };
+
+  return { supabase: mockSupabase };
+});
+
 // Mock do localStorage
 const localStorageMock = {
   getItem: vi.fn(),
@@ -280,6 +322,157 @@ vi.mock('../src/contexts/SupabaseAuthContext', () => ({
   })),
   SupabaseAuthProvider: ({ children }) => children
 }))
+
+// Mock do supabase-products
+vi.mock('../src/lib/supabase-products', () => {
+  const mockProducts = [
+    { 
+      id: 1, 
+      name: 'Bourbon Amarelo Premium', 
+      price: 45.90, 
+      images: ['https://example.com/coffee1.jpg'],
+      description: 'Notas de chocolate e caramelo, corpo encorpado com acidez equilibrada.',
+      stock: 50,
+      rating: 4.8,
+      category: 'especiais',
+      is_active: true,
+      is_featured: true,
+      origin: 'Brasil',
+      roast_level: 'medium',
+      sca_score: 86
+    },
+    { 
+      id: 2, 
+      name: 'Geisha Especial', 
+      price: 89.90, 
+      images: ['https://example.com/coffee2.jpg'],
+      description: 'Café premium com notas florais e frutadas.',
+      stock: 30,
+      rating: 4.9,
+      category: 'especiais',
+      is_active: true,
+      is_featured: true,
+      origin: 'Colômbia',
+      roast_level: 'light',
+      sca_score: 92
+    },
+    { 
+      id: 3, 
+      name: 'Blend Signature', 
+      price: 39.90, 
+      images: ['https://example.com/coffee3.jpg'],
+      description: 'Nosso blend exclusivo com equilíbrio perfeito.',
+      stock: 100,
+      rating: 4.7,
+      category: 'blends',
+      is_active: true,
+      is_featured: false,
+      origin: 'Brasil/Colômbia',
+      roast_level: 'medium-dark',
+      sca_score: 84
+    }
+  ];
+
+  return {
+    getAllProducts: vi.fn().mockResolvedValue({ 
+      success: true, 
+      data: mockProducts 
+    }),
+    getAllProductsAdmin: vi.fn().mockResolvedValue({ 
+      success: true, 
+      data: mockProducts 
+    }),
+    getFeaturedProducts: vi.fn().mockResolvedValue({ 
+      success: true, 
+      data: mockProducts.filter(p => p.is_featured) 
+    }),
+    getProductById: vi.fn((id) => {
+      const product = mockProducts.find(p => p.id === parseInt(id));
+      return Promise.resolve({
+        success: !!product,
+        data: product || null,
+        error: product ? null : 'Produto não encontrado'
+      });
+    }),
+    createProduct: vi.fn().mockResolvedValue({
+      success: true,
+      data: mockProducts[0],
+      message: 'Produto criado com sucesso!'
+    }),
+    updateProduct: vi.fn().mockResolvedValue({
+      success: true,
+      data: mockProducts[0],
+      message: 'Produto atualizado com sucesso!'
+    }),
+    deleteProduct: vi.fn().mockResolvedValue({
+      success: true,
+      message: 'Produto removido com sucesso!'
+    }),
+    formatPrice: vi.fn((price) => {
+      return new Intl.NumberFormat('pt-BR', {
+        style: 'currency',
+        currency: 'BRL'
+      }).format(price);
+    }),
+    getProductImage: vi.fn((product) => {
+      return product.images?.[0] || 'https://images.unsplash.com/photo-1559056199-641a0ac8b55e?w=400';
+    })
+  };
+});
+
+// Mock do supabaseClient
+vi.mock('../src/lib/supabaseClient', () => ({
+  supabase: {
+    from: vi.fn(() => ({
+      select: vi.fn().mockReturnThis(),
+      eq: vi.fn().mockReturnThis(),
+      gte: vi.fn().mockReturnThis(),
+      lte: vi.fn().mockReturnThis(),
+      ilike: vi.fn().mockReturnThis(),
+      or: vi.fn().mockReturnThis(),
+      order: vi.fn().mockReturnThis(),
+      limit: vi.fn().mockReturnThis(),
+      single: vi.fn().mockResolvedValue({
+        data: null,
+        error: null
+      }),
+      then: vi.fn((resolve) => resolve({ data: [], error: null }))
+    }))
+  },
+  testimonials: {
+    getFiltered: vi.fn().mockResolvedValue({
+      success: true,
+      data: []
+    }),
+    getFeatured: vi.fn().mockResolvedValue({
+      success: true,
+      data: []
+    })
+  },
+  products: {
+    getFiltered: vi.fn().mockResolvedValue({
+      success: true,
+      data: [
+        { 
+          id: 1, 
+          name: 'Bourbon Amarelo Premium', 
+          price: 45.90, 
+          images: ['https://example.com/coffee1.jpg'],
+          description: 'Notas de chocolate e caramelo',
+          is_featured: true
+        },
+        { 
+          id: 2, 
+          name: 'Geisha Especial', 
+          price: 89.90, 
+          images: ['https://example.com/coffee2.jpg'],
+          description: 'Café premium com notas florais',
+          is_featured: true
+        }
+      ]
+    })
+  }
+}));
 
 // Garantir que o módulo seja válido
 export {} 
