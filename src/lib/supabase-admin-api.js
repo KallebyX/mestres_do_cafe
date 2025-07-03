@@ -1,12 +1,21 @@
 import { supabase } from './supabase.js';
 
 // =============================================
-// CLIENTES - BUSCAR E LISTAR
+// SINCRONIZAÇÃO DESABILITADA (precisa service role key)
+// =============================================
+
+export const syncAuthUsersToPublic = async () => {
+  console.log('⚠️ Sincronização auth->public desabilitada (precisa service role key)');
+  return { success: true, synced: 0, total: 0, message: 'Sincronização não disponível' };
+};
+
+// =============================================
+// CLIENTES - BUSCAR E LISTAR (SEM AUTH ADMIN)
 // =============================================
 
 export const getAllCustomers = async (filters = {}) => {
   try {
-    console.log('🔍 Buscando todos os clientes...');
+    console.log('🔍 Buscando todos os clientes da tabela public.users...');
     
     let query = supabase
       .from('users')
@@ -34,7 +43,7 @@ export const getAllCustomers = async (filters = {}) => {
       return { success: false, error: error.message };
     }
 
-    console.log(`✅ ${customers?.length || 0} clientes encontrados`);
+    console.log(`✅ ${customers?.length || 0} clientes encontrados na public.users`);
     console.log('📋 Dados dos clientes:', customers);
     
     return {
@@ -597,19 +606,30 @@ export const getCustomerAnalytics = async (customerId, timeRange = '90d') => {
 
     const dateLimit = getDateLimit(timeRange);
 
+    // Verificar se tabelas existem
+    const ordersExists = await tableExists('orders');
+    const orderItemsExists = await tableExists('order_items');
+    
+    if (!ordersExists) {
+      console.log('⚠️ Tabela orders não existe');
+      return { success: true, analytics: { summary: {}, charts: {}, insights: {} } };
+    }
+
     // Buscar pedidos no período
-    const { data: orders, error: ordersError } = await supabase
+    let ordersQuery = supabase
       .from('orders')
-      .select(`
+      .select(orderItemsExists ? `
         *,
         order_items (
           *,
           products (name, category)
         )
-      `)
+      ` : '*')
       .eq('user_id', customerId)
       .gte('created_at', dateLimit.toISOString())
       .order('created_at', { ascending: false });
+
+    const { data: orders, error: ordersError } = await ordersQuery;
 
     if (ordersError) {
       console.error('❌ Erro ao buscar pedidos:', ordersError);
@@ -786,12 +806,33 @@ export const getStats = async () => {
   try {
     console.log('📊 Buscando estatísticas gerais do dashboard...');
 
-    // Buscar dados em paralelo
-    const [usersResponse, ordersResponse, productsResponse] = await Promise.allSettled([
-      supabase.from('users').select('id, role, created_at, total_spent, orders_count').neq('role', 'admin'),
-      supabase.from('orders').select('id, total_amount, status, created_at'),
-      supabase.from('products').select('id, price, is_active, stock')
-    ]);
+    // Verificar quais tabelas existem
+    const usersExists = await tableExists('users');
+    const ordersExists = await tableExists('orders');
+    const productsExists = await tableExists('products');
+
+    // Buscar dados em paralelo apenas das tabelas que existem
+    const promises = [];
+    
+    if (usersExists) {
+      promises.push(supabase.from('users').select('id, role, created_at, total_spent, orders_count').neq('role', 'admin'));
+    } else {
+      promises.push(Promise.resolve({ data: [] }));
+    }
+    
+    if (ordersExists) {
+      promises.push(supabase.from('orders').select('id, total_amount, status, created_at'));
+    } else {
+      promises.push(Promise.resolve({ data: [] }));
+    }
+    
+    if (productsExists) {
+      promises.push(supabase.from('products').select('id, price, is_active, stock'));
+    } else {
+      promises.push(Promise.resolve({ data: [] }));
+    }
+
+    const [usersResponse, ordersResponse, productsResponse] = await Promise.allSettled(promises);
 
     // Processar usuários
     const users = usersResponse.status === 'fulfilled' ? usersResponse.value.data || [] : [];
@@ -865,22 +906,40 @@ export const getStats = async () => {
   }
 };
 
-export const getUsers = async () => {
+export const getUsers = async (limit = null) => {
   try {
-    console.log('👥 Buscando usuários...');
+    console.log('👥 Buscando usuários da tabela public.users...');
     
-    const { data, error } = await supabase
+    // Verificar se tabela users existe
+    const usersExists = await tableExists('users');
+    
+    if (!usersExists) {
+      console.log('⚠️ Tabela users não existe, retornando lista vazia');
+      return { success: true, users: [] };
+    }
+
+    // Verificar se coluna created_at existe
+    const hasCreatedAt = await columnExists('users', 'created_at');
+    
+    let query = supabase
       .from('users')
       .select('*')
       .neq('role', 'admin')
-      .order('created_at', { ascending: false });
+      .order(hasCreatedAt ? 'created_at' : 'id', { ascending: false });
+
+    // Aplicar limite apenas se especificado
+    if (limit && typeof limit === 'number') {
+      query = query.limit(limit);
+    }
+
+    const { data, error } = await query;
 
     if (error) {
       console.error('❌ Erro ao buscar usuários:', error);
       return { success: false, error: error.message, users: [] };
     }
 
-    console.log(`✅ ${data?.length || 0} usuários encontrados`);
+    console.log(`✅ ${data?.length || 0} usuários encontrados na public.users (limite: ${limit || 'sem limite'})`);
     return { success: true, users: data || [] };
   } catch (error) {
     console.error('❌ Erro ao buscar usuários:', error);
@@ -896,12 +955,38 @@ export const getTopProductsByRevenue = async (limit = 5) => {
   try {
     console.log('🏆 Buscando top produtos por receita real...');
 
+    // Verificar se tabela order_items existe
+    const orderItemsExists = await tableExists('order_items');
+    
+    if (!orderItemsExists) {
+      console.log('⚠️ Tabela order_items não existe, usando dados demo');
+      return { success: true, data: [] };
+    }
+
+    // Verificar quais colunas existem
+    const hasTotalPrice = await columnExists('order_items', 'total_price');
+    const hasUnitPrice = await columnExists('order_items', 'unit_price');
+    const hasPrice = await columnExists('order_items', 'price');
+
+    // Definir colunas baseado no que está disponível
+    let priceColumn = '';
+    if (hasTotalPrice) {
+      priceColumn = 'total_price';
+    } else if (hasUnitPrice) {
+      priceColumn = 'unit_price';
+    } else if (hasPrice) {
+      priceColumn = 'price';
+    } else {
+      console.log('⚠️ Nenhuma coluna de preço encontrada em order_items');
+      return { success: true, data: [] };
+    }
+
     // Buscar order_items com produtos
     const { data: orderItems, error } = await supabase
       .from('order_items')
       .select(`
         quantity,
-        price,
+        ${priceColumn},
         products (
           id,
           name,
@@ -932,7 +1017,18 @@ export const getTopProductsByRevenue = async (limit = 5) => {
         }
         
         productSales[productId].totalQuantity += item.quantity || 0;
-        productSales[productId].totalRevenue += (item.price || 0) * (item.quantity || 0);
+        
+        // Calcular receita baseado na coluna disponível
+        let itemRevenue = 0;
+        if (priceColumn === 'total_price') {
+          itemRevenue = item.total_price || 0;
+        } else if (priceColumn === 'unit_price') {
+          itemRevenue = (item.unit_price || 0) * (item.quantity || 0);
+        } else if (priceColumn === 'price') {
+          itemRevenue = (item.price || 0) * (item.quantity || 0);
+        }
+        
+        productSales[productId].totalRevenue += itemRevenue;
       }
     });
 
@@ -958,6 +1054,34 @@ export const getTopProductsByRevenue = async (limit = 5) => {
   }
 };
 
+// Função utilitária para verificar se tabela/coluna existe
+const tableExists = async (tableName) => {
+  try {
+    const { data, error } = await supabase
+      .from(tableName)
+      .select('*')
+      .limit(1);
+    
+    return !error;
+  } catch (error) {
+    return false;
+  }
+};
+
+// Função para verificar colunas específicas
+const columnExists = async (tableName, columnName) => {
+  try {
+    const { data, error } = await supabase
+      .from(tableName)
+      .select(columnName)
+      .limit(1);
+    
+    return !error;
+  } catch (error) {
+    return false;
+  }
+};
+
 export default {
   getAllCustomers,
   getAdminCustomers,
@@ -976,5 +1100,6 @@ export default {
   addCustomerPoints,
   getStats,
   getUsers,
-  getTopProductsByRevenue
+  getTopProductsByRevenue,
+  syncAuthUsersToPublic
 }; 

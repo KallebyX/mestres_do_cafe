@@ -3,6 +3,7 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { ThemeProvider } from './contexts/ThemeContext';
 import { SupabaseAuthProvider } from './contexts/SupabaseAuthContext';
 import { CartProvider } from './contexts/CartContext';
+import { NotificationProvider } from './contexts/NotificationContext';
 import { Header } from './components/Header';
 import { Footer } from './components/Footer';
 import LandingPage from './pages/LandingPage';
@@ -29,6 +30,16 @@ import AdminCRMDashboard from './pages/AdminCRMDashboard';
 import AdminFinancialReports from './pages/AdminFinancialReports';
 import AdminAnalytics from './pages/AdminAnalytics';
 import AdminFinancial from './pages/AdminFinancial';
+import AdminFinanceiroDashboard from './pages/AdminFinanceiroDashboard';
+import AdminEstoqueDashboard from './pages/AdminEstoqueDashboard';
+import AdminEstoqueDashboardEnterprise from './pages/AdminEstoqueDashboardEnterprise';
+import AdminRHDashboard from './pages/AdminRHDashboard';
+import AdminVendasDashboard from './pages/AdminVendasDashboard';
+import AdminComprasDashboard from './pages/AdminComprasDashboard';
+import AdminProducaoDashboard from './pages/AdminProducaoDashboard';
+import AdminContabilidadeDashboard from './pages/AdminContabilidadeDashboard';
+import AdminBIDashboard from './pages/AdminBIDashboard';
+import AdminConfigDashboard from './pages/AdminConfigDashboard';
 import AccountActivationPage from './pages/AccountActivationPage';
 import ForgotPasswordPage from './pages/ForgotPasswordPage';
 import ResetPasswordPage from './pages/ResetPasswordPage';
@@ -41,8 +52,9 @@ function App() {
   return (
     <ThemeProvider>
       <SupabaseAuthProvider>
-        <CartProvider>
-          <Router>
+        <NotificationProvider>
+          <CartProvider>
+            <Router>
             <div className="App min-h-screen transition-colors duration-300" style={{
               backgroundColor: 'var(--color-bg-primary)',
               color: 'var(--color-text-primary)'
@@ -68,7 +80,17 @@ function App() {
                   <Route path="/admin/crm" element={<AdminCRMDashboard />} />
                   <Route path="/admin/customer/:customerId" element={<CustomerDetailView />} />
                   <Route path="/admin/blog" element={<AdminBlogManager />} />
-                  <Route path="/admin/financeiro" element={<AdminFinancialReports />} />
+                  <Route path="/admin/financeiro" element={<AdminFinanceiroDashboard />} />
+                  <Route path="/admin/financeiro/relatorios" element={<AdminFinancialReports />} />
+                  <Route path="/admin/estoque" element={<AdminEstoqueDashboard />} />
+                  <Route path="/admin/estoque-enterprise" element={<AdminEstoqueDashboardEnterprise />} />
+                  <Route path="/admin/rh" element={<AdminRHDashboard />} />
+                  <Route path="/admin/vendas" element={<AdminVendasDashboard />} />
+                  <Route path="/admin/compras" element={<AdminComprasDashboard />} />
+                  <Route path="/admin/producao" element={<AdminProducaoDashboard />} />
+                  <Route path="/admin/contabilidade" element={<AdminContabilidadeDashboard />} />
+                  <Route path="/admin/bi" element={<AdminBIDashboard />} />
+                  <Route path="/admin/config" element={<AdminConfigDashboard />} />
                   <Route path="/admin/analytics" element={<AdminAnalytics />} />
                   <Route path="/gamificacao" element={<GamificationPage />} />
                   <Route path="/cursos" element={<CoursesPage />} />
@@ -85,8 +107,9 @@ function App() {
               </main>
               <Footer />
             </div>
-          </Router>
-        </CartProvider>
+                      </Router>
+          </CartProvider>
+        </NotificationProvider>
       </SupabaseAuthProvider>
     </ThemeProvider>
   );

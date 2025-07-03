@@ -16,7 +16,8 @@ import {
   getAdminCustomers, 
   toggleCustomerStatus,
   getAllCustomers,
-  toggleAnyCustomerStatus
+  toggleAnyCustomerStatus,
+  syncAuthUsersToPublic
 } from '../lib/supabase-admin-api';
 import { 
   sendCompleteNewsletter, 
@@ -49,6 +50,7 @@ const AdminCRMDashboard = () => {
   const [selectedCustomers, setSelectedCustomers] = useState([]);
   const [newsletterLoading, setNewsletterLoading] = useState(false);
   const [previewMode, setPreviewMode] = useState(false);
+  const [syncLoading, setSyncLoading] = useState(false);
 
   // Templates pré-definidos
   const newsletterTemplates = {
@@ -541,6 +543,39 @@ Olá, [NOME]! 🎭☕
               </p>
             </div>
             <div className="flex items-center gap-3">
+              <button
+                onClick={async () => {
+                  setSyncLoading(true);
+                  setError('');
+                  setSuccess('');
+                  
+                  try {
+                    console.log('🔄 Forçando sincronização manual de usuários...');
+                    const result = await syncAuthUsersToPublic();
+                    
+                    if (result.success) {
+                      setSuccess(`✅ Sincronização concluída! ${result.synced} usuários sincronizados de ${result.total} total`);
+                      await loadCustomersData();
+                    } else {
+                      setError(`❌ Erro na sincronização: ${result.error}`);
+                    }
+                  } catch (error) {
+                    console.error('❌ Erro ao forçar sincronização:', error);
+                    setError(`❌ Erro ao sincronizar usuários: ${error.message}`);
+                  } finally {
+                    setSyncLoading(false);
+                  }
+                }}
+                disabled={syncLoading}
+                className="bg-green-600 hover:bg-green-700 disabled:bg-green-400 text-white font-medium py-2 px-4 rounded-xl transition-colors flex items-center gap-2"
+              >
+                {syncLoading ? (
+                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                ) : (
+                  <Users className="w-4 h-4" />
+                )}
+                {syncLoading ? 'Sincronizando...' : 'Sincronizar Usuários'}
+              </button>
               <button
                 onClick={() => {/* Implementar exportação */}}
                 className="bg-slate-700 hover:bg-slate-800 text-white font-medium py-2 px-4 rounded-xl transition-colors flex items-center gap-2"

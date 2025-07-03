@@ -148,7 +148,7 @@ const MarketplacePageNew = () => {
       const newProduct = {
         id: editingProduct?.id || Date.now().toString(),
         ...productData,
-        rating: editingProduct?.rating || 4.5,
+        rating: editingProduct?.rating || 0,
         is_active: true
       };
 

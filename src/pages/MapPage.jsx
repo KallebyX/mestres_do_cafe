@@ -116,9 +116,9 @@ const MapPage = () => {
       }
     });
 
-    const filteredLocations = filter === 'all' 
-      ? locations 
-      : locations.filter(loc => loc.type === filter);
+    const filteredLocations = Array.isArray(locations) 
+      ? (filter === 'all' ? locations : locations.filter(loc => loc.type === filter))
+      : [];
 
     filteredLocations.forEach((location) => {
       const icon = getLocationIcon(location.type);
@@ -365,7 +365,7 @@ const MapPage = () => {
             <div className="bg-white rounded-lg shadow-md p-6">
               <h3 className="text-xl font-bold text-coffee-intense mb-4">Localizações</h3>
               <div className="space-y-4 max-h-96 overflow-y-auto">
-                {locations
+                {Array.isArray(locations) && locations.length > 0 ? locations
                   .filter(loc => filter === 'all' || loc.type === filter)
                   .map((location) => (
                   <div
@@ -387,7 +387,12 @@ const MapPage = () => {
                       <span className="text-sm text-coffee-gray">{location.rating}</span>
                     </div>
                   </div>
-                ))}
+                )) : (
+                  <div className="text-center py-4 text-coffee-gray">
+                    <MapPin className="w-8 h-8 mx-auto mb-2 text-coffee-cream" />
+                    <p>Nenhuma localização encontrada</p>
+                  </div>
+                )}
               </div>
             </div>
           </div>

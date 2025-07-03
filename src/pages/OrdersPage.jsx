@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
+import { supabase } from '../lib/supabase';
 
 const OrdersPage = () => {
   const { user } = useAuth();
@@ -17,70 +18,58 @@ const OrdersPage = () => {
       return;
     }
     
-    // Simular carregamento de pedidos (substituir por API real)
-    const loadOrders = async () => {
-      setIsLoading(true);
-      try {
-        // Dados simulados - substituir por API real
-        const mockOrders = [
-          {
-            id: 1,
-            date: '2024-01-15',
-            status: 'completed',
-            total: 89.90,
-            items: [
-              { name: 'Café Santos Dumont', quantity: 2, price: 34.90 },
-              { name: 'Café Especial Premium', quantity: 1, price: 45.00 }
-            ],
-            shipping: {
-              method: 'Entrega Grátis',
-              address: 'Rua das Flores, 123 - Santa Maria/RS',
-              tracking: 'BR123456789'
-            }
-          },
-          {
-            id: 2,
-            date: '2024-01-08',
-            status: 'pending',
-            total: 156.80,
-            items: [
-              { name: 'Kit Cafés Especiais', quantity: 1, price: 120.00 },
-              { name: 'Moedor Manual Premium', quantity: 1, price: 89.90 }
-            ],
-            shipping: {
-              method: 'Entrega Expressa',
-              address: 'Av. Principal, 456 - Santa Maria/RS',
-              tracking: 'BR987654321'
-            }
-          },
-          {
-            id: 3,
-            date: '2023-12-20',
-            status: 'cancelled',
-            total: 67.80,
-            items: [
-              { name: 'Café Orgânico 500g', quantity: 2, price: 29.90 }
-            ],
-            shipping: {
-              method: 'Entrega Padrão',
-              address: 'Rua das Palmeiras, 789 - Santa Maria/RS',
-              tracking: null
-            }
-          }
-        ];
-        
-        setTimeout(() => {
-          setOrders(mockOrders);
-          setIsLoading(false);
-        }, 1000);
-      } catch (error) {
-        console.error('Erro ao carregar pedidos:', error);
-        setIsLoading(false);
-      }
-    };
-
     loadOrders();
   }, [user, navigate]);
+
+  const loadOrders = async () => {
+    setIsLoading(true);
+    try {
+      // Buscar pedidos reais do Supabase
+      const { data, error } = await supabase
+        .from('orders')
+        .select(`
+          *,
+          order_items (
+            *,
+            products (name, price)
+          ),
+          users (name, email)
+        `)
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false });
+
+      if (error) {
+        console.error('Erro ao carregar pedidos:', error);
+        setOrders([]);
+      } else {
+        // Mapear dados para formato esperado
+        const mappedOrders = data?.map(order => ({
+          id: order.id,
+          date: order.created_at?.split('T')[0] || new Date().toISOString().split('T')[0],
+          status: order.status || 'pending',
+          total: parseFloat(order.total_amount || 0),
+          items: order.order_items?.map(item => ({
+            name: item.products?.name || 'Produto não encontrado',
+            quantity: item.quantity,
+            price: parseFloat(item.unit_price || item.products?.price || 0)
+          })) || [],
+          shipping: {
+            method: order.shipping_method || 'Entrega Padrão',
+            address: order.shipping_address || 'Endereço não informado',
+            tracking: order.tracking_code || null
+          }
+        })) || [];
+
+        setOrders(mappedOrders);
+        console.log(`✅ ${mappedOrders.length} pedidos carregados do Supabase`);
+      }
+    } catch (error) {
+      console.error('❌ Erro ao carregar pedidos:', error);
+      setOrders([]);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const getStatusInfo = (status) => {
     switch (status) {

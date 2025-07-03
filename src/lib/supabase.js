@@ -1,8 +1,8 @@
 import { createClient } from '@supabase/supabase-js'
 
-// Configurações do Supabase - Mestres do Café
+// Configurações do Supabase - Mestres do Café ERP
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://uicpqeruwwbnqbykymaj.supabase.co'
-const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVpY3BxZXJ1d3dibnFieWt5bWFqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Mzc0NjQ5NDAsImV4cCI6MjA1MzA0MDk0MH0.tJF4-AZKPz_9mVvQkjCYyC6VU0Km5CW5Gw2TpB8h8xw'
+const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVpY3BxZXJ1d3dibnFieWt5bWFqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTAzODM3NjksImV4cCI6MjA2NTk1OTc2OX0.hn-R8WzjKEqnusblaIWKZjCbm-nDqfBP5VQKymshMsM'
 
 // Criar cliente Supabase
 export const supabase = createClient(supabaseUrl, supabaseAnonKey)

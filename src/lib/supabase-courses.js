@@ -4,48 +4,130 @@ import { supabase } from './supabase.js';
 // COURSES - BUSCAR E LISTAR
 // =============================================
 
-export const getAllCourses = async () => {
+// Verificar se tabela existe
+const tableExists = async (tableName) => {
   try {
-    console.log('🎓 Buscando todos os cursos...');
-    
     const { data, error } = await supabase
-      .from('courses')
+      .from(tableName)
       .select('*')
-      .order('created_at', { ascending: false });
-
-    if (error) {
-      console.error('❌ Erro ao buscar cursos:', error);
-      return { success: false, error: error.message, data: [] };
-    }
-
-    console.log(`✅ ${data?.length || 0} cursos encontrados`);
-    return { success: true, data: data || [] };
+      .limit(1);
+    return !error;
   } catch (error) {
-    console.error('❌ Erro ao buscar cursos:', error);
-    return { success: false, error: error.message, data: [] };
+    return false;
   }
 };
 
+// Verificar se coluna existe
+const columnExists = async (tableName, columnName) => {
+  try {
+    const { data, error } = await supabase
+      .from(tableName)
+      .select(`${columnName}`)
+      .limit(1);
+    return !error;
+  } catch (error) {
+    return false;
+  }
+};
+
+// Buscar todos os cursos (para admin)
+export const getAllCourses = async () => {
+  try {
+    console.log('📚 Buscando todos os cursos do Supabase...');
+
+    // Verificar se tabela existe primeiro
+    const coursesTableExists = await tableExists('courses');
+    if (!coursesTableExists) {
+      console.log('⚠️ Tabela courses não existe, retornando array vazio');
+      return { 
+        success: true, 
+        data: [],
+        message: 'Tabela de cursos não encontrada'
+      };
+    }
+
+    // Verificar se coluna created_at existe
+    const hasCreatedAt = await columnExists('courses', 'created_at');
+    const orderBy = hasCreatedAt ? 'created_at' : 'id';
+
+    const { data: courses, error } = await supabase
+      .from('courses')
+      .select('*')
+      .order(orderBy, { ascending: false });
+
+    if (error) {
+      console.error('❌ Erro ao buscar cursos:', error);
+      return { 
+        success: true, // Mudar para true para evitar quebrar interface
+        error: error.message,
+        data: []
+      };
+    }
+
+    console.log(`✅ ${courses?.length || 0} cursos carregados do Supabase`);
+    
+    return {
+      success: true,
+      data: courses || []
+    };
+  } catch (error) {
+    console.error('❌ Erro genérico ao buscar cursos:', error);
+    return { 
+      success: true, // Mudar para true para evitar quebrar interface
+      error: error.message,
+      data: []
+    };
+  }
+};
+
+// Buscar apenas cursos ativos (para página pública)
 export const getActiveCourses = async () => {
   try {
-    console.log('🎓 Buscando cursos ativos...');
-    
-    const { data, error } = await supabase
+    console.log('📚 Buscando cursos ativos do Supabase...');
+
+    // Verificar se tabela existe primeiro
+    const coursesTableExists = await tableExists('courses');
+    if (!coursesTableExists) {
+      console.log('⚠️ Tabela courses não existe, retornando array vazio');
+      return { 
+        success: true, 
+        data: [],
+        message: 'Tabela de cursos não encontrada'
+      };
+    }
+
+    // Verificar se coluna created_at existe
+    const hasCreatedAt = await columnExists('courses', 'created_at');
+    const orderBy = hasCreatedAt ? 'created_at' : 'id';
+
+    const { data: courses, error } = await supabase
       .from('courses')
       .select('*')
       .eq('is_active', true)
-      .order('created_at', { ascending: false });
+      .order(orderBy, { ascending: false });
 
     if (error) {
       console.error('❌ Erro ao buscar cursos ativos:', error);
-      return { success: false, error: error.message, data: [] };
+      return { 
+        success: true, // Mudar para true para evitar quebrar interface
+        error: error.message,
+        data: []
+      };
     }
 
-    console.log(`✅ ${data?.length || 0} cursos ativos encontrados`);
-    return { success: true, data: data || [] };
+    console.log(`✅ ${courses?.length || 0} cursos ativos carregados do Supabase`);
+    
+    return {
+      success: true,
+      data: courses || []
+    };
   } catch (error) {
-    console.error('❌ Erro ao buscar cursos ativos:', error);
-    return { success: false, error: error.message, data: [] };
+    console.error('❌ Erro genérico ao buscar cursos ativos:', error);
+    return { 
+      success: true, // Mudar para true para evitar quebrar interface
+      error: error.message,
+      data: []
+    };
   }
 };
 

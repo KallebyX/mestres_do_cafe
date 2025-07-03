@@ -73,16 +73,24 @@ const MarketplacePage = () => {
     }
 
     // Filtro por faixa de preço
-    if (priceRange !== 'all') {
-      const [min, max] = priceRange.split('-').map(Number);
-      filtered = filtered.filter(product => {
-        const price = product.price;
-        if (max) {
-          return price >= min && price <= max;
-        } else {
-          return price >= min;
-        }
-      });
+    if (priceRange !== 'all' && typeof priceRange === 'string' && priceRange.includes('-')) {
+      const parts = priceRange.split('-').map(Number);
+      const [min, max] = parts.filter(n => !isNaN(n));
+      
+      if (min !== undefined) {
+        filtered = filtered.filter(product => {
+          const price = product.price;
+          if (max !== undefined) {
+            return price >= min && price <= max;
+          } else {
+            return price >= min;
+          }
+        });
+      }
+    } else if (priceRange !== 'all' && !isNaN(Number(priceRange))) {
+      // Caso seja apenas um número (ex: "100" para "acima de 100")
+      const min = Number(priceRange);
+      filtered = filtered.filter(product => product.price >= min);
     }
 
     // Ordenação

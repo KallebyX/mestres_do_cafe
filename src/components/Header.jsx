@@ -8,6 +8,7 @@ import { Menu, X, ShoppingCart, User, LogOut, Settings, Shield } from 'lucide-re
 import Logo from './Logo';
 import CartDropdown from './CartDropdown';
 import { ThemeToggleIcon } from './ThemeToggle';
+import { NotificationCenter } from './NotificationCenter';
 
 export const Header = () => {
   const { user, logout, profile } = useSupabaseAuth();
@@ -135,6 +136,13 @@ export const Header = () => {
           <div className="flex items-center space-x-2">
             {/* Theme Toggle */}
             <ThemeToggleIcon size="md" className="mr-1" />
+            
+            {/* Notifications (only for authenticated users) */}
+            {isLoggedIn && (
+              <div className="hidden lg:block">
+                <NotificationCenter />
+              </div>
+            )}
             
             {/* Desktop Cart Dropdown */}
             <div className="hidden lg:block">

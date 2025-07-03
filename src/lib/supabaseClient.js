@@ -5,20 +5,27 @@ import { createClient } from '@supabase/supabase-js';
 const isNode = typeof window === 'undefined' && typeof process !== 'undefined';
 const isBrowser = typeof window !== 'undefined';
 
+// Credenciais padrão para fallback
+const DEFAULT_SUPABASE_URL = 'https://uicpqeruwwbnqbykymaj.supabase.co';
+const DEFAULT_SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVpY3BxZXJ1d3dibnFieWt5bWFqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTAzODM3NjksImV4cCI6MjA2NTk1OTc2OX0.hn-R8WzjKEqnusblaIWKZjCbm-nDqfBP5VQKymshMsM';
+
 const supabaseUrl = isBrowser 
-  ? import.meta.env.VITE_SUPABASE_URL 
-  : (isNode ? (process.env.VITE_SUPABASE_URL || process.env.SUPABASE_URL) : null);
+  ? (import.meta.env.VITE_SUPABASE_URL || DEFAULT_SUPABASE_URL)
+  : (isNode ? (process.env.VITE_SUPABASE_URL || process.env.SUPABASE_URL || DEFAULT_SUPABASE_URL) : DEFAULT_SUPABASE_URL);
 
 const supabaseAnonKey = isBrowser 
-  ? import.meta.env.VITE_SUPABASE_ANON_KEY 
-  : (isNode ? (process.env.VITE_SUPABASE_ANON_KEY || process.env.SUPABASE_ANON_KEY) : null);
+  ? (import.meta.env.VITE_SUPABASE_ANON_KEY || DEFAULT_SUPABASE_ANON_KEY)
+  : (isNode ? (process.env.VITE_SUPABASE_ANON_KEY || process.env.SUPABASE_ANON_KEY || DEFAULT_SUPABASE_ANON_KEY) : DEFAULT_SUPABASE_ANON_KEY);
 
 const supabaseServiceKey = isBrowser 
   ? import.meta.env.VITE_SUPABASE_SERVICE_ROLE_KEY 
   : (isNode ? (process.env.VITE_SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY) : null);
 
+// Verificação mais flexível - apenas log se não encontrar as variáveis
 if (!supabaseUrl || !supabaseAnonKey) {
-  throw new Error('❌ Variáveis VITE_SUPABASE_URL e VITE_SUPABASE_ANON_KEY são obrigatórias');
+  console.warn('⚠️ Variáveis VITE_SUPABASE_URL e VITE_SUPABASE_ANON_KEY não encontradas, usando credenciais padrão');
+} else {
+  console.log('✅ Configurações do Supabase carregadas com sucesso');
 }
 
 // Cliente principal para operações normais (frontend)

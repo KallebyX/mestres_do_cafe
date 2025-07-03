@@ -20,7 +20,7 @@ const ProductDetailPage = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [quantity, setQuantity] = useState(1);
-  const [selectedWeight, setSelectedWeight] = useState('250g');
+  const [selectedWeight, setSelectedWeight] = useState('');
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [isFavorite, setIsFavorite] = useState(false);
   const [relatedProducts, setRelatedProducts] = useState([]);
@@ -30,6 +30,14 @@ const ProductDetailPage = () => {
       loadProductDetails();
     }
   }, [id]);
+
+  // Definir peso inicial quando produto for carregado
+  useEffect(() => {
+    if (product && !selectedWeight) {
+      const firstWeight = product?.available_weights?.[0]?.size || '250g';
+      setSelectedWeight(firstWeight);
+    }
+  }, [product, selectedWeight]);
 
   const loadProductDetails = async () => {
     setLoading(true);
@@ -83,14 +91,21 @@ const ProductDetailPage = () => {
     }
   };
 
-  const weightOptions = [
-    { value: '250g', label: '250g', priceMultiplier: 1 },
-    { value: '500g', label: '500g', priceMultiplier: 1.8 },
-    { value: '1kg', label: '1kg', priceMultiplier: 3.5 }
-  ];
+  // Opções de peso dinâmicas do produto ou fallback padrão
+  const weightOptions = product?.available_weights ? 
+    product.available_weights.map(weight => ({
+      value: weight.size,
+      label: weight.size,
+      priceMultiplier: weight.price_multiplier || 1
+    })) :
+    [
+      { value: '250g', label: '250g', priceMultiplier: 1 },
+      { value: '500g', label: '500g', priceMultiplier: 1.8 },
+      { value: '1kg', label: '1kg', priceMultiplier: 3.5 }
+    ];
 
-  const currentWeightOption = weightOptions.find(w => w.value === selectedWeight);
-  const currentPrice = product ? product.price * currentWeightOption.priceMultiplier : 0;
+  const currentWeightOption = weightOptions.find(w => w.value === selectedWeight) || weightOptions[0];
+  const currentPrice = product && currentWeightOption ? product.price * currentWeightOption.priceMultiplier : 0;
 
   const productImages = product?.images || [product?.image || '/default-coffee.jpg'];
 
@@ -274,7 +289,7 @@ const ProductDetailPage = () => {
                 <span className="text-3xl font-bold text-slate-900">
                   R$ {currentPrice.toFixed(2)}
                 </span>
-                {currentWeightOption.priceMultiplier !== 1 && (
+                {currentWeightOption && currentWeightOption.priceMultiplier !== 1 && (
                   <span className="text-lg text-slate-500 line-through">
                     R$ {(product.price * currentWeightOption.priceMultiplier * 1.2).toFixed(2)}
                   </span>

@@ -5,6 +5,7 @@ import { Button } from '../components/ui/button'
 import { Badge } from '../components/ui/badge'
 import { getFiltered } from '../lib/supabaseClient';
 import { ProductSkeleton, useDataState } from '../components/LoadingStates';
+import { getFeaturedTestimonials } from '../lib/supabase-testimonials';
 
 const LandingPage = () => {
   const {
@@ -14,9 +15,14 @@ const LandingPage = () => {
     execute: loadProducts
   } = useDataState([]);
 
-  // Carregar produtos em destaque reais do Supabase
+  // Estado para testimonials
+  const [testimonials, setTestimonials] = useState([]);
+  const [testimonialsLoading, setTestimonialsLoading] = useState(false);
+
+  // Carregar produtos e testimonials em destaque reais do Supabase
   useEffect(() => {
     loadFeaturedProducts();
+    loadTestimonials();
   }, []);
 
   const loadFeaturedProducts = async () => {
@@ -36,7 +42,7 @@ const LandingPage = () => {
           origin: product.origin || 'Brasil',
           price: product.price,
           originalPrice: product.original_price,
-          rating: 4.8, // Rating padrão - poderia vir do banco
+          rating: product.rating || product.sca_score ? product.sca_score / 20 : null, // Rating baseado em SCA ou rating real
           sca: product.sca_score || 85,
           images: product.images || [] // Incluir as imagens dos produtos
         }));
@@ -79,29 +85,25 @@ const LandingPage = () => {
     }
   ];
 
-  const testimonials = [
-    {
-      name: "Maria Silva",
-      role: "Empresária",
-      avatar: "👩‍💼",
-      rating: 5,
-      comment: "A qualidade dos cafés é excepcional. O sistema de pontos me incentiva a experimentar novos sabores sempre."
-    },
-    {
-      name: "João Santos",
-      role: "Chef",
-      avatar: "👨‍🍳",
-      rating: 5,
-      comment: "Como chef, posso dizer que estes são os melhores cafés especiais que já provei. A origem é impecável."
-    },
-    {
-      name: "Ana Costa",
-      role: "Barista",
-      avatar: "👩‍🎓",
-      rating: 5,
-      comment: "Trabalho com café há 15 anos e a Mestres do Café tem os grãos mais consistentes e frescos do mercado."
+  // Função para carregar testimonials reais
+  const loadTestimonials = async () => {
+    setTestimonialsLoading(true);
+    try {
+      const result = await getFeaturedTestimonials(3);
+      if (result.success) {
+        setTestimonials(result.data);
+        console.log(`✅ ${result.data.length} testimonials carregados`);
+      } else {
+        console.log('⚠️ Erro ao carregar testimonials:', result.error);
+        setTestimonials([]);
+      }
+    } catch (error) {
+      console.error('❌ Erro ao carregar testimonials:', error);
+      setTestimonials([]);
+    } finally {
+      setTestimonialsLoading(false);
     }
-  ];
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-amber-50 to-white">
@@ -615,6 +617,119 @@ const LandingPage = () => {
                 </button>
               </Link>
             </div>
+          </div>
+        </section>
+
+        {/* Testimonials Section */}
+        <section className="py-20 lg:py-28 bg-white relative overflow-hidden">
+          <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+            <div className="text-center mb-16 lg:mb-20">
+              <div className="inline-flex items-center justify-center w-16 h-16 bg-brand-brown/10 rounded-2xl mb-6 mx-auto">
+                <Users className="w-8 h-8 text-brand-brown" />
+              </div>
+              <h2 className="text-3xl sm:text-4xl lg:text-5xl xl:text-6xl font-bold text-brand-dark font-serif mb-6 leading-tight">
+                O que nossos clientes dizem
+              </h2>
+              <p className="text-lg sm:text-xl lg:text-2xl text-brand-dark/80 max-w-3xl mx-auto leading-relaxed">
+                Depoimentos reais de quem já experimentou nossos cafés especiais
+              </p>
+            </div>
+
+            {/* Testimonials Grid */}
+            {testimonialsLoading ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                {[1, 2, 3].map(i => (
+                  <div key={i} className="bg-amber-50 rounded-2xl p-8 animate-pulse">
+                    <div className="flex items-center mb-4">
+                      <div className="w-12 h-12 bg-brand-brown/20 rounded-full mr-4"></div>
+                      <div>
+                        <div className="h-4 bg-brand-brown/20 rounded w-24 mb-2"></div>
+                        <div className="h-3 bg-brand-brown/10 rounded w-20"></div>
+                      </div>
+                    </div>
+                    <div className="h-20 bg-brand-brown/10 rounded"></div>
+                  </div>
+                ))}
+              </div>
+            ) : testimonials.length > 0 ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                {testimonials.map((testimonial, index) => (
+                  <div key={testimonial.id} className="bg-gradient-to-br from-amber-50 to-orange-50 rounded-2xl p-8 shadow-lg border border-brand-brown/10 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-2">
+                    {/* Header */}
+                    <div className="flex items-center mb-6">
+                      <div className="w-12 h-12 bg-brand-brown/20 rounded-full flex items-center justify-center mr-4 flex-shrink-0">
+                        {testimonial.avatar_url ? (
+                          <img 
+                            src={testimonial.avatar_url} 
+                            alt={testimonial.name}
+                            className="w-full h-full object-cover rounded-full"
+                            onError={(e) => {
+                              e.target.style.display = 'none';
+                              e.target.nextSibling.style.display = 'flex';
+                            }}
+                          />
+                        ) : null}
+                        <div className={`w-full h-full flex items-center justify-center text-brand-brown font-bold text-lg ${testimonial.avatar_url ? 'hidden' : 'flex'}`}>
+                          {testimonial.name.charAt(0)}
+                        </div>
+                      </div>
+                      <div className="flex-1">
+                        <h4 className="font-bold text-brand-dark">{testimonial.name}</h4>
+                        <p className="text-brand-brown text-sm">{testimonial.role}</p>
+                        {testimonial.location && (
+                          <p className="text-brand-dark/60 text-xs">{testimonial.location}</p>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Rating */}
+                    <div className="flex items-center mb-4">
+                      {[...Array(5)].map((_, i) => (
+                        <Star
+                          key={i}
+                          className={`w-4 h-4 ${
+                            i < testimonial.rating
+                              ? 'text-yellow-400 fill-current'
+                              : 'text-gray-300'
+                          }`}
+                        />
+                      ))}
+                      <span className="ml-2 text-sm text-brand-dark/70 font-medium">
+                        {testimonial.rating}/5
+                      </span>
+                    </div>
+
+                    {/* Comment */}
+                    <blockquote className="text-brand-dark/80 italic leading-relaxed">
+                      "{testimonial.comment}"
+                    </blockquote>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="text-center py-12">
+                <div className="w-16 h-16 bg-brand-brown/10 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                  <Users className="w-8 h-8 text-brand-brown/60" />
+                </div>
+                <h3 className="text-xl font-bold text-brand-dark mb-2">Em breve, depoimentos!</h3>
+                <p className="text-brand-dark/60">Nossos clientes compartilharão suas experiências em breve.</p>
+              </div>
+            )}
+
+            {/* Call to Action */}
+            {testimonials.length > 0 && (
+              <div className="text-center mt-16">
+                <p className="text-lg text-brand-dark/70 mb-6">
+                  Faça parte da nossa comunidade de amantes do café!
+                </p>
+                <Link to="/marketplace">
+                  <button className="bg-brand-brown hover:bg-brand-brown/90 text-white font-bold px-8 py-4 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
+                    Experimentar Nossos Cafés
+                    <ArrowRight className="ml-2 w-5 h-5 inline-block" />
+                  </button>
+                </Link>
+              </div>
+            )}
           </div>
         </section>
 
