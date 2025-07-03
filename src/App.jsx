@@ -7,7 +7,6 @@ import { NotificationProvider } from './contexts/NotificationContext';
 import { Header } from './components/Header';
 import { Footer } from './components/Footer';
 import { lazy, Suspense } from 'react';
-import LoadingStates from './components/LoadingStates';
 
 // ✅ LAZY LOADING - Páginas públicas
 const LandingPage = lazy(() => import('./pages/LandingPage'));
@@ -66,9 +65,14 @@ import NotFoundPage from './pages/NotFoundPage';
 const PageLoader = () => (
   <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-amber-50 to-orange-100 dark:from-gray-900 dark:to-gray-800">
     <div className="text-center">
-      <LoadingStates.skeleton className="w-32 h-8 mx-auto mb-4" />
-      <LoadingStates.skeleton className="w-48 h-4 mx-auto mb-2" />
-      <LoadingStates.skeleton className="w-36 h-4 mx-auto" />
+      <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-amber-600 mx-auto mb-4"></div>
+      <div className="animate-pulse space-y-2">
+        <div className="bg-amber-200 dark:bg-gray-700 h-4 w-48 rounded mx-auto"></div>
+        <div className="bg-amber-100 dark:bg-gray-600 h-3 w-36 rounded mx-auto"></div>
+      </div>
+      <p className="text-amber-600 dark:text-amber-400 mt-4 font-medium">
+        Carregando...
+      </p>
     </div>
   </div>
 );
@@ -150,8 +154,8 @@ function App() {
                 <Footer />
               </div>
             </Router>
-          </NotificationProvider>
-        </CartProvider>
+          </CartProvider>
+        </NotificationProvider>
       </SupabaseAuthProvider>
     </ThemeProvider>
   );

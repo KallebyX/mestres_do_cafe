@@ -16,13 +16,7 @@ export default defineConfig({
     assetsDir: 'assets',
     sourcemap: false,
     target: 'esnext',
-    minify: 'terser',
-    terserOptions: {
-      compress: {
-        drop_console: true,
-        drop_debugger: true
-      }
-    },
+    minify: 'esbuild',
     rollupOptions: {
       output: {
         manualChunks: (id) => {

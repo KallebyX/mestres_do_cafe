@@ -13,16 +13,16 @@ const MarketplacePageNew = () => {
   const [editingProduct, setEditingProduct] = useState(null);
   const [currentUser, setCurrentUser] = useState(null);
 
-  // Carregar dados do usuário e produtos
+  // ✅ CORREÇÃO: useEffect otimizado sem dependências que causam loops
   useEffect(() => {
     loadUserData();
     loadProducts();
-  }, [loadProducts]);
+  }, []); // ✅ Executar apenas uma vez
 
-  // Filtrar produtos quando houver mudanças
+  // ✅ CORREÇÃO: Filtrar produtos quando houver mudanças
   useEffect(() => {
     filterProducts();
-  }, [filterProducts]);
+  }, [products, searchTerm, selectedCategory, sortBy]); // ✅ Dependências específicas
 
   const loadUserData = () => {
     try {

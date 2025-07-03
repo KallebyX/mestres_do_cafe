@@ -110,25 +110,32 @@ export const createManualCustomer = async (customerData) => {
   try {
     console.log('👤 Criando cliente manual:', customerData);
 
-    // Validar dados básicos
-    const validation = validateCustomerData(customerData);
+    // ✅ SEGURANÇA ENTERPRISE: Importar validações seguras
+    const { validateUserData, logSecurityEvent } = await import('./security');
+
+    // ✅ Validação robusta com sanitização
+    const validation = validateUserData(customerData);
     if (!validation.isValid) {
+      logSecurityEvent('invalid_user_data', { errors: validation.errors });
       return { success: false, error: validation.errors.join(', ') };
     }
 
-    // Preparar dados para inserção (usando schema correto)
+    // ✅ Usar dados sanitizados
+    const sanitizedData = validation.sanitized;
+
+    // ✅ Preparar dados para inserção (usando dados sanitizados)
     const insertData = {
-      name: customerData.name,
-      email: customerData.email,
+      name: sanitizedData.name,
+      email: sanitizedData.email,
       user_type: customerData.user_type || 'cliente_pf',
-      phone: customerData.phone,
-      cpf_cnpj: customerData.cpf || customerData.cnpj || customerData.cpf_cnpj,
-      address: customerData.address,
-      city: customerData.city,
-      state: customerData.state,
-      zip_code: customerData.zip_code || customerData.zipcode,
-      company_name: customerData.company_name,
-      company_segment: customerData.company_segment,
+      phone: sanitizedData.phone,
+      cpf_cnpj: sanitizedData.cpf_cnpj,
+      address: customerData.address ? sanitizedData.address : null,
+      city: customerData.city ? sanitizedData.city : null,
+      state: customerData.state ? sanitizedData.state : null,
+      zip_code: customerData.zip_code || customerData.zipcode || null,
+      company_name: customerData.company_name ? sanitizedData.company_name : null,
+      company_segment: customerData.company_segment ? sanitizedData.company_segment : null,
       role: 'customer',
       created_by_admin: true,
       created_at: new Date().toISOString()

@@ -47,13 +47,14 @@ const AdminRHDashboard = () => {
   const [selectedEmployee, setSelectedEmployee] = useState(null);
   const [modalMode, setModalMode] = useState('create'); // 'create', 'edit', 'view'
 
+  // ✅ CORREÇÃO: useEffect otimizado sem dependências que causam loops
   useEffect(() => {
     if (!user || !hasPermission('admin')) {
       navigate('/dashboard');
       return;
     }
     loadHRData();
-  }, [user, hasPermission, navigate, activeTab]);
+  }, [user, activeTab]); // ✅ Apenas dependências essenciais
 
   const loadHRData = async () => {
     setLoading(true);

@@ -37,13 +37,14 @@ const AdminEstoqueDashboard = () => {
   const { notifySuccess, notifyError } = useNotifications();
   const navigate = useNavigate();
 
+  // ✅ CORREÇÃO: useEffect otimizado sem dependências que causam loops
   useEffect(() => {
     if (!user || !hasPermission('admin')) {
       navigate('/dashboard');
       return;
     }
     loadStockData();
-  }, [user, hasPermission, navigate]);
+  }, [user]); // ✅ Apenas dependências essenciais
 
   const loadStockData = async () => {
     setLoading(true);
