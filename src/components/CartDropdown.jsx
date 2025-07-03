@@ -36,7 +36,7 @@ const _CartDropdown = () => {
 
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, [] // TODO: Add missing dependencies to fix exhaustive-deps warning);
+  }, []); // TODO: Add missing dependencies to fix exhaustive-deps warning
 
   const _handleQuantityChange = async (productId, newQuantity) => {
     await updateQuantity(productId, newQuantity);

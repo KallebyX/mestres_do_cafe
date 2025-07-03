@@ -38,7 +38,7 @@ const _AdminComprasDashboard = () => {
   // Carregar dados iniciais
   useEffect(() => {
     loadPurchaseData();
-  }, [] // TODO: Add missing dependencies to fix exhaustive-deps warning);
+  }, []); // TODO: Add missing dependencies to fix exhaustive-deps warning
 
   const _loadPurchaseData = async () => {
     setLoading(true);

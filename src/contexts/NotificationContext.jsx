@@ -418,10 +418,10 @@ export const _NotificationProvider = ({ children }) => {
     if ('Notification' in window) {
       setHasNotificationPermission(Notification.permission === 'granted');
     }
-  }, [] // TODO: Add missing dependencies to fix exhaustive-deps warning);
+  }, []); // TODO: Add missing dependencies to fix exhaustive-deps warning
 
   // Funções de notificação rápida para módulos
-  const _notifySuccess = useCallback((title, message, actionUrl) => {
+  const notifySuccess = useCallback((title, message, actionUrl) => {
     return createNotification({
       userId: user?.id,
       type: 'success',

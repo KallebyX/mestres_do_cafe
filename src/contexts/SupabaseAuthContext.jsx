@@ -1,17 +1,17 @@
 import React, { createContext, useContext, useEffect, useState, useMemo, useCallback } from 'react';
-import { _supabase } from '../lib/supabase';
+import { supabase } from '../lib/supabase';
 
-const _SupabaseAuthContext = createContext({});
+const SupabaseAuthContext = createContext({});
 
-export const _useSupabaseAuth = () => {
-  const _context = useContext(SupabaseAuthContext);
+export const useSupabaseAuth = () => {
+  const context = useContext(SupabaseAuthContext);
   if (!context) {
     throw new Error('useSupabaseAuth deve ser usado dentro de SupabaseAuthProvider');
   }
   return context;
 };
 
-export const _SupabaseAuthProvider = ({ children }) => {
+export const SupabaseAuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [profile, setProfile] = useState(null);
@@ -35,9 +35,9 @@ export const _SupabaseAuthProvider = ({ children }) => {
     );
 
     return () => subscription?.unsubscribe();
-  }, [] // TODO: Add missing dependencies to fix exhaustive-deps warning);
+  }, []); // TODO: Add missing dependencies to fix exhaustive-deps warning
 
-  const _getSession = async () => {
+  const getSession = async () => {
     try {
       const { data: { session } } = await supabase.auth.getSession();
       if (session?.user) {

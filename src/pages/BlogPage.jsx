@@ -16,7 +16,7 @@ const _BlogPage = () => {
 
   useEffect(() => {
     loadBlogData();
-  }, [] // TODO: Add missing dependencies to fix exhaustive-deps warning);
+  }, []); // TODO: Add missing dependencies to fix exhaustive-deps warning
 
   const _loadBlogData = async () => {
     setLoading(true);

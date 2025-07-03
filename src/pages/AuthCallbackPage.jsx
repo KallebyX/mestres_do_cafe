@@ -11,7 +11,7 @@ const _AuthCallbackPage = () => {
 
   useEffect(() => {
     handleAuthCallback();
-  }, [] // TODO: Add missing dependencies to fix exhaustive-deps warning);
+  }, []); // TODO: Add missing dependencies to fix exhaustive-deps warning
 
   const _handleAuthCallback = async () => {
     try {

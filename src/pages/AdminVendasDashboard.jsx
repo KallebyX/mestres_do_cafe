@@ -49,7 +49,7 @@ const _AdminVendasDashboard = () => {
   // Carregar dados iniciais
   useEffect(() => {
     loadSalesData();
-  }, [] // TODO: Add missing dependencies to fix exhaustive-deps warning);
+  }, []); // TODO: Add missing dependencies to fix exhaustive-deps warning
 
   const _loadSalesData = async () => {
     setLoading(true);

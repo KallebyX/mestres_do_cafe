@@ -25,7 +25,7 @@ const _MarketplacePage = () => {
   // Carregar produtos do Supabase
   useEffect(() => {
     loadProducts();
-  }, [] // TODO: Add missing dependencies to fix exhaustive-deps warning);
+  }, []); // TODO: Add missing dependencies to fix exhaustive-deps warning
 
   const _loadProducts = async () => {
     setLoading(true);

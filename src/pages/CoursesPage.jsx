@@ -10,7 +10,7 @@ const _CoursesPage = () => {
 
   useEffect(() => {
     loadCourses();
-  }, [] // TODO: Add missing dependencies to fix exhaustive-deps warning);
+  }, []); // TODO: Add missing dependencies to fix exhaustive-deps warning
 
   const _loadCourses = async () => {
     setLoading(true);

@@ -40,7 +40,7 @@ export const _AuthProvider = ({ children }) => {
     };
 
     initAuth();
-  }, [] // TODO: Add missing dependencies to fix exhaustive-deps warning);
+  }, []); // TODO: Add missing dependencies to fix exhaustive-deps warning
 
   // Limpar dados de autenticação
   const _clearAuth = () => {

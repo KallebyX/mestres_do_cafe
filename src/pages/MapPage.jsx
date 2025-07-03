@@ -42,13 +42,13 @@ const _MapPage = () => {
     };
 
     loadLeaflet();
-  }, [] // TODO: Add missing dependencies to fix exhaustive-deps warning);
+  }, []); // TODO: Add missing dependencies to fix exhaustive-deps warning
 
   // Buscar localizações
   useEffect(() => {
     fetchLocations();
     getUserLocation();
-  }, [] // TODO: Add missing dependencies to fix exhaustive-deps warning);
+  }, []); // TODO: Add missing dependencies to fix exhaustive-deps warning
 
   const _fetchLocations = async () => {
     try {

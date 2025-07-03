@@ -23,7 +23,7 @@ const _LandingPage = () => {
   useEffect(() => {
     loadFeaturedProducts();
     loadTestimonials();
-  }, [] // TODO: Add missing dependencies to fix exhaustive-deps warning);
+  }, []); // TODO: Add missing dependencies to fix exhaustive-deps warning
 
   const _loadFeaturedProducts = async () => {
     await loadProducts(async () => {

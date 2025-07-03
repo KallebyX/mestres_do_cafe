@@ -1,14 +1,14 @@
-import { _createClient } from '@supabase/supabase-js'
+import { createClient } from '@supabase/supabase-js'
 
 // Configurações do Supabase - Mestres do Café ERP
-const _supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://uicpqeruwwbnqbykymaj.supabase.co'
-const _supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVpY3BxZXJ1d3dibnFieWt5bWFqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTAzODM3NjksImV4cCI6MjA2NTk1OTc2OX0.hn-R8WzjKEqnusblaIWKZjCbm-nDqfBP5VQKymshMsM'
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://uicpqeruwwbnqbykymaj.supabase.co'
+const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVpY3BxZXJ1d3dibnFieWt5bWFqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTAzODM3NjksImV4cCI6MjA2NTk1OTc2OX0.hn-R8WzjKEqnusblaIWKZjCbm-nDqfBP5VQKymshMsM'
 
 // Criar cliente Supabase
-export const _supabase = createClient(supabaseUrl, supabaseAnonKey)
+export const supabase = createClient(supabaseUrl, supabaseAnonKey)
 
 // Funções de autenticação usando Supabase
-export const _supabaseAuth = {
+export const supabaseAuth = {
   // Login com email e senha
   async signIn(email, password) {
     try {
@@ -137,7 +137,7 @@ export const _supabaseAuth = {
 
       if (user) {
         // Buscar dados completos do perfil
-        const _profile = await supabaseAuth.getUserProfile(user.id)
+        const profile = await supabaseAuth.getUserProfile(user.id)
         return {
           success: true,
           user: {
@@ -209,7 +209,7 @@ export const _supabaseAuth = {
 }
 
 // Listener para mudanças na autenticação
-export const _onAuthStateChange = (callback) => {
+export const onAuthStateChange = (callback) => {
   return supabase.auth.onAuthStateChange(callback)
 }
 
