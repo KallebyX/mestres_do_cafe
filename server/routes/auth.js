@@ -8,7 +8,12 @@ const { authenticateToken } = require('../middleware/auth');
 
 const router = express.Router();
 
-const JWT_SECRET = process.env.JWT_SECRET || 'mestres-cafe-super-secret-jwt-key-2025';
+// Generate a more secure fallback if JWT_SECRET is not set
+const JWT_SECRET = process.env.JWT_SECRET || (() => {
+  console.warn('⚠️  WARNING: JWT_SECRET environment variable not set in auth.js. Using generated fallback. Set JWT_SECRET for production!');
+  const crypto = require('crypto');
+  return crypto.randomBytes(64).toString('hex') + Date.now().toString();
+})();
 const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN || '24h';
 const DB_FILE = path.join(__dirname, '../data/db.json');
 

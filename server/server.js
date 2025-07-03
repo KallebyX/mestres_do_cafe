@@ -15,7 +15,13 @@ const newsletterRoutes = require('./routes/newsletter');
 
 const app = express();
 const PORT = process.env.PORT || 5000; // Render usa PORT dinâmico
-const JWT_SECRET = process.env.JWT_SECRET || 'mestres-cafe-super-secret-jwt-key-2025';
+// Generate a more secure fallback if JWT_SECRET is not set
+const JWT_SECRET = process.env.JWT_SECRET || (() => {
+  console.warn('⚠️  WARNING: JWT_SECRET environment variable not set. Using generated fallback. Set JWT_SECRET for production!');
+  // Generate a random secret based on timestamp and random values for better security
+  const crypto = require('crypto');
+  return crypto.randomBytes(64).toString('hex') + Date.now().toString();
+})();
 
 // Inicializar serviços
 const whatsappService = new WhatsAppService();
@@ -1120,7 +1126,13 @@ app.put('/api/admin/users/:id', authenticateToken, (req, res) => {
   const updates = req.body;
   const db = readDB();
   
-  const userIndex = db.users.findIndex(u => u.id === id);
+  // Fix: Convert string parameter to number for proper comparison
+  const userId = parseInt(id, 10);
+  if (isNaN(userId)) {
+    return res.status(400).json({ error: 'ID de usuário inválido' });
+  }
+  
+  const userIndex = db.users.findIndex(u => u.id === userId);
   if (userIndex === -1) {
     return res.status(404).json({ error: 'Usuário não encontrado' });
   }
@@ -1143,7 +1155,13 @@ app.delete('/api/admin/users/:id', authenticateToken, (req, res) => {
   const { id } = req.params;
   const db = readDB();
   
-  const userIndex = db.users.findIndex(u => u.id === id);
+  // Fix: Convert string parameter to number for proper comparison
+  const userId = parseInt(id, 10);
+  if (isNaN(userId)) {
+    return res.status(400).json({ error: 'ID de usuário inválido' });
+  }
+  
+  const userIndex = db.users.findIndex(u => u.id === userId);
   if (userIndex === -1) {
     return res.status(404).json({ error: 'Usuário não encontrado' });
   }

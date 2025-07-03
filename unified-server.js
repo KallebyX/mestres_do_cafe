@@ -5,6 +5,7 @@ import cors from 'cors';
 import { fileURLToPath } from 'url';
 import { dirname } from 'path';
 import { createRequire } from 'module';
+import bcrypt from 'bcryptjs';
 
 // Para usar require() em ESM quando necessário
 const require = createRequire(import.meta.url);
@@ -98,22 +99,35 @@ app.get('/api/products/:id', (req, res) => {
 });
 
 // Rota para autenticação demo
-app.post('/api/auth/login', (req, res) => {
+app.post('/api/auth/login', async (req, res) => {
   const { email, password } = req.body;
   
-  // Demo login simples
-  if (email === 'admin@mestrescafe.com.br' && password === 'admin123') {
-    res.json({
-      success: true,
-      message: 'Login realizado com sucesso',
-      user: {
-        id: 1,
-        name: 'Administrador',
-        email: email,
-        user_type: 'admin'
-      },
-      access_token: 'demo_token_12345'
-    });
+  // Secure admin login with environment variables
+  const ADMIN_EMAIL = process.env.ADMIN_EMAIL || 'admin@mestrescafe.com.br';
+  const ADMIN_PASSWORD_HASH = process.env.ADMIN_PASSWORD_HASH || '$2b$12$RZOiTGstHxg27izW7bRPR.WAjMYPjZv4WopklVPsGNxP2TO3.LUeK'; // Default hash for 'admin123'
+  
+  if (email === ADMIN_EMAIL) {
+    try {
+      const isValidPassword = await bcrypt.compare(password, ADMIN_PASSWORD_HASH);
+      if (isValidPassword) {
+        res.json({
+          success: true,
+          message: 'Login realizado com sucesso',
+          user: {
+            id: 1,
+            name: 'Administrador',
+            email: email,
+            user_type: 'admin'
+          },
+          access_token: 'demo_token_12345'
+        });
+      } else {
+        res.status(401).json({ error: 'Credenciais inválidas' });
+      }
+    } catch (error) {
+      console.error('Error during authentication:', error);
+      res.status(500).json({ error: 'Erro interno do servidor' });
+    }
   } else {
     res.status(401).json({ error: 'Credenciais inválidas' });
   }
