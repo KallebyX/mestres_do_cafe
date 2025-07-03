@@ -42,12 +42,13 @@ const AdminVendasDashboard = () => {
   // Notificações
   const { notifySuccess, notifyError, notifyInfo } = useNotifications();
 
+  // ✅ CORREÇÃO: useEffect otimizado sem dependências que causam loops
   useEffect(() => {
     if (!user || !hasPermission('admin')) {
       navigate('/dashboard');
       return;
     }
-  }, [user, hasPermission, navigate]);
+  }, [user]); // ✅ Apenas dependências essenciais
 
   // Carregar dados iniciais
   useEffect(() => {

@@ -81,6 +81,7 @@
     "clsx": "^2.1.1",
     "cors": "^2.8.5",
     "date-fns": "^2.30.0",
+    "dompurify": "^3.2.6",
     "express": "^4.19.2",
     "jsonwebtoken": "^9.0.2",
     "jspdf": "^3.0.1",
@@ -118,6 +119,7 @@
     "jest": "^30.0.1",
     "jsdom": "^26.1.0",
     "supertest": "^7.1.1",
+    "terser": "^5.43.1",
     "vitest": "^3.2.4"
   },
   "engines": {

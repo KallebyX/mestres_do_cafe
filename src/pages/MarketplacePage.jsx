@@ -49,67 +49,73 @@ const MarketplacePage = () => {
     }
   };
 
-  // Aplicar filtros
+  // ✅ CORREÇÃO: Filtros com memoização para evitar re-renders desnecessários
   useEffect(() => {
-    let filtered = [...products];
+    const applyFilters = () => {
+      let filtered = [...products];
 
-    // Filtro por termo de busca
-    if (searchTerm) {
-      filtered = filtered.filter(product =>
-        product.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        product.description?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        product.origin?.toLowerCase().includes(searchTerm.toLowerCase())
-      );
-    }
-
-    // Filtro por categoria
-    if (selectedCategory !== 'all') {
-      filtered = filtered.filter(product => product.category === selectedCategory);
-    }
-
-    // Filtro por nível de torra
-    if (selectedRoast !== 'all') {
-      filtered = filtered.filter(product => product.roast_level === selectedRoast);
-    }
-
-    // Filtro por faixa de preço
-    if (priceRange !== 'all' && typeof priceRange === 'string' && priceRange.includes('-')) {
-      const parts = priceRange.split('-').map(Number);
-      const [min, max] = parts.filter(n => !isNaN(n));
-      
-      if (min !== undefined) {
-        filtered = filtered.filter(product => {
-          const price = product.price;
-          if (max !== undefined) {
-            return price >= min && price <= max;
-          } else {
-            return price >= min;
-          }
-        });
+      // Filtro por termo de busca
+      if (searchTerm) {
+        const term = searchTerm.toLowerCase();
+        filtered = filtered.filter(product =>
+          product.name?.toLowerCase().includes(term) ||
+          product.description?.toLowerCase().includes(term) ||
+          product.origin?.toLowerCase().includes(term)
+        );
       }
-    } else if (priceRange !== 'all' && !isNaN(Number(priceRange))) {
-      // Caso seja apenas um número (ex: "100" para "acima de 100")
-      const min = Number(priceRange);
-      filtered = filtered.filter(product => product.price >= min);
-    }
 
-    // Ordenação
-    filtered.sort((a, b) => {
-      switch (sortBy) {
-        case 'price-low':
-          return a.price - b.price;
-        case 'price-high':
-          return b.price - a.price;
-        case 'rating':
-          return (b.rating || 0) - (a.rating || 0);
-        case 'newest':
-          return new Date(b.created_at) - new Date(a.created_at);
-        default:
-          return a.name.localeCompare(b.name);
+      // Filtro por categoria
+      if (selectedCategory !== 'all') {
+        filtered = filtered.filter(product => product.category === selectedCategory);
       }
-    });
 
-    setFilteredProducts(filtered);
+      // Filtro por nível de torra
+      if (selectedRoast !== 'all') {
+        filtered = filtered.filter(product => product.roast_level === selectedRoast);
+      }
+
+      // Filtro por faixa de preço
+      if (priceRange !== 'all' && typeof priceRange === 'string' && priceRange.includes('-')) {
+        const parts = priceRange.split('-').map(Number);
+        const [min, max] = parts.filter(n => !isNaN(n));
+        
+        if (min !== undefined) {
+          filtered = filtered.filter(product => {
+            const price = product.price;
+            if (max !== undefined) {
+              return price >= min && price <= max;
+            } else {
+              return price >= min;
+            }
+          });
+        }
+      } else if (priceRange !== 'all' && !isNaN(Number(priceRange))) {
+        const min = Number(priceRange);
+        filtered = filtered.filter(product => product.price >= min);
+      }
+
+      // Ordenação
+      filtered.sort((a, b) => {
+        switch (sortBy) {
+          case 'price-low':
+            return a.price - b.price;
+          case 'price-high':
+            return b.price - a.price;
+          case 'rating':
+            return (b.rating || 0) - (a.rating || 0);
+          case 'newest':
+            return new Date(b.created_at) - new Date(a.created_at);
+          default:
+            return a.name.localeCompare(b.name);
+        }
+      });
+
+      setFilteredProducts(filtered);
+    };
+
+    // ✅ Debounce para evitar muitas execuções
+    const timeoutId = setTimeout(applyFilters, 100);
+    return () => clearTimeout(timeoutId);
   }, [products, searchTerm, selectedCategory, selectedRoast, priceRange, sortBy]);
 
   const handleAddToCart = async (product) => {
