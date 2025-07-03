@@ -6,7 +6,7 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 
 // Cores da marca Mestres do Café
-const _BRAND_COLORS = {
+const BRAND_COLORS = {
   dark: '#101820',      // Cor principal escura
   gold: '#b58150',      // Cor dourada/âmbar
   light: '#f7fcff',     // Cor clara
@@ -15,7 +15,7 @@ const _BRAND_COLORS = {
 };
 
 // Definição dos temas
-const _themes = {
+const themes = {
   light: {
     name: 'light',
     colors: {
