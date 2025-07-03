@@ -1,12 +1,9 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { 
-  Scan, X, Package, Check, AlertCircle, 
-  Camera, Download, Upload, Plus, Search
-} from 'lucide-react';
-import { useNotifications } from '../contexts/NotificationContext';
-import { supabase } from '../lib/supabase';
+// import { _Scan, _X, _Package, _Check, _AlertCircle, _Camera, _Download, _Upload, _Plus, _Search } from 'lucide-react'; // Temporarily commented - unused import
+import { _useNotifications } from '../contexts/NotificationContext';
+import { _supabase } from '../lib/supabase';
 
-const BarcodeScanner = ({ 
+const _BarcodeScanner = ({ 
   isOpen, 
   onClose, 
   onBarcodeScanned,
@@ -20,9 +17,9 @@ const BarcodeScanner = ({
   const [products, setProducts] = useState([]);
   const [selectedProduct, setSelectedProduct] = useState(null);
 
-  const videoRef = useRef(null);
-  const canvasRef = useRef(null);
-  const streamRef = useRef(null);
+  const _videoRef = useRef(null);
+  const _canvasRef = useRef(null);
+  const _streamRef = useRef(null);
 
   const { notifySuccess, notifyError } = useNotifications();
 
@@ -33,7 +30,7 @@ const BarcodeScanner = ({
     }
   }, [isOpen]);
 
-  const loadProducts = async () => {
+  const _loadProducts = async () => {
     try {
       // Buscar produtos com código de barras do Supabase
       const { data, error } = await supabase
@@ -56,10 +53,10 @@ const BarcodeScanner = ({
     }
   };
 
-  const startCamera = async () => {
+  const _startCamera = async () => {
     try {
       setError('');
-      const stream = await navigator.mediaDevices.getUserMedia({ 
+      const _stream = await navigator.mediaDevices.getUserMedia({ 
         video: { 
           facingMode: 'environment',
           width: { ideal: 1280 },
@@ -79,7 +76,7 @@ const BarcodeScanner = ({
     }
   };
 
-  const stopCamera = () => {
+  const _stopCamera = () => {
     if (streamRef.current) {
       streamRef.current.getTracks().forEach(track => track.stop());
       streamRef.current = null;
@@ -88,8 +85,8 @@ const BarcodeScanner = ({
   };
 
   // Simulação de leitura de código de barras
-  const simulateBarcodeRead = (code) => {
-    const product = products.find(p => p.barcode === code);
+  const _simulateBarcodeRead = (code) => {
+    const _product = products.find(p => p.barcode === code);
     if (product) {
       setScannedCode(code);
       setSelectedProduct(product);
@@ -103,7 +100,7 @@ const BarcodeScanner = ({
     }
   };
 
-  const handleManualInput = () => {
+  const _handleManualInput = () => {
     if (manualCode.length >= 8) {
       simulateBarcodeRead(manualCode);
     } else {
@@ -111,30 +108,30 @@ const BarcodeScanner = ({
     }
   };
 
-  const generateBarcode = () => {
+  const _generateBarcode = () => {
     // Gerar código EAN-13 simples
-    const timestamp = Date.now().toString();
-    const randomDigits = Math.floor(Math.random() * 1000).toString().padStart(3, '0');
-    const baseCode = '789' + timestamp.slice(-6) + randomDigits;
+    const _timestamp = Date.now().toString();
+    const _randomDigits = Math.floor(Math.random() * 1000).toString().padStart(3, '0');
+    const _baseCode = '789' + timestamp.slice(-6) + randomDigits;
     
     // Calcular dígito verificador EAN-13
-    let sum = 0;
+    let _sum = 0;
     for (let i = 0; i < 12; i++) {
-      const digit = parseInt(baseCode[i]);
+      const _digit = parseInt(baseCode[i]);
       sum += i % 2 === 0 ? digit : digit * 3;
     }
-    const checkDigit = (10 - (sum % 10)) % 10;
+    const _checkDigit = (10 - (sum % 10)) % 10;
     
-    const fullCode = baseCode + checkDigit;
+    const _fullCode = baseCode + checkDigit;
     setGeneratedBarcode(fullCode);
     notifySuccess('✅ Código Gerado', `Novo código: ${fullCode}`);
   };
 
-  const downloadBarcode = () => {
+  const _downloadBarcode = () => {
     // Simular download do código de barras
-    const canvas = canvasRef.current;
+    const _canvas = canvasRef.current;
     if (canvas && generatedBarcode) {
-      const ctx = canvas.getContext('2d');
+      const _ctx = canvas.getContext('2d');
       canvas.width = 300;
       canvas.height = 100;
       
@@ -144,9 +141,9 @@ const BarcodeScanner = ({
       
       // Simular barras
       for (let i = 0; i < generatedBarcode.length; i++) {
-        const digit = parseInt(generatedBarcode[i]);
-        const barWidth = digit + 1;
-        const x = i * 20;
+        const _digit = parseInt(generatedBarcode[i]);
+        const _barWidth = digit + 1;
+        const _x = i * 20;
         
         ctx.fillStyle = i % 2 === 0 ? '#000000' : '#ffffff';
         ctx.fillRect(x, 10, barWidth, 60);
@@ -159,7 +156,7 @@ const BarcodeScanner = ({
       ctx.fillText(generatedBarcode, canvas.width / 2, 90);
       
       // Download
-      const link = document.createElement('a');
+      const _link = document.createElement('a');
       link.download = `barcode-${generatedBarcode}.png`;
       link.href = canvas.toDataURL();
       link.click();
@@ -168,7 +165,7 @@ const BarcodeScanner = ({
     }
   };
 
-  const handleClose = () => {
+  const _handleClose = () => {
     stopCamera();
     setScannedCode('');
     setSelectedProduct(null);

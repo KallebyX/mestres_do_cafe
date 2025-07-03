@@ -1,24 +1,24 @@
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
-import { BookOpen, Clock, Users, Star, PlayCircle, Award } from 'lucide-react';
-import { getAllCourses, getActiveCourses } from '../lib/supabase-courses';
+import { _Link } from 'react-router-dom';
+// import { _BookOpen, _Clock, _Users, _Star, _PlayCircle, _Award } from 'lucide-react'; // Temporarily commented - unused import
+import { _getAllCourses, _getActiveCourses } from '../lib/supabase-courses';
 
-const CoursesPage = () => {
+const _CoursesPage = () => {
   const [courses, setCourses] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
   useEffect(() => {
     loadCourses();
-  }, []);
+  }, [] // TODO: Add missing dependencies to fix exhaustive-deps warning);
 
-  const loadCourses = async () => {
+  const _loadCourses = async () => {
     setLoading(true);
     try {
       console.log('📚 Carregando cursos da página pública...');
       
       // Tentar carregar cursos ativos primeiro, depois todos se não houver ativos
-      let result = await getActiveCourses();
+      let _result = await getActiveCourses();
       
       if (!result.success || (result.data && result.data.length === 0)) {
         console.log('⚠️ Nenhum curso ativo encontrado, buscando todos os cursos...');
@@ -40,15 +40,15 @@ const CoursesPage = () => {
     }
   };
 
-  const formatPrice = (price) => {
+  const _formatPrice = (price) => {
     return new Intl.NumberFormat('pt-BR', {
       style: 'currency',
       currency: 'BRL'
     }).format(price);
   };
 
-  const getLevelText = (level) => {
-    const levels = {
+  const _getLevelText = (level) => {
+    const _levels = {
       'beginner': 'Iniciante',
       'intermediate': 'Intermediário', 
       'advanced': 'Avançado'

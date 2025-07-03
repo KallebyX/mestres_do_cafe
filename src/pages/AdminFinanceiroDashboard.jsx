@@ -1,26 +1,14 @@
 import React, { useState, useEffect } from 'react';
-import { 
-  DollarSign, TrendingUp, TrendingDown, CreditCard, Banknote, 
-  Calendar, Filter, Download, Plus, Search, Eye, Edit, Trash2,
-  ArrowUpCircle, ArrowDownCircle, Clock, CheckCircle, AlertCircle,
-  PieChart, BarChart3, Receipt, Building2, Wallet, Target
-} from 'lucide-react';
-import { useSupabaseAuth } from '../contexts/SupabaseAuthContext';
-import { useNavigate } from 'react-router-dom';
-import { 
-  LineChartComponent, 
-  AreaChartComponent, 
-  BarChartComponent, 
-  PieChartComponent,
-  MetricCard,
-  formatCurrency as formatChartCurrency 
-} from '../components/AdvancedCharts';
-import { FinancialReport } from '../components/PDFReports';
-import { financialAPI } from '../lib/supabase-erp-api';
+// import { _DollarSign, _TrendingUp, _TrendingDown, _CreditCard, _Banknote, _Calendar, _Filter, _Download, _Plus, _Search, _Eye, _Edit, _Trash2, _ArrowUpCircle, _ArrowDownCircle, _Clock, _CheckCircle, _AlertCircle, _PieChart, _BarChart3, _Receipt, _Building2, _Wallet, _Target } from 'lucide-react'; // Temporarily commented - unused import
+import { _useSupabaseAuth } from '../contexts/SupabaseAuthContext';
+import { _useNavigate } from 'react-router-dom';
+import { _LineChartComponent, _AreaChartComponent, _BarChartComponent, _PieChartComponent, _MetricCard, _formatCurrency as formatChartCurrency } from '../components/AdvancedCharts';
+import { _FinancialReport } from '../components/PDFReports';
+import { _financialAPI } from '../lib/supabase-erp-api';
 import FinancialModal from '../components/FinancialModal';
-import { useNotifications } from '../contexts/NotificationContext';
+import { _useNotifications } from '../contexts/NotificationContext';
 
-const AdminFinanceiroDashboard = () => {
+const _AdminFinanceiroDashboard = () => {
   const [activeTab, setActiveTab] = useState('overview');
   const [loading, setLoading] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
@@ -36,7 +24,7 @@ const AdminFinanceiroDashboard = () => {
 
   const { user, hasPermission } = useSupabaseAuth();
   const { notifySuccess, notifyError } = useNotifications();
-  const navigate = useNavigate();
+  const _navigate = useNavigate();
 
   // Estados para modais
   const [showModal, setShowModal] = useState(false);
@@ -52,7 +40,7 @@ const AdminFinanceiroDashboard = () => {
     loadFinancialData();
   }, [user, hasPermission, navigate, activeTab]);
 
-  const loadFinancialData = async () => {
+  const _loadFinancialData = async () => {
     setLoading(true);
     try {
       // Carregar dados reais do Supabase
@@ -135,28 +123,28 @@ const AdminFinanceiroDashboard = () => {
   };
 
   // Funções CRUD
-  const handleCreate = (type) => {
+  const _handleCreate = (type) => {
     setModalType(type);
     setModalMode('create');
     setSelectedItem(null);
     setShowModal(true);
   };
 
-  const handleEdit = (item, type) => {
+  const _handleEdit = (item, type) => {
     setModalType(type);
     setModalMode('edit');
     setSelectedItem(item);
     setShowModal(true);
   };
 
-  const handleView = (item, type) => {
+  const _handleView = (item, type) => {
     setModalType(type);
     setModalMode('view');
     setSelectedItem(item);
     setShowModal(true);
   };
 
-  const handleDelete = async (id, type) => {
+  const _handleDelete = async (id, type) => {
     if (window.confirm('Tem certeza que deseja excluir este item?')) {
       try {
         console.log(`Excluindo ${type} com ID:`, id);
@@ -195,14 +183,14 @@ const AdminFinanceiroDashboard = () => {
     }
   };
 
-  const handleSave = async (formData) => {
+  const _handleSave = async (formData) => {
     try {
       console.log('Salvando dados no Supabase:', formData);
       
       if (modalMode === 'create') {
         // Criar novo item no Supabase
         if (modalType === 'receivable') {
-          const receivableData = {
+          const _receivableData = {
             customer_name: formData.customer_name,
             customer_email: formData.customer_email,
             amount: parseFloat(formData.amount),
@@ -213,7 +201,7 @@ const AdminFinanceiroDashboard = () => {
             type: 'sale'
           };
           
-          const result = await financialAPI.createAccountReceivable(receivableData);
+          const _result = await financialAPI.createAccountReceivable(receivableData);
           if (result.success) {
             notifySuccess('✅ Conta a Receber Criada', 'Conta criada com sucesso no banco de dados');
             loadFinancialData(); // Recarregar dados
@@ -221,7 +209,7 @@ const AdminFinanceiroDashboard = () => {
             throw new Error(result.error);
           }
         } else if (modalType === 'payable') {
-          const payableData = {
+          const _payableData = {
             supplier_name: formData.supplier_name,
             supplier_email: formData.supplier_email,
             amount: parseFloat(formData.amount),
@@ -232,7 +220,7 @@ const AdminFinanceiroDashboard = () => {
             type: 'purchase'
           };
           
-          const result = await financialAPI.createAccountPayable(payableData);
+          const _result = await financialAPI.createAccountPayable(payableData);
           if (result.success) {
             notifySuccess('✅ Conta a Pagar Criada', 'Conta criada com sucesso no banco de dados');
             loadFinancialData(); // Recarregar dados
@@ -240,7 +228,7 @@ const AdminFinanceiroDashboard = () => {
             throw new Error(result.error);
           }
         } else if (modalType === 'bank') {
-          const bankData = {
+          const _bankData = {
             name: `${formData.bank_name} - ${formData.account_number}`,
             bank_name: formData.bank_name,
             account_number: formData.account_number,
@@ -250,7 +238,7 @@ const AdminFinanceiroDashboard = () => {
             is_active: true
           };
           
-          const result = await financialAPI.createBankAccount(bankData);
+          const _result = await financialAPI.createBankAccount(bankData);
           if (result.success) {
             notifySuccess('✅ Conta Bancária Criada', 'Conta criada com sucesso no banco de dados');
             loadFinancialData(); // Recarregar dados
@@ -261,7 +249,7 @@ const AdminFinanceiroDashboard = () => {
       } else if (modalMode === 'edit') {
         // Editar item existente no Supabase
         if (modalType === 'receivable') {
-          const updates = {
+          const _updates = {
             customer_name: formData.customer_name,
             customer_email: formData.customer_email,
             amount: parseFloat(formData.amount),
@@ -271,7 +259,7 @@ const AdminFinanceiroDashboard = () => {
             description: formData.description
           };
           
-          const result = await financialAPI.updateAccountReceivable(selectedItem.id, updates);
+          const _result = await financialAPI.updateAccountReceivable(selectedItem.id, updates);
           if (result.success) {
             notifySuccess('✅ Conta Atualizada', 'Conta atualizada com sucesso no banco de dados');
             loadFinancialData(); // Recarregar dados
@@ -279,7 +267,7 @@ const AdminFinanceiroDashboard = () => {
             throw new Error(result.error);
           }
         } else if (modalType === 'payable') {
-          const updates = {
+          const _updates = {
             supplier_name: formData.supplier_name,
             supplier_email: formData.supplier_email,
             amount: parseFloat(formData.amount),
@@ -289,7 +277,7 @@ const AdminFinanceiroDashboard = () => {
             description: formData.description
           };
           
-          const result = await financialAPI.updateAccountPayable(selectedItem.id, updates);
+          const _result = await financialAPI.updateAccountPayable(selectedItem.id, updates);
           if (result.success) {
             notifySuccess('✅ Conta Atualizada', 'Conta atualizada com sucesso no banco de dados');
             loadFinancialData(); // Recarregar dados
@@ -297,7 +285,7 @@ const AdminFinanceiroDashboard = () => {
             throw new Error(result.error);
           }
         } else if (modalType === 'bank') {
-          const updates = {
+          const _updates = {
             name: `${formData.bank_name} - ${formData.account_number}`,
             bank_name: formData.bank_name,
             account_number: formData.account_number,
@@ -306,7 +294,7 @@ const AdminFinanceiroDashboard = () => {
             current_balance: parseFloat(formData.current_balance)
           };
           
-          const result = await financialAPI.updateBankAccount(selectedItem.id, updates);
+          const _result = await financialAPI.updateBankAccount(selectedItem.id, updates);
           if (result.success) {
             notifySuccess('✅ Conta Atualizada', 'Conta bancária atualizada com sucesso');
             loadFinancialData(); // Recarregar dados
@@ -324,12 +312,12 @@ const AdminFinanceiroDashboard = () => {
   };
 
   // Cálculos resumidos - com verificações de segurança
-  const totalReceber = Array.isArray(contasReceber) ? contasReceber.reduce((sum, conta) => sum + (conta?.valor || 0), 0) : 0;
-  const totalPagar = Array.isArray(contasPagar) ? contasPagar.reduce((sum, conta) => sum + (conta?.valor || 0), 0) : 0;
-  const saldoBancos = Array.isArray(bancos) ? bancos.reduce((sum, banco) => sum + (banco?.saldo || 0), 0) : 0;
-  const saldoLiquido = totalReceber - totalPagar;
+  const _totalReceber = Array.isArray(contasReceber) ? contasReceber.reduce((sum, conta) => sum + (conta?.valor || 0), 0) : 0;
+  const _totalPagar = Array.isArray(contasPagar) ? contasPagar.reduce((sum, conta) => sum + (conta?.valor || 0), 0) : 0;
+  const _saldoBancos = Array.isArray(bancos) ? bancos.reduce((sum, banco) => sum + (banco?.saldo || 0), 0) : 0;
+  const _saldoLiquido = totalReceber - totalPagar;
 
-  const getStatusColor = (status) => {
+  const _getStatusColor = (status) => {
     switch (status) {
       case 'recebido':
       case 'pago':
@@ -343,7 +331,7 @@ const AdminFinanceiroDashboard = () => {
     }
   };
 
-  const renderOverview = () => (
+  const _renderOverview = () => (
     <div className="space-y-8">
       {/* Cards de Resumo */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -523,7 +511,7 @@ const AdminFinanceiroDashboard = () => {
     </div>
   );
 
-  const renderContasReceber = () => (
+  const _renderContasReceber = () => (
     <div className="space-y-6">
       <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
         <h2 className="text-2xl font-bold text-gray-900">Contas a Receber</h2>
@@ -618,7 +606,7 @@ const AdminFinanceiroDashboard = () => {
     </div>
   );
 
-  const renderContasPagar = () => (
+  const _renderContasPagar = () => (
     <div className="space-y-6">
       <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
         <h2 className="text-2xl font-bold text-gray-900">Contas a Pagar</h2>
@@ -713,7 +701,7 @@ const AdminFinanceiroDashboard = () => {
     </div>
   );
 
-  const renderFluxoCaixa = () => (
+  const _renderFluxoCaixa = () => (
     <div className="space-y-6">
       <h2 className="text-2xl font-bold text-gray-900">Fluxo de Caixa</h2>
       
@@ -803,7 +791,7 @@ const AdminFinanceiroDashboard = () => {
     </div>
   );
 
-  const renderBancos = () => (
+  const _renderBancos = () => (
     <div className="space-y-6">
       <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
         <h2 className="text-2xl font-bold text-gray-900">Contas Bancárias</h2>
@@ -874,7 +862,7 @@ const AdminFinanceiroDashboard = () => {
     </div>
   );
 
-  const renderRelatorios = () => (
+  const _renderRelatorios = () => (
     <div className="space-y-6">
       <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
         <h2 className="text-2xl font-bold text-gray-900">Relatórios Financeiros</h2>
@@ -1091,7 +1079,7 @@ const AdminFinanceiroDashboard = () => {
     </div>
   );
 
-  const formatCurrency = (value) => {
+  const _formatCurrency = (value) => {
     return new Intl.NumberFormat('pt-BR', {
       style: 'currency',
       currency: 'BRL'

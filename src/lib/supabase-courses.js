@@ -1,11 +1,11 @@
-import { supabase } from './supabase.js';
+import { _supabase } from './supabase.js';
 
 // =============================================
 // COURSES - BUSCAR E LISTAR
 // =============================================
 
 // Verificar se tabela existe
-const tableExists = async (tableName) => {
+const _tableExists = async (tableName) => {
   try {
     const { data, error } = await supabase
       .from(tableName)
@@ -18,7 +18,7 @@ const tableExists = async (tableName) => {
 };
 
 // Verificar se coluna existe
-const columnExists = async (tableName, columnName) => {
+const _columnExists = async (tableName, columnName) => {
   try {
     const { data, error } = await supabase
       .from(tableName)
@@ -31,12 +31,12 @@ const columnExists = async (tableName, columnName) => {
 };
 
 // Buscar todos os cursos (para admin)
-export const getAllCourses = async () => {
+export const _getAllCourses = async () => {
   try {
     console.log('📚 Buscando todos os cursos do Supabase...');
 
     // Verificar se tabela existe primeiro
-    const coursesTableExists = await tableExists('courses');
+    const _coursesTableExists = await tableExists('courses');
     if (!coursesTableExists) {
       console.log('⚠️ Tabela courses não existe, retornando array vazio');
       return { 
@@ -47,8 +47,8 @@ export const getAllCourses = async () => {
     }
 
     // Verificar se coluna created_at existe
-    const hasCreatedAt = await columnExists('courses', 'created_at');
-    const orderBy = hasCreatedAt ? 'created_at' : 'id';
+    const _hasCreatedAt = await columnExists('courses', 'created_at');
+    const _orderBy = hasCreatedAt ? 'created_at' : 'id';
 
     const { data: courses, error } = await supabase
       .from('courses')
@@ -81,12 +81,12 @@ export const getAllCourses = async () => {
 };
 
 // Buscar apenas cursos ativos (para página pública)
-export const getActiveCourses = async () => {
+export const _getActiveCourses = async () => {
   try {
     console.log('📚 Buscando cursos ativos do Supabase...');
 
     // Verificar se tabela existe primeiro
-    const coursesTableExists = await tableExists('courses');
+    const _coursesTableExists = await tableExists('courses');
     if (!coursesTableExists) {
       console.log('⚠️ Tabela courses não existe, retornando array vazio');
       return { 
@@ -97,8 +97,8 @@ export const getActiveCourses = async () => {
     }
 
     // Verificar se coluna created_at existe
-    const hasCreatedAt = await columnExists('courses', 'created_at');
-    const orderBy = hasCreatedAt ? 'created_at' : 'id';
+    const _hasCreatedAt = await columnExists('courses', 'created_at');
+    const _orderBy = hasCreatedAt ? 'created_at' : 'id';
 
     const { data: courses, error } = await supabase
       .from('courses')
@@ -131,7 +131,7 @@ export const getActiveCourses = async () => {
   }
 };
 
-export const getCourseById = async (courseId) => {
+export const _getCourseById = async (courseId) => {
   try {
     console.log(`🎓 Buscando curso ${courseId}...`);
     
@@ -158,7 +158,7 @@ export const getCourseById = async (courseId) => {
 // COURSES - CRIAR E EDITAR
 // =============================================
 
-export const createCourse = async (courseData) => {
+export const _createCourse = async (courseData) => {
   try {
     console.log('📝 Criando novo curso...');
     
@@ -199,7 +199,7 @@ export const createCourse = async (courseData) => {
   }
 };
 
-export const updateCourse = async (courseId, courseData) => {
+export const _updateCourse = async (courseId, courseData) => {
   try {
     console.log(`📝 Atualizando curso ${courseId}...`);
     
@@ -244,7 +244,7 @@ export const updateCourse = async (courseId, courseData) => {
 // COURSES - GERENCIAMENTO
 // =============================================
 
-export const deleteCourse = async (courseId) => {
+export const _deleteCourse = async (courseId) => {
   try {
     console.log(`🗑️ Removendo curso ${courseId}...`);
     
@@ -266,7 +266,7 @@ export const deleteCourse = async (courseId) => {
   }
 };
 
-export const toggleCourseStatus = async (courseId, isActive) => {
+export const _toggleCourseStatus = async (courseId, isActive) => {
   try {
     console.log(`🔄 Alterando status do curso ${courseId} para ${isActive ? 'ativo' : 'inativo'}...`);
     
@@ -293,7 +293,7 @@ export const toggleCourseStatus = async (courseId, isActive) => {
   }
 };
 
-export const toggleCourseFeatured = async (courseId, isFeatured) => {
+export const _toggleCourseFeatured = async (courseId, isFeatured) => {
   try {
     console.log(`⭐ Alterando destaque do curso ${courseId} para ${isFeatured ? 'destacado' : 'normal'}...`);
     
@@ -324,7 +324,7 @@ export const toggleCourseFeatured = async (courseId, isFeatured) => {
 // COURSES - MATRÍCULA E AVALIAÇÃO
 // =============================================
 
-export const enrollStudent = async (courseId) => {
+export const _enrollStudent = async (courseId) => {
   try {
     console.log(`📝 Matriculando aluno no curso ${courseId}...`);
     
@@ -369,7 +369,7 @@ export const enrollStudent = async (courseId) => {
   }
 };
 
-export const updateCourseRating = async (courseId, newRating) => {
+export const _updateCourseRating = async (courseId, newRating) => {
   try {
     console.log(`⭐ Atualizando avaliação do curso ${courseId} para ${newRating}...`);
     
@@ -400,7 +400,7 @@ export const updateCourseRating = async (courseId, newRating) => {
 // COURSES - ESTATÍSTICAS
 // =============================================
 
-export const getCoursesStats = async () => {
+export const _getCoursesStats = async () => {
   try {
     console.log('📊 Calculando estatísticas dos cursos...');
     
@@ -413,7 +413,7 @@ export const getCoursesStats = async () => {
       return { success: false, error: error.message, stats: {} };
     }
 
-    const stats = {
+    const _stats = {
       total: courses.length,
       active: courses.filter(c => c.is_active).length,
       featured: courses.filter(c => c.is_featured).length,

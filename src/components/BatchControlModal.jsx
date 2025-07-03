@@ -1,13 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { 
-  X, Save, Package, Calendar, AlertCircle, 
-  Plus, Trash2, Edit, Eye, CheckCircle, Clock,
-  Hash, Truck, FileText, Search
-} from 'lucide-react';
-import { useNotifications } from '../contexts/NotificationContext';
-import { supabase } from '../lib/supabase';
+// import { _X, _Save, _Package, _Calendar, _AlertCircle, _Plus, _Trash2, _Edit, _Eye, _CheckCircle, _Clock, _Hash, _Truck, _FileText, _Search } from 'lucide-react'; // Temporarily commented - unused import
+import { _useNotifications } from '../contexts/NotificationContext';
+import { _supabase } from '../lib/supabase';
 
-const BatchControlModal = ({ 
+const _BatchControlModal = ({ 
   isOpen, 
   onClose, 
   product = null,
@@ -39,7 +35,7 @@ const BatchControlModal = ({
     }
   }, [isOpen, product]);
 
-  const loadBatchData = async () => {
+  const _loadBatchData = async () => {
     setLoading(true);
     try {
       // Carregar lotes reais do Supabase
@@ -89,21 +85,21 @@ const BatchControlModal = ({
     }
   };
 
-  const generateBatchNumber = () => {
-    const year = new Date().getFullYear();
-    const month = String(new Date().getMonth() + 1).padStart(2, '0');
-    const sequence = String(batches.length + 1).padStart(3, '0');
+  const _generateBatchNumber = () => {
+    const _year = new Date().getFullYear();
+    const _month = String(new Date().getMonth() + 1).padStart(2, '0');
+    const _sequence = String(batches.length + 1).padStart(3, '0');
     return `LOT${year}${month}${sequence}`;
   };
 
-  const calculateExpiryDate = (manufacturingDate, monthsToAdd = 6) => {
+  const _calculateExpiryDate = (manufacturingDate, monthsToAdd = 6) => {
     if (!manufacturingDate) return '';
-    const date = new Date(manufacturingDate);
+    const _date = new Date(manufacturingDate);
     date.setMonth(date.getMonth() + monthsToAdd);
     return date.toISOString().split('T')[0];
   };
 
-  const handleAddBatch = async () => {
+  const _handleAddBatch = async () => {
     if (!newBatch.batch_number || !newBatch.manufacturing_date || !newBatch.quantity) {
       setError('Preencha todos os campos obrigatórios');
       return;
@@ -111,7 +107,7 @@ const BatchControlModal = ({
 
     setIsSubmitting(true);
     try {
-      const batch = {
+      const _batch = {
         id: `batch-${Date.now()}`,
         batch_number: newBatch.batch_number,
         manufacturing_date: newBatch.manufacturing_date,
@@ -130,7 +126,7 @@ const BatchControlModal = ({
       setBatches(prev => [...prev, batch]);
 
       // Adicionar movimentação de entrada
-      const movement = {
+      const _movement = {
         id: `mov-${Date.now()}`,
         batch_id: batch.id,
         batch_number: batch.batch_number,
@@ -166,7 +162,7 @@ const BatchControlModal = ({
     }
   };
 
-  const getStatusColor = (status) => {
+  const _getStatusColor = (status) => {
     switch (status) {
       case 'ativo':
         return 'text-green-700 bg-green-100';
@@ -181,7 +177,7 @@ const BatchControlModal = ({
     }
   };
 
-  const getQualityColor = (quality) => {
+  const _getQualityColor = (quality) => {
     switch (quality) {
       case 'aprovado':
         return 'text-green-700 bg-green-100';
@@ -194,17 +190,17 @@ const BatchControlModal = ({
     }
   };
 
-  const isExpiringSoon = (expiryDate) => {
-    const today = new Date();
-    const expiry = new Date(expiryDate);
-    const diffTime = expiry - today;
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+  const _isExpiringSoon = (expiryDate) => {
+    const _today = new Date();
+    const _expiry = new Date(expiryDate);
+    const _diffTime = expiry - today;
+    const _diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
     return diffDays <= 30 && diffDays > 0;
   };
 
-  const isExpired = (expiryDate) => {
-    const today = new Date();
-    const expiry = new Date(expiryDate);
+  const _isExpired = (expiryDate) => {
+    const _today = new Date();
+    const _expiry = new Date(expiryDate);
     return expiry < today;
   };
 

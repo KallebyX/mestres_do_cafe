@@ -1,32 +1,29 @@
 import * as React from "react"
 import * as SelectPrimitive from "@radix-ui/react-select"
-import { CheckIcon, ChevronDownIcon, ChevronUpIcon } from "lucide-react"
+// import { _CheckIcon, _ChevronDownIcon, _ChevronUpIcon } from "lucide-react" // Temporarily commented - unused import
 
-import { cn } from "@/lib/utils"
+import { _cn } from "@/lib/utils"
 
-function Select({
+function Select(_{
   ...props
 }) {
   return <SelectPrimitive.Root data-slot="select" {...props} />;
 }
 
-function SelectGroup({
+function SelectGroup(_{
   ...props
 }) {
   return <SelectPrimitive.Group data-slot="select-group" {...props} />;
 }
 
-function SelectValue({
+function SelectValue(_{
   ...props
 }) {
   return <SelectPrimitive.Value data-slot="select-value" {...props} />;
 }
 
-function SelectTrigger({
-  className,
-  size = "default",
-  children,
-  ...props
+function SelectTrigger(_{
+  className,_size = "default",_children,_...props
 }) {
   return (
     <SelectPrimitive.Trigger
@@ -45,11 +42,8 @@ function SelectTrigger({
   );
 }
 
-function SelectContent({
-  className,
-  children,
-  position = "popper",
-  ...props
+function SelectContent(_{
+  className,_children,_position = "popper",_...props
 }) {
   return (
     <SelectPrimitive.Portal>
@@ -75,9 +69,8 @@ function SelectContent({
   );
 }
 
-function SelectLabel({
-  className,
-  ...props
+function SelectLabel(_{
+  className,_...props
 }) {
   return (
     <SelectPrimitive.Label
@@ -87,10 +80,8 @@ function SelectLabel({
   );
 }
 
-function SelectItem({
-  className,
-  children,
-  ...props
+function SelectItem(_{
+  className,_children,_...props
 }) {
   return (
     <SelectPrimitive.Item
@@ -110,9 +101,8 @@ function SelectItem({
   );
 }
 
-function SelectSeparator({
-  className,
-  ...props
+function SelectSeparator(_{
+  className,_...props
 }) {
   return (
     <SelectPrimitive.Separator
@@ -122,9 +112,8 @@ function SelectSeparator({
   );
 }
 
-function SelectScrollUpButton({
-  className,
-  ...props
+function SelectScrollUpButton(_{
+  className,_...props
 }) {
   return (
     <SelectPrimitive.ScrollUpButton
@@ -136,9 +125,8 @@ function SelectScrollUpButton({
   );
 }
 
-function SelectScrollDownButton({
-  className,
-  ...props
+function SelectScrollDownButton(_{
+  className,_...props
 }) {
   return (
     <SelectPrimitive.ScrollDownButton

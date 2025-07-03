@@ -1,4 +1,4 @@
-import { supabase } from './supabase.js'
+import { _supabase } from './supabase.js'
 
 // ===============================================
 // API COMPLETA DO ERP MESTRES DO CAFÉ
@@ -7,7 +7,7 @@ import { supabase } from './supabase.js'
 // 1. MÓDULO FINANCEIRO
 // ===========================
 
-export const financialAPI = {
+export const _financialAPI = {
   // Verificar se tabela existe
   async tableExists(tableName) {
     try {
@@ -75,14 +75,14 @@ export const financialAPI = {
   async getAccountsReceivable(filters = {}) {
     try {
       // Verificar se tabela existe
-      const tableExists = await this.tableExists('accounts_receivable');
+      const _tableExists = await this.tableExists('accounts_receivable');
       if (!tableExists) {
         console.log('⚠️ Tabela accounts_receivable não existe - retornando dados vazios');
         return { success: true, data: [] };
       }
 
       // Query simples sem relacionamentos ambíguos
-      let query = supabase
+      let _query = supabase
         .from('accounts_receivable')
         .select('*')
         .eq('is_active', true);
@@ -142,14 +142,14 @@ export const financialAPI = {
   async getAccountsPayable(filters = {}) {
     try {
       // Verificar se tabela existe
-      const tableExists = await this.tableExists('accounts_payable');
+      const _tableExists = await this.tableExists('accounts_payable');
       if (!tableExists) {
         console.log('⚠️ Tabela accounts_payable não existe - retornando dados vazios');
         return { success: true, data: [] };
       }
 
       // Query simples sem relacionamentos problemáticos
-      let query = supabase
+      let _query = supabase
         .from('accounts_payable')
         .select('*')
         .eq('is_active', true);
@@ -193,7 +193,7 @@ export const financialAPI = {
   // Categorias Financeiras
   async getFinancialCategories(type = null) {
     try {
-      let query = supabase
+      let _query = supabase
         .from('financial_categories')
         .select('*')
         .eq('is_active', true)
@@ -215,13 +215,13 @@ export const financialAPI = {
   async getFinancialSummary() {
     try {
       // Verificar se tabelas existem antes de fazer queries
-      const receivablesExists = await this.tableExists('accounts_receivable');
-      const payablesExists = await this.tableExists('accounts_payable');
-      const bankAccountsExists = await this.tableExists('bank_accounts');
+      const _receivablesExists = await this.tableExists('accounts_receivable');
+      const _payablesExists = await this.tableExists('accounts_payable');
+      const _bankAccountsExists = await this.tableExists('bank_accounts');
 
-      let totalReceivables = 0;
-      let totalPayables = 0;
-      let totalBalance = 0;
+      let _totalReceivables = 0;
+      let _totalPayables = 0;
+      let _totalBalance = 0;
 
       // Contas a receber em aberto - apenas se tabela existir
       if (receivablesExists) {
@@ -301,7 +301,7 @@ export const financialAPI = {
 // 2. MÓDULO DE ESTOQUE
 // ===========================
 
-export const stockAPI = {
+export const _stockAPI = {
   // Verificar se tabela existe
   async tableExists(tableName) {
     try {
@@ -368,7 +368,7 @@ export const stockAPI = {
   // Produtos Estendidos
   async getProducts() {
     try {
-      const extendedTableExists = await this.tableExists('products_extended');
+      const _extendedTableExists = await this.tableExists('products_extended');
       
       if (extendedTableExists) {
         // Tentar buscar na tabela products_extended
@@ -388,7 +388,7 @@ export const stockAPI = {
       }
 
       // Se products_extended não existir ou falhar, tentar products padrão
-      const basicTableExists = await this.tableExists('products');
+      const _basicTableExists = await this.tableExists('products');
       
       if (basicTableExists) {
         const { data: basicProducts, error: basicError } = await supabase
@@ -441,7 +441,7 @@ export const stockAPI = {
   // Movimentações de Estoque
   async getStockMovements(productId = null) {
     try {
-      let query = supabase
+      let _query = supabase
         .from('stock_movements')
         .select(`
           *,
@@ -479,8 +479,8 @@ export const stockAPI = {
 
       // Atualizar estoque do produto
       if (data[0]) {
-        const movement = data[0]
-        const stockChange = movement.movement_type === 'entrada' ? movement.quantity : -movement.quantity
+        const _movement = data[0]
+        const _stockChange = movement.movement_type === 'entrada' ? movement.quantity : -movement.quantity
 
         await supabase
           .from('products_extended')
@@ -610,7 +610,7 @@ export const stockAPI = {
         .select('current_stock, cost_price')
         .eq('is_active', true)
 
-      const totalStockValue = stockValue?.reduce((sum, item) => {
+      const _totalStockValue = stockValue?.reduce((sum, item) => {
         return sum + (parseFloat(item.current_stock) * parseFloat(item.cost_price))
       }, 0) || 0
 
@@ -632,7 +632,7 @@ export const stockAPI = {
 // 3. MÓDULO DE RECURSOS HUMANOS
 // ===========================
 
-export const hrAPI = {
+export const _hrAPI = {
   // Verificar se tabela existe
   async tableExists(tableName) {
     try {
@@ -650,7 +650,7 @@ export const hrAPI = {
   async getEmployees() {
     try {
       // Verificar se tabela existe
-      const tableExists = await this.tableExists('employees');
+      const _tableExists = await this.tableExists('employees');
       if (!tableExists) {
         console.log('⚠️ Tabela employees não existe, retornando array vazio');
         return { success: true, data: [] };
@@ -679,8 +679,8 @@ export const hrAPI = {
   async getDepartments() {
     try {
       // Verificar se tabelas existem
-      const departmentsExists = await this.tableExists('departments');
-      const employeesExists = await this.tableExists('employees');
+      const _departmentsExists = await this.tableExists('departments');
+      const _employeesExists = await this.tableExists('employees');
       
       if (!departmentsExists) {
         console.log('⚠️ Tabela departments não existe, retornando array vazio');
@@ -700,7 +700,7 @@ export const hrAPI = {
 
       // Se não há funcionários, retornar departamentos com contador zero
       if (!employeesExists) {
-        const departmentsWithCount = departments.map(dept => ({
+        const _departmentsWithCount = departments.map(dept => ({
           ...dept,
           funcionarios_count: 0
         }));
@@ -715,8 +715,8 @@ export const hrAPI = {
         .eq('status', 'ativo');
 
       // Calcular funcionários por departamento
-      const departmentsWithCount = departments.map(dept => {
-        const funcionariosCount = empError ? 0 : 
+      const _departmentsWithCount = departments.map(_dept => {
+        const _funcionariosCount = empError ? 0 : 
           employees.filter(emp => emp.departamento === dept.nome || emp.departamento === dept.name).length;
         
         return {
@@ -740,7 +740,7 @@ export const hrAPI = {
   async getPositions() {
     try {
       // Verificar se tabela existe
-      const tableExists = await this.tableExists('positions');
+      const _tableExists = await this.tableExists('positions');
       if (!tableExists) {
         console.log('⚠️ Tabela positions não existe, retornando array vazio');
         return { success: true, data: [] };
@@ -766,7 +766,7 @@ export const hrAPI = {
 
   async createEmployee(employeeData) {
     try {
-      const tableExists = await this.tableExists('employees');
+      const _tableExists = await this.tableExists('employees');
       if (!tableExists) {
         console.log('📝 Simulando criação de funcionário (tabela não existe)');
         return { success: true, message: 'Funcionário criado' };
@@ -791,7 +791,7 @@ export const hrAPI = {
 
   async updateEmployee(id, updates) {
     try {
-      const tableExists = await this.tableExists('employees');
+      const _tableExists = await this.tableExists('employees');
       if (!tableExists) {
         console.log('📝 Simulando atualização de funcionário (tabela não existe)');
         return { success: true, message: 'Funcionário atualizado' };
@@ -818,13 +818,13 @@ export const hrAPI = {
   // Presenças - QUERY SIMPLIFICADA
   async getAttendances(employeeId = null, startDate = null, endDate = null) {
     try {
-      const tableExists = await this.tableExists('attendances');
+      const _tableExists = await this.tableExists('attendances');
       if (!tableExists) {
         console.log('⚠️ Tabela attendances não existe, retornando array vazio');
         return { success: true, data: [] };
       }
 
-      let query = supabase
+      let _query = supabase
         .from('attendances')
         .select('*')
 
@@ -852,7 +852,7 @@ export const hrAPI = {
 
   async createAttendance(attendanceData) {
     try {
-      const tableExists = await this.tableExists('attendances');
+      const _tableExists = await this.tableExists('attendances');
       if (!tableExists) {
         console.log('📝 Simulando criação de presença (tabela não existe)');
         return { success: true, message: 'Presença registrada' };
@@ -878,8 +878,8 @@ export const hrAPI = {
   // Dashboard de RH - VERSÃO ROBUSTA
   async getHRSummary() {
     try {
-      const employeesExists = await this.tableExists('employees');
-      const attendancesExists = await this.tableExists('attendances');
+      const _employeesExists = await this.tableExists('employees');
+      const _attendancesExists = await this.tableExists('attendances');
 
       if (!employeesExists) {
         console.log('⚠️ Tabela employees não existe para HR summary');
@@ -897,10 +897,10 @@ export const hrAPI = {
         .select('*', { count: 'exact' })
         .eq('status', 'ativo')
 
-      let todayAttendances = 0;
+      let _todayAttendances = 0;
       if (attendancesExists) {
         // Presenças de hoje
-        const today = new Date().toISOString().split('T')[0]
+        const _today = new Date().toISOString().split('T')[0]
         const { count } = await supabase
           .from('attendances')
           .select('*', { count: 'exact' })
@@ -939,7 +939,7 @@ export const hrAPI = {
 // 4. MÓDULO DE VENDAS
 // ===========================
 
-export const salesAPI = {
+export const _salesAPI = {
   // Verificar se tabela existe
   async tableExists(tableName) {
     try {
@@ -956,7 +956,7 @@ export const salesAPI = {
   // Orçamentos - QUERY SIMPLIFICADA
   async getQuotations() {
     try {
-      const tableExists = await this.tableExists('quotations');
+      const _tableExists = await this.tableExists('quotations');
       if (!tableExists) {
         console.log('⚠️ Tabela quotations não existe, retornando array vazio');
         return { success: true, data: [] };
@@ -982,7 +982,7 @@ export const salesAPI = {
 
   async createQuotation(quotationData) {
     try {
-      const tableExists = await this.tableExists('quotations');
+      const _tableExists = await this.tableExists('quotations');
       if (!tableExists) {
         console.log('📝 Simulando criação de orçamento (tabela não existe)');
         return { success: true, message: 'Orçamento criado' };
@@ -1008,7 +1008,7 @@ export const salesAPI = {
   // Vendedores - QUERY SIMPLIFICADA
   async getSalesReps() {
     try {
-      const tableExists = await this.tableExists('sales_reps');
+      const _tableExists = await this.tableExists('sales_reps');
       if (!tableExists) {
         console.log('⚠️ Tabela sales_reps não existe, retornando array vazio');
         return { success: true, data: [] };
@@ -1036,7 +1036,7 @@ export const salesAPI = {
 // 5. MÓDULO DE COMPRAS
 // ===========================
 
-export const purchaseAPI = {
+export const _purchaseAPI = {
   // Verificar se tabela existe
   async tableExists(tableName) {
     try {
@@ -1053,7 +1053,7 @@ export const purchaseAPI = {
   // Ordens de Compra - QUERY SIMPLIFICADA
   async getPurchaseOrders() {
     try {
-      const tableExists = await this.tableExists('purchase_orders');
+      const _tableExists = await this.tableExists('purchase_orders');
       if (!tableExists) {
         console.log('⚠️ Tabela purchase_orders não existe, retornando array vazio');
         return { success: true, data: [] };
@@ -1079,7 +1079,7 @@ export const purchaseAPI = {
 
   async createPurchaseOrder(orderData) {
     try {
-      const tableExists = await this.tableExists('purchase_orders');
+      const _tableExists = await this.tableExists('purchase_orders');
       if (!tableExists) {
         console.log('📝 Simulando criação de ordem de compra (tabela não existe)');
         return { success: true, message: 'Ordem de compra criada' };
@@ -1105,7 +1105,7 @@ export const purchaseAPI = {
   // Fornecedores - QUERY ROBUSTA
   async getSuppliers() {
     try {
-      const tableExists = await this.tableExists('suppliers');
+      const _tableExists = await this.tableExists('suppliers');
       if (!tableExists) {
         console.log('⚠️ Tabela suppliers não existe, retornando array vazio');
         return { success: true, data: [] };
@@ -1132,7 +1132,7 @@ export const purchaseAPI = {
   // Recebimentos - QUERY ROBUSTA
   async getReceipts() {
     try {
-      const tableExists = await this.tableExists('purchase_receipts');
+      const _tableExists = await this.tableExists('purchase_receipts');
       if (!tableExists) {
         console.log('⚠️ Tabela purchase_receipts não existe, retornando array vazio');
         return { success: true, data: [] };
@@ -1160,10 +1160,10 @@ export const purchaseAPI = {
 // 6. FUNÇÕES UTILITÁRIAS
 // ===========================
 
-export const erpUtils = {
+export const _erpUtils = {
   // Gerar número de documento
   generateDocumentNumber(prefix, table) {
-    const timestamp = Date.now().toString().slice(-6)
+    const _timestamp = Date.now().toString().slice(-6)
     return `${prefix}${timestamp}`
   },
 
@@ -1182,10 +1182,10 @@ export const erpUtils = {
 
   // Calcular idade
   calculateAge(birthDate) {
-    const today = new Date()
-    const birth = new Date(birthDate)
-    let age = today.getFullYear() - birth.getFullYear()
-    const monthDiff = today.getMonth() - birth.getMonth()
+    const _today = new Date()
+    const _birth = new Date(birthDate)
+    let _age = today.getFullYear() - birth.getFullYear()
+    const _monthDiff = today.getMonth() - birth.getMonth()
     
     if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birth.getDate())) {
       age--
@@ -1198,7 +1198,7 @@ export const erpUtils = {
 // 7. API DE NOTIFICAÇÕES COM FALLBACK ULTRA ROBUSTO
 // ===========================
 
-export const notificationAPI = {
+export const _notificationAPI = {
   // Verificar se tabela existe - VERSÃO MAIS ROBUSTA
   async tableExists(tableName) {
     try {
@@ -1224,14 +1224,14 @@ export const notificationAPI = {
       console.log('🔔 Tentando buscar notificações...');
       
       // Verificação super robusta
-      const tableExists = await this.tableExists('notifications');
+      const _tableExists = await this.tableExists('notifications');
       if (!tableExists) {
         console.log('⚠️ Tabela notifications não existe, retornando array vazio');
         return { success: true, data: [] };
       }
 
       // Se chegou aqui, tentar a query
-      let query = supabase
+      let _query = supabase
         .from('notifications')
         .select('*')
         .order('created_at', { ascending: false })
@@ -1260,7 +1260,7 @@ export const notificationAPI = {
   async markAsRead(notificationId) {
     // SEMPRE simula sucesso - nunca falha
     try {
-      const tableExists = await this.tableExists('notifications');
+      const _tableExists = await this.tableExists('notifications');
       if (!tableExists) {
         console.log('📝 Simulando marcação como lida (tabela não existe)');
         return { success: true, message: 'Notificação marcada como lida' };
@@ -1286,7 +1286,7 @@ export const notificationAPI = {
   async createNotification(notificationData) {
     // SEMPRE simula sucesso - nunca falha
     try {
-      const tableExists = await this.tableExists('notifications');
+      const _tableExists = await this.tableExists('notifications');
       if (!tableExists) {
         console.log('📝 Simulando criação de notificação (tabela não existe):', notificationData?.title || 'sem título');
         return { success: true, message: 'Notificação criada' };

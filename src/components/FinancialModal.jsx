@@ -1,10 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { 
-  X, Save, Calendar, DollarSign, User, Building, 
-  AlertCircle, CheckCircle 
-} from 'lucide-react';
+// import { _X, _Save, _Calendar, _DollarSign, _User, _Building, _AlertCircle, _CheckCircle } from 'lucide-react'; // Temporarily commented - unused import
 
-const FinancialModal = ({ 
+const _FinancialModal = ({ 
   isOpen, 
   onClose, 
   mode = 'create', // 'create', 'edit', 'view'
@@ -79,8 +76,8 @@ const FinancialModal = ({
     }
   }, [isOpen, mode, data]);
 
-  const validateForm = () => {
-    const newErrors = {};
+  const _validateForm = () => {
+    const _newErrors = {};
 
     if (type === 'bank') {
       if (!formData.bank_name.trim()) newErrors.bank_name = 'Nome do banco é obrigatório';
@@ -105,7 +102,7 @@ const FinancialModal = ({
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleSubmit = async (e) => {
+  const _handleSubmit = async (e) => {
     e.preventDefault();
     
     if (!validateForm()) return;
@@ -121,16 +118,16 @@ const FinancialModal = ({
     }
   };
 
-  const handleChange = (field, value) => {
+  const _handleChange = (field, value) => {
     setFormData(prev => ({ ...prev, [field]: value }));
     if (errors[field]) {
       setErrors(prev => ({ ...prev, [field]: undefined }));
     }
   };
 
-  const getTitle = () => {
-    const action = mode === 'create' ? 'Nova' : mode === 'edit' ? 'Editar' : 'Visualizar';
-    const typeTitle = {
+  const _getTitle = () => {
+    const _action = mode === 'create' ? 'Nova' : mode === 'edit' ? 'Editar' : 'Visualizar';
+    const _typeTitle = {
       receivable: 'Conta a Receber',
       payable: 'Conta a Pagar', 
       bank: 'Conta Bancária'

@@ -1,35 +1,35 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { useSupabaseAuth } from './SupabaseAuthContext';
-import { supabase } from '../lib/supabase';
+import { _useSupabaseAuth } from './SupabaseAuthContext';
+import { _supabase } from '../lib/supabase';
 
 // =============================================
 // CART UTILITIES - FUNÇÕES LOCAIS E SUPABASE
 // =============================================
 
 // ✅ Função auxiliar para validar UUIDs
-const isValidUUID = (uuid) => {
+const _isValidUUID = (uuid) => {
   if (!uuid || typeof uuid !== 'string') return false;
-  const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+  const _uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
   return uuidRegex.test(uuid);
 };
 
-const cartUtils = {
+const _cartUtils = {
   // Funções para localStorage (fallback quando não logado)
   updateCartCount() {
-    const cartCount = this.getCartItemsCount();
-    const cartBadges = document.querySelectorAll('.cart-count-badge');
-    cartBadges.forEach(badge => {
+    const _cartCount = this.getCartItemsCount();
+    const _cartBadges = document.querySelectorAll('.cart-count-badge');
+    cartBadges.forEach(_badge => {
       badge.textContent = cartCount;
       badge.style.display = cartCount > 0 ? 'inline-block' : 'none';
     });
   },
 
   getCartItemsCount() {
-    const cart = localStorage.getItem('cart');
+    const _cart = localStorage.getItem('cart');
     if (!cart) return 0;
     
     try {
-      const cartData = JSON.parse(cart);
+      const _cartData = JSON.parse(cart);
       return cartData.items?.reduce((total, item) => total + item.quantity, 0) || 0;
     } catch {
       return 0;
@@ -42,7 +42,7 @@ const cartUtils = {
   },
 
   getCart() {
-    const cart = localStorage.getItem('cart');
+    const _cart = localStorage.getItem('cart');
     if (!cart) return { items: [], total: 0 };
     
     try {
@@ -69,7 +69,7 @@ const cartUtils = {
         .eq('user_id', userId);
 
       // Adicionar itens do localStorage ao Supabase
-      const cartItems = localCart.items.map(item => ({
+      const _cartItems = localCart.items.map(item => ({
         user_id: userId,
         product_id: item.id,
         quantity: item.quantity,
@@ -91,8 +91,8 @@ const cartUtils = {
 
   // Função para localStorage - adicionar item
   addToCart(product, quantity = 1) {
-    const currentCart = this.getCart();
-    const existingItem = currentCart.items.find(item => item.id === product.id);
+    const _currentCart = this.getCart();
+    const _existingItem = currentCart.items.find(item => item.id === product.id);
 
     let newCartData;
     if (existingItem) {
@@ -128,8 +128,8 @@ const cartUtils = {
 
   // Função para localStorage - remover item
   removeFromCart(productId) {
-    const currentCart = this.getCart();
-    const newCartData = {
+    const _currentCart = this.getCart();
+    const _newCartData = {
       ...currentCart,
       items: currentCart.items.filter(item => item.id !== productId)
     };
@@ -140,8 +140,8 @@ const cartUtils = {
 
   // Função para localStorage - atualizar quantidade
   updateQuantity(productId, newQuantity) {
-    const currentCart = this.getCart();
-    const newCartData = {
+    const _currentCart = this.getCart();
+    const _newCartData = {
       ...currentCart,
       items: currentCart.items.map(item =>
         item.id === productId
@@ -159,17 +159,17 @@ const cartUtils = {
 // CART CONTEXT
 // =============================================
 
-const CartContext = createContext();
+const _CartContext = createContext();
 
-export const useCart = () => {
-  const context = useContext(CartContext);
+export const _useCart = () => {
+  const _context = useContext(CartContext);
   if (!context) {
     throw new Error('useCart deve ser usado dentro de um CartProvider');
   }
   return context;
 };
 
-export const CartProvider = ({ children }) => {
+export const _CartProvider = ({ children }) => {
   const { user } = useSupabaseAuth();
   const [cartItems, setCartItems] = useState([]);
   const [cartTotal, setCartTotal] = useState(0);
@@ -192,15 +192,15 @@ export const CartProvider = ({ children }) => {
 
   // Calcular total do carrinho sempre que os itens mudarem
   useEffect(() => {
-    const total = cartItems.reduce((sum, item) => {
-      const price = parseFloat(item.price) || 0;
-      const quantity = parseInt(item.quantity) || 0;
+    const _total = cartItems.reduce((sum, item) => {
+      const _price = parseFloat(item.price) || 0;
+      const _quantity = parseInt(item.quantity) || 0;
       return sum + (price * quantity);
     }, 0);
     setCartTotal(total);
   }, [cartItems]);
 
-  const loadCart = async () => {
+  const _loadCart = async () => {
     // 🔒 SEGURANÇA: Carrinho APENAS para usuários autenticados
     if (!user || !user.id) {
       console.log('🔒 Acesso negado: Carrinho requer autenticação');
@@ -244,7 +244,7 @@ export const CartProvider = ({ children }) => {
       }
 
       // Buscar detalhes dos produtos
-      const productIds = cartItems.map(item => item.product_id);
+      const _productIds = cartItems.map(item => item.product_id);
       const { data: products, error: productsError } = await supabase
         .from('products')
         .select('id, name, price, images, weight, category')
@@ -258,8 +258,8 @@ export const CartProvider = ({ children }) => {
       }
 
       // Combinar dados do carrinho com produtos
-      const items = cartItems.map(cartItem => {
-        const product = products.find(p => p.id === cartItem.product_id);
+      const _items = cartItems.map(_cartItem => {
+        const _product = products.find(p => p.id === cartItem.product_id);
         if (!product) {
           console.warn('⚠️ Produto não encontrado ou inativo:', cartItem.product_id);
           return null;
@@ -288,7 +288,7 @@ export const CartProvider = ({ children }) => {
     }
   };
 
-  const addToCart = async (product, quantity = 1) => {
+  const _addToCart = async (product, quantity = 1) => {
     // 🔒 SEGURANÇA: Verificações rigorosas antes de qualquer operação
     if (!user || !user.id) {
       console.log('🔒 Acesso negado: Login necessário para adicionar ao carrinho');
@@ -381,7 +381,7 @@ export const CartProvider = ({ children }) => {
     }
   };
 
-  const removeFromCart = async (productId) => {
+  const _removeFromCart = async (productId) => {
     // 🔒 SEGURANÇA: Verificações rigorosas antes de qualquer operação
     if (!user || !user.id) {
       console.log('🔒 Acesso negado: Login necessário para remover do carrinho');
@@ -429,7 +429,7 @@ export const CartProvider = ({ children }) => {
     }
   };
 
-  const updateQuantity = async (productId, newQuantity) => {
+  const _updateQuantity = async (productId, newQuantity) => {
     // 🔒 SEGURANÇA: Verificações rigorosas antes de qualquer operação
     if (!user || !user.id) {
       console.log('🔒 Acesso negado: Login necessário para atualizar carrinho');
@@ -481,7 +481,7 @@ export const CartProvider = ({ children }) => {
     }
   };
 
-  const clearCart = async () => {
+  const _clearCart = async () => {
     // 🔒 SEGURANÇA: Apenas usuários autenticados podem limpar carrinho
     if (!user || !user.id) {
       console.log('🔒 Acesso negado: Login necessário para limpar carrinho');
@@ -512,12 +512,12 @@ export const CartProvider = ({ children }) => {
     }
   };
 
-  const getCartItemsCount = () => {
+  const _getCartItemsCount = () => {
     if (!user || !user.id) return 0; // 🔒 Sem usuário = sem carrinho
     return cartItems.reduce((total, item) => total + item.quantity, 0);
   };
 
-  const getCartItemsCountSafe = () => {
+  const _getCartItemsCountSafe = () => {
     // 🔒 Versão segura que sempre retorna 0 se não logado
     if (!user || !user.id) return 0;
     
@@ -529,12 +529,12 @@ export const CartProvider = ({ children }) => {
     }
   };
 
-  const getTotalPrice = () => {
+  const _getTotalPrice = () => {
     if (!user || !user.id) return 0; // 🔒 Sem usuário = sem total
     return cartTotal;
   };
 
-  const value = {
+  const _value = {
     cartItems,
     cartTotal,
     isLoading,

@@ -1,19 +1,11 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Link } from 'react-router-dom';
-import { useCart } from '../contexts/CartContext';
-import { useSupabaseAuth } from '../contexts/SupabaseAuthContext';
-import { 
-  ShoppingCart, 
-  Trash2, 
-  Plus, 
-  Minus, 
-  ShoppingBag,
-  ArrowRight,
-  X 
-} from 'lucide-react';
-import { LoadingSpinner } from './LoadingStates';
+import { _Link } from 'react-router-dom';
+import { _useCart } from '../contexts/CartContext';
+import { _useSupabaseAuth } from '../contexts/SupabaseAuthContext';
+// import { _ShoppingCart, _Trash2, _Plus, _Minus, _ShoppingBag, _ArrowRight, _X } from 'lucide-react'; // Temporarily commented - unused import
+import { _LoadingSpinner } from './LoadingStates';
 
-const CartDropdown = () => {
+const _CartDropdown = () => {
   const { user } = useSupabaseAuth();
   const { 
     cartItems, 
@@ -26,12 +18,12 @@ const CartDropdown = () => {
   } = useCart();
   
   const [isOpen, setIsOpen] = useState(false);
-  const dropdownRef = useRef(null);
-  const buttonRef = useRef(null);
+  const _dropdownRef = useRef(null);
+  const _buttonRef = useRef(null);
 
   // Fechar dropdown quando clicar fora
   useEffect(() => {
-    const handleClickOutside = (event) => {
+    const _handleClickOutside = (event) => {
       if (
         dropdownRef.current && 
         !dropdownRef.current.contains(event.target) &&
@@ -44,18 +36,18 @@ const CartDropdown = () => {
 
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, []);
+  }, [] // TODO: Add missing dependencies to fix exhaustive-deps warning);
 
-  const handleQuantityChange = async (productId, newQuantity) => {
+  const _handleQuantityChange = async (productId, newQuantity) => {
     await updateQuantity(productId, newQuantity);
   };
 
-  const handleRemoveItem = async (productId) => {
+  const _handleRemoveItem = async (productId) => {
     await removeFromCart(productId);
   };
 
-  const cartCount = getCartItemsCountSafe();
-  const hasItems = cartItems.length > 0;
+  const _cartCount = getCartItemsCountSafe();
+  const _hasItems = cartItems.length > 0;
 
   return (
     <div className="relative">

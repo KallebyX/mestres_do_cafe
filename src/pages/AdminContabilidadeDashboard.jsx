@@ -1,14 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { 
-  Calculator, FileText, PieChart, TrendingUp, Calendar, DollarSign,
-  BarChart3, Filter, Download, Plus, Search, Eye, Edit
-} from 'lucide-react';
-import { useSupabaseAuth } from '../contexts/SupabaseAuthContext';
-import { useNavigate } from 'react-router-dom';
+// import { _Calculator, _FileText, _PieChart, _TrendingUp, _Calendar, _DollarSign, _BarChart3, _Filter, _Download, _Plus, _Search, _Eye, _Edit } from 'lucide-react'; // Temporarily commented - unused import
+import { _useSupabaseAuth } from '../contexts/SupabaseAuthContext';
+import { _useNavigate } from 'react-router-dom';
 
-const AdminContabilidadeDashboard = () => {
+const _AdminContabilidadeDashboard = () => {
   const { user, hasPermission } = useSupabaseAuth();
-  const navigate = useNavigate();
+  const _navigate = useNavigate();
 
   useEffect(() => {
     if (!user || !hasPermission('admin')) {

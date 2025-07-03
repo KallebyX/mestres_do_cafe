@@ -1,24 +1,17 @@
 import React, { useState } from 'react';
-import { 
-  Upload, 
-  FileText, 
-  Image, 
-  File,
-  Info,
-  CheckCircle
-} from 'lucide-react';
+// import { _Upload, _FileText, _Image, _File, _Info, _CheckCircle } from 'lucide-react'; // Temporarily commented - unused import
 import FileUpload from '../components/FileUpload';
-import { useNotifications } from '../contexts/NotificationContext';
+import { _useNotifications } from '../contexts/NotificationContext';
 
-const FileUploadDemo = () => {
+const _FileUploadDemo = () => {
   const [uploadedFiles, setUploadedFiles] = useState([]);
   const { notifySuccess } = useNotifications();
 
-  const handleFileUploadComplete = (fileData) => {
+  const _handleFileUploadComplete = (fileData) => {
     setUploadedFiles(prev => [...prev, fileData]);
   };
 
-  const handleFileRemove = (removedFile) => {
+  const _handleFileRemove = (removedFile) => {
     setUploadedFiles(prev => prev.filter(f => f.path !== removedFile.path));
   };
 

@@ -1,15 +1,15 @@
 import React, { useState, useEffect } from 'react';
-import { Package, Star, Clock, User, TrendingUp, Coffee, ShoppingBag, Award, Target, Zap, Crown } from 'lucide-react';
-import { useSupabaseAuth } from '../contexts/SupabaseAuthContext';
-import { ordersAPI } from '../lib/api';
-import { useNavigate } from 'react-router-dom';
+// import { _Package, _Star, _Clock, _User, _TrendingUp, _Coffee, _ShoppingBag, _Award, _Target, _Zap, _Crown } from 'lucide-react'; // Temporarily commented - unused import
+import { _useSupabaseAuth } from '../contexts/SupabaseAuthContext';
+import { _ordersAPI } from '../lib/api';
+import { _useNavigate } from 'react-router-dom';
 
-const CustomerDashboard = () => {
+const _CustomerDashboard = () => {
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('overview');
   const { user, isAdmin, profile } = useSupabaseAuth();
-  const navigate = useNavigate();
+  const _navigate = useNavigate();
 
   useEffect(() => {
     // Verificar se o usuário é admin e redirecionar
@@ -24,7 +24,7 @@ const CustomerDashboard = () => {
     }
   }, [user, profile, isAdmin, navigate]);
 
-  const loadOrders = async () => {
+  const _loadOrders = async () => {
     if (!user?.id) {
       console.warn('Usuário não logado ou sem ID');
       setLoading(false);
@@ -33,7 +33,7 @@ const CustomerDashboard = () => {
 
     try {
       console.log('🔍 Buscando pedidos para o usuário:', user.id);
-      const data = await ordersAPI.getUserOrders(user.id);
+      const _data = await ordersAPI.getUserOrders(user.id);
       setOrders(data || []);
     } catch (error) {
       console.error('Erro ao carregar pedidos:', error);
@@ -42,8 +42,8 @@ const CustomerDashboard = () => {
     }
   };
 
-  const getStatusColor = (status) => {
-    const colors = {
+  const _getStatusColor = (status) => {
+    const _colors = {
       pending: 'text-yellow-600 bg-yellow-100',
       confirmed: 'text-blue-600 bg-blue-100',
       processing: 'text-purple-600 bg-purple-100',
@@ -54,8 +54,8 @@ const CustomerDashboard = () => {
     return colors[status] || 'text-gray-600 bg-gray-100';
   };
 
-  const getStatusText = (status) => {
-    const texts = {
+  const _getStatusText = (status) => {
+    const _texts = {
       pending: 'Pendente',
       confirmed: 'Confirmado',
       processing: 'Processando',
@@ -66,7 +66,7 @@ const CustomerDashboard = () => {
     return texts[status] || status;
   };
 
-  const getLevelInfo = (points) => {
+  const _getLevelInfo = (points) => {
     if (points < 100) return { name: 'Bronze', color: 'text-orange-600', bg: 'bg-orange-100' };
     if (points < 500) return { name: 'Prata', color: 'text-gray-500', bg: 'bg-gray-100' };
     if (points < 1000) return { name: 'Ouro', color: 'text-yellow-600', bg: 'bg-yellow-100' };
@@ -74,7 +74,7 @@ const CustomerDashboard = () => {
     return { name: 'Diamante', color: 'text-purple-600', bg: 'bg-purple-100' };
   };
 
-  const getNextLevelPoints = (currentPoints) => {
+  const _getNextLevelPoints = (currentPoints) => {
     if (currentPoints < 100) return 100;
     if (currentPoints < 500) return 500;
     if (currentPoints < 1000) return 1000;
@@ -82,9 +82,9 @@ const CustomerDashboard = () => {
     return 5000;
   };
 
-  const getProgressPercentage = (currentPoints) => {
-    const nextLevel = getNextLevelPoints(currentPoints);
-    let previousLevel = 0;
+  const _getProgressPercentage = (currentPoints) => {
+    const _nextLevel = getNextLevelPoints(currentPoints);
+    let _previousLevel = 0;
     
     if (nextLevel === 500) previousLevel = 100;
     else if (nextLevel === 1000) previousLevel = 500;
@@ -94,13 +94,13 @@ const CustomerDashboard = () => {
     return ((currentPoints - previousLevel) / (nextLevel - previousLevel)) * 100;
   };
 
-  const totalSpent = orders
+  const _totalSpent = orders
     .filter(order => ['confirmed', 'processing', 'shipped', 'delivered'].includes(order.status))
     .reduce((sum, order) => sum + (order.total_amount || 0), 0);
 
-  const completedOrders = orders.filter(order => order.status === 'delivered').length;
-  const userPoints = user?.profile?.points || 0;
-  const levelInfo = getLevelInfo(userPoints);
+  const _completedOrders = orders.filter(order => order.status === 'delivered').length;
+  const _userPoints = user?.profile?.points || 0;
+  const _levelInfo = getLevelInfo(userPoints);
 
   if (!user) {
     return (

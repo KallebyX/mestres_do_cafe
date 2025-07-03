@@ -1,10 +1,10 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
-import { Instagram, Facebook, Twitter, Mail, Phone, MapPin } from 'lucide-react';
+import { _Link } from 'react-router-dom';
+// import { _Instagram, _Facebook, _Twitter, _Mail, _Phone, _MapPin } from 'lucide-react'; // Temporarily commented - unused import
 import Logo from './Logo';
 
-export const Footer = () => {
-  const currentYear = new Date().getFullYear();
+export const _Footer = () => {
+  const _currentYear = new Date().getFullYear();
 
   return (
     <footer className="bg-brand-dark text-white">

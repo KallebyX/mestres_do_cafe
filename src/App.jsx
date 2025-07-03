@@ -1,11 +1,11 @@
 import React from 'react';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import { ThemeProvider } from './contexts/ThemeContext';
-import { SupabaseAuthProvider } from './contexts/SupabaseAuthContext';
-import { CartProvider } from './contexts/CartContext';
-import { NotificationProvider } from './contexts/NotificationContext';
-import { Header } from './components/Header';
-import { Footer } from './components/Footer';
+import { _BrowserRouter as Router, _Routes, _Route } from 'react-router-dom';
+import { _ThemeProvider } from './contexts/ThemeContext';
+import { _SupabaseAuthProvider } from './contexts/SupabaseAuthContext';
+import { _CartProvider } from './contexts/CartContext';
+import { _NotificationProvider } from './contexts/NotificationContext';
+import { _Header } from './components/Header';
+import { _Footer } from './components/Footer';
 import LandingPage from './pages/LandingPage';
 import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';

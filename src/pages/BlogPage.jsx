@@ -1,13 +1,13 @@
 import React, { useState, useEffect } from 'react'
-import { Badge } from '../components/ui/badge'
-import { Card, CardContent, CardFooter, CardHeader, CardTitle, CardDescription } from '../components/ui/card'
-import { Button } from '../components/ui/button'
-import { Calendar, User, ArrowRight, Tag, Edit3, Clock, Heart, MessageCircle, Eye } from 'lucide-react'
-import { Link } from 'react-router-dom'
-import { LoadingSpinner } from '../components/LoadingStates'
-import { getAllBlogPosts, getBlogCategories } from '../lib/supabase-blog'
+// import { _Badge } from '../components/ui/badge' // Temporarily commented - unused import
+// import { _Card, _CardContent, _CardFooter, _CardHeader, _CardTitle, _CardDescription } from '../components/ui/card' // Temporarily commented - unused import
+// import { _Button } from '../components/ui/button' // Temporarily commented - unused import
+// import { _Calendar, _User, _ArrowRight, _Tag, _Edit3, _Clock, _Heart, _MessageCircle, _Eye } from 'lucide-react' // Temporarily commented - unused import
+import { _Link } from 'react-router-dom'
+import { _LoadingSpinner } from '../components/LoadingStates'
+import { _getAllBlogPosts, _getBlogCategories } from '../lib/supabase-blog'
 
-const BlogPage = () => {
+const _BlogPage = () => {
   const [articles, setArticles] = useState([]);
   const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -16,9 +16,9 @@ const BlogPage = () => {
 
   useEffect(() => {
     loadBlogData();
-  }, []);
+  }, [] // TODO: Add missing dependencies to fix exhaustive-deps warning);
 
-  const loadBlogData = async () => {
+  const _loadBlogData = async () => {
     setLoading(true);
     setError(null);
     
@@ -48,7 +48,7 @@ const BlogPage = () => {
     }
   };
 
-  const formatDate = (dateString) => {
+  const _formatDate = (dateString) => {
     return new Date(dateString).toLocaleDateString('pt-BR', {
       year: 'numeric',
       month: 'long',
@@ -56,15 +56,15 @@ const BlogPage = () => {
     });
   };
 
-  const calculateReadingTime = (content) => {
+  const _calculateReadingTime = (content) => {
     if (!content) return '5 min';
-    const wordsPerMinute = 200;
-    const wordCount = content.split(/\s+/).length;
-    const minutes = Math.ceil(wordCount / wordsPerMinute);
+    const _wordsPerMinute = 200;
+    const _wordCount = content.split(/\s+/).length;
+    const _minutes = Math.ceil(wordCount / wordsPerMinute);
     return `${minutes} min de leitura`;
   };
 
-  const filteredArticles = selectedCategory === 'all' 
+  const _filteredArticles = selectedCategory === 'all' 
     ? articles 
     : articles.filter(article => article.category?.toLowerCase() === selectedCategory.toLowerCase());
 

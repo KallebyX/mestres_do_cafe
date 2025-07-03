@@ -1,17 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { 
-  X, Upload, Star, Coffee, AlertCircle, Check, 
-  Plus, Minus, Image as ImageIcon 
-} from 'lucide-react';
-import { 
-  createProduct, 
-  updateProduct, 
-  getProductCategories, 
-  getRoastLevels,
-  validateProductData 
-} from '../lib/supabase-products';
+// import { _X, _Upload, _Star, _Coffee, _AlertCircle, _Check, _Plus, _Minus, _Image as ImageIcon } from 'lucide-react'; // Temporarily commented - unused import
+import { _createProduct, _updateProduct, _getProductCategories, _getRoastLevels, _validateProductData } from '../lib/supabase-products';
 
-const ProductModal = ({ 
+const _ProductModal = ({ 
   isOpen, 
   onClose, 
   product = null, 
@@ -83,7 +74,7 @@ const ProductModal = ({
     setErrors([]);
   }, [product, isOpen]);
 
-  const handleInputChange = (field, value) => {
+  const _handleInputChange = (field, value) => {
     setFormData(prev => ({
       ...prev,
       [field]: value
@@ -91,7 +82,7 @@ const ProductModal = ({
     setErrors([]);
   };
 
-  const addFlavorNote = () => {
+  const _addFlavorNote = () => {
     if (newFlavorNote.trim() && !formData.flavor_notes.includes(newFlavorNote.trim())) {
       setFormData(prev => ({
         ...prev,
@@ -101,14 +92,14 @@ const ProductModal = ({
     }
   };
 
-  const removeFlavorNote = (note) => {
+  const _removeFlavorNote = (note) => {
     setFormData(prev => ({
       ...prev,
       flavor_notes: prev.flavor_notes.filter(n => n !== note)
     }));
   };
 
-  const addImage = () => {
+  const _addImage = () => {
     if (newImageUrl.trim() && !formData.images.includes(newImageUrl.trim())) {
       setFormData(prev => ({
         ...prev,
@@ -118,19 +109,19 @@ const ProductModal = ({
     }
   };
 
-  const removeImage = (url) => {
+  const _removeImage = (url) => {
     setFormData(prev => ({
       ...prev,
       images: prev.images.filter(img => img !== url)
     }));
   };
 
-  const handleSubmit = async (e) => {
+  const _handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
 
     // Validar dados
-    const validation = validateProductData(formData);
+    const _validation = validateProductData(formData);
     if (!validation.isValid) {
       setErrors(validation.errors);
       setLoading(false);

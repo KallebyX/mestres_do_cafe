@@ -1,20 +1,15 @@
 import React, { useState, useEffect } from 'react';
-import { 
-  Package, Truck, Warehouse, BarChart3, ArrowUpCircle, ArrowDownCircle, 
-  AlertTriangle, CheckCircle, Clock, Edit, Trash2, Plus, Search, Eye,
-  MapPin, Calendar, Filter, Download, ShoppingCart, Box, Activity,
-  TrendingUp, Target, AlertCircle, Zap, Users, DollarSign, Phone
-} from 'lucide-react';
-import { useSupabaseAuth } from '../contexts/SupabaseAuthContext';
-import { useNavigate } from 'react-router-dom';
-import { stockAPI } from '../lib/supabase-erp-api';
-import { useNotifications } from '../contexts/NotificationContext';
+// import { _Package, _Truck, _Warehouse, _BarChart3, _ArrowUpCircle, _ArrowDownCircle, _AlertTriangle, _CheckCircle, _Clock, _Edit, _Trash2, _Plus, _Search, _Eye, _MapPin, _Calendar, _Filter, _Download, _ShoppingCart, _Box, _Activity, _TrendingUp, _Target, _AlertCircle, _Zap, _Users, _DollarSign, _Phone } from 'lucide-react'; // Temporarily commented - unused import
+import { _useSupabaseAuth } from '../contexts/SupabaseAuthContext';
+import { _useNavigate } from 'react-router-dom';
+import { _stockAPI } from '../lib/supabase-erp-api';
+import { _useNotifications } from '../contexts/NotificationContext';
 import ProductStockModal from '../components/ProductStockModal';
 import SupplierModal from '../components/SupplierModal';
-import { LineChartComponent, BarChartComponent, PieChartComponent } from '../components/AdvancedCharts';
-import { StockReport } from '../components/PDFReports';
+import { _LineChartComponent, _BarChartComponent, _PieChartComponent } from '../components/AdvancedCharts';
+import { _StockReport } from '../components/PDFReports';
 
-const AdminEstoqueDashboard = () => {
+const _AdminEstoqueDashboard = () => {
   const [activeTab, setActiveTab] = useState('overview');
   const [loading, setLoading] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
@@ -41,7 +36,7 @@ const AdminEstoqueDashboard = () => {
 
   const { user, hasPermission } = useSupabaseAuth();
   const { notifySuccess, notifyError } = useNotifications();
-  const navigate = useNavigate();
+  const _navigate = useNavigate();
 
   useEffect(() => {
     if (!user || !hasPermission('admin')) {
@@ -51,7 +46,7 @@ const AdminEstoqueDashboard = () => {
     loadStockData();
   }, [user, hasPermission, navigate]);
 
-  const loadStockData = async () => {
+  const _loadStockData = async () => {
     setLoading(true);
     setError('');
     
@@ -60,31 +55,31 @@ const AdminEstoqueDashboard = () => {
     try {
       // Carregar dados com fallbacks individuais para cada API
       console.log('📦 Buscando produtos...');
-      const productsResult = await stockAPI.getProducts().catch(error => {
+      const _productsResult = await stockAPI.getProducts().catch(_error => {
         console.error('❌ Erro ao buscar produtos:', error);
         return { success: true, data: [] };
       });
 
       console.log('🏭 Buscando fornecedores...');
-      const suppliersResult = await stockAPI.getSuppliers().catch(error => {
+      const _suppliersResult = await stockAPI.getSuppliers().catch(_error => {
         console.error('❌ Erro ao buscar fornecedores:', error);
         return { success: true, data: [] };
       });
 
       console.log('📂 Buscando categorias...');
-      const categoriesResult = await stockAPI.getProductCategories().catch(error => {
+      const _categoriesResult = await stockAPI.getProductCategories().catch(_error => {
         console.error('❌ Erro ao buscar categorias:', error);
         return { success: true, data: [] };
       });
 
       console.log('🏬 Buscando depósitos...');
-      const warehousesResult = await stockAPI.getWarehouses().catch(error => {
+      const _warehousesResult = await stockAPI.getWarehouses().catch(_error => {
         console.error('❌ Erro ao buscar depósitos:', error);
         return { success: true, data: [] };
       });
 
       console.log('📊 Buscando movimentações...');
-      const movementsResult = await stockAPI.getStockMovements().catch(error => {
+      const _movementsResult = await stockAPI.getStockMovements().catch(_error => {
         console.error('❌ Erro ao buscar movimentações:', error);
         return { success: true, data: [] };
       });
@@ -179,28 +174,28 @@ const AdminEstoqueDashboard = () => {
   };
 
   // Funções CRUD para produtos
-  const handleCreateProduct = () => {
+  const _handleCreateProduct = () => {
     setSelectedProduct(null);
     setModalMode('create');
     setShowProductModal(true);
   };
 
-  const handleEditProduct = (product) => {
+  const _handleEditProduct = (product) => {
     setSelectedProduct(product);
     setModalMode('edit');
     setShowProductModal(true);
   };
 
-  const handleViewProduct = (product) => {
+  const _handleViewProduct = (product) => {
     setSelectedProduct(product);
     setModalMode('view');
     setShowProductModal(true);
   };
 
-  const handleDeleteProduct = async (productId) => {
+  const _handleDeleteProduct = async (productId) => {
     if (window.confirm('Tem certeza que deseja excluir este produto?')) {
       try {
-        const result = await stockAPI.deleteProduct(productId);
+        const _result = await stockAPI.deleteProduct(productId);
         if (result.success) {
           notifySuccess('✅ Produto Excluído', 'Produto excluído com sucesso');
           loadStockData();
@@ -213,35 +208,35 @@ const AdminEstoqueDashboard = () => {
     }
   };
 
-  const handleProductModalSuccess = () => {
+  const _handleProductModalSuccess = () => {
     loadStockData();
     setShowProductModal(false);
   };
 
   // Funções CRUD para fornecedores
-  const handleCreateSupplier = () => {
+  const _handleCreateSupplier = () => {
     setSelectedSupplier(null);
     setSupplierModalMode('create');
     setShowSupplierModal(true);
   };
 
-  const handleEditSupplier = (supplier) => {
+  const _handleEditSupplier = (supplier) => {
     setSelectedSupplier(supplier);
     setSupplierModalMode('edit');
     setShowSupplierModal(true);
   };
 
-  const handleViewSupplier = (supplier) => {
+  const _handleViewSupplier = (supplier) => {
     setSelectedSupplier(supplier);
     setSupplierModalMode('view');
     setShowSupplierModal(true);
   };
 
-  const handleDeleteSupplier = async (supplierId) => {
+  const _handleDeleteSupplier = async (supplierId) => {
     if (window.confirm('Tem certeza que deseja excluir este fornecedor?')) {
       try {
         // Deletar fornecedor no Supabase (soft delete - marcar como inativo)
-        const result = await stockAPI.updateSupplier(supplierId, { is_active: false });
+        const _result = await stockAPI.updateSupplier(supplierId, { is_active: false });
         if (result.success) {
           notifySuccess('✅ Fornecedor Excluído', 'Fornecedor excluído com sucesso');
           loadStockData(); // Recarregar dados
@@ -255,11 +250,11 @@ const AdminEstoqueDashboard = () => {
     }
   };
 
-  const handleSupplierSave = async (formData) => {
+  const _handleSupplierSave = async (formData) => {
     try {
       if (supplierModalMode === 'create') {
         // Criar novo fornecedor no Supabase
-        const supplierData = {
+        const _supplierData = {
           name: formData.name,
           email: formData.email,
           phone: formData.phone,
@@ -270,7 +265,7 @@ const AdminEstoqueDashboard = () => {
           notes: formData.notes
         };
         
-        const result = await stockAPI.createSupplier(supplierData);
+        const _result = await stockAPI.createSupplier(supplierData);
         if (result.success) {
           notifySuccess('✅ Fornecedor Criado', 'Fornecedor criado com sucesso no banco de dados');
           loadStockData(); // Recarregar dados
@@ -279,7 +274,7 @@ const AdminEstoqueDashboard = () => {
         }
       } else if (supplierModalMode === 'edit') {
         // Editar fornecedor existente no Supabase
-        const updates = {
+        const _updates = {
           name: formData.name,
           email: formData.email,
           phone: formData.phone,
@@ -290,7 +285,7 @@ const AdminEstoqueDashboard = () => {
           notes: formData.notes
         };
         
-        const result = await stockAPI.updateSupplier(selectedSupplier.id, updates);
+        const _result = await stockAPI.updateSupplier(selectedSupplier.id, updates);
         if (result.success) {
           notifySuccess('✅ Fornecedor Atualizado', 'Fornecedor atualizado com sucesso no banco de dados');
           loadStockData(); // Recarregar dados
@@ -307,19 +302,19 @@ const AdminEstoqueDashboard = () => {
   };
 
   // Cálculos resumidos
-  const totalProdutos = produtos.length;
-  const produtosBaixoEstoque = produtos.filter(p => p.status === 'baixo').length;
-  const valorTotalEstoque = produtos.reduce((sum, p) => sum + (p.estoque_atual * p.custo_unitario), 0);
-  const movimentacaoMes = movimentacoes.length;
+  const _totalProdutos = produtos.length;
+  const _produtosBaixoEstoque = produtos.filter(p => p.status === 'baixo').length;
+  const _valorTotalEstoque = produtos.reduce((sum, p) => sum + (p.estoque_atual * p.custo_unitario), 0);
+  const _movimentacaoMes = movimentacoes.length;
 
-  const formatCurrency = (value) => {
+  const _formatCurrency = (value) => {
     return new Intl.NumberFormat('pt-BR', {
       style: 'currency',
       currency: 'BRL'
     }).format(value);
   };
 
-  const getStatusColor = (status) => {
+  const _getStatusColor = (status) => {
     switch (status) {
       case 'normal':
         return 'text-green-600 bg-green-50';
@@ -332,7 +327,7 @@ const AdminEstoqueDashboard = () => {
     }
   };
 
-  const renderOverview = () => (
+  const _renderOverview = () => (
     <div className="space-y-8">
       {/* Cards de Resumo */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -471,7 +466,7 @@ const AdminEstoqueDashboard = () => {
     </div>
   );
 
-  const renderProdutos = () => (
+  const _renderProdutos = () => (
     <div className="space-y-6">
       <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
         <h2 className="text-2xl font-bold text-gray-900">Gestão de Produtos</h2>
@@ -583,7 +578,7 @@ const AdminEstoqueDashboard = () => {
     </div>
   );
 
-  const renderMovimentacoes = () => (
+  const _renderMovimentacoes = () => (
     <div className="space-y-6">
       <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
         <h2 className="text-2xl font-bold text-gray-900">Movimentações de Estoque</h2>
@@ -693,7 +688,7 @@ const AdminEstoqueDashboard = () => {
     </div>
   );
 
-  const renderFornecedores = () => (
+  const _renderFornecedores = () => (
     <div className="space-y-6">
       <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
         <h2 className="text-2xl font-bold text-gray-900">Gestão de Fornecedores</h2>
@@ -818,7 +813,7 @@ const AdminEstoqueDashboard = () => {
     </div>
   );
 
-  const renderRelatorios = () => (
+  const _renderRelatorios = () => (
     <div className="space-y-6">
       <h2 className="text-2xl font-bold text-gray-900">Relatórios de Estoque</h2>
       

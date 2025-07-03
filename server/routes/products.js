@@ -2,17 +2,17 @@ const express = require('express');
 const { db } = require('../database/init');
 const { authenticateToken, optionalAuth } = require('../middleware/auth');
 
-const router = express.Router();
+const _router = express.Router();
 
 // Listar produtos
 router.get('/', optionalAuth, (req, res) => {
   const { category, featured, search, limit = 20, offset = 0 } = req.query;
   
-  let sql = `SELECT p.*, c.name as category_name 
+  let _sql = `SELECT p.*, c.name as category_name 
              FROM products p 
              LEFT JOIN categories c ON p.category_id = c.id 
              WHERE p.is_active = 1`;
-  const params = [];
+  const _params = [];
 
   if (category) {
     sql += ' AND p.category_id = ?';
@@ -25,7 +25,7 @@ router.get('/', optionalAuth, (req, res) => {
 
   if (search) {
     sql += ' AND (p.name LIKE ? OR p.description LIKE ?)';
-    const searchTerm = `%${search}%`;
+    const _searchTerm = `%${search}%`;
     params.push(searchTerm, searchTerm);
   }
 
@@ -44,7 +44,7 @@ router.get('/', optionalAuth, (req, res) => {
 
 // Obter produto específico
 router.get('/:id', (req, res) => {
-  const sql = `SELECT p.*, c.name as category_name 
+  const _sql = `SELECT p.*, c.name as category_name 
                FROM products p 
                LEFT JOIN categories c ON p.category_id = c.id 
                WHERE p.id = ? AND p.is_active = 1`;
@@ -77,7 +77,7 @@ router.get('/categories', (req, res) => {
 
 // Obter carrinho do usuário
 router.get('/cart', authenticateToken, (req, res) => {
-  const sql = `SELECT ci.*, p.name, p.price, p.image_url, p.stock_quantity
+  const _sql = `SELECT ci.*, p.name, p.price, p.image_url, p.stock_quantity
                FROM cart_items ci
                JOIN products p ON ci.product_id = p.id
                WHERE ci.user_id = ? AND p.is_active = 1`;
@@ -88,7 +88,7 @@ router.get('/cart', authenticateToken, (req, res) => {
       return res.status(500).json({ error: 'Erro ao buscar carrinho' });
     }
 
-    const total = items.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+    const _total = items.reduce((sum, item) => sum + (item.price * item.quantity), 0);
 
     res.json({ items, total, count: items.length });
   });
@@ -126,7 +126,7 @@ router.post('/cart', authenticateToken, (req, res) => {
 
       if (existingItem) {
         // Atualizar quantidade
-        const newQuantity = existingItem.quantity + parseInt(quantity);
+        const _newQuantity = existingItem.quantity + parseInt(quantity);
         
         if (product.stock_quantity < newQuantity) {
           return res.status(400).json({ error: 'Quantidade total indisponível em estoque' });

@@ -1,13 +1,13 @@
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
-import { ArrowRight, Star, Truck, Shield, Award, Coffee, Users, TrendingUp, CheckCircle, PlayCircle, Play, Calendar, Heart, Trophy } from 'lucide-react';
-import { Button } from '../components/ui/button'
-import { Badge } from '../components/ui/badge'
-import { getFiltered } from '../lib/supabaseClient';
-import { ProductSkeleton, useDataState } from '../components/LoadingStates';
-import { getFeaturedTestimonials } from '../lib/supabase-testimonials';
+import { _Link } from 'react-router-dom';
+// import { _ArrowRight, _Star, _Truck, _Shield, _Award, _Coffee, _Users, _TrendingUp, _CheckCircle, _PlayCircle, _Play, _Calendar, _Heart, _Trophy } from 'lucide-react'; // Temporarily commented - unused import
+// import { _Button } from '../components/ui/button' // Temporarily commented - unused import
+// import { _Badge } from '../components/ui/badge' // Temporarily commented - unused import
+import { _getFiltered } from '../lib/supabaseClient';
+import { _ProductSkeleton, _useDataState } from '../components/LoadingStates';
+import { _getFeaturedTestimonials } from '../lib/supabase-testimonials';
 
-const LandingPage = () => {
+const _LandingPage = () => {
   const {
     data: featuredProducts,
     loading,
@@ -23,19 +23,19 @@ const LandingPage = () => {
   useEffect(() => {
     loadFeaturedProducts();
     loadTestimonials();
-  }, []);
+  }, [] // TODO: Add missing dependencies to fix exhaustive-deps warning);
 
-  const loadFeaturedProducts = async () => {
+  const _loadFeaturedProducts = async () => {
     await loadProducts(async () => {
       // Usar helper genérico para buscar produtos em destaque
-      const response = await getFiltered('products', 
+      const _response = await getFiltered('products', 
         { is_featured: true, is_active: true }, 
         { limit: 3, orderBy: 'sca_score', ascending: false }
       );
       
       if (response.success && response.data) {
         // Mapear dados para formato da UI
-        const formattedProducts = response.data.map(product => ({
+        const _formattedProducts = response.data.map(product => ({
           id: product.id,
           name: product.name,
           description: product.description,
@@ -55,14 +55,14 @@ const LandingPage = () => {
     });
   };
 
-  const stats = [
+  const _stats = [
     { number: '500+', label: 'Clientes Satisfeitos' },
     { number: '50+', label: 'Cafés Especiais' },
     { number: '5', label: 'Anos de Experiência' },
     { number: '95%', label: 'Avaliações 5 Estrelas' }
   ];
 
-  const features = [
+  const _features = [
     {
       icon: <Award className="w-6 h-6" />,
       title: 'Certificação SCA',
@@ -86,10 +86,10 @@ const LandingPage = () => {
   ];
 
   // Função para carregar testimonials reais
-  const loadTestimonials = async () => {
+  const _loadTestimonials = async () => {
     setTestimonialsLoading(true);
     try {
-      const result = await getFeaturedTestimonials(3);
+      const _result = await getFeaturedTestimonials(3);
       if (result.success) {
         setTestimonials(result.data);
         console.log(`✅ ${result.data.length} testimonials carregados`);

@@ -1,8 +1,8 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
-import { Home } from 'lucide-react';
+import { _Link } from 'react-router-dom';
+// import { _Home } from 'lucide-react'; // Temporarily commented - unused import
 
-const NotFoundPage = () => {
+const _NotFoundPage = () => {
   return (
     <div className="min-h-screen bg-[#2B3A42] flex items-center justify-center px-4">
       <div className="text-center max-w-md mx-auto">

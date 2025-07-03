@@ -1,6 +1,6 @@
 import 'dotenv/config';
-import { createClient } from '@supabase/supabase-js';
-import { promises as fs } from 'fs';
+import { _createClient } from '@supabase/supabase-js';
+import { _promises as fs } from 'fs';
 
 // Carregar variáveis de ambiente
 const {
@@ -20,7 +20,7 @@ console.log('🔌 Conectando ao Supabase...');
 console.log(`📡 URL: ${SUPABASE_URL}`);
 
 // Cliente Supabase usando Service Role Key para operações administrativas
-const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, {
+const _supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, {
   auth: {
     autoRefreshToken: false,
     persistSession: false
@@ -74,7 +74,7 @@ async function listTables() {
 /**
  * Exporta todos os registros de uma tabela
  */
-async function exportTable(tableName) {
+async function exportTable(_tableName) {
   try {
     console.log(`📦 Exportando tabela: ${tableName}`);
     
@@ -87,7 +87,7 @@ async function exportTable(tableName) {
       return null;
     }
     
-    const recordCount = data?.length || 0;
+    const _recordCount = data?.length || 0;
     console.log(`✅ ${tableName}: ${recordCount} registros exportados`);
     
     return data || [];
@@ -106,7 +106,7 @@ async function exportAllTables() {
     console.log('=' .repeat(50));
     
     // Listar todas as tabelas
-    const tables = await listTables();
+    const _tables = await listTables();
     
     if (!tables || tables.length === 0) {
       console.log('⚠️ Nenhuma tabela encontrada para exportar');
@@ -118,13 +118,13 @@ async function exportAllTables() {
     console.log('=' .repeat(50));
     
     // Exportar cada tabela
-    const exportData = {};
-    let totalRecords = 0;
-    let successCount = 0;
-    let errorCount = 0;
+    const _exportData = {};
+    let _totalRecords = 0;
+    let _successCount = 0;
+    let _errorCount = 0;
     
     for (const tableName of tables) {
-      const tableData = await exportTable(tableName);
+      const _tableData = await exportTable(tableName);
       
       if (tableData !== null) {
         exportData[tableName] = tableData;
@@ -137,7 +137,7 @@ async function exportAllTables() {
     }
     
     // Adicionar metadados do export
-    const exportMetadata = {
+    const _exportMetadata = {
       export_timestamp: new Date().toISOString(),
       export_date: new Date().toLocaleDateString('pt-BR'),
       export_time: new Date().toLocaleTimeString('pt-BR'),
@@ -150,13 +150,13 @@ async function exportAllTables() {
     };
     
     // Criar objeto final com metadados
-    const finalExportData = {
+    const _finalExportData = {
       _metadata: exportMetadata,
       ...exportData
     };
     
     // Salvar arquivo JSON
-    const fileName = 'supabase-full-export.json';
+    const _fileName = 'supabase-full-export.json';
     await fs.writeFile(
       fileName,
       JSON.stringify(finalExportData, null, 2),

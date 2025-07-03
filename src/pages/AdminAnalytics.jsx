@@ -1,21 +1,17 @@
 import React, { useState, useEffect } from 'react';
-import { 
-  BarChart3, TrendingUp, TrendingDown, PieChart, Activity, 
-  Calendar, Filter, Download, Eye, Users, ShoppingCart,
-  DollarSign, Target, Coffee, Star, Zap, Award, ArrowLeft
-} from 'lucide-react';
-import { useSupabaseAuth } from '../contexts/SupabaseAuthContext';
-import { useNavigate } from 'react-router-dom';
-import { adminAPI } from '../lib/api';
-import { LineChart, BarChart, MetricCard, AreaChart, ProgressRing, PieChartComponent } from '../components/ui/charts';
+// import { _BarChart3, _TrendingUp, _TrendingDown, _PieChart, _Activity, _Calendar, _Filter, _Download, _Eye, _Users, _ShoppingCart, _DollarSign, _Target, _Coffee, _Star, _Zap, _Award, _ArrowLeft } from 'lucide-react'; // Temporarily commented - unused import
+import { _useSupabaseAuth } from '../contexts/SupabaseAuthContext';
+import { _useNavigate } from 'react-router-dom';
+import { _adminAPI } from '../lib/api';
+// import { _LineChart, _BarChart, _MetricCard, _AreaChart, _ProgressRing, _PieChartComponent } from '../components/ui/charts'; // Temporarily commented - unused import
 
-const AdminAnalytics = () => {
+const _AdminAnalytics = () => {
   const [timeRange, setTimeRange] = useState('30d');
   const [selectedMetric, setSelectedMetric] = useState('revenue');
   const [loading, setLoading] = useState(true);
   const [analyticsData, setAnalyticsData] = useState(null);
   const { user, hasPermission } = useSupabaseAuth();
-  const navigate = useNavigate();
+  const _navigate = useNavigate();
 
   useEffect(() => {
     if (!user || !hasPermission('admin')) {
@@ -25,10 +21,10 @@ const AdminAnalytics = () => {
     loadAnalyticsData();
   }, [user, hasPermission, navigate, timeRange]);
 
-  const loadAnalyticsData = async () => {
+  const _loadAnalyticsData = async () => {
     setLoading(true);
     try {
-      const data = await adminAPI.getAnalytics(timeRange);
+      const _data = await adminAPI.getAnalytics(timeRange);
       setAnalyticsData(data);
       console.log('📊 Dados de analytics carregados:', data);
     } catch (error) {
@@ -38,8 +34,8 @@ const AdminAnalytics = () => {
     }
   };
 
-  const exportAnalytics = (type) => {
-    const exportData = {
+  const _exportAnalytics = (type) => {
+    const _exportData = {
       type: type,
       timeRange: timeRange,
       data: analyticsData,

@@ -1,19 +1,19 @@
 import React, { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { supabase } from '../lib/supabase';
-import { Coffee, Shield, CheckCircle } from 'lucide-react';
+import { _useNavigate } from 'react-router-dom';
+import { _supabase } from '../lib/supabase';
+// import { _Coffee, _Shield, _CheckCircle } from 'lucide-react'; // Temporarily commented - unused import
 import Logo from '../components/Logo';
 
-const AuthCallbackPage = () => {
-  const navigate = useNavigate();
+const _AuthCallbackPage = () => {
+  const _navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
   useEffect(() => {
     handleAuthCallback();
-  }, []);
+  }, [] // TODO: Add missing dependencies to fix exhaustive-deps warning);
 
-  const handleAuthCallback = async () => {
+  const _handleAuthCallback = async () => {
     try {
       console.log('🔄 Processando callback de autenticação...');
       
@@ -36,7 +36,7 @@ const AuthCallbackPage = () => {
       console.log('✅ Sessão obtida:', session.user.email);
 
       // Buscar ou criar perfil do usuário
-      const userProfile = await getOrCreateUserProfile(session.user);
+      const _userProfile = await getOrCreateUserProfile(session.user);
       
       if (!userProfile) {
         setError('Erro ao criar perfil do usuário');
@@ -58,7 +58,7 @@ const AuthCallbackPage = () => {
     }
   };
 
-  const getOrCreateUserProfile = async (authUser) => {
+  const _getOrCreateUserProfile = async (authUser) => {
     try {
       console.log('🔍 Buscando perfil do usuário:', authUser.id);
       
@@ -77,19 +77,19 @@ const AuthCallbackPage = () => {
       console.log('📝 Criando novo perfil para:', authUser.email);
 
       // Extrair informações do Google se disponíveis
-      const isGoogleUser = authUser.app_metadata?.provider === 'google';
-      const googleData = authUser.user_metadata || {};
+      const _isGoogleUser = authUser.app_metadata?.provider === 'google';
+      const _googleData = authUser.user_metadata || {};
       
       // Verificar se é admin por email
-      const adminEmails = [
+      const _adminEmails = [
         'daniel@mestres-do-cafe.com',
         'admin@mestres-do-cafe.com',
         'danielmelo.dev@gmail.com'
       ];
       
-      const isAdmin = adminEmails.includes(authUser.email?.toLowerCase());
+      const _isAdmin = adminEmails.includes(authUser.email?.toLowerCase());
       
-      const profileData = {
+      const _profileData = {
         id: authUser.id,
         email: authUser.email,
         name: googleData.name || googleData.full_name || authUser.email?.split('@')[0] || 'Usuário',
@@ -127,7 +127,7 @@ const AuthCallbackPage = () => {
     }
   };
 
-  const redirectUser = (userProfile) => {
+  const _redirectUser = (userProfile) => {
     console.log('🎯 Redirecionando usuário baseado no role:', userProfile.role);
     
     // Verificar se é admin

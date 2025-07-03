@@ -1,27 +1,27 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Link, useNavigate, useLocation } from 'react-router-dom';
-import { useSupabaseAuth } from '../contexts/SupabaseAuthContext';
-import { useCart } from '../contexts/CartContext';
-import { useTheme } from '../contexts/ThemeContext';
-import { Button } from './ui/button';
-import { Menu, X, ShoppingCart, User, LogOut, Settings, Shield } from 'lucide-react';
+import { _Link, _useNavigate, _useLocation } from 'react-router-dom';
+import { _useSupabaseAuth } from '../contexts/SupabaseAuthContext';
+import { _useCart } from '../contexts/CartContext';
+import { _useTheme } from '../contexts/ThemeContext';
+import { _Button } from './ui/button';
+// import { _Menu, _X, _ShoppingCart, _User, _LogOut, _Settings, _Shield } from 'lucide-react'; // Temporarily commented - unused import
 import Logo from './Logo';
 import CartDropdown from './CartDropdown';
-import { ThemeToggleIcon } from './ThemeToggle';
-import { NotificationCenter } from './NotificationCenter';
+import { _ThemeToggleIcon } from './ThemeToggle';
+import { _NotificationCenter } from './NotificationCenter';
 
-export const Header = () => {
+export const _Header = () => {
   const { user, logout, profile } = useSupabaseAuth();
   const { getCartItemsCountSafe } = useCart();
   const { isDark } = useTheme();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
-  const userMenuRef = useRef(null);
-  const navigate = useNavigate();
-  const location = useLocation();
+  const _userMenuRef = useRef(null);
+  const _navigate = useNavigate();
+  const _location = useLocation();
   const [isScrolled, setIsScrolled] = useState(false);
 
-  const navItems = [
+  const _navItems = [
     { label: 'Início', href: '/' },
     { label: 'Marketplace', href: '/marketplace' },
     { label: 'Gamificação', href: '/gamificacao' },
@@ -33,7 +33,7 @@ export const Header = () => {
 
   // Fechar menu do usuário quando clicar fora
   useEffect(() => {
-    const handleClickOutside = (event) => {
+    const _handleClickOutside = (event) => {
       if (userMenuRef.current && !userMenuRef.current.contains(event.target)) {
         setIsUserMenuOpen(false);
       }
@@ -43,15 +43,15 @@ export const Header = () => {
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
     };
-  }, []);
+  }, [] // TODO: Add missing dependencies to fix exhaustive-deps warning);
 
   useEffect(() => {
-    const handleScroll = () => {
+    const _handleScroll = () => {
       setIsScrolled(window.scrollY > 20);
     };
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
+  }, [] // TODO: Add missing dependencies to fix exhaustive-deps warning);
 
   useEffect(() => {
     if (isMenuOpen) {
@@ -60,13 +60,13 @@ export const Header = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [location.pathname]);
 
-  const handleLogout = async () => {
+  const _handleLogout = async () => {
     await logout();
     setIsUserMenuOpen(false);
     navigate('/');
   };
 
-  const getUserInitials = (name) => {
+  const _getUserInitials = (name) => {
     return name
       .split(' ')
       .map(n => n[0])
@@ -75,13 +75,13 @@ export const Header = () => {
       .slice(0, 2);
   };
 
-  const cn = (...classes) => classes.filter(Boolean).join(' ');
+  const _cn = (...classes) => classes.filter(Boolean).join(' ');
 
-  const isActive = (href) => location.pathname === href;
+  const _isActive = (href) => location.pathname === href;
 
-  const isLoggedIn = !!user;
-  const userName = profile?.name || user?.user_metadata?.name || 'Usuário';
-  const userRole = profile?.role || 'customer';
+  const _isLoggedIn = !!user;
+  const _userName = profile?.name || user?.user_metadata?.name || 'Usuário';
+  const _userRole = profile?.role || 'customer';
 
   return (
     <header

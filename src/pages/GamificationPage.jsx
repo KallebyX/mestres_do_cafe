@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
-import { Trophy, Star, Gift, Target, Zap, Crown, Coffee, Users, Award, ChevronRight, Play } from 'lucide-react';
+// import { _Trophy, _Star, _Gift, _Target, _Zap, _Crown, _Coffee, _Users, _Award, _ChevronRight, _Play } from 'lucide-react'; // Temporarily commented - unused import
 
-const GamificationPage = () => {
+const _GamificationPage = () => {
   const [activeTab, setActiveTab] = useState('overview');
 
-  const levels = [
+  const _levels = [
     {
       id: 1,
       name: 'Aprendiz do Café',
@@ -52,7 +52,7 @@ const GamificationPage = () => {
     }
   ];
 
-  const pointsActivities = [
+  const _pointsActivities = [
     { activity: 'Compra de produtos', points: '+10 pontos por R$ 10', icon: Coffee },
     { activity: 'Primeira compra', points: '+100 pontos', icon: Gift },
     { activity: 'Avaliação de produto', points: '+25 pontos', icon: Star },
@@ -63,7 +63,7 @@ const GamificationPage = () => {
     { activity: 'Feedback detalhado', points: '+30 pontos', icon: Star }
   ];
 
-  const corporateProgram = {
+  const _corporateProgram = {
     bronze: {
       name: 'Bronze Corporativo',
       requirement: 'R$ 1.000/mês',

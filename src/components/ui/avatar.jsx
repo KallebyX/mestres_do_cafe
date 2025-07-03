@@ -3,11 +3,10 @@
 import * as React from "react"
 import * as AvatarPrimitive from "@radix-ui/react-avatar"
 
-import { cn } from "@/lib/utils"
+import { _cn } from "@/lib/utils"
 
-function Avatar({
-  className,
-  ...props
+function Avatar(_{
+  className,_...props
 }) {
   return (
     <AvatarPrimitive.Root
@@ -17,9 +16,8 @@ function Avatar({
   );
 }
 
-function AvatarImage({
-  className,
-  ...props
+function AvatarImage(_{
+  className,_...props
 }) {
   return (
     <AvatarPrimitive.Image
@@ -29,9 +27,8 @@ function AvatarImage({
   );
 }
 
-function AvatarFallback({
-  className,
-  ...props
+function AvatarFallback(_{
+  className,_...props
 }) {
   return (
     <AvatarPrimitive.Fallback

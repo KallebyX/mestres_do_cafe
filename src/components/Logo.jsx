@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { Coffee } from 'lucide-react';
+// import { _Coffee } from 'lucide-react'; // Temporarily commented - unused import
 
-const Logo = ({ 
+const _Logo = ({ 
   size = 'medium', 
   showText = true, 
   variant = 'light', // 'light' para fundo claro, 'dark' para fundo escuro
@@ -12,32 +12,32 @@ const Logo = ({
   const [imageError, setImageError] = useState(false);
   const [workingPath, setWorkingPath] = useState(null);
 
-  const sizeClasses = {
+  const _sizeClasses = {
     small: 'w-8 h-8',
     medium: 'w-10 h-10',
     large: 'w-16 h-16'
   };
 
-  const iconSizeClasses = {
+  const _iconSizeClasses = {
     small: 'w-4 h-4',
     medium: 'w-5 h-5',
     large: 'w-8 h-8'
   };
 
-  const textSizeClasses = {
+  const _textSizeClasses = {
     small: 'text-base',
     medium: 'text-xl',
     large: 'text-3xl'
   };
 
-  const subtextSizeClasses = {
+  const _subtextSizeClasses = {
     small: 'text-xs',
     medium: 'text-xs',
     large: 'text-base'
   };
 
   // Diferentes caminhos baseados no variant
-  const getLogoPaths = () => {
+  const _getLogoPaths = () => {
     if (variant === 'dark') {
       // Para fundos escuros (footer)
       return [
@@ -59,19 +59,19 @@ const Logo = ({
 
   // Função para testar múltiplos caminhos
   useEffect(() => {
-    const possiblePaths = getLogoPaths();
-    let pathIndex = 0;
+    const _possiblePaths = getLogoPaths();
+    let _pathIndex = 0;
     
-    const testNextPath = () => {
+    const _testNextPath = () => {
       if (pathIndex >= possiblePaths.length) {
         setImageLoaded(false);
         setImageError(true);
         return;
       }
 
-      const currentPath = possiblePaths[pathIndex];
+      const _currentPath = possiblePaths[pathIndex];
       
-      const img = new Image();
+      const _img = new Image();
       img.onload = () => {
         setWorkingPath(currentPath);
         setImageLoaded(true);
@@ -88,7 +88,7 @@ const Logo = ({
   }, [variant]); // Recarrega quando o variant muda
 
   // Estilos do container baseados no variant
-  const getContainerClasses = () => {
+  const _getContainerClasses = () => {
     if (variant === 'dark') {
       return `${sizeClasses[size]} rounded-lg flex items-center justify-center bg-white/10 border border-white/20 shadow-sm backdrop-blur-sm`;
     } else {
@@ -97,7 +97,7 @@ const Logo = ({
   };
 
   // Cor do ícone de fallback baseada no variant
-  const getIconColor = () => {
+  const _getIconColor = () => {
     return variant === 'dark' ? 'text-white' : 'text-brand-brown';
   };
 

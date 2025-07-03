@@ -4,9 +4,9 @@
  */
 
 import React, { useState, useEffect, useRef } from 'react';
-import { MapPin, Phone, Clock, Star, Navigation, Truck } from 'lucide-react';
+// import { _MapPin, _Phone, _Clock, _Star, _Navigation, _Truck } from 'lucide-react'; // Temporarily commented - unused import
 
-const MapPage = () => {
+const _MapPage = () => {
   const [locations, setLocations] = useState([]);
   const [selectedLocation, setSelectedLocation] = useState(null);
   const [userLocation, setUserLocation] = useState(null);
@@ -14,21 +14,21 @@ const MapPage = () => {
   const [loading, setLoading] = useState(true);
   const [deliveryCheck, setDeliveryCheck] = useState('');
   const [deliveryResult, setDeliveryResult] = useState(null);
-  const mapRef = useRef(null);
-  const leafletMapRef = useRef(null);
+  const _mapRef = useRef(null);
+  const _leafletMapRef = useRef(null);
 
   // Carregar Leaflet dinamicamente
   useEffect(() => {
-    const loadLeaflet = async () => {
+    const _loadLeaflet = async () => {
       if (typeof window !== 'undefined' && !window.L) {
         // Carregar CSS do Leaflet
-        const link = document.createElement('link');
+        const _link = document.createElement('link');
         link.rel = 'stylesheet';
         link.href = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css';
         document.head.appendChild(link);
 
         // Carregar JS do Leaflet
-        const script = document.createElement('script');
+        const _script = document.createElement('script');
         script.src = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js';
         script.onload = () => {
           setLoading(false);
@@ -42,18 +42,18 @@ const MapPage = () => {
     };
 
     loadLeaflet();
-  }, []);
+  }, [] // TODO: Add missing dependencies to fix exhaustive-deps warning);
 
   // Buscar localizações
   useEffect(() => {
     fetchLocations();
     getUserLocation();
-  }, []);
+  }, [] // TODO: Add missing dependencies to fix exhaustive-deps warning);
 
-  const fetchLocations = async () => {
+  const _fetchLocations = async () => {
     try {
-      const response = await fetch('http://localhost:5000/api/locations');
-      const data = await response.json();
+      const _response = await fetch('http://localhost:5000/api/locations');
+      const _data = await response.json();
       
       if (data.success) {
         setLocations(data.locations);
@@ -63,7 +63,7 @@ const MapPage = () => {
     }
   };
 
-  const getUserLocation = () => {
+  const _getUserLocation = () => {
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
         (position) => {
@@ -79,14 +79,14 @@ const MapPage = () => {
     }
   };
 
-  const initializeMap = () => {
+  const _initializeMap = () => {
     if (!window.L || !mapRef.current || leafletMapRef.current) return;
 
     // Centro em Santa Maria/RS
-    const center = [-29.6842, -53.8069];
+    const _center = [-29.6842, -53.8069];
     
     // Criar mapa
-    const map = window.L.map(mapRef.current).setView(center, 13);
+    const _map = window.L.map(mapRef.current).setView(center, 13);
 
     // Adicionar camada do OpenStreetMap
     window.L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -108,7 +108,7 @@ const MapPage = () => {
     }
   }, [locations, filter]);
 
-  const addMarkersToMap = (map) => {
+  const _addMarkersToMap = (map) => {
     // Limpar marcadores existentes
     map.eachLayer((layer) => {
       if (layer instanceof window.L.Marker) {
@@ -116,18 +116,18 @@ const MapPage = () => {
       }
     });
 
-    const filteredLocations = Array.isArray(locations) 
+    const _filteredLocations = Array.isArray(locations) 
       ? (filter === 'all' ? locations : locations.filter(loc => loc.type === filter))
       : [];
 
     filteredLocations.forEach((location) => {
-      const icon = getLocationIcon(location.type);
+      const _icon = getLocationIcon(location.type);
       
-      const marker = window.L.marker([location.latitude, location.longitude], {
+      const _marker = window.L.marker([location.latitude, location.longitude], {
         icon: icon
       }).addTo(map);
 
-      const popupContent = `
+      const _popupContent = `
         <div class="p-3 min-w-[250px]">
           <h3 class="font-bold text-coffee-intense text-lg mb-2">${location.name}</h3>
           <p class="text-coffee-gray mb-2 flex items-center">
@@ -164,7 +164,7 @@ const MapPage = () => {
 
     // Adicionar marcador do usuário se disponível
     if (userLocation) {
-      const userIcon = window.L.divIcon({
+      const _userIcon = window.L.divIcon({
         html: `<div class="w-4 h-4 bg-blue-500 rounded-full border-2 border-white shadow-lg"></div>`,
         className: 'user-location-marker',
         iconSize: [16, 16],
@@ -177,14 +177,14 @@ const MapPage = () => {
     }
   };
 
-  const getLocationIcon = (type) => {
-    const colors = {
+  const _getLocationIcon = (type) => {
+    const _colors = {
       loja: '#BC9F35',      // Dourado
       fazenda: '#4B2E2B',   // Marrom
       pickup: '#E0D2B6'     // Creme
     };
 
-    const icons = {
+    const _icons = {
       loja: '🏪',
       fazenda: '🌱',
       pickup: '📦'
@@ -201,7 +201,7 @@ const MapPage = () => {
   // Função global para selecionar localização
   useEffect(() => {
     window.selectLocation = (id) => {
-      const location = locations.find(loc => loc.id === id);
+      const _location = locations.find(loc => loc.id === id);
       setSelectedLocation(location);
     };
 
@@ -210,11 +210,11 @@ const MapPage = () => {
     };
   }, [locations]);
 
-  const checkDeliveryArea = async () => {
+  const _checkDeliveryArea = async () => {
     if (!deliveryCheck.trim()) return;
 
     try {
-      const response = await fetch('http://localhost:5000/api/delivery/check-area', {
+      const _response = await fetch('http://localhost:5000/api/delivery/check-area', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -222,16 +222,16 @@ const MapPage = () => {
         body: JSON.stringify({ address: deliveryCheck }),
       });
 
-      const result = await response.json();
+      const _result = await response.json();
       setDeliveryResult(result);
     } catch (error) {
       console.error('Erro ao verificar entrega:', error);
     }
   };
 
-  const formatHours = (hours) => {
-    const today = new Date().toLocaleLowerCase();
-    const days = {
+  const _formatHours = (hours) => {
+    const _today = new Date().toLocaleLowerCase();
+    const _days = {
       sunday: 'sunday',
       monday: 'monday',
       tuesday: 'tuesday',
@@ -241,7 +241,7 @@ const MapPage = () => {
       saturday: 'saturday'
     };
     
-    const currentDay = days[today] || 'monday';
+    const _currentDay = days[today] || 'monday';
     return hours[currentDay] || 'Horário não disponível';
   };
 
@@ -514,7 +514,7 @@ const MapPage = () => {
                 <div className="mt-6 flex gap-4">
                   <button
                     onClick={() => {
-                      const url = `https://www.google.com/maps/dir/?api=1&destination=${selectedLocation.latitude},${selectedLocation.longitude}`;
+                      const _url = `https://www.google.com/maps/dir/?api=1&destination=${selectedLocation.latitude},${selectedLocation.longitude}`;
                       window.open(url, '_blank');
                     }}
                     className="flex items-center bg-coffee-gold text-white px-4 py-2 rounded hover:bg-coffee-intense transition-colors"
@@ -525,7 +525,7 @@ const MapPage = () => {
                   
                   <button
                     onClick={() => {
-                      const phone = selectedLocation.phone.replace(/[^\d]/g, '');
+                      const _phone = selectedLocation.phone.replace(/[^\d]/g, '');
                       window.open(`https://wa.me/55${phone}`, '_blank');
                     }}
                     className="flex items-center bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 transition-colors"

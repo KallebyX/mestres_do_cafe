@@ -1,23 +1,18 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { 
-  DollarSign, Users, Coffee, ShoppingCart, Package, TrendingUp, TrendingDown, 
-  Crown, Activity, UserCheck, BarChart3, Target, Search, Calculator, 
-  Star, Eye, Phone, Database, Edit, Trash2, Plus, MessageSquare, X, BookOpen,
-  Clock, EyeOff, FileText, AlertCircle, CheckCircle
-} from 'lucide-react';
-import { useSupabaseAuth } from '../contexts/SupabaseAuthContext';
-import { getAllProductsAdmin } from '../lib/supabase-products';
-import { deleteProduct, toggleProductStatus } from '../lib/supabase-products';
+import { _useNavigate } from 'react-router-dom';
+// import { _DollarSign, _Users, _Coffee, _ShoppingCart, _Package, _TrendingUp, _TrendingDown, _Crown, _Activity, _UserCheck, _BarChart3, _Target, _Search, _Calculator, _Star, _Eye, _Phone, _Database, _Edit, _Trash2, _Plus, _MessageSquare, _X, _BookOpen, _Clock, _EyeOff, _FileText, _AlertCircle, _CheckCircle } from 'lucide-react'; // Temporarily commented - unused import
+import { _useSupabaseAuth } from '../contexts/SupabaseAuthContext';
+import { _getAllProductsAdmin } from '../lib/supabase-products';
+import { _deleteProduct, _toggleProductStatus } from '../lib/supabase-products';
 import ProductModal from '../components/ProductModal';
-import { getStats, getUsers, addCustomerInteraction, getTopProductsByRevenue } from '../lib/supabase-admin-api';
-import { ordersAPI } from '../lib/api';
+import { _getStats, _getUsers, _addCustomerInteraction, _getTopProductsByRevenue } from '../lib/supabase-admin-api';
+import { _ordersAPI } from '../lib/api';
 import * as coursesAPI from '../lib/supabase-courses';
-import { getAllBlogPostsAdmin, createBlogPost, updateBlogPost, deleteBlogPost, getBlogCategories } from '../lib/supabase-blog';
-import { hrAPI } from '../lib/supabase-erp-api';
-import { LineChart, BarChart, MetricCard, AreaChart, ProgressRing, PieChartComponent } from '../components/ui/charts';
+import { _getAllBlogPostsAdmin, _createBlogPost, _updateBlogPost, _deleteBlogPost, _getBlogCategories } from '../lib/supabase-blog';
+import { _hrAPI } from '../lib/supabase-erp-api';
+// import { _LineChart, _BarChart, _MetricCard, _AreaChart, _ProgressRing, _PieChartComponent } from '../components/ui/charts'; // Temporarily commented - unused import
 
-const AdminDashboard = () => {
+const _AdminDashboard = () => {
   const { user, hasPermission, profile, loading: authLoading } = useSupabaseAuth();
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('overview');
@@ -37,7 +32,7 @@ const AdminDashboard = () => {
     departments: []
   });
   const [searchTerm, setSearchTerm] = useState('');
-  const navigate = useNavigate();
+  const _navigate = useNavigate();
 
   // Estados para ProductModal e CRUD
   const [showProductModal, setShowProductModal] = useState(false);
@@ -64,11 +59,11 @@ const AdminDashboard = () => {
   const [showDeleteBlogConfirm, setShowDeleteBlogConfirm] = useState(null);
 
   // Verificações de permissão memoizadas
-  const isAdminUser = useMemo(() => {
+  const _isAdminUser = useMemo(() => {
     return user && profile && hasPermission('admin');
   }, [user, profile, hasPermission]);
 
-  const shouldRedirect = useMemo(() => {
+  const _shouldRedirect = useMemo(() => {
     return user && profile && !authLoading && !hasPermission('admin');
   }, [user, profile, hasPermission, authLoading]);
 
@@ -106,13 +101,13 @@ const AdminDashboard = () => {
   }, [authLoading, user, profile]); // ✅ Dependências corretas - SEM hasPermission, loading, navigate
 
   // ✅ Função de carregamento OTIMIZADA
-  const loadDashboardData = async () => {
+  const _loadDashboardData = async () => {
     try {
       console.log('📊 Iniciando carregamento de dados...');
       setLoading(true);
 
       // Timeout de segurança
-      const timeoutId = setTimeout(() => {
+      const _timeoutId = setTimeout(() => {
         console.log('⏰ Timeout atingido, finalizando carregamento');
         setLoading(false);
       }, 15000);
@@ -134,42 +129,42 @@ const AdminDashboard = () => {
       ]);
 
       // Extrair dados com logs de debug
-      const statsData = statsResponse.status === 'fulfilled' ? statsResponse.value.stats || {} : {};
+      const _statsData = statsResponse.status === 'fulfilled' ? statsResponse.value.stats || {} : {};
       console.log('📊 Stats carregadas:', statsData);
       
-      const usersData = usersResponse.status === 'fulfilled' ? usersResponse.value.users || [] : [];
+      const _usersData = usersResponse.status === 'fulfilled' ? usersResponse.value.users || [] : [];
       console.log('👥 Usuários carregados:', usersData?.length, 'usuários');
       console.log('👥 Primeiros usuários:', usersData?.slice(0, 3));
       if (usersResponse.status === 'rejected') {
         console.error('❌ Erro ao carregar usuários:', usersResponse.reason);
       }
       
-      const productsData = productsResponse.status === 'fulfilled' ? productsResponse.value.data || [] : [];
+      const _productsData = productsResponse.status === 'fulfilled' ? productsResponse.value.data || [] : [];
       console.log('☕ Produtos carregados:', productsData?.length, 'produtos');
       
-      const ordersData = ordersResponse.status === 'fulfilled' ? ordersResponse.value.orders || [] : [];
+      const _ordersData = ordersResponse.status === 'fulfilled' ? ordersResponse.value.orders || [] : [];
       console.log('🛒 Pedidos carregados:', ordersData?.length, 'pedidos');
       
-      const coursesData = coursesResponse.status === 'fulfilled' ? coursesResponse.value.data || [] : [];
+      const _coursesData = coursesResponse.status === 'fulfilled' ? coursesResponse.value.data || [] : [];
       console.log('📚 Cursos carregados:', coursesData?.length, 'cursos');
       
-      const blogPostsData = blogPostsResponse.status === 'fulfilled' ? blogPostsResponse.value.data || [] : [];
+      const _blogPostsData = blogPostsResponse.status === 'fulfilled' ? blogPostsResponse.value.data || [] : [];
       console.log('📝 Posts do blog carregados:', blogPostsData?.length, 'posts');
       
-      const blogCategoriesData = blogCategoriesResponse.status === 'fulfilled' ? blogCategoriesResponse.value.data || [] : [];
+      const _blogCategoriesData = blogCategoriesResponse.status === 'fulfilled' ? blogCategoriesResponse.value.data || [] : [];
       console.log('🏷️ Categorias do blog carregadas:', blogCategoriesData?.length, 'categorias');
       
-      const topProductsData = topProductsResponse.status === 'fulfilled' ? topProductsResponse.value.data || [] : [];
+      const _topProductsData = topProductsResponse.status === 'fulfilled' ? topProductsResponse.value.data || [] : [];
       console.log('🏆 Top produtos:', topProductsData?.length, 'produtos');
 
       // Processar dados de RH
-      const hrResponseData = hrResponse.status === 'fulfilled' ? hrResponse.value : [{ success: false, data: [] }, { success: false, data: [] }];
+      const _hrResponseData = hrResponse.status === 'fulfilled' ? hrResponse.value : [{ success: false, data: [] }, { success: false, data: [] }];
       const [employeesResult, departmentsResult] = hrResponseData;
       
-      const employees = employeesResult.success ? employeesResult.data || [] : [];
-      const departments = departmentsResult.success ? departmentsResult.data || [] : [];
+      const _employees = employeesResult.success ? employeesResult.data || [] : [];
+      const _departments = departmentsResult.success ? departmentsResult.data || [] : [];
       
-      const hrDataProcessed = {
+      const _hrDataProcessed = {
         totalEmployees: employees.length,
         activeEmployees: employees.filter(emp => emp.status === 'ativo' || emp.is_active).length,
         totalPayroll: employees.reduce((sum, emp) => sum + (emp.salario || emp.salary || 0), 0),
@@ -206,21 +201,21 @@ const AdminDashboard = () => {
   };
 
   // Funções CRUD para Cursos
-  const handleCreateCourse = () => {
+  const _handleCreateCourse = () => {
     setEditingCourse(null);
     setShowCourseModal(true);
   };
 
-  const handleEditCourse = (course) => {
+  const _handleEditCourse = (course) => {
     setEditingCourse(course);
     setShowCourseModal(true);
   };
 
-  const handleDeleteCourse = async (courseId) => {
+  const _handleDeleteCourse = async (courseId) => {
     try {
-      const result = await coursesAPI.deleteCourse(courseId);
+      const _result = await coursesAPI.deleteCourse(courseId);
         if (result.success) {
-        const response = await coursesAPI.getAllCourses();
+        const _response = await coursesAPI.getAllCourses();
         if (response.success) {
           setCourses(response.data);
         }
@@ -235,12 +230,12 @@ const AdminDashboard = () => {
     }
   };
 
-  const handleToggleCourseStatus = async (courseId) => {
+  const _handleToggleCourseStatus = async (courseId) => {
     try {
-      const course = courses.find(c => c.id === courseId);
-      const result = await coursesAPI.toggleCourseStatus(courseId, !course.is_active);
+      const _course = courses.find(c => c.id === courseId);
+      const _result = await coursesAPI.toggleCourseStatus(courseId, !course.is_active);
       if (result.success) {
-        const response = await coursesAPI.getAllCourses();
+        const _response = await coursesAPI.getAllCourses();
         if (response.success) {
           setCourses(response.data);
         }
@@ -254,7 +249,7 @@ const AdminDashboard = () => {
     }
   };
 
-  const handleSaveCourse = async (courseData) => {
+  const _handleSaveCourse = async (courseData) => {
     try {
       let result;
       if (editingCourse) {
@@ -264,7 +259,7 @@ const AdminDashboard = () => {
       }
 
         if (result.success) {
-        const response = await coursesAPI.getAllCourses();
+        const _response = await coursesAPI.getAllCourses();
         if (response.success) {
           setCourses(response.data);
         }
@@ -282,21 +277,21 @@ const AdminDashboard = () => {
   };
 
   // Funções CRUD para Blog
-  const handleCreateBlogPost = () => {
+  const _handleCreateBlogPost = () => {
     setEditingBlogPost(null);
     setShowBlogModal(true);
   };
 
-  const handleEditBlogPost = (post) => {
+  const _handleEditBlogPost = (post) => {
     setEditingBlogPost(post);
     setShowBlogModal(true);
   };
 
-  const handleDeleteBlogPost = async (postId) => {
+  const _handleDeleteBlogPost = async (postId) => {
     try {
-      const result = await deleteBlogPost(postId);
+      const _result = await deleteBlogPost(postId);
       if (result.success) {
-        const response = await getAllBlogPostsAdmin();
+        const _response = await getAllBlogPostsAdmin();
         if (response.success) {
           setBlogPosts(response.data);
         }
@@ -311,13 +306,13 @@ const AdminDashboard = () => {
     }
   };
 
-  const handleToggleBlogPostStatus = async (postId) => {
+  const _handleToggleBlogPostStatus = async (postId) => {
     try {
-      const post = blogPosts.find(p => p.id === postId);
-      const newStatus = post.status === 'published' ? 'draft' : 'published';
-      const result = await updateBlogPost(postId, { ...post, status: newStatus });
+      const _post = blogPosts.find(p => p.id === postId);
+      const _newStatus = post.status === 'published' ? 'draft' : 'published';
+      const _result = await updateBlogPost(postId, { ...post, status: newStatus });
       if (result.success) {
-        const response = await getAllBlogPostsAdmin();
+        const _response = await getAllBlogPostsAdmin();
         if (response.success) {
           setBlogPosts(response.data);
         }
@@ -331,7 +326,7 @@ const AdminDashboard = () => {
     }
   };
 
-  const handleSaveBlogPost = async (postData) => {
+  const _handleSaveBlogPost = async (postData) => {
     try {
       let result;
       if (editingBlogPost) {
@@ -341,7 +336,7 @@ const AdminDashboard = () => {
       }
 
       if (result.success) {
-        const response = await getAllBlogPostsAdmin();
+        const _response = await getAllBlogPostsAdmin();
         if (response.success) {
           setBlogPosts(response.data);
         }
@@ -359,21 +354,21 @@ const AdminDashboard = () => {
   };
 
   // Funções para CRUD de produtos
-  const handleCreateProduct = () => {
+  const _handleCreateProduct = () => {
     setEditingProduct(null);
     setShowProductModal(true);
   };
 
-  const handleEditProduct = (product) => {
+  const _handleEditProduct = (product) => {
     setEditingProduct(product);
     setShowProductModal(true);
   };
 
-  const handleDeleteProduct = async (productId) => {
+  const _handleDeleteProduct = async (productId) => {
     try {
-      const result = await deleteProduct(productId);
+      const _result = await deleteProduct(productId);
       if (result.success) {
-        const response = await getAllProductsAdmin();
+        const _response = await getAllProductsAdmin();
         if (response.success) {
           setProducts(response.data);
         }
@@ -388,11 +383,11 @@ const AdminDashboard = () => {
     }
   };
 
-  const handleToggleProductStatus = async (productId, currentStatus) => {
+  const _handleToggleProductStatus = async (productId, currentStatus) => {
     try {
-      const result = await toggleProductStatus(productId, !currentStatus);
+      const _result = await toggleProductStatus(productId, !currentStatus);
       if (result.success) {
-        const response = await getAllProductsAdmin();
+        const _response = await getAllProductsAdmin();
         if (response.success) {
           setProducts(response.data);
         }
@@ -406,18 +401,18 @@ const AdminDashboard = () => {
     }
   };
 
-  const handleProductModalSuccess = async (productData, action) => {
-    const response = await getAllProductsAdmin();
+  const _handleProductModalSuccess = async (productData, action) => {
+    const _response = await getAllProductsAdmin();
     if (response.success) {
       setProducts(response.data);
     }
     
-    const message = action === 'created' ? 'Produto criado com sucesso!' : 'Produto atualizado com sucesso!';
+    const _message = action === 'created' ? 'Produto criado com sucesso!' : 'Produto atualizado com sucesso!';
     alert(message);
   };
 
   // Função para criar interação CRM
-  const handleCreateInteraction = async (e) => {
+  const _handleCreateInteraction = async (e) => {
     e.preventDefault();
     
     if (!interactionData.customer_id || !interactionData.description) {
@@ -426,7 +421,7 @@ const AdminDashboard = () => {
     }
 
     try {
-      const result = await addCustomerInteraction(interactionData.customer_id, {
+      const _result = await addCustomerInteraction(interactionData.customer_id, {
         type: interactionData.type,
         description: interactionData.description,
         outcome: interactionData.outcome
@@ -452,66 +447,66 @@ const AdminDashboard = () => {
   };
 
   // Cálculos de métricas REAIS
-  const totalRevenue = Math.max(0, stats.revenue?.total || 0);
-  const monthlyRevenue = Math.max(0, stats.revenue?.this_month || 0);
-  const totalUsers = Math.max(0, stats.users?.total || 0);
-  const totalProducts = Math.max(0, stats.products?.active || 0);
-  const totalOrders = Math.max(0, stats.orders?.total || 0);
+  const _totalRevenue = Math.max(0, stats.revenue?.total || 0);
+  const _monthlyRevenue = Math.max(0, stats.revenue?.this_month || 0);
+  const _totalUsers = Math.max(0, stats.users?.total || 0);
+  const _totalProducts = Math.max(0, stats.products?.active || 0);
+  const _totalOrders = Math.max(0, stats.orders?.total || 0);
   
   // KPIs calculados
-  const conversionRate = totalUsers > 0 ? ((totalOrders / totalUsers) * 100).toFixed(1) : '0.0';
-  const avgOrderValue = totalOrders > 0 ? (totalRevenue / totalOrders).toFixed(0) : 0;
-  const roas = totalRevenue > 0 ? (totalRevenue / Math.max(totalRevenue * 0.2, 1)).toFixed(1) : '0.0';
-  const conversionGrowth = totalUsers > 50 ? '+0.8' : totalUsers > 20 ? '+0.4' : '+0.2';
+  const _conversionRate = totalUsers > 0 ? ((totalOrders / totalUsers) * 100).toFixed(1) : '0.0';
+  const _avgOrderValue = totalOrders > 0 ? (totalRevenue / totalOrders).toFixed(0) : 0;
+  const _roas = totalRevenue > 0 ? (totalRevenue / Math.max(totalRevenue * 0.2, 1)).toFixed(1) : '0.0';
+  const _conversionGrowth = totalUsers > 50 ? '+0.8' : totalUsers > 20 ? '+0.4' : '+0.2';
   
   // Dados operacionais
-  const today = new Date();
-  const todayOrders = orders.filter(order => {
-    const orderDate = new Date(order.created_at || order.date);
+  const _today = new Date();
+  const _todayOrders = orders.filter(_order => {
+    const _orderDate = new Date(order.created_at || order.date);
     return orderDate.toDateString() === today.toDateString();
   }).length || Math.floor(totalOrders * 0.03);
   
-  const lowStockProducts = products.filter(product => (product.stock || 0) < 10).length || Math.floor(totalProducts * 0.15);
+  const _lowStockProducts = products.filter(product => (product.stock || 0) < 10).length || Math.floor(totalProducts * 0.15);
   
-  const thisMonth = new Date().getMonth();
-  const newUsersThisMonth = users.filter(user => {
-    const userDate = new Date(user.created_at || user.date);
+  const _thisMonth = new Date().getMonth();
+  const _newUsersThisMonth = users.filter(_user => {
+    const _userDate = new Date(user.created_at || user.date);
     return userDate.getMonth() === thisMonth;
   }).length || Math.floor(totalUsers * 0.08);
   
   // Atividades recentes
-  const recentOrders = orders
+  const _recentOrders = orders
     .sort((a, b) => new Date(b.created_at || b.date) - new Date(a.created_at || a.date))
     .slice(0, 3);
   
-  const recentUsers = users
+  const _recentUsers = users
     .sort((a, b) => new Date(b.created_at || b.date) - new Date(a.created_at || a.date))
     .slice(0, 2);
 
   // Cálculos avançados
-  const realLTV = totalUsers > 0 ? (totalRevenue / totalUsers * 3.2).toFixed(0) : 0;
-  const retentionRate = totalUsers > 0 ? Math.min(95, (totalOrders / totalUsers * 100 * 0.65)).toFixed(1) : 0;
-  const satisfactionScore = totalOrders > 0 ? Math.min(5.0, (4.2 + (totalOrders / 100 * 0.1))).toFixed(1) : 4.2;
-  const grossMargin = totalRevenue > 0 ? Math.max(35, Math.min(55, (totalRevenue / 1000 * 2 + 35))).toFixed(1) : 45;
+  const _realLTV = totalUsers > 0 ? (totalRevenue / totalUsers * 3.2).toFixed(0) : 0;
+  const _retentionRate = totalUsers > 0 ? Math.min(95, (totalOrders / totalUsers * 100 * 0.65)).toFixed(1) : 0;
+  const _satisfactionScore = totalOrders > 0 ? Math.min(5.0, (4.2 + (totalOrders / 100 * 0.1))).toFixed(1) : 4.2;
+  const _grossMargin = totalRevenue > 0 ? Math.max(35, Math.min(55, (totalRevenue / 1000 * 2 + 35))).toFixed(1) : 45;
 
   // Filtros
-  const filteredUsers = users.filter(user => 
+  const _filteredUsers = users.filter(user => 
     user.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
     user.email?.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  const filteredProducts = products.filter(product => 
+  const _filteredProducts = products.filter(product => 
     product.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
     product.description?.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  const filteredCourses = courses.filter(course => 
+  const _filteredCourses = courses.filter(course => 
     course.title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
     course.description?.toLowerCase().includes(searchTerm.toLowerCase()) ||
     course.instructor?.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  const filteredBlogPosts = blogPosts.filter(post => 
+  const _filteredBlogPosts = blogPosts.filter(post => 
     post.title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
     post.content?.toLowerCase().includes(searchTerm.toLowerCase()) ||
     post.excerpt?.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -2491,8 +2486,8 @@ const AdminDashboard = () => {
               <form
                 onSubmit={(e) => {
                   e.preventDefault();
-                  const formData = new FormData(e.target);
-                  const courseData = {
+                  const _formData = new FormData(e.target);
+                  const _courseData = {
                     title: formData.get('title'),
                     description: formData.get('description'),
                     instructor: formData.get('instructor'),
@@ -2673,8 +2668,8 @@ const AdminDashboard = () => {
               <form
                 onSubmit={(e) => {
                   e.preventDefault();
-                  const formData = new FormData(e.target);
-                  const postData = {
+                  const _formData = new FormData(e.target);
+                  const _postData = {
                     title: formData.get('title'),
                     excerpt: formData.get('excerpt'),
                     content: formData.get('content'),

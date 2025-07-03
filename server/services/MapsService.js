@@ -4,7 +4,7 @@
  * Mestres do Café - Santa Maria/RS
  */
 
-const axios = require('axios');
+const _axios = require('axios');
 
 class MapsService {
   constructor() {
@@ -181,7 +181,7 @@ class MapsService {
    */
   async getLocationById(id) {
     try {
-      const location = this.locations.find(loc => loc.id === parseInt(id));
+      const _location = this.locations.find(loc => loc.id === parseInt(id));
       
       if (!location) {
         return {
@@ -205,7 +205,7 @@ class MapsService {
    */
   async getLocationsByType(type) {
     try {
-      const filteredLocations = this.locations.filter(loc => loc.type === type);
+      const _filteredLocations = this.locations.filter(loc => loc.type === type);
       
       return {
         success: true,
@@ -223,7 +223,7 @@ class MapsService {
    */
   async findNearestLocation(latitude, longitude, type = 'loja') {
     try {
-      const targetLocations = this.locations.filter(loc => loc.type === type);
+      const _targetLocations = this.locations.filter(loc => loc.type === type);
       
       if (targetLocations.length === 0) {
         return {
@@ -233,8 +233,8 @@ class MapsService {
       }
 
       // Calcular distâncias
-      const locationsWithDistance = targetLocations.map(location => {
-        const distance = this.calculateDistance(
+      const _locationsWithDistance = targetLocations.map(_location => {
+        const _distance = this.calculateDistance(
           latitude, longitude,
           location.latitude, location.longitude
         );
@@ -268,7 +268,7 @@ class MapsService {
   async checkDeliveryArea(address) {
     try {
       // Geocodificar endereço usando Nominatim (gratuito)
-      const coords = await this.geocodeAddress(address);
+      const _coords = await this.geocodeAddress(address);
       
       if (!coords) {
         return {
@@ -278,15 +278,15 @@ class MapsService {
       }
 
       // Calcular distância do centro
-      const distance = this.calculateDistance(
+      const _distance = this.calculateDistance(
         this.deliveryArea.center.lat,
         this.deliveryArea.center.lng,
         coords.lat,
         coords.lng
       );
 
-      const inDeliveryArea = distance <= this.deliveryArea.radius;
-      const deliveryFee = inDeliveryArea ? this.deliveryArea.price : null;
+      const _inDeliveryArea = distance <= this.deliveryArea.radius;
+      const _deliveryFee = inDeliveryArea ? this.deliveryArea.price : null;
 
       return {
         success: true,
@@ -311,17 +311,17 @@ class MapsService {
    */
   async geocodeAddress(address) {
     try {
-      const query = `${address}, Santa Maria, RS, Brazil`;
-      const url = `${this.nominatimUrl}/search?format=json&q=${encodeURIComponent(query)}&limit=1`;
+      const _query = `${address}, Santa Maria, RS, Brazil`;
+      const _url = `${this.nominatimUrl}/search?format=json&q=${encodeURIComponent(query)}&limit=1`;
       
-      const response = await axios.get(url, {
+      const _response = await axios.get(url, {
         headers: {
           'User-Agent': 'MestresDoCafe/1.0 (contato@mestrescafe.com.br)'
         }
       });
 
       if (response.data && response.data.length > 0) {
-        const result = response.data[0];
+        const _result = response.data[0];
         return {
           lat: parseFloat(result.lat),
           lng: parseFloat(result.lon),
@@ -341,16 +341,16 @@ class MapsService {
    */
   async reverseGeocode(latitude, longitude) {
     try {
-      const url = `${this.nominatimUrl}/reverse?format=json&lat=${latitude}&lon=${longitude}`;
+      const _url = `${this.nominatimUrl}/reverse?format=json&lat=${latitude}&lon=${longitude}`;
       
-      const response = await axios.get(url, {
+      const _response = await axios.get(url, {
         headers: {
           'User-Agent': 'MestresDoCafe/1.0 (contato@mestrescafe.com.br)'
         }
       });
 
       if (response.data) {
-        const address = response.data.address;
+        const _address = response.data.address;
         return {
           success: true,
           address: {
@@ -380,15 +380,15 @@ class MapsService {
    * 📏 Calcular distância entre dois pontos (fórmula de Haversine)
    */
   calculateDistance(lat1, lon1, lat2, lon2) {
-    const R = 6371; // Raio da Terra em km
-    const dLat = this.toRadians(lat2 - lat1);
-    const dLon = this.toRadians(lon2 - lon1);
+    const _R = 6371; // Raio da Terra em km
+    const _dLat = this.toRadians(lat2 - lat1);
+    const _dLon = this.toRadians(lon2 - lon1);
     
-    const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+    const _a = Math.sin(dLat/2) * Math.sin(dLat/2) +
               Math.cos(this.toRadians(lat1)) * Math.cos(this.toRadians(lat2)) *
               Math.sin(dLon/2) * Math.sin(dLon/2);
     
-    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+    const _c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
     return R * c;
   }
 
@@ -404,12 +404,12 @@ class MapsService {
    */
   async getRoute(fromLat, fromLng, toLat, toLng) {
     try {
-      const url = `https://router.project-osrm.org/route/v1/driving/${fromLng},${fromLat};${toLng},${toLat}?overview=full&geometries=geojson`;
+      const _url = `https://router.project-osrm.org/route/v1/driving/${fromLng},${fromLat};${toLng},${toLat}?overview=full&geometries=geojson`;
       
-      const response = await axios.get(url);
+      const _response = await axios.get(url);
       
       if (response.data && response.data.routes && response.data.routes.length > 0) {
-        const route = response.data.routes[0];
+        const _route = response.data.routes[0];
         
         return {
           success: true,
@@ -442,7 +442,7 @@ class MapsService {
    */
   async findNearbyCafes(latitude, longitude, radius = 5000) {
     try {
-      const query = `
+      const _query = `
         [out:json][timeout:25];
         (
           node["amenity"="cafe"](around:${radius},${latitude},${longitude});
@@ -454,14 +454,14 @@ class MapsService {
         out skel qt;
       `;
 
-      const response = await axios.post(this.overpassUrl, query, {
+      const _response = await axios.post(this.overpassUrl, query, {
         headers: {
           'Content-Type': 'application/x-www-form-urlencoded'
         }
       });
 
       if (response.data && response.data.elements) {
-        const cafes = response.data.elements
+        const _cafes = response.data.elements
           .filter(element => element.tags && element.tags.name)
           .map(cafe => ({
             id: cafe.id,
@@ -500,7 +500,7 @@ class MapsService {
    * 📝 Formatar endereço a partir das tags do OpenStreetMap
    */
   formatAddress(tags) {
-    const parts = [];
+    const _parts = [];
     
     if (tags['addr:street']) parts.push(tags['addr:street']);
     if (tags['addr:housenumber']) parts.push(tags['addr:housenumber']);

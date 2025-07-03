@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { Link, useLocation } from 'react-router-dom';
-import { supabase } from '../lib/supabase';
-import { Mail, ArrowLeft, CheckCircle, AlertCircle } from 'lucide-react';
+import { _Link, _useLocation } from 'react-router-dom';
+import { _supabase } from '../lib/supabase';
+// import { _Mail, _ArrowLeft, _CheckCircle, _AlertCircle } from 'lucide-react'; // Temporarily commented - unused import
 
-const ForgotPasswordPage = () => {
-  const location = useLocation();
+const _ForgotPasswordPage = () => {
+  const _location = useLocation();
   const [email, setEmail] = useState('');
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [error, setError] = useState('');
@@ -18,12 +18,12 @@ const ForgotPasswordPage = () => {
     }
   }, [location.state]);
 
-  const validateEmail = (email) => {
-    const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  const _validateEmail = (email) => {
+    const _re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     return re.test(email);
   };
 
-  const handleSubmit = async (e) => {
+  const _handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
     setSuccess('');

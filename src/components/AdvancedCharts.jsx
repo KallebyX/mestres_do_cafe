@@ -1,25 +1,8 @@
 import React from 'react'
-import {
-  LineChart,
-  Line,
-  AreaChart,
-  Area,
-  BarChart,
-  Bar,
-  PieChart,
-  Pie,
-  Cell,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  Legend,
-  ResponsiveContainer,
-  ComposedChart
-} from 'recharts'
+// import { _LineChart, _Line, _AreaChart, _Area, _BarChart, _Bar, _PieChart, _Pie, _Cell, _XAxis, _YAxis, _CartesianGrid, _Tooltip, _Legend, _ResponsiveContainer, _ComposedChart } from 'recharts' // Temporarily commented - unused import
 
 // Paleta de cores do tema
-const COLORS = {
+const _COLORS = {
   primary: '#b58150', // brand-brown
   secondary: '#8b5a3c',
   accent: '#d4a574',
@@ -31,7 +14,7 @@ const COLORS = {
   light: '#f8fafc'
 }
 
-const CHART_COLORS = [
+const _CHART_COLORS = [
   COLORS.primary,
   COLORS.secondary,
   COLORS.accent,
@@ -42,7 +25,7 @@ const CHART_COLORS = [
 ]
 
 // Componente de Tooltip customizado
-const CustomTooltip = ({ active, payload, label, formatter }) => {
+const _CustomTooltip = ({ active, payload, label, formatter }) => {
   if (active && payload && payload.length) {
     return (
       <div className="bg-gray-800 border border-gray-600 rounded-lg p-3 shadow-xl">
@@ -59,7 +42,7 @@ const CustomTooltip = ({ active, payload, label, formatter }) => {
 }
 
 // 1. Gráfico de Linha - Evolução temporal
-export const LineChartComponent = ({ 
+export const _LineChartComponent = ({ 
   data, 
   lines = [], 
   height = 300, 
@@ -103,7 +86,7 @@ export const LineChartComponent = ({
 }
 
 // 2. Gráfico de Área - Fluxo de caixa
-export const AreaChartComponent = ({ 
+export const _AreaChartComponent = ({ 
   data, 
   areas = [], 
   height = 300, 
@@ -150,7 +133,7 @@ export const AreaChartComponent = ({
 }
 
 // 3. Gráfico de Barras - Comparativos
-export const BarChartComponent = ({ 
+export const _BarChartComponent = ({ 
   data, 
   bars = [], 
   height = 300, 
@@ -187,20 +170,20 @@ export const BarChartComponent = ({
 }
 
 // 4. Gráfico de Pizza - Distribuições
-export const PieChartComponent = ({ 
+export const _PieChartComponent = ({ 
   data, 
   height = 300, 
   title,
   formatter = null,
   showLabels = true 
 }) => {
-  const renderCustomizedLabel = ({ cx, cy, midAngle, innerRadius, outerRadius, percent }) => {
+  const _renderCustomizedLabel = ({ cx, cy, midAngle, innerRadius, outerRadius, percent }) => {
     if (!showLabels) return null
     
-    const RADIAN = Math.PI / 180
-    const radius = innerRadius + (outerRadius - innerRadius) * 0.5
-    const x = cx + radius * Math.cos(-midAngle * RADIAN)
-    const y = cy + radius * Math.sin(-midAngle * RADIAN)
+    const _RADIAN = Math.PI / 180
+    const _radius = innerRadius + (outerRadius - innerRadius) * 0.5
+    const _x = cx + radius * Math.cos(-midAngle * RADIAN)
+    const _y = cy + radius * Math.sin(-midAngle * RADIAN)
 
     return (
       <text 
@@ -249,7 +232,7 @@ export const PieChartComponent = ({
 }
 
 // 5. Gráfico Composto - Múltiplos tipos
-export const ComposedChartComponent = ({ 
+export const _ComposedChartComponent = ({ 
   data, 
   bars = [],
   lines = [],
@@ -315,7 +298,7 @@ export const ComposedChartComponent = ({
 }
 
 // 6. Componente de Métricas com Gráfico Pequeno (Sparkline)
-export const MetricCard = ({ 
+export const _MetricCard = ({ 
   title, 
   value, 
   change, 
@@ -324,7 +307,7 @@ export const MetricCard = ({
   formatter = null,
   icon: Icon 
 }) => {
-  const changeColor = changeType === 'positive' ? 'text-green-500' : 
+  const _changeColor = changeType === 'positive' ? 'text-green-500' : 
                      changeType === 'negative' ? 'text-red-500' : 'text-gray-500'
 
   return (
@@ -368,7 +351,7 @@ export const MetricCard = ({
 }
 
 // Função utilitária para formatar moeda
-export const formatCurrency = (value) => {
+export const _formatCurrency = (value) => {
   return new Intl.NumberFormat('pt-BR', {
     style: 'currency',
     currency: 'BRL'
@@ -376,7 +359,7 @@ export const formatCurrency = (value) => {
 }
 
 // Função utilitária para formatar percentual
-export const formatPercent = (value) => {
+export const _formatPercent = (value) => {
   return `${value.toFixed(1)}%`
 }
 

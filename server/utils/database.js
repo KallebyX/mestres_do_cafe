@@ -1,8 +1,8 @@
 const fs = require('fs');
-const path = require('path');
+const _path = require('path');
 
-const DB_FILE = path.join(__dirname, '../data/db.json');
-const LOCK_FILE = DB_FILE + '.lock';
+const _DB_FILE = path.join(__dirname, '../data/db.json');
+const _LOCK_FILE = DB_FILE + '.lock';
 
 // Simple file locking mechanism to prevent race conditions
 class FileLock {
@@ -12,7 +12,7 @@ class FileLock {
   }
 
   async acquire(timeout = 5000) {
-    const start = Date.now();
+    const _start = Date.now();
     while (Date.now() - start < timeout) {
       try {
         if (!fs.existsSync(this.lockFile)) {
@@ -49,12 +49,12 @@ class DatabaseManager {
   }
 
   async readDB() {
-    const lock = new FileLock(LOCK_FILE);
+    const _lock = new FileLock(LOCK_FILE);
     try {
       await lock.acquire();
       
       if (!fs.existsSync(DB_FILE)) {
-        const initialData = { 
+        const _initialData = { 
           users: [], 
           products: [], 
           orders: [],
@@ -66,17 +66,17 @@ class DatabaseManager {
         return initialData;
       }
 
-      const data = fs.readFileSync(DB_FILE, 'utf8');
+      const _data = fs.readFileSync(DB_FILE, 'utf8');
       
       // Validate JSON structure
       try {
-        const parsed = JSON.parse(data);
+        const _parsed = JSON.parse(data);
         if (!parsed || typeof parsed !== 'object') {
           throw new Error('Invalid database structure');
         }
         
         // Ensure required fields exist
-        const defaultStructure = { 
+        const _defaultStructure = { 
           users: [], 
           products: [], 
           orders: [],
@@ -87,12 +87,12 @@ class DatabaseManager {
       } catch (parseError) {
         console.error('Database JSON parse error:', parseError);
         // Create backup of corrupted file
-        const backupFile = `${DB_FILE}.corrupted.${Date.now()}`;
+        const _backupFile = `${DB_FILE}.corrupted.${Date.now()}`;
         fs.copyFileSync(DB_FILE, backupFile);
         console.log(`Corrupted database backed up to: ${backupFile}`);
         
         // Return fresh database
-        const freshData = { 
+        const _freshData = { 
           users: [], 
           products: [], 
           orders: [],
@@ -112,7 +112,7 @@ class DatabaseManager {
   }
 
   async writeDB(data) {
-    const lock = new FileLock(LOCK_FILE);
+    const _lock = new FileLock(LOCK_FILE);
     try {
       await lock.acquire();
       
@@ -122,7 +122,7 @@ class DatabaseManager {
       }
 
       // Ensure required fields
-      const requiredFields = ['users', 'products', 'orders', 'customers'];
+      const _requiredFields = ['users', 'products', 'orders', 'customers'];
       for (const field of requiredFields) {
         if (!Array.isArray(data[field])) {
           data[field] = [];
@@ -133,19 +133,19 @@ class DatabaseManager {
       data.last_updated = new Date().toISOString();
       data.version = data.version || '1.0.0';
 
-      const dbDir = path.dirname(DB_FILE);
+      const _dbDir = path.dirname(DB_FILE);
       if (!fs.existsSync(dbDir)) {
         fs.mkdirSync(dbDir, { recursive: true });
       }
 
       // Create backup before write
       if (fs.existsSync(DB_FILE)) {
-        const backupFile = `${DB_FILE}.backup`;
+        const _backupFile = `${DB_FILE}.backup`;
         fs.copyFileSync(DB_FILE, backupFile);
       }
 
       // Write to temporary file first, then rename (atomic operation)
-      const tempFile = `${DB_FILE}.tmp`;
+      const _tempFile = `${DB_FILE}.tmp`;
       fs.writeFileSync(tempFile, JSON.stringify(data, null, 2), 'utf8');
       fs.renameSync(tempFile, DB_FILE);
 
@@ -160,18 +160,18 @@ class DatabaseManager {
 
   // Utility methods for common operations
   async findUserByEmail(email) {
-    const db = await this.readDB();
+    const _db = await this.readDB();
     return db.users.find(user => user.email === email);
   }
 
   async findUserById(id) {
-    const db = await this.readDB();
+    const _db = await this.readDB();
     return db.users.find(user => user.id === id || user.id === parseInt(id, 10));
   }
 
   async updateUser(userId, updates) {
-    const db = await this.readDB();
-    const userIndex = db.users.findIndex(u => u.id === userId || u.id === parseInt(userId, 10));
+    const _db = await this.readDB();
+    const _userIndex = db.users.findIndex(u => u.id === userId || u.id === parseInt(userId, 10));
     
     if (userIndex === -1) {
       throw new Error('User not found');
@@ -188,12 +188,12 @@ class DatabaseManager {
   }
 
   async createUser(userData) {
-    const db = await this.readDB();
+    const _db = await this.readDB();
     
     // Generate unique ID
-    const newId = Math.max(0, ...db.users.map(u => parseInt(u.id) || 0)) + 1;
+    const _newId = Math.max(0, ...db.users.map(u => parseInt(u.id) || 0)) + 1;
     
-    const newUser = {
+    const _newUser = {
       id: newId,
       ...userData,
       created_at: new Date().toISOString(),
@@ -206,14 +206,14 @@ class DatabaseManager {
   }
 
   async deleteUser(userId) {
-    const db = await this.readDB();
-    const userIndex = db.users.findIndex(u => u.id === userId || u.id === parseInt(userId, 10));
+    const _db = await this.readDB();
+    const _userIndex = db.users.findIndex(u => u.id === userId || u.id === parseInt(userId, 10));
     
     if (userIndex === -1) {
       throw new Error('User not found');
     }
 
-    const deletedUser = db.users[userIndex];
+    const _deletedUser = db.users[userIndex];
     db.users.splice(userIndex, 1);
     await this.writeDB(db);
     return deletedUser;
@@ -222,7 +222,7 @@ class DatabaseManager {
   // Health check method
   async healthCheck() {
     try {
-      const db = await this.readDB();
+      const _db = await this.readDB();
       return {
         status: 'healthy',
         users_count: db.users?.length || 0,
@@ -241,11 +241,11 @@ class DatabaseManager {
 }
 
 // Export singleton instance
-const dbManager = new DatabaseManager();
+const _dbManager = new DatabaseManager();
 
 // Legacy compatibility functions
-const readDB = () => dbManager.readDB();
-const writeDB = (data) => dbManager.writeDB(data);
+const _readDB = () => dbManager.readDB();
+const _writeDB = (data) => dbManager.writeDB(data);
 
 module.exports = {
   DatabaseManager,

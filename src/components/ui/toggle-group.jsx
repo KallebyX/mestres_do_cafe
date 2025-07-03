@@ -2,20 +2,16 @@
 import * as React from "react"
 import * as ToggleGroupPrimitive from "@radix-ui/react-toggle-group"
 
-import { cn } from "@/lib/utils"
-import { toggleVariants } from "@/components/ui/toggle"
+import { _cn } from "@/lib/utils"
+// import { _toggleVariants } from "@/components/ui/toggle" // Temporarily commented - unused import
 
-const ToggleGroupContext = React.createContext({
+const _ToggleGroupContext = React.createContext({
   size: "default",
   variant: "default",
 })
 
-function ToggleGroup({
-  className,
-  variant,
-  size,
-  children,
-  ...props
+function ToggleGroup(_{
+  className,_variant,_size,_children,_...props
 }) {
   return (
     <ToggleGroupPrimitive.Root
@@ -34,14 +30,10 @@ function ToggleGroup({
   );
 }
 
-function ToggleGroupItem({
-  className,
-  children,
-  variant,
-  size,
-  ...props
+function ToggleGroupItem(_{
+  className,_children,_variant,_size,_...props
 }) {
-  const context = React.useContext(ToggleGroupContext)
+  const _context = React.useContext(ToggleGroupContext)
 
   return (
     <ToggleGroupPrimitive.Item

@@ -1,21 +1,16 @@
 import React, { useState, useEffect } from 'react';
-import { 
-  Package, Plus, Search, Filter, Download, Eye, Edit, Trash2,
-  MapPin, Scan, Hash, AlertTriangle, CheckCircle, Clock, 
-  BarChart3, TrendingUp, TrendingDown, Truck, Building2,
-  Calendar, FileText, Settings, RefreshCw
-} from 'lucide-react';
-import { useSupabaseAuth } from '../contexts/SupabaseAuthContext';
-import { useNavigate } from 'react-router-dom';
-import { useNotifications } from '../contexts/NotificationContext';
-import { PieChartComponent, BarChartComponent } from '../components/AdvancedCharts';
-import { StockReport } from '../components/PDFReports';
+// import { _Package, _Plus, _Search, _Filter, _Download, _Eye, _Edit, _Trash2, _MapPin, _Scan, _Hash, _AlertTriangle, _CheckCircle, _Clock, _BarChart3, _TrendingUp, _TrendingDown, _Truck, _Building2, _Calendar, _FileText, _Settings, _RefreshCw } from 'lucide-react'; // Temporarily commented - unused import
+import { _useSupabaseAuth } from '../contexts/SupabaseAuthContext';
+import { _useNavigate } from 'react-router-dom';
+import { _useNotifications } from '../contexts/NotificationContext';
+import { _PieChartComponent, _BarChartComponent } from '../components/AdvancedCharts';
+import { _StockReport } from '../components/PDFReports';
 import ProductLocationModal from '../components/ProductLocationModal';
 import BarcodeScanner from '../components/BarcodeScanner';
 import BatchControlModal from '../components/BatchControlModal';
-import { stockAPI } from '../lib/supabase-erp-api';
+import { _stockAPI } from '../lib/supabase-erp-api';
 
-const AdminEstoqueDashboardEnterprise = () => {
+const _AdminEstoqueDashboardEnterprise = () => {
   const [activeTab, setActiveTab] = useState('overview');
   const [loading, setLoading] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
@@ -40,7 +35,7 @@ const AdminEstoqueDashboardEnterprise = () => {
 
   const { user, hasPermission } = useSupabaseAuth();
   const { notifySuccess, notifyError } = useNotifications();
-  const navigate = useNavigate();
+  const _navigate = useNavigate();
 
   useEffect(() => {
     if (!user || !hasPermission('admin')) {
@@ -50,7 +45,7 @@ const AdminEstoqueDashboardEnterprise = () => {
     loadStockData();
   }, [user, hasPermission, navigate]);
 
-  const loadStockData = async () => {
+  const _loadStockData = async () => {
     setLoading(true);
     try {
       // Carregar dados reais do Supabase usando as APIs do stockAPI
@@ -130,45 +125,45 @@ const AdminEstoqueDashboardEnterprise = () => {
   };
 
   // Funções dos modais
-  const handleOpenLocationModal = (product) => {
+  const _handleOpenLocationModal = (product) => {
     setSelectedProduct(product);
     setShowLocationModal(true);
   };
 
-  const handleOpenBarcodeScanner = (mode = 'scan') => {
+  const _handleOpenBarcodeScanner = (mode = 'scan') => {
     setScannerMode(mode);
     setShowBarcodeScanner(true);
   };
 
-  const handleOpenBatchModal = (product) => {
+  const _handleOpenBatchModal = (product) => {
     setSelectedProduct(product);
     setShowBatchModal(true);
   };
 
-  const handleBarcodeScanned = (product) => {
+  const _handleBarcodeScanned = (product) => {
     notifySuccess('✅ Produto Escaneado', `${product.name} encontrado`);
     // Aqui poderia abrir modal de movimentação ou outro processo
   };
 
   // Cálculos do dashboard
-  const totalProdutos = produtos.length;
-  const produtosBaixoEstoque = produtos.filter(p => p.status === 'baixo').length;
-  const valorTotalEstoque = produtos.reduce((sum, p) => sum + (p.estoque_atual * p.custo_unitario), 0);
-  const alertasAtivos = alertas.length;
+  const _totalProdutos = produtos.length;
+  const _produtosBaixoEstoque = produtos.filter(p => p.status === 'baixo').length;
+  const _valorTotalEstoque = produtos.reduce((sum, p) => sum + (p.estoque_atual * p.custo_unitario), 0);
+  const _alertasAtivos = alertas.length;
 
   // Formatação
-  const formatCurrency = (value) => {
+  const _formatCurrency = (value) => {
     return new Intl.NumberFormat('pt-BR', {
       style: 'currency',
       currency: 'BRL'
     }).format(value);
   };
 
-  const formatDate = (dateString) => {
+  const _formatDate = (dateString) => {
     return new Date(dateString).toLocaleString('pt-BR');
   };
 
-  const getStatusColor = (status) => {
+  const _getStatusColor = (status) => {
     switch (status) {
       case 'normal':
         return 'text-green-700 bg-green-100';
@@ -183,7 +178,7 @@ const AdminEstoqueDashboardEnterprise = () => {
     }
   };
 
-  const getPriorityColor = (priority) => {
+  const _getPriorityColor = (priority) => {
     switch (priority) {
       case 'alta':
         return 'text-red-700 bg-red-100';
@@ -197,7 +192,7 @@ const AdminEstoqueDashboardEnterprise = () => {
   };
 
   // Renderização das abas
-  const renderOverview = () => (
+  const _renderOverview = () => (
     <div className="space-y-6">
       {/* Cards de Resumo */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -355,7 +350,7 @@ const AdminEstoqueDashboardEnterprise = () => {
     </div>
   );
 
-  const renderProdutos = () => (
+  const _renderProdutos = () => (
     <div className="space-y-6">
       {/* Controles */}
       <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
@@ -420,11 +415,11 @@ const AdminEstoqueDashboardEnterprise = () => {
             </thead>
             <tbody className="divide-y divide-gray-200">
               {produtos
-                .filter(produto => {
-                  const matchSearch = produto.nome.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                .filter(_produto => {
+                  const _matchSearch = produto.nome.toLowerCase().includes(searchTerm.toLowerCase()) ||
                                    produto.sku.toLowerCase().includes(searchTerm.toLowerCase()) ||
                                    produto.codigo_barras.includes(searchTerm);
-                  const matchStatus = statusFilter === 'todos' || produto.status === statusFilter;
+                  const _matchStatus = statusFilter === 'todos' || produto.status === statusFilter;
                   return matchSearch && matchStatus;
                 })
                 .map((produto) => (

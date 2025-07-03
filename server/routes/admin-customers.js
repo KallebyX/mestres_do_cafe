@@ -1,21 +1,21 @@
 const express = require('express');
-const router = express.Router();
-const fs = require('fs');
-const path = require('path');
+const _router = express.Router();
+const _fs = require('fs');
+const _path = require('path');
 const { validateAdmin } = require('../middleware/auth');
 
 // Funções de banco JSON (copiadas do server.js)
-const DB_FILE = path.join(__dirname, '../data/db.json');
+const _DB_FILE = path.join(__dirname, '../data/db.json');
 
 function readDB() {
   try {
     if (!fs.existsSync(DB_FILE)) {
       // Criar arquivo inicial se não existir
-      const initialData = { users: [], products: [], orders: [] };
+      const _initialData = { users: [], products: [], orders: [] };
       writeDB(initialData);
       return initialData;
     }
-    const data = fs.readFileSync(DB_FILE, 'utf8');
+    const _data = fs.readFileSync(DB_FILE, 'utf8');
     return JSON.parse(data);
   } catch (error) {
     console.error('Erro ao ler banco JSON:', error);
@@ -23,9 +23,9 @@ function readDB() {
   }
 }
 
-function writeDB(data) {
+function writeDB(_data) {
   try {
-    const dbDir = path.dirname(DB_FILE);
+    const _dbDir = path.dirname(DB_FILE);
     if (!fs.existsSync(dbDir)) {
       fs.mkdirSync(dbDir, { recursive: true });
     }
@@ -36,16 +36,16 @@ function writeDB(data) {
 }
 
 // Validar CPF/CNPJ
-const validateDocument = (document, type) => {
+const _validateDocument = (document, type) => {
   if (!document) return false;
   
   if (type === 'cliente_pf') {
     // Validação básica CPF (11 dígitos)
-    const cpf = document.replace(/\D/g, '');
+    const _cpf = document.replace(/\D/g, '');
     return cpf.length === 11 && !/^(\d)\1{10}$/.test(cpf);
   } else if (type === 'cliente_pj') {
     // Validação básica CNPJ (14 dígitos)
-    const cnpj = document.replace(/\D/g, '');
+    const _cnpj = document.replace(/\D/g, '');
     return cnpj.length === 14 && !/^(\d)\1{13}$/.test(cnpj);
   }
   
@@ -60,7 +60,7 @@ router.post('/create-customer', validateAdmin, async (req, res) => {
     observacao
   } = req.body;
   
-  const adminId = req.user.userId;
+  const _adminId = req.user.userId;
   
   try {
     // Validações básicas
@@ -83,10 +83,10 @@ router.post('/create-customer', validateAdmin, async (req, res) => {
       });
     }
     
-    const database = readDB();
+    const _database = readDB();
     
     // Verificar se email já existe
-    const existingUser = database.users.find(u => u.email === email);
+    const _existingUser = database.users.find(u => u.email === email);
     if (existingUser) {
       return res.status(400).json({ 
         error: 'Já existe um cliente cadastrado com este email' 
@@ -95,7 +95,7 @@ router.post('/create-customer', validateAdmin, async (req, res) => {
     
     // Verificar se CPF/CNPJ já existe (se fornecido)
     if (cpf_cnpj) {
-      const existingDoc = database.users.find(u => u.cpf_cnpj === cpf_cnpj);
+      const _existingDoc = database.users.find(u => u.cpf_cnpj === cpf_cnpj);
       if (existingDoc) {
         return res.status(400).json({ 
           error: `Já existe um cliente cadastrado com este ${user_type === 'cliente_pf' ? 'CPF' : 'CNPJ'}` 
@@ -104,10 +104,10 @@ router.post('/create-customer', validateAdmin, async (req, res) => {
     }
     
     // Gerar ID único para o cliente
-    const customerId = require('crypto').randomUUID();
+    const _customerId = require('crypto').randomUUID();
     
     // Inserir cliente com status pendente de ativação
-    const customer = {
+    const _customer = {
       id: customerId,
       name,
       email,
@@ -169,17 +169,17 @@ router.post('/create-customer', validateAdmin, async (req, res) => {
 // Listar clientes criados pelo admin
 router.get('/admin-customers', validateAdmin, async (req, res) => {
   const { page = 1, limit = 20, search, status = 'all' } = req.query;
-  const offset = (page - 1) * limit;
+  const _offset = (page - 1) * limit;
   
   try {
-    const database = readDB();
+    const _database = readDB();
     
     // Filtrar clientes criados pelo admin
-    let customers = database.users.filter(user => user.criado_por_admin === true);
+    let _customers = database.users.filter(user => user.criado_por_admin === true);
     
     // Filtro por busca
     if (search) {
-      const searchTerm = search.toLowerCase();
+      const _searchTerm = search.toLowerCase();
       customers = customers.filter(customer => 
         customer.name?.toLowerCase().includes(searchTerm) ||
         customer.email?.toLowerCase().includes(searchTerm) ||
@@ -195,9 +195,9 @@ router.get('/admin-customers', validateAdmin, async (req, res) => {
     }
     
     // Aplicar paginação
-    const total = customers.length;
-    const pages = Math.ceil(total / limit);
-    const paginatedCustomers = customers.slice(offset, offset + parseInt(limit));
+    const _total = customers.length;
+    const _pages = Math.ceil(total / limit);
+    const _paginatedCustomers = customers.slice(offset, offset + parseInt(limit));
     
     res.json({
       success: true,
@@ -251,10 +251,10 @@ router.put('/edit-customer/:customerId', validateAdmin, async (req, res) => {
   } = req.body;
   
   try {
-    const database = readDB();
+    const _database = readDB();
     
     // Verificar se o cliente existe e foi criado pelo admin
-    const customerIndex = database.users.findIndex(u => u.id === customerId && u.criado_por_admin);
+    const _customerIndex = database.users.findIndex(u => u.id === customerId && u.criado_por_admin);
     
     if (customerIndex === -1) {
       return res.status(404).json({ 
@@ -262,7 +262,7 @@ router.put('/edit-customer/:customerId', validateAdmin, async (req, res) => {
       });
     }
     
-    const customer = database.users[customerIndex];
+    const _customer = database.users[customerIndex];
     
     // Validar documento se fornecido
     if (cpf_cnpj && !validateDocument(cpf_cnpj, customer.user_type)) {
@@ -273,7 +273,7 @@ router.put('/edit-customer/:customerId', validateAdmin, async (req, res) => {
     
     // Verificar se CPF/CNPJ já existe em outro cliente (se alterado)
     if (cpf_cnpj && cpf_cnpj !== customer.cpf_cnpj) {
-      const existingDoc = database.users.find(u => u.cpf_cnpj === cpf_cnpj && u.id !== customerId);
+      const _existingDoc = database.users.find(u => u.cpf_cnpj === cpf_cnpj && u.id !== customerId);
       if (existingDoc) {
         return res.status(400).json({ 
           error: `Já existe outro cliente com este ${customer.user_type === 'cliente_pf' ? 'CPF' : 'CNPJ'}` 
@@ -282,7 +282,7 @@ router.put('/edit-customer/:customerId', validateAdmin, async (req, res) => {
     }
     
     // Atualizar cliente
-    const updatedCustomer = {
+    const _updatedCustomer = {
       ...customer,
       name: name || customer.name,
       phone: phone || customer.phone,
@@ -320,9 +320,9 @@ router.patch('/toggle-status/:customerId', validateAdmin, async (req, res) => {
   const { is_active } = req.body;
   
   try {
-    const database = readDB();
+    const _database = readDB();
     
-    const customerIndex = database.users.findIndex(u => u.id === customerId && u.criado_por_admin);
+    const _customerIndex = database.users.findIndex(u => u.id === customerId && u.criado_por_admin);
     
     if (customerIndex === -1) {
       return res.status(404).json({ 
@@ -352,16 +352,16 @@ router.patch('/toggle-status/:customerId', validateAdmin, async (req, res) => {
 // Listar TODOS os clientes do sistema (admin + auto-cadastrados)
 router.get('/all-customers', validateAdmin, async (req, res) => {
   const { page = 1, limit = 20, search, source = 'all', status = 'all' } = req.query;
-  const offset = (page - 1) * limit;
+  const _offset = (page - 1) * limit;
   
   try {
     console.log('Carregando todos os clientes...');
     
-    const database = readDB();
+    const _database = readDB();
     console.log('Total de usuários no banco:', database.users.length);
     
     // Filtrar apenas clientes (não admins)
-    let customers = database.users.filter(user => 
+    let _customers = database.users.filter(user => 
       user.user_type && 
       user.user_type !== 'admin' && 
       ['cliente_pf', 'cliente_pj'].includes(user.user_type)
@@ -378,7 +378,7 @@ router.get('/all-customers', validateAdmin, async (req, res) => {
     
     // Filtro por busca
     if (search) {
-      const searchTerm = search.toLowerCase();
+      const _searchTerm = search.toLowerCase();
       customers = customers.filter(customer => 
         customer.name?.toLowerCase().includes(searchTerm) ||
         customer.email?.toLowerCase().includes(searchTerm) ||
@@ -394,9 +394,9 @@ router.get('/all-customers', validateAdmin, async (req, res) => {
     }
     
     // Aplicar paginação
-    const total = customers.length;
-    const pages = Math.ceil(total / limit);
-    const paginatedCustomers = customers.slice(offset, offset + parseInt(limit));
+    const _total = customers.length;
+    const _pages = Math.ceil(total / limit);
+    const _paginatedCustomers = customers.slice(offset, offset + parseInt(limit));
     
     console.log('Clientes após filtros e paginação:', paginatedCustomers.length);
     
@@ -458,9 +458,9 @@ router.patch('/toggle-any-customer-status/:customerId', validateAdmin, async (re
   const { is_active } = req.body;
   
   try {
-    const database = readDB();
+    const _database = readDB();
     
-    const customerIndex = database.users.findIndex(u => u.id === customerId);
+    const _customerIndex = database.users.findIndex(u => u.id === customerId);
     
     if (customerIndex === -1) {
       return res.status(404).json({ 
@@ -503,11 +503,11 @@ router.get('/test-customers', async (req, res) => {
   try {
     console.log('Testando busca de clientes...');
     
-    const database = readDB();
+    const _database = readDB();
     console.log('Banco carregado, total de usuários:', database.users.length);
     
     // Filtrar apenas clientes (não admins)
-    const customers = database.users.filter(user => 
+    const _customers = database.users.filter(user => 
       user.user_type && user.user_type !== 'admin'
     );
     

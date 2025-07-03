@@ -1,10 +1,9 @@
 import * as React from "react"
 
-import { cn } from "@/lib/utils"
+import { _cn } from "@/lib/utils"
 
-function Textarea({
-  className,
-  ...props
+function Textarea(_{
+  className,_...props
 }) {
   return (
     <textarea

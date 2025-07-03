@@ -1,29 +1,16 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate, Link } from 'react-router-dom';
-import { 
-  Heart, MessageCircle, Share2, Calendar, User, Clock, Tag, 
-  ArrowLeft, Send, Trash2, Facebook, Twitter, MessageSquare, 
-  Linkedin, Copy, CheckCircle 
-} from 'lucide-react';
-import { Button } from '../components/ui/button';
-import { Badge } from '../components/ui/badge';
-import { Card, CardContent, CardHeader } from '../components/ui/card';
-import { useSupabaseAuth } from '../contexts/SupabaseAuthContext';
-import { LoadingSpinner } from '../components/LoadingStates';
-import { 
-  getBlogPostBySlug, 
-  incrementPostViews, 
-  togglePostLike, 
-  checkUserLiked,
-  addComment,
-  getPostComments,
-  deleteComment,
-  recordShare
-} from '../lib/supabase-blog';
+import { _useParams, _useNavigate, _Link } from 'react-router-dom';
+// import { _Heart, _MessageCircle, _Share2, _Calendar, _User, _Clock, _Tag, _ArrowLeft, _Send, _Trash2, _Facebook, _Twitter, _MessageSquare, _Linkedin, _Copy, _CheckCircle } from 'lucide-react'; // Temporarily commented - unused import
+// import { _Button } from '../components/ui/button'; // Temporarily commented - unused import
+// import { _Badge } from '../components/ui/badge'; // Temporarily commented - unused import
+// import { _Card, _CardContent, _CardHeader } from '../components/ui/card'; // Temporarily commented - unused import
+import { _useSupabaseAuth } from '../contexts/SupabaseAuthContext';
+import { _LoadingSpinner } from '../components/LoadingStates';
+import { _getBlogPostBySlug, _incrementPostViews, _togglePostLike, _checkUserLiked, _addComment, _getPostComments, _deleteComment, _recordShare } from '../lib/supabase-blog';
 
-const BlogPostDetailPage = () => {
+const _BlogPostDetailPage = () => {
   const { slug } = useParams();
-  const navigate = useNavigate();
+  const _navigate = useNavigate();
   const { user } = useSupabaseAuth();
   
   const [post, setPost] = useState(null);
@@ -48,10 +35,10 @@ const BlogPostDetailPage = () => {
     }
   }, [post, user]);
   
-  const loadBlogPost = async () => {
+  const _loadBlogPost = async () => {
     setLoading(true);
     try {
-      const result = await getBlogPostBySlug(slug);
+      const _result = await getBlogPostBySlug(slug);
       
       if (result.success) {
         setPost(result.data);
@@ -74,36 +61,36 @@ const BlogPostDetailPage = () => {
     }
   };
   
-  const checkIfUserLiked = async () => {
+  const _checkIfUserLiked = async () => {
     if (!post || !user) return;
     
-    const result = await checkUserLiked(post.id, user.id);
+    const _result = await checkUserLiked(post.id, user.id);
     if (result.success) {
       setLiked(result.liked);
     }
   };
   
-  const loadComments = async (postId) => {
-    const result = await getPostComments(postId);
+  const _loadComments = async (postId) => {
+    const _result = await getPostComments(postId);
     if (result.success) {
       setComments(result.data);
     }
   };
   
-  const handleLike = async () => {
+  const _handleLike = async () => {
     if (!user) {
       navigate('/login');
       return;
     }
     
-    const result = await togglePostLike(post.id, user.id);
+    const _result = await togglePostLike(post.id, user.id);
     if (result.success) {
       setLiked(result.liked);
       setLikesCount(prev => result.liked ? prev + 1 : prev - 1);
     }
   };
   
-  const handleSubmitComment = async (e) => {
+  const _handleSubmitComment = async (e) => {
     e.preventDefault();
     
     if (!user) {
@@ -114,7 +101,7 @@ const BlogPostDetailPage = () => {
     if (!newComment.trim()) return;
     
     setSubmittingComment(true);
-    const result = await addComment(post.id, user.id, newComment.trim(), user.name || user.email);
+    const _result = await addComment(post.id, user.id, newComment.trim(), user.name || user.email);
     
     if (result.success) {
       setNewComment('');
@@ -125,19 +112,19 @@ const BlogPostDetailPage = () => {
     setSubmittingComment(false);
   };
   
-  const handleDeleteComment = async (commentId) => {
+  const _handleDeleteComment = async (commentId) => {
     if (!user) return;
     
-    const result = await deleteComment(commentId, user.id);
+    const _result = await deleteComment(commentId, user.id);
     if (result.success) {
       await loadComments(post.id);
       setPost(prev => ({ ...prev, comments_count: Math.max((prev.comments_count || 0) - 1, 0) }));
     }
   };
   
-  const handleShare = async (platform) => {
-    const url = window.location.href;
-    const text = `${post.title} - ${post.excerpt}`;
+  const _handleShare = async (platform) => {
+    const _url = window.location.href;
+    const _text = `${post.title} - ${post.excerpt}`;
     
     switch (platform) {
       case 'facebook':
@@ -168,7 +155,7 @@ const BlogPostDetailPage = () => {
     setShowShareMenu(false);
   };
   
-  const formatDate = (dateString) => {
+  const _formatDate = (dateString) => {
     return new Date(dateString).toLocaleDateString('pt-BR', {
       year: 'numeric',
       month: 'long',

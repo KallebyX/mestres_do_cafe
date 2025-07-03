@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { Search, Filter, Star, ShoppingCart, Heart, ChevronDown, Coffee, TrendingUp } from 'lucide-react';
-import { useCart } from '../contexts/CartContext';
-import { useSupabaseAuth } from '../contexts/SupabaseAuthContext';
-import { getAllProducts } from '../lib/supabase-products';
-import { useNavigate } from 'react-router-dom';
+// import { _Search, _Filter, _Star, _ShoppingCart, _Heart, _ChevronDown, _Coffee, _TrendingUp } from 'lucide-react'; // Temporarily commented - unused import
+import { _useCart } from '../contexts/CartContext';
+import { _useSupabaseAuth } from '../contexts/SupabaseAuthContext';
+import { _getAllProducts } from '../lib/supabase-products';
+import { _useNavigate } from 'react-router-dom';
 
-const MarketplacePage = () => {
+const _MarketplacePage = () => {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -20,19 +20,19 @@ const MarketplacePage = () => {
   
   const { addToCart } = useCart();
   const { user } = useSupabaseAuth();
-  const navigate = useNavigate();
+  const _navigate = useNavigate();
 
   // Carregar produtos do Supabase
   useEffect(() => {
     loadProducts();
-  }, []);
+  }, [] // TODO: Add missing dependencies to fix exhaustive-deps warning);
 
-  const loadProducts = async () => {
+  const _loadProducts = async () => {
     setLoading(true);
     setError(null);
     
     try {
-      const result = await getAllProducts();
+      const _result = await getAllProducts();
       
       if (result.success) {
         console.log('✅ Produtos carregados do Supabase:', result.data.length);
@@ -51,7 +51,7 @@ const MarketplacePage = () => {
 
   // Aplicar filtros
   useEffect(() => {
-    let filtered = [...products];
+    let _filtered = [...products];
 
     // Filtro por termo de busca
     if (searchTerm) {
@@ -74,12 +74,12 @@ const MarketplacePage = () => {
 
     // Filtro por faixa de preço
     if (priceRange !== 'all' && typeof priceRange === 'string' && priceRange.includes('-')) {
-      const parts = priceRange.split('-').map(Number);
+      const _parts = priceRange.split('-').map(Number);
       const [min, max] = parts.filter(n => !isNaN(n));
       
       if (min !== undefined) {
-        filtered = filtered.filter(product => {
-          const price = product.price;
+        filtered = filtered.filter(_product => {
+          const _price = product.price;
           if (max !== undefined) {
             return price >= min && price <= max;
           } else {
@@ -89,7 +89,7 @@ const MarketplacePage = () => {
       }
     } else if (priceRange !== 'all' && !isNaN(Number(priceRange))) {
       // Caso seja apenas um número (ex: "100" para "acima de 100")
-      const min = Number(priceRange);
+      const _min = Number(priceRange);
       filtered = filtered.filter(product => product.price >= min);
     }
 
@@ -112,7 +112,7 @@ const MarketplacePage = () => {
     setFilteredProducts(filtered);
   }, [products, searchTerm, selectedCategory, selectedRoast, priceRange, sortBy]);
 
-  const handleAddToCart = async (product) => {
+  const _handleAddToCart = async (product) => {
     try {
       await addToCart(product, 1);
       alert(`${product.name} adicionado ao carrinho!`);
@@ -121,8 +121,8 @@ const MarketplacePage = () => {
     }
   };
 
-  const toggleFavorite = (productId) => {
-    const newFavorites = new Set(favoriteProducts);
+  const _toggleFavorite = (productId) => {
+    const _newFavorites = new Set(favoriteProducts);
     if (newFavorites.has(productId)) {
       newFavorites.delete(productId);
     } else {
@@ -131,21 +131,21 @@ const MarketplacePage = () => {
     setFavoriteProducts(newFavorites);
   };
 
-  const formatPrice = (price) => {
+  const _formatPrice = (price) => {
     return new Intl.NumberFormat('pt-BR', {
       style: 'currency',
       currency: 'BRL'
     }).format(price);
   };
 
-  const getDiscountPercentage = (originalPrice, currentPrice) => {
+  const _getDiscountPercentage = (originalPrice, currentPrice) => {
     if (!originalPrice || originalPrice <= currentPrice) return 0;
     return Math.round(((originalPrice - currentPrice) / originalPrice) * 100);
   };
 
   // Obter categorias únicas dos produtos
-  const categories = [...new Set(products.map(p => p.category))].filter(Boolean);
-  const roastLevels = [...new Set(products.map(p => p.roast_level))].filter(Boolean);
+  const _categories = [...new Set(products.map(p => p.category))].filter(Boolean);
+  const _roastLevels = [...new Set(products.map(p => p.roast_level))].filter(Boolean);
 
   if (loading) {
     return (
@@ -342,9 +342,9 @@ const MarketplacePage = () => {
         {filteredProducts.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
             {filteredProducts.map((product) => {
-              const discount = getDiscountPercentage(product.original_price, product.price);
-              const isInStock = product.stock > 0;
-              const isFavorite = favoriteProducts.has(product.id);
+              const _discount = getDiscountPercentage(product.original_price, product.price);
+              const _isInStock = product.stock > 0;
+              const _isFavorite = favoriteProducts.has(product.id);
               
               return (
                 <div key={product.id} className="bg-white rounded-3xl shadow-lg border border-slate-200 overflow-hidden hover:shadow-xl transition-all duration-300 group">

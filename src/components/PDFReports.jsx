@@ -1,11 +1,11 @@
 import React, { forwardRef } from 'react'
 import jsPDF from 'jspdf'
 import 'jspdf-autotable'
-import { format } from 'date-fns'
-import { ptBR } from 'date-fns/locale'
+import { _format } from 'date-fns'
+import { _ptBR } from 'date-fns/locale'
 
 // Configurações globais do PDF
-const PDF_CONFIG = {
+const _PDF_CONFIG = {
   format: 'a4',
   orientation: 'portrait',
   margins: { top: 20, right: 20, bottom: 20, left: 20 },
@@ -46,7 +46,7 @@ class PDFGenerator {
     this.doc.text('MESTRES DO CAFÉ - ERP', this.margins.left + 5, this.currentY + 10)
     
     // Data atual
-    const currentDate = format(new Date(), "dd/MM/yyyy 'às' HH:mm", { locale: ptBR })
+    const _currentDate = format(new Date(), "dd/MM/yyyy 'às' HH:mm", { locale: ptBR })
     this.doc.setFontSize(PDF_CONFIG.fonts.small)
     this.doc.text(`Gerado em: ${currentDate}`, this.pageWidth - this.margins.right - 40, this.currentY + 10)
     
@@ -97,7 +97,7 @@ class PDFGenerator {
 
   // Adicionar tabela
   addTable(headers, data, options = {}) {
-    const startY = this.currentY
+    const _startY = this.currentY
 
     this.doc.autoTable({
       head: [headers],
@@ -125,10 +125,10 @@ class PDFGenerator {
 
   // Adicionar card de resumo
   addSummaryCards(cards) {
-    const cardWidth = (this.pageWidth - this.margins.left - this.margins.right - 10) / 2
-    const cardHeight = 25
-    let x = this.margins.left
-    let y = this.currentY
+    const _cardWidth = (this.pageWidth - this.margins.left - this.margins.right - 10) / 2
+    const _cardHeight = 25
+    let _x = this.margins.left
+    let _y = this.currentY
 
     cards.forEach((card, index) => {
       if (index > 0 && index % 2 === 0) {
@@ -167,7 +167,7 @@ class PDFGenerator {
     this.addSection(title)
     
     // Simular dados do gráfico como texto
-    data.forEach(item => {
+    data.forEach(_item => {
       this.doc.setFontSize(PDF_CONFIG.fonts.normal)
       this.doc.setTextColor(PDF_CONFIG.colors.text)
       this.doc.text(`${item.label}: ${item.value}`, this.margins.left + 5, this.currentY)
@@ -185,7 +185,7 @@ class PDFGenerator {
 
   // Adicionar rodapé
   addFooter() {
-    const pageCount = this.doc.internal.getNumberOfPages()
+    const _pageCount = this.doc.internal.getNumberOfPages()
     
     for (let i = 1; i <= pageCount; i++) {
       this.doc.setPage(i)
@@ -216,9 +216,9 @@ class PDFGenerator {
 }
 
 // Componente para gerar relatório financeiro
-export const FinancialReport = ({ data, period }) => {
-  const generateReport = () => {
-    const pdf = new PDFGenerator()
+export const _FinancialReport = ({ data, period }) => {
+  const _generateReport = () => {
+    const _pdf = new PDFGenerator()
     
     pdf.addHeader(
       'RELATÓRIO FINANCEIRO',
@@ -226,7 +226,7 @@ export const FinancialReport = ({ data, period }) => {
     )
 
     // Resumo financeiro
-    const summaryData = [
+    const _summaryData = [
       ['Total a Receber', `R$ ${(data?.totalReceivables || 0).toLocaleString('pt-BR')}`],
       ['Total a Pagar', `R$ ${(data?.totalPayables || 0).toLocaleString('pt-BR')}`],
       ['Saldo Total', `R$ ${(data?.totalBalance || 0).toLocaleString('pt-BR')}`],
@@ -237,8 +237,8 @@ export const FinancialReport = ({ data, period }) => {
 
     // Contas a Receber
     if (data?.accountsReceivable?.length > 0) {
-      const receivablesHeaders = ['Cliente', 'Valor', 'Vencimento', 'Status']
-      const receivablesData = data.accountsReceivable.map(item => [
+      const _receivablesHeaders = ['Cliente', 'Valor', 'Vencimento', 'Status']
+      const _receivablesData = data.accountsReceivable.map(item => [
         item.customer?.name || 'N/A',
         `R$ ${item.amount.toLocaleString('pt-BR')}`,
         format(new Date(item.due_date), 'dd/MM/yyyy'),
@@ -264,14 +264,14 @@ export const FinancialReport = ({ data, period }) => {
 }
 
 // Componente para gerar relatório de estoque
-export const StockReport = ({ data }) => {
-  const generateReport = () => {
-    const pdf = new PDFGenerator()
+export const _StockReport = ({ data }) => {
+  const _generateReport = () => {
+    const _pdf = new PDFGenerator()
     
     pdf.addHeader('RELATÓRIO DE ESTOQUE')
 
     // Resumo de estoque
-    const summaryData = [
+    const _summaryData = [
       ['Total de Produtos', (data?.totalProducts || 0).toString()],
       ['Estoque Baixo', (data?.lowStockProducts || 0).toString()],
       ['Valor Total', `R$ ${(data?.totalStockValue || 0).toLocaleString('pt-BR')}`]
@@ -281,8 +281,8 @@ export const StockReport = ({ data }) => {
 
     // Produtos
     if (data?.products?.length > 0) {
-      const productsHeaders = ['Produto', 'Estoque', 'Mínimo', 'Valor']
-      const productsData = data.products.map(item => [
+      const _productsHeaders = ['Produto', 'Estoque', 'Mínimo', 'Valor']
+      const _productsData = data.products.map(item => [
         item.name,
         (item.current_stock || 0).toString(),
         (item.min_stock || 0).toString(),
@@ -308,14 +308,14 @@ export const StockReport = ({ data }) => {
 }
 
 // Componente para gerar relatório de RH
-export const HRReport = ({ data, period }) => {
-  const generateReport = () => {
-    const pdf = new PDFGenerator()
+export const _HRReport = ({ data, period }) => {
+  const _generateReport = () => {
+    const _pdf = new PDFGenerator()
     
     pdf.addHeader('RELATÓRIO DE RECURSOS HUMANOS')
 
     // Resumo RH
-    const summaryData = [
+    const _summaryData = [
       ['Funcionários Ativos', (data?.activeEmployees || 0).toString()],
       ['Taxa de Presença', `${(data?.attendanceRate || 0).toFixed(1)}%`],
       ['Em Licença', (data?.onLeave || 0).toString()]
@@ -325,8 +325,8 @@ export const HRReport = ({ data, period }) => {
 
     // Funcionários
     if (data?.employees?.length > 0) {
-      const employeesHeaders = ['Nome', 'Cargo', 'Departamento', 'Status']
-      const employeesData = data.employees.map(item => [
+      const _employeesHeaders = ['Nome', 'Cargo', 'Departamento', 'Status']
+      const _employeesData = data.employees.map(item => [
         item.name,
         item.position || 'N/A',
         item.department || 'N/A',
@@ -352,9 +352,9 @@ export const HRReport = ({ data, period }) => {
 }
 
 // Componente para gerar relatório de vendas
-export const SalesReport = ({ data, period }) => {
-  const generateReport = () => {
-    const pdf = new PDFGenerator()
+export const _SalesReport = ({ data, period }) => {
+  const _generateReport = () => {
+    const _pdf = new PDFGenerator()
     
     pdf.addHeader(
       'RELATÓRIO DE VENDAS',
@@ -362,7 +362,7 @@ export const SalesReport = ({ data, period }) => {
     )
 
     // Cards de resumo
-    const summaryCards = [
+    const _summaryCards = [
       { title: 'Total de Vendas', value: `R$ ${data.totalSales?.toLocaleString('pt-BR') || '0,00'}` },
       { title: 'Número de Pedidos', value: data.totalOrders?.toString() || '0' },
       { title: 'Ticket Médio', value: `R$ ${data.averageTicket?.toLocaleString('pt-BR') || '0,00'}` },
@@ -373,8 +373,8 @@ export const SalesReport = ({ data, period }) => {
     // Vendas por produto
     if (data.productSales?.length > 0) {
       pdf.addSection('VENDAS POR PRODUTO')
-      const salesHeaders = ['Produto', 'Quantidade', 'Valor Unitário', 'Total Vendido']
-      const salesData = data.productSales.map(item => [
+      const _salesHeaders = ['Produto', 'Quantidade', 'Valor Unitário', 'Total Vendido']
+      const _salesData = data.productSales.map(item => [
         item.name,
         item.quantity?.toString() || '0',
         `R$ ${item.unit_price?.toLocaleString('pt-BR') || '0,00'}`,
@@ -400,17 +400,17 @@ export const SalesReport = ({ data, period }) => {
 }
 
 // Componente genérico para relatórios personalizados
-export const CustomReport = ({ title, data, columns, filename }) => {
-  const generateReport = () => {
-    const pdf = new PDFGenerator()
+export const _CustomReport = ({ title, data, columns, filename }) => {
+  const _generateReport = () => {
+    const _pdf = new PDFGenerator()
     
     pdf.addHeader(title)
 
     if (data?.length > 0) {
-      const headers = columns.map(col => col.header)
-      const tableData = data.map(item => 
-        columns.map(col => {
-          const value = col.accessor.split('.').reduce((obj, key) => obj?.[key], item)
+      const _headers = columns.map(col => col.header)
+      const _tableData = data.map(item => 
+        columns.map(_col => {
+          const _value = col.accessor.split('.').reduce((obj, key) => obj?.[key], item)
           return col.formatter ? col.formatter(value) : value?.toString() || 'N/A'
         })
       )

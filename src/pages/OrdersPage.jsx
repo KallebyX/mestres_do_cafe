@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { useAuth } from '../contexts/AuthContext';
-import { useNavigate } from 'react-router-dom';
-import { supabase } from '../lib/supabase';
+import { _useAuth } from '../contexts/AuthContext';
+import { _useNavigate } from 'react-router-dom';
+import { _supabase } from '../lib/supabase';
 
-const OrdersPage = () => {
+const _OrdersPage = () => {
   const { user } = useAuth();
-  const navigate = useNavigate();
+  const _navigate = useNavigate();
   
   const [orders, setOrders] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -21,7 +21,7 @@ const OrdersPage = () => {
     loadOrders();
   }, [user, navigate]);
 
-  const loadOrders = async () => {
+  const _loadOrders = async () => {
     setIsLoading(true);
     try {
       // Buscar pedidos reais do Supabase
@@ -43,7 +43,7 @@ const OrdersPage = () => {
         setOrders([]);
       } else {
         // Mapear dados para formato esperado
-        const mappedOrders = data?.map(order => ({
+        const _mappedOrders = data?.map(order => ({
           id: order.id,
           date: order.created_at?.split('T')[0] || new Date().toISOString().split('T')[0],
           status: order.status || 'pending',
@@ -71,7 +71,7 @@ const OrdersPage = () => {
     }
   };
 
-  const getStatusInfo = (status) => {
+  const _getStatusInfo = (status) => {
     switch (status) {
       case 'pending':
         return { label: 'Pendente', color: 'bg-yellow-100 text-yellow-800' };
@@ -84,7 +84,7 @@ const OrdersPage = () => {
     }
   };
 
-  const filteredOrders = orders.filter(order => 
+  const _filteredOrders = orders.filter(order => 
     filter === 'all' || order.status === filter
   );
 
@@ -177,7 +177,7 @@ const OrdersPage = () => {
         {/* Lista de Pedidos */}
         <div className="space-y-6">
           {filteredOrders.map((order) => {
-            const statusInfo = getStatusInfo(order.status);
+            const _statusInfo = getStatusInfo(order.status);
             
             return (
               <div key={order.id} className="card">

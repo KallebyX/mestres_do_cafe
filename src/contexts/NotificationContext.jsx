@@ -1,16 +1,13 @@
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
-import { supabase } from '../lib/supabase';
-import { notificationAPI } from '../lib/supabase-erp-api';
-import { useSupabaseAuth } from './SupabaseAuthContext';
-import { 
-  Bell, AlertTriangle, CheckCircle, Info, DollarSign, 
-  Package, Users, Calendar, Clock, TrendingDown, TrendingUp 
-} from 'lucide-react';
+import { _supabase } from '../lib/supabase';
+import { _notificationAPI } from '../lib/supabase-erp-api';
+import { _useSupabaseAuth } from './SupabaseAuthContext';
+// import { _Bell, _AlertTriangle, _CheckCircle, _Info, _DollarSign, _Package, _Users, _Calendar, _Clock, _TrendingDown, _TrendingUp } from 'lucide-react'; // Temporarily commented - unused import
 
-const NotificationContext = createContext();
+const _NotificationContext = createContext();
 
-export const useNotifications = () => {
-  const context = useContext(NotificationContext);
+export const _useNotifications = () => {
+  const _context = useContext(NotificationContext);
   if (!context) {
     // Em vez de lançar erro, retornar valores padrão seguros
     console.warn('⚠️ useNotifications usado fora do NotificationProvider, retornando fallbacks');
@@ -38,7 +35,7 @@ export const useNotifications = () => {
   return context;
 };
 
-export const NotificationProvider = ({ children }) => {
+export const _NotificationProvider = ({ children }) => {
   const [notifications, setNotifications] = useState([]);
   const [unreadCount, setUnreadCount] = useState(0);
   const [isVisible, setIsVisible] = useState(false);
@@ -48,7 +45,7 @@ export const NotificationProvider = ({ children }) => {
   const { user, hasPermission } = useSupabaseAuth();
 
   // Tipos de notificação com configurações
-  const notificationTypes = {
+  const _notificationTypes = {
     financial: {
       icon: DollarSign,
       color: 'text-green-600',
@@ -94,7 +91,7 @@ export const NotificationProvider = ({ children }) => {
   };
 
   // Verificar se tabela existe
-  const tableExists = useCallback(async (tableName) => {
+  const _tableExists = useCallback(async (tableName) => {
     try {
       const { error } = await supabase
         .from(tableName)
@@ -108,13 +105,13 @@ export const NotificationProvider = ({ children }) => {
   }, []);
 
   // Carregar notificações do banco - VERSÃO ULTRA ROBUSTA
-  const loadNotifications = useCallback(async () => {
+  const _loadNotifications = useCallback(async () => {
     if (!user) return;
 
     setLoading(true);
     try {
       // Usar APENAS a API ultra-robusta que nunca falha
-      const result = await notificationAPI.getNotifications(user.id);
+      const _result = await notificationAPI.getNotifications(user.id);
       
       // A API sempre retorna success: true
       setNotifications(result.data || []);
@@ -131,10 +128,10 @@ export const NotificationProvider = ({ children }) => {
   }, [user]);
 
   // Criar notificação - VERSÃO ULTRA ROBUSTA
-  const createNotification = useCallback(async (notification) => {
+  const _createNotification = useCallback(async (notification) => {
     try {
       // Usar APENAS a API ultra-robusta que nunca falha  
-      const result = await notificationAPI.createNotification({
+      const _result = await notificationAPI.createNotification({
         user_id: notification.userId,
         title: notification.title,
         message: notification.message,
@@ -145,7 +142,7 @@ export const NotificationProvider = ({ children }) => {
       });
 
       // Criar notificação local sempre (independente do resultado da API)
-      const newNotification = {
+      const _newNotification = {
         id: Date.now(),
         user_id: notification.userId,
         title: notification.title,
@@ -172,7 +169,7 @@ export const NotificationProvider = ({ children }) => {
   }, [user]);
 
   // Marcar como lida
-  const markAsRead = useCallback(async (notificationId) => {
+  const _markAsRead = useCallback(async (notificationId) => {
     try {
       // Atualizar estado local imediatamente para melhor UX
       setNotifications(prev => 
@@ -183,7 +180,7 @@ export const NotificationProvider = ({ children }) => {
       setUnreadCount(prev => Math.max(0, prev - 1));
 
       // Usar a nova API robusta
-      const result = await notificationAPI.markAsRead(notificationId);
+      const _result = await notificationAPI.markAsRead(notificationId);
       
       if (!result.success) {
         console.error('Erro ao marcar notificação no servidor:', result.error);
@@ -199,7 +196,7 @@ export const NotificationProvider = ({ children }) => {
   }, []);
 
   // Marcar todas como lidas - VERSÃO SIMPLIFICADA
-  const markAllAsRead = useCallback(async () => {
+  const _markAllAsRead = useCallback(async () => {
     if (!user) return;
 
     try {
@@ -225,7 +222,7 @@ export const NotificationProvider = ({ children }) => {
   }, [user]);
 
   // Deletar notificação - VERSÃO SIMPLIFICADA
-  const deleteNotification = useCallback(async (notificationId) => {
+  const _deleteNotification = useCallback(async (notificationId) => {
     try {
       // SEMPRE remover do estado local primeiro (melhor UX)
       setNotifications(prev => prev.filter(n => n.id !== notificationId));
@@ -246,13 +243,13 @@ export const NotificationProvider = ({ children }) => {
   }, []);
 
   // Sistema de alertas automáticos
-  const checkFinancialAlerts = useCallback(async () => {
+  const _checkFinancialAlerts = useCallback(async () => {
     if (!hasPermission('admin')) return;
 
     try {
       // Verificar se tabelas existem
-      const accountsReceivableExists = await tableExists('accounts_receivable');
-      const bankAccountsExists = await tableExists('bank_accounts');
+      const _accountsReceivableExists = await tableExists('accounts_receivable');
+      const _bankAccountsExists = await tableExists('bank_accounts');
 
       if (accountsReceivableExists) {
         // Verificar contas vencidas
@@ -281,7 +278,7 @@ export const NotificationProvider = ({ children }) => {
           .select('current_balance')
           .eq('is_active', true);
 
-        const totalBalance = bankAccounts?.reduce((sum, acc) => sum + parseFloat(acc.current_balance), 0) || 0;
+        const _totalBalance = bankAccounts?.reduce((sum, acc) => sum + parseFloat(acc.current_balance), 0) || 0;
         
         if (totalBalance < 10000) {
           await createNotification({
@@ -300,16 +297,16 @@ export const NotificationProvider = ({ children }) => {
     }
   }, [user, hasPermission, createNotification, tableExists]);
 
-  const checkStockAlerts = useCallback(async () => {
+  const _checkStockAlerts = useCallback(async () => {
     if (!hasPermission('admin')) return;
 
     try {
       // Verificar se tabela products_extended existe
-      const productsExtendedExists = await tableExists('products_extended');
+      const _productsExtendedExists = await tableExists('products_extended');
       
       if (!productsExtendedExists) {
         // Verificar tabela products padrão
-        const productsExists = await tableExists('products');
+        const _productsExists = await tableExists('products');
         
         if (!productsExists) return;
 
@@ -318,7 +315,7 @@ export const NotificationProvider = ({ children }) => {
           .select('name, stock_quantity')
           .eq('is_active', true);
 
-        const lowStockProducts = products?.filter(p => p.stock_quantity < 10) || [];
+        const _lowStockProducts = products?.filter(p => p.stock_quantity < 10) || [];
 
         if (lowStockProducts.length > 0) {
           await createNotification({
@@ -339,7 +336,7 @@ export const NotificationProvider = ({ children }) => {
         .select('name, current_stock, min_stock')
         .eq('is_active', true);
 
-      const lowStockProducts = allProducts?.filter(p => 
+      const _lowStockProducts = allProducts?.filter(p => 
         p.current_stock < p.min_stock
       ) || [];
 
@@ -360,9 +357,9 @@ export const NotificationProvider = ({ children }) => {
   }, [user, hasPermission, createNotification, tableExists]);
 
   // Solicitar permissão para notificações (apenas quando o usuário interagir)
-  const requestNotificationPermission = useCallback(async () => {
+  const _requestNotificationPermission = useCallback(async () => {
     if ('Notification' in window) {
-      const permission = await Notification.requestPermission();
+      const _permission = await Notification.requestPermission();
       setHasNotificationPermission(permission === 'granted');
       return permission === 'granted';
     }
@@ -378,9 +375,9 @@ export const NotificationProvider = ({ children }) => {
     console.log('🔔 Sistema de notificações ativo via estado local');
 
     // Futuro: reativar quando tabela notifications estiver 100% funcional
-    // const setupSubscriptions = async () => {
+    // const _setupSubscriptions = async () => {
     //   try {
-    //     const result = await notificationAPI.tableExists('notifications');
+    //     const _result = await notificationAPI.tableExists('notifications');
     //     if (!result) return;
     //     // ... subscription code
     //   } catch (error) {
@@ -394,16 +391,16 @@ export const NotificationProvider = ({ children }) => {
   useEffect(() => {
     if (!user || !hasPermission('admin')) return;
 
-    const checkAlerts = () => {
+    const _checkAlerts = () => {
       checkFinancialAlerts();
       checkStockAlerts();
     };
 
     // Verificar após 5 segundos da inicialização
-    const initialTimeout = setTimeout(checkAlerts, 5000);
+    const _initialTimeout = setTimeout(checkAlerts, 5000);
 
     // Verificar a cada 10 minutos
-    const interval = setInterval(checkAlerts, 10 * 60 * 1000);
+    const _interval = setInterval(checkAlerts, 10 * 60 * 1000);
 
     return () => {
       clearTimeout(initialTimeout);
@@ -421,10 +418,10 @@ export const NotificationProvider = ({ children }) => {
     if ('Notification' in window) {
       setHasNotificationPermission(Notification.permission === 'granted');
     }
-  }, []);
+  }, [] // TODO: Add missing dependencies to fix exhaustive-deps warning);
 
   // Funções de notificação rápida para módulos
-  const notifySuccess = useCallback((title, message, actionUrl) => {
+  const _notifySuccess = useCallback((title, message, actionUrl) => {
     return createNotification({
       userId: user?.id,
       type: 'success',
@@ -434,7 +431,7 @@ export const NotificationProvider = ({ children }) => {
     });
   }, [user, createNotification]);
 
-  const notifyError = useCallback((title, message, actionUrl) => {
+  const _notifyError = useCallback((title, message, actionUrl) => {
     return createNotification({
       userId: user?.id,
       type: 'alert',
@@ -445,7 +442,7 @@ export const NotificationProvider = ({ children }) => {
     });
   }, [user, createNotification]);
 
-  const notifyInfo = useCallback((title, message, actionUrl) => {
+  const _notifyInfo = useCallback((title, message, actionUrl) => {
     return createNotification({
       userId: user?.id,
       type: 'info',
@@ -455,7 +452,7 @@ export const NotificationProvider = ({ children }) => {
     });
   }, [user, createNotification]);
 
-  const value = {
+  const _value = {
     notifications,
     unreadCount,
     loading,

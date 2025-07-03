@@ -1,22 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { 
-  X, Save, AlertCircle, CheckCircle, User, Building, 
-  Mail, Phone, MapPin, FileText, Loader
-} from 'lucide-react';
-import { 
-  createManualCustomer, 
-  editAdminCustomer,
-  validateCPF,
-  validateCNPJ,
-  validateEmail,
-  formatCPF,
-  formatCNPJ,
-  formatPhone,
-  formatCEP,
-  fetchAddressByCEP
-} from '../lib/admin-customers-api';
+// import { _X, _Save, _AlertCircle, _CheckCircle, _User, _Building, _Mail, _Phone, _MapPin, _FileText, _Loader } from 'lucide-react'; // Temporarily commented - unused import
+import { _createManualCustomer, _editAdminCustomer, _validateCPF, _validateCNPJ, _validateEmail, _formatCPF, _formatCNPJ, _formatPhone, _formatCEP, _fetchAddressByCEP } from '../lib/admin-customers-api';
 
-const CustomerCreateModal = ({ 
+const _CustomerCreateModal = ({ 
   isOpen, 
   onClose, 
   mode = 'create', // 'create' | 'edit'
@@ -45,7 +31,7 @@ const CustomerCreateModal = ({
   const [isLoadingCEP, setIsLoadingCEP] = useState(false);
 
   // Estados brasileiros
-  const states = [
+  const _states = [
     'AC', 'AL', 'AP', 'AM', 'BA', 'CE', 'DF', 'ES', 'GO', 
     'MA', 'MT', 'MS', 'MG', 'PA', 'PB', 'PR', 'PE', 'PI', 
     'RJ', 'RN', 'RS', 'RO', 'RR', 'SC', 'SP', 'SE', 'TO'
@@ -90,9 +76,9 @@ const CustomerCreateModal = ({
     setFieldErrors({});
   }, [mode, customer, isOpen]);
 
-  const handleInputChange = (e) => {
+  const _handleInputChange = (e) => {
     const { name, value } = e.target;
-    let formattedValue = value;
+    let _formattedValue = value;
 
     // Formatação automática
     if (name === 'cpf_cnpj') {
@@ -115,8 +101,8 @@ const CustomerCreateModal = ({
     }
   };
 
-  const handleUserTypeChange = (e) => {
-    const newType = e.target.value;
+  const _handleUserTypeChange = (e) => {
+    const _newType = e.target.value;
     setFormData(prev => ({ 
       ...prev, 
       user_type: newType,
@@ -126,12 +112,12 @@ const CustomerCreateModal = ({
     }));
   };
 
-  const handleCEPBlur = async () => {
-    const cep = formData.zip_code.replace(/[^\d]/g, '');
+  const _handleCEPBlur = async () => {
+    const _cep = formData.zip_code.replace(/[^\d]/g, '');
     if (cep.length === 8) {
       setIsLoadingCEP(true);
       try {
-        const result = await fetchAddressByCEP(cep);
+        const _result = await fetchAddressByCEP(cep);
         if (result.success) {
           setFormData(prev => ({
             ...prev,
@@ -148,8 +134,8 @@ const CustomerCreateModal = ({
     }
   };
 
-  const validateForm = () => {
-    const errors = {};
+  const _validateForm = () => {
+    const _errors = {};
 
     // Campos obrigatórios
     if (!formData.name.trim()) errors.name = 'Nome é obrigatório';
@@ -182,7 +168,7 @@ const CustomerCreateModal = ({
     return Object.keys(errors).length === 0;
   };
 
-  const handleSubmit = async (e) => {
+  const _handleSubmit = async (e) => {
     e.preventDefault();
     
     if (!validateForm()) {

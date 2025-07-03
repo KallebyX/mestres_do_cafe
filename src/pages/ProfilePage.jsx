@@ -1,23 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useSupabaseAuth } from '../contexts/SupabaseAuthContext';
 import { useNavigate } from 'react-router-dom';
-import { 
-  User, 
-  Mail, 
-  Phone, 
-  Lock, 
-  Eye, 
-  EyeOff, 
-  Edit2,
-  Save,
-  X,
-  CheckCircle,
-  AlertCircle,
-  Calendar,
-  Shield,
-  Star,
-  Coffee
-} from 'lucide-react';
+import { User, Mail, Phone, Lock, Eye, EyeOff, Edit2, Save, X, CheckCircle, AlertCircle, Calendar, Shield, Star, Coffee } from 'lucide-react';
 
 const ProfilePage = () => {
   const { user, updateProfile, logout, loading } = useSupabaseAuth();

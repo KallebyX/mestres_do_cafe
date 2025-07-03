@@ -1,14 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { 
-  Settings, Users, Shield, Database, Globe, Bell,
-  Key, Mail, Smartphone, Server, Lock, Edit
-} from 'lucide-react';
-import { useSupabaseAuth } from '../contexts/SupabaseAuthContext';
-import { useNavigate } from 'react-router-dom';
+// import { _Settings, _Users, _Shield, _Database, _Globe, _Bell, _Key, _Mail, _Smartphone, _Server, _Lock, _Edit } from 'lucide-react'; // Temporarily commented - unused import
+import { _useSupabaseAuth } from '../contexts/SupabaseAuthContext';
+import { _useNavigate } from 'react-router-dom';
 
-const AdminConfigDashboard = () => {
+const _AdminConfigDashboard = () => {
   const { user, hasPermission } = useSupabaseAuth();
-  const navigate = useNavigate();
+  const _navigate = useNavigate();
 
   useEffect(() => {
     if (!user || !hasPermission('admin')) {

@@ -1,10 +1,9 @@
 import * as React from "react"
 
-import { cn } from "@/lib/utils"
+import { _cn } from "@/lib/utils"
 
-function Table({
-  className,
-  ...props
+function Table(_{
+  className,_...props
 }) {
   return (
     <div data-slot="table-container" className="relative w-full overflow-x-auto">
@@ -16,9 +15,8 @@ function Table({
   );
 }
 
-function TableHeader({
-  className,
-  ...props
+function TableHeader(_{
+  className,_...props
 }) {
   return (
     <thead
@@ -28,9 +26,8 @@ function TableHeader({
   );
 }
 
-function TableBody({
-  className,
-  ...props
+function TableBody(_{
+  className,_...props
 }) {
   return (
     <tbody
@@ -40,9 +37,8 @@ function TableBody({
   );
 }
 
-function TableFooter({
-  className,
-  ...props
+function TableFooter(_{
+  className,_...props
 }) {
   return (
     <tfoot
@@ -52,9 +48,8 @@ function TableFooter({
   );
 }
 
-function TableRow({
-  className,
-  ...props
+function TableRow(_{
+  className,_...props
 }) {
   return (
     <tr
@@ -67,9 +62,8 @@ function TableRow({
   );
 }
 
-function TableHead({
-  className,
-  ...props
+function TableHead(_{
+  className,_...props
 }) {
   return (
     <th
@@ -82,9 +76,8 @@ function TableHead({
   );
 }
 
-function TableCell({
-  className,
-  ...props
+function TableCell(_{
+  className,_...props
 }) {
   return (
     <td
@@ -97,9 +90,8 @@ function TableCell({
   );
 }
 
-function TableCaption({
-  className,
-  ...props
+function TableCaption(_{
+  className,_...props
 }) {
   return (
     <caption

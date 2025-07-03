@@ -1,7 +1,7 @@
-import { supabase } from './supabase';
+import { _supabase } from './supabase';
 
 // Buscar todos os produtos ativos
-export const getAllProducts = async () => {
+export const _getAllProducts = async () => {
   try {
     const { data, error } = await supabase
       .from('products')
@@ -22,7 +22,7 @@ export const getAllProducts = async () => {
 };
 
 // Buscar todos os produtos (incluindo inativos) - para admin
-export const getAllProductsAdmin = async () => {
+export const _getAllProductsAdmin = async () => {
   try {
     const { data, error } = await supabase
       .from('products')
@@ -42,7 +42,7 @@ export const getAllProductsAdmin = async () => {
 };
 
 // Criar novo produto
-export const createProduct = async (productData) => {
+export const _createProduct = async (productData) => {
   try {
     const { data, error } = await supabase
       .from('products')
@@ -81,7 +81,7 @@ export const createProduct = async (productData) => {
 };
 
 // Atualizar produto
-export const updateProduct = async (id, productData) => {
+export const _updateProduct = async (id, productData) => {
   try {
     const { data, error } = await supabase
       .from('products')
@@ -120,7 +120,7 @@ export const updateProduct = async (id, productData) => {
 };
 
 // Deletar produto (soft delete)
-export const deleteProduct = async (id) => {
+export const _deleteProduct = async (id) => {
   try {
     const { data, error } = await supabase
       .from('products')
@@ -145,7 +145,7 @@ export const deleteProduct = async (id) => {
 };
 
 // Ativar/Desativar produto
-export const toggleProductStatus = async (id, isActive) => {
+export const _toggleProductStatus = async (id, isActive) => {
   try {
     const { data, error } = await supabase
       .from('products')
@@ -174,7 +174,7 @@ export const toggleProductStatus = async (id, isActive) => {
 };
 
 // Atualizar estoque do produto
-export const updateProductStock = async (id, stock) => {
+export const _updateProductStock = async (id, stock) => {
   try {
     const { data, error } = await supabase
       .from('products')
@@ -199,7 +199,7 @@ export const updateProductStock = async (id, stock) => {
 };
 
 // Buscar produtos em destaque
-export const getFeaturedProducts = async () => {
+export const _getFeaturedProducts = async () => {
   try {
     const { data, error } = await supabase
       .from('products')
@@ -222,7 +222,7 @@ export const getFeaturedProducts = async () => {
 };
 
 // Buscar produto por ID
-export const getProductById = async (id) => {
+export const _getProductById = async (id) => {
   try {
     const { data, error } = await supabase
       .from('products')
@@ -244,7 +244,7 @@ export const getProductById = async (id) => {
 };
 
 // Buscar produto por ID (admin - inclui inativos)
-export const getProductByIdAdmin = async (id) => {
+export const _getProductByIdAdmin = async (id) => {
   try {
     const { data, error } = await supabase
       .from('products')
@@ -265,7 +265,7 @@ export const getProductByIdAdmin = async (id) => {
 };
 
 // Buscar produtos por categoria
-export const getProductsByCategory = async (category) => {
+export const _getProductsByCategory = async (category) => {
   try {
     const { data, error } = await supabase
       .from('products')
@@ -287,9 +287,9 @@ export const getProductsByCategory = async (category) => {
 };
 
 // Buscar produtos com filtros
-export const getProductsWithFilters = async (filters = {}) => {
+export const _getProductsWithFilters = async (filters = {}) => {
   try {
-    let query = supabase
+    let _query = supabase
       .from('products')
       .select('*')
       .eq('is_active', true);
@@ -323,7 +323,7 @@ export const getProductsWithFilters = async (filters = {}) => {
 
     // Ordenação
     if (filters.sortBy) {
-      const ascending = filters.sortOrder !== 'desc';
+      const _ascending = filters.sortOrder !== 'desc';
       query = query.order(filters.sortBy, { ascending });
     } else {
       query = query.order('created_at', { ascending: false });
@@ -349,7 +349,7 @@ export const getProductsWithFilters = async (filters = {}) => {
 };
 
 // Formatar preço brasileiro
-export const formatPrice = (price) => {
+export const _formatPrice = (price) => {
   return new Intl.NumberFormat('pt-BR', {
     style: 'currency',
     currency: 'BRL'
@@ -357,13 +357,13 @@ export const formatPrice = (price) => {
 };
 
 // Calcular desconto percentual
-export const calculateDiscount = (originalPrice, currentPrice) => {
+export const _calculateDiscount = (originalPrice, currentPrice) => {
   if (!originalPrice || originalPrice <= currentPrice) return 0;
   return Math.round(((originalPrice - currentPrice) / originalPrice) * 100);
 };
 
 // Obter primeira imagem do produto
-export const getProductImage = (product) => {
+export const _getProductImage = (product) => {
   if (product.images && product.images.length > 0) {
     return product.images[0];
   }
@@ -371,7 +371,7 @@ export const getProductImage = (product) => {
 };
 
 // Obter categorias disponíveis
-export const getProductCategories = () => [
+export const _getProductCategories = () => [
   'espresso',
   'filtrado',
   'especial',
@@ -381,7 +381,7 @@ export const getProductCategories = () => [
 ];
 
 // Obter níveis de torra disponíveis
-export const getRoastLevels = () => [
+export const _getRoastLevels = () => [
   'light',
   'medium-light', 
   'medium',
@@ -390,8 +390,8 @@ export const getRoastLevels = () => [
 ];
 
 // Validar dados do produto
-export const validateProductData = (productData) => {
-  const errors = [];
+export const _validateProductData = (productData) => {
+  const _errors = [];
 
   if (!productData.name || productData.name.trim().length < 3) {
     errors.push('Nome deve ter pelo menos 3 caracteres');

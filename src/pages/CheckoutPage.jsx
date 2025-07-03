@@ -1,12 +1,12 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { useCart } from '../contexts/CartContext';
-import { useAuth } from '../contexts/AuthContext';
+import { _useNavigate } from 'react-router-dom';
+import { _useCart } from '../contexts/CartContext';
+import { _useAuth } from '../contexts/AuthContext';
 
-const CheckoutPage = () => {
+const _CheckoutPage = () => {
   const { cartItems, getTotalPrice, clearCart } = useCart();
   const { user } = useAuth();
-  const navigate = useNavigate();
+  const _navigate = useNavigate();
   
   const [formData, setFormData] = useState({
     address: '',
@@ -28,14 +28,14 @@ const CheckoutPage = () => {
     }
   }, [user, cartItems, navigate]);
 
-  const handleChange = (e) => {
+  const _handleChange = (e) => {
     setFormData({
       ...formData,
       [e.target.name]: e.target.value
     });
   };
 
-  const handleSubmit = async (e) => {
+  const _handleSubmit = async (e) => {
     e.preventDefault();
     setIsProcessing(true);
 
@@ -56,8 +56,8 @@ const CheckoutPage = () => {
     }
   };
 
-  const shippingCost = getTotalPrice() >= 80 ? 0 : 15;
-  const totalWithShipping = getTotalPrice() + shippingCost;
+  const _shippingCost = getTotalPrice() >= 80 ? 0 : 15;
+  const _totalWithShipping = getTotalPrice() + shippingCost;
 
   if (!user || cartItems.length === 0) {
     return null;

@@ -1,18 +1,17 @@
 import * as React from "react"
-import { Slot } from "@radix-ui/react-slot"
-import { ChevronRight, MoreHorizontal } from "lucide-react"
+import { _Slot } from "@radix-ui/react-slot"
+// import { _ChevronRight, _MoreHorizontal } from "lucide-react" // Temporarily commented - unused import
 
-import { cn } from "@/lib/utils"
+import { _cn } from "@/lib/utils"
 
-function Breadcrumb({
+function Breadcrumb(_{
   ...props
 }) {
   return <nav aria-label="breadcrumb" data-slot="breadcrumb" {...props} />;
 }
 
-function BreadcrumbList({
-  className,
-  ...props
+function BreadcrumbList(_{
+  className,_...props
 }) {
   return (
     <ol
@@ -25,9 +24,8 @@ function BreadcrumbList({
   );
 }
 
-function BreadcrumbItem({
-  className,
-  ...props
+function BreadcrumbItem(_{
+  className,_...props
 }) {
   return (
     <li
@@ -37,12 +35,10 @@ function BreadcrumbItem({
   );
 }
 
-function BreadcrumbLink({
-  asChild,
-  className,
-  ...props
+function BreadcrumbLink(_{
+  asChild,_className,_...props
 }) {
-  const Comp = asChild ? Slot : "a"
+  const _Comp = asChild ? Slot : "a"
 
   return (
     <Comp
@@ -52,9 +48,8 @@ function BreadcrumbLink({
   );
 }
 
-function BreadcrumbPage({
-  className,
-  ...props
+function BreadcrumbPage(_{
+  className,_...props
 }) {
   return (
     <span
@@ -67,10 +62,8 @@ function BreadcrumbPage({
   );
 }
 
-function BreadcrumbSeparator({
-  children,
-  className,
-  ...props
+function BreadcrumbSeparator(_{
+  children,_className,_...props
 }) {
   return (
     <li
@@ -84,9 +77,8 @@ function BreadcrumbSeparator({
   );
 }
 
-function BreadcrumbEllipsis({
-  className,
-  ...props
+function BreadcrumbEllipsis(_{
+  className,_...props
 }) {
   return (
     <span

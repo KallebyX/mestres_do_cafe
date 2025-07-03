@@ -1,4 +1,4 @@
-import { supabase } from './supabase';
+import { _supabase } from './supabase';
 
 // 🔐 FUNÇÕES ADMINISTRATIVAS DO CARRINHO
 // Apenas usuários com role 'admin' ou 'super_admin' podem usar estas funções
@@ -8,7 +8,7 @@ import { supabase } from './supabase';
  * @param {Object} user - Usuário logado
  * @returns {boolean} - True se for admin
  */
-const isAdmin = (user) => {
+const _isAdmin = (user) => {
   return user && (user.role === 'admin' || user.role === 'super_admin');
 };
 
@@ -17,7 +17,7 @@ const isAdmin = (user) => {
  * @param {Object} user - Usuário administrador
  * @returns {Object} - Lista de carrinhos com dados dos usuários
  */
-export const getAllCarts = async (user) => {
+export const _getAllCarts = async (user) => {
   try {
     // 🔒 VERIFICAÇÃO DE SEGURANÇA: Apenas admins
     if (!isAdmin(user)) {
@@ -59,10 +59,10 @@ export const getAllCarts = async (user) => {
     }
 
     // Agrupar carrinhos por usuário
-    const cartsByUser = {};
+    const _cartsByUser = {};
     
-    carts.forEach(item => {
-      const userId = item.user_id;
+    carts.forEach(_item => {
+      const _userId = item.user_id;
       
       if (!cartsByUser[userId]) {
         cartsByUser[userId] = {
@@ -74,7 +74,7 @@ export const getAllCarts = async (user) => {
         };
       }
       
-      const cartItem = {
+      const _cartItem = {
         id: item.id,
         product_id: item.product_id,
         quantity: item.quantity,
@@ -92,7 +92,7 @@ export const getAllCarts = async (user) => {
       }
     });
 
-    const result = Object.values(cartsByUser);
+    const _result = Object.values(cartsByUser);
     
     console.log(`✅ Admin encontrou ${result.length} carrinhos ativos`);
     return { success: true, data: result };
@@ -109,7 +109,7 @@ export const getAllCarts = async (user) => {
  * @param {string} targetUserId - ID do usuário alvo
  * @returns {Object} - Carrinho do usuário específico
  */
-export const getUserCart = async (adminUser, targetUserId) => {
+export const _getUserCart = async (adminUser, targetUserId) => {
   try {
     // 🔒 VERIFICAÇÃO DE SEGURANÇA: Apenas admins
     if (!isAdmin(adminUser)) {
@@ -159,15 +159,15 @@ export const getUserCart = async (adminUser, targetUserId) => {
     }
 
     // Calcular totais
-    const items = cartItems.map(item => ({
+    const _items = cartItems.map(item => ({
       ...item,
       subtotal: item.products.price * item.quantity
     }));
 
-    const total = items.reduce((sum, item) => sum + item.subtotal, 0);
-    const itemsCount = items.reduce((sum, item) => sum + item.quantity, 0);
+    const _total = items.reduce((sum, item) => sum + item.subtotal, 0);
+    const _itemsCount = items.reduce((sum, item) => sum + item.quantity, 0);
 
-    const result = {
+    const _result = {
       user: userData,
       items,
       total,
@@ -190,7 +190,7 @@ export const getUserCart = async (adminUser, targetUserId) => {
  * @param {string} targetUserId - ID do usuário alvo
  * @returns {Object} - Resultado da operação
  */
-export const clearUserCart = async (adminUser, targetUserId) => {
+export const _clearUserCart = async (adminUser, targetUserId) => {
   try {
     // 🔒 VERIFICAÇÃO DE SEGURANÇA: Apenas admins
     if (!isAdmin(adminUser)) {
@@ -224,7 +224,7 @@ export const clearUserCart = async (adminUser, targetUserId) => {
  * @param {Object} adminUser - Usuário administrador
  * @returns {Object} - Estatísticas dos carrinhos
  */
-export const getCartStatistics = async (adminUser) => {
+export const _getCartStatistics = async (adminUser) => {
   try {
     // 🔒 VERIFICAÇÃO DE SEGURANÇA: Apenas admins
     if (!isAdmin(adminUser)) {
@@ -244,7 +244,7 @@ export const getCartStatistics = async (adminUser) => {
     }
 
     // Contar usuários únicos com carrinho
-    const uniqueUsers = new Set(activeCartsData.map(item => item.user_id)).size;
+    const _uniqueUsers = new Set(activeCartsData.map(item => item.user_id)).size;
 
     // Calcular valor total em carrinhos
     const { data: cartsWithProducts, error: totalError } = await supabase
@@ -258,11 +258,11 @@ export const getCartStatistics = async (adminUser) => {
       throw totalError;
     }
 
-    const totalValue = cartsWithProducts.reduce((sum, item) => {
+    const _totalValue = cartsWithProducts.reduce((sum, item) => {
       return sum + (item.quantity * item.products.price);
     }, 0);
 
-    const stats = {
+    const _stats = {
       totalCartItems: activeCartsData.length,
       usersWithCarts: uniqueUsers,
       totalCartValue: totalValue,

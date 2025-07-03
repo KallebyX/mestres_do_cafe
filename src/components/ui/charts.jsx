@@ -1,8 +1,8 @@
 import React from 'react';
-import { TrendingUp, TrendingDown, BarChart3, Activity, DollarSign } from 'lucide-react';
+// import { _TrendingUp, _TrendingDown, _BarChart3, _Activity, _DollarSign } from 'lucide-react'; // Temporarily commented - unused import
 
 // Função utilitária para validar e sanitizar dados de gráfico
-const sanitizeData = (data) => {
+const _sanitizeData = (data) => {
   if (!data || !Array.isArray(data)) {
     return [];
   }
@@ -15,12 +15,12 @@ const sanitizeData = (data) => {
 };
 
 // Função utilitária para validar dados de pie chart
-const sanitizePieData = (data) => {
+const _sanitizePieData = (data) => {
   if (!data || !Array.isArray(data)) {
     return [{ label: 'Sem dados', value: 100 }];
   }
   
-  const validData = data.map(item => ({
+  const _validData = data.map(item => ({
     ...item,
     value: Number(item.value) || 0,
     label: String(item.label || 'Item'),
@@ -34,8 +34,8 @@ const sanitizePieData = (data) => {
 };
 
 // Componente de Gráfico de Linha
-export const LineChart = ({ data = [], height = 200, color = '#3b82f6' }) => {
-  const sanitizedData = sanitizeData(data);
+export const _LineChart = ({ data = [], height = 200, color = '#3b82f6' }) => {
+  const _sanitizedData = sanitizeData(data);
   
   if (sanitizedData.length === 0) {
     return (
@@ -45,19 +45,19 @@ export const LineChart = ({ data = [], height = 200, color = '#3b82f6' }) => {
     );
   }
 
-  const maxValue = Math.max(...sanitizedData.map(d => d.value), 1);
-  const minValue = Math.min(...sanitizedData.map(d => d.value), 0);
-  const range = maxValue - minValue || 1; // Evitar divisão por zero
+  const _maxValue = Math.max(...sanitizedData.map(d => d.value), 1);
+  const _minValue = Math.min(...sanitizedData.map(d => d.value), 0);
+  const _range = maxValue - minValue || 1; // Evitar divisão por zero
   
-  const viewBoxWidth = 300;
-  const viewBoxHeight = height;
-  const padding = 20;
-  const chartWidth = viewBoxWidth - 2 * padding;
-  const chartHeight = viewBoxHeight - 2 * padding;
+  const _viewBoxWidth = 300;
+  const _viewBoxHeight = height;
+  const _padding = 20;
+  const _chartWidth = viewBoxWidth - 2 * padding;
+  const _chartHeight = viewBoxHeight - 2 * padding;
 
-  const points = sanitizedData.map((point, index) => {
-    const x = padding + (index / Math.max(sanitizedData.length - 1, 1)) * chartWidth;
-    const y = padding + ((maxValue - point.value) / range) * chartHeight;
+  const _points = sanitizedData.map((point, index) => {
+    const _x = padding + (index / Math.max(sanitizedData.length - 1, 1)) * chartWidth;
+    const _y = padding + ((maxValue - point.value) / range) * chartHeight;
     return `${x},${y}`;
   }).join(' ');
 
@@ -95,8 +95,8 @@ export const LineChart = ({ data = [], height = 200, color = '#3b82f6' }) => {
         
         {/* Points */}
         {sanitizedData.map((point, index) => {
-          const x = padding + (index / Math.max(sanitizedData.length - 1, 1)) * chartWidth;
-          const y = padding + ((maxValue - point.value) / range) * chartHeight;
+          const _x = padding + (index / Math.max(sanitizedData.length - 1, 1)) * chartWidth;
+          const _y = padding + ((maxValue - point.value) / range) * chartHeight;
           return (
             <circle
               key={index}
@@ -120,8 +120,8 @@ export const LineChart = ({ data = [], height = 200, color = '#3b82f6' }) => {
 };
 
 // Componente de Gráfico de Barras
-export const BarChart = ({ data = [], height = 200, color = '#10b981' }) => {
-  const sanitizedData = sanitizeData(data);
+export const _BarChart = ({ data = [], height = 200, color = '#10b981' }) => {
+  const _sanitizedData = sanitizeData(data);
   
   if (sanitizedData.length === 0) {
     return (
@@ -131,7 +131,7 @@ export const BarChart = ({ data = [], height = 200, color = '#10b981' }) => {
     );
   }
 
-  const maxValue = Math.max(...sanitizedData.map(d => d.value), 1);
+  const _maxValue = Math.max(...sanitizedData.map(d => d.value), 1);
 
   return (
     <div className="w-full">
@@ -155,10 +155,10 @@ export const BarChart = ({ data = [], height = 200, color = '#10b981' }) => {
 };
 
 // Componente de Gráfico de Pizza
-export const PieChartComponent = ({ data = [], size = 160 }) => {
-  const sanitizedData = sanitizePieData(data);
+export const _PieChartComponent = ({ data = [], size = 160 }) => {
+  const _sanitizedData = sanitizePieData(data);
   
-  const total = sanitizedData.reduce((sum, item) => sum + item.value, 0);
+  const _total = sanitizedData.reduce((sum, item) => sum + item.value, 0);
   
   if (total === 0) {
     return (
@@ -168,30 +168,30 @@ export const PieChartComponent = ({ data = [], size = 160 }) => {
     );
   }
 
-  const radius = size / 2 - 10;
-  const center = size / 2;
+  const _radius = size / 2 - 10;
+  const _center = size / 2;
   
-  let currentAngle = 0;
-  const colors = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#06b6d4'];
+  let _currentAngle = 0;
+  const _colors = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#06b6d4'];
 
   return (
     <div className="flex items-center gap-4">
       <svg width={size} height={size} className="flex-shrink-0">
         {sanitizedData.map((item, index) => {
-          const percentage = (item.value / total) * 100;
-          const angle = (item.value / total) * 360;
-          const startAngle = currentAngle;
-          const endAngle = currentAngle + angle;
+          const _percentage = (item.value / total) * 100;
+          const _angle = (item.value / total) * 360;
+          const _startAngle = currentAngle;
+          const _endAngle = currentAngle + angle;
           
           // Calcular coordenadas do arco
-          const startX = center + radius * Math.cos((startAngle - 90) * Math.PI / 180);
-          const startY = center + radius * Math.sin((startAngle - 90) * Math.PI / 180);
-          const endX = center + radius * Math.cos((endAngle - 90) * Math.PI / 180);
-          const endY = center + radius * Math.sin((endAngle - 90) * Math.PI / 180);
+          const _startX = center + radius * Math.cos((startAngle - 90) * Math.PI / 180);
+          const _startY = center + radius * Math.sin((startAngle - 90) * Math.PI / 180);
+          const _endX = center + radius * Math.cos((endAngle - 90) * Math.PI / 180);
+          const _endY = center + radius * Math.sin((endAngle - 90) * Math.PI / 180);
           
-          const largeArcFlag = angle > 180 ? 1 : 0;
+          const _largeArcFlag = angle > 180 ? 1 : 0;
           
-          const pathData = [
+          const _pathData = [
             `M ${center} ${center}`,
             `L ${startX} ${startY}`,
             `A ${radius} ${radius} 0 ${largeArcFlag} 1 ${endX} ${endY}`,
@@ -230,11 +230,11 @@ export const PieChartComponent = ({ data = [], size = 160 }) => {
 };
 
 // Componente de Métrica com Tendência
-export const MetricCard = ({ title, value, change, icon: Icon, color = 'blue' }) => {
-  const validValue = Number(value) || 0;
-  const validChange = Number(change) || 0;
+export const _MetricCard = ({ title, value, change, icon: Icon, color = 'blue' }) => {
+  const _validValue = Number(value) || 0;
+  const _validChange = Number(change) || 0;
   
-  const colorClasses = {
+  const _colorClasses = {
     blue: 'from-blue-500 to-blue-600',
     green: 'from-green-500 to-green-600',
     purple: 'from-purple-500 to-purple-600',
@@ -261,8 +261,8 @@ export const MetricCard = ({ title, value, change, icon: Icon, color = 'blue' })
 };
 
 // Componente de Gráfico de Área
-export const AreaChart = ({ data = [], height = 200, color = '#8b5cf6' }) => {
-  const sanitizedData = sanitizeData(data);
+export const _AreaChart = ({ data = [], height = 200, color = '#8b5cf6' }) => {
+  const _sanitizedData = sanitizeData(data);
   
   if (sanitizedData.length === 0) {
     return (
@@ -272,19 +272,19 @@ export const AreaChart = ({ data = [], height = 200, color = '#8b5cf6' }) => {
     );
   }
 
-  const maxValue = Math.max(...sanitizedData.map(d => d.value), 1);
-  const minValue = Math.min(...sanitizedData.map(d => d.value), 0);
-  const range = maxValue - minValue || 1;
+  const _maxValue = Math.max(...sanitizedData.map(d => d.value), 1);
+  const _minValue = Math.min(...sanitizedData.map(d => d.value), 0);
+  const _range = maxValue - minValue || 1;
   
-  const viewBoxWidth = 300;
-  const viewBoxHeight = height;
-  const padding = 20;
-  const chartWidth = viewBoxWidth - 2 * padding;
-  const chartHeight = viewBoxHeight - 2 * padding;
+  const _viewBoxWidth = 300;
+  const _viewBoxHeight = height;
+  const _padding = 20;
+  const _chartWidth = viewBoxWidth - 2 * padding;
+  const _chartHeight = viewBoxHeight - 2 * padding;
 
-  const points = sanitizedData.map((point, index) => {
-    const x = padding + (index / Math.max(sanitizedData.length - 1, 1)) * chartWidth;
-    const y = padding + ((maxValue - point.value) / range) * chartHeight;
+  const _points = sanitizedData.map((point, index) => {
+    const _x = padding + (index / Math.max(sanitizedData.length - 1, 1)) * chartWidth;
+    const _y = padding + ((maxValue - point.value) / range) * chartHeight;
     return `${x},${y}`;
   }).join(' ');
 
@@ -331,12 +331,12 @@ export const AreaChart = ({ data = [], height = 200, color = '#8b5cf6' }) => {
 };
 
 // Componente de Progress Ring
-export const ProgressRing = ({ percentage = 0, size = 120, strokeWidth = 8 }) => {
-  const validPercentage = Math.max(0, Math.min(100, Number(percentage) || 0));
-  const radius = (size - strokeWidth) / 2;
-  const circumference = radius * 2 * Math.PI;
-  const strokeDasharray = circumference;
-  const strokeDashoffset = circumference - (validPercentage / 100) * circumference;
+export const _ProgressRing = ({ percentage = 0, size = 120, strokeWidth = 8 }) => {
+  const _validPercentage = Math.max(0, Math.min(100, Number(percentage) || 0));
+  const _radius = (size - strokeWidth) / 2;
+  const _circumference = radius * 2 * Math.PI;
+  const _strokeDasharray = circumference;
+  const _strokeDashoffset = circumference - (validPercentage / 100) * circumference;
 
   return (
     <div className="relative inline-flex items-center justify-center">

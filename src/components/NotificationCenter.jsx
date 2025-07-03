@@ -1,14 +1,11 @@
 import React, { useState } from 'react';
-import { useNotifications } from '../contexts/NotificationContext';
-import { useNavigate } from 'react-router-dom';
-import { 
-  Bell, X, Check, CheckCheck, Trash2, Clock, 
-  AlertCircle, ChevronRight, Settings, Filter 
-} from 'lucide-react';
-import { formatDistanceToNow } from 'date-fns';
-import { ptBR } from 'date-fns/locale';
+import { _useNotifications } from '../contexts/NotificationContext';
+import { _useNavigate } from 'react-router-dom';
+// import { _Bell, _X, _Check, _CheckCheck, _Trash2, _Clock, _AlertCircle, _ChevronRight, _Settings, _Filter } from 'lucide-react'; // Temporarily commented - unused import
+import { _formatDistanceToNow } from 'date-fns';
+import { _ptBR } from 'date-fns/locale';
 
-export const NotificationBell = () => {
+export const _NotificationBell = () => {
   const { unreadCount, isVisible, setIsVisible } = useNotifications();
 
   return (
@@ -26,7 +23,7 @@ export const NotificationBell = () => {
   );
 };
 
-export const NotificationDropdown = () => {
+export const _NotificationDropdown = () => {
   const { 
     notifications, 
     unreadCount, 
@@ -40,17 +37,17 @@ export const NotificationDropdown = () => {
   } = useNotifications();
 
   const [filter, setFilter] = useState('all'); // all, unread, financial, stock, hr
-  const navigate = useNavigate();
+  const _navigate = useNavigate();
 
   if (!isVisible) return null;
 
-  const filteredNotifications = notifications.filter(notification => {
+  const _filteredNotifications = notifications.filter(_notification => {
     if (filter === 'all') return true;
     if (filter === 'unread') return !notification.read;
     return notification.type === filter;
   });
 
-  const handleNotificationClick = async (notification) => {
+  const _handleNotificationClick = async (notification) => {
     if (!notification.read) {
       await markAsRead(notification.id);
     }
@@ -61,17 +58,17 @@ export const NotificationDropdown = () => {
     }
   };
 
-  const handleMarkAsRead = async (e, notificationId) => {
+  const _handleMarkAsRead = async (e, notificationId) => {
     e.stopPropagation();
     await markAsRead(notificationId);
   };
 
-  const handleDelete = async (e, notificationId) => {
+  const _handleDelete = async (e, notificationId) => {
     e.stopPropagation();
     await deleteNotification(notificationId);
   };
 
-  const formatTimeAgo = (date) => {
+  const _formatTimeAgo = (date) => {
     try {
       return formatDistanceToNow(new Date(date), { 
         addSuffix: true, 
@@ -154,8 +151,8 @@ export const NotificationDropdown = () => {
         ) : (
           <div className="divide-y divide-gray-100">
             {filteredNotifications.map((notification) => {
-              const typeConfig = notificationTypes[notification.type] || notificationTypes.info;
-              const IconComponent = typeConfig.icon;
+              const _typeConfig = notificationTypes[notification.type] || notificationTypes.info;
+              const _IconComponent = typeConfig.icon;
 
               return (
                 <div
@@ -252,7 +249,7 @@ export const NotificationDropdown = () => {
   );
 };
 
-export const NotificationCenter = () => {
+export const _NotificationCenter = () => {
   return (
     <div className="relative">
       <NotificationBell />

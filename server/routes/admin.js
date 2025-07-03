@@ -2,7 +2,7 @@ const express = require('express');
 const { db } = require('../database/init');
 const { authenticateToken, requireAdmin } = require('../middleware/auth');
 
-const router = express.Router();
+const _router = express.Router();
 
 // Middleware para todas as rotas admin
 router.use(authenticateToken);
@@ -10,7 +10,7 @@ router.use(requireAdmin);
 
 // Dashboard - estatísticas gerais
 router.get('/dashboard', (req, res) => {
-  const stats = {};
+  const _stats = {};
   
   // Total de usuários
   db.get('SELECT COUNT(*) as total FROM users WHERE is_active = 1', (err, result) => {
@@ -58,14 +58,14 @@ router.get('/dashboard', (req, res) => {
 // Gerenciar usuários
 router.get('/users', (req, res) => {
   const { page = 1, limit = 20, search, user_type } = req.query;
-  const offset = (page - 1) * limit;
+  const _offset = (page - 1) * limit;
   
-  let sql = 'SELECT id, name, email, user_type, phone, is_active, created_at FROM users WHERE 1=1';
-  const params = [];
+  let _sql = 'SELECT id, name, email, user_type, phone, is_active, created_at FROM users WHERE 1=1';
+  const _params = [];
   
   if (search) {
     sql += ' AND (name LIKE ? OR email LIKE ?)';
-    const searchTerm = `%${search}%`;
+    const _searchTerm = `%${search}%`;
     params.push(searchTerm, searchTerm);
   }
   
@@ -101,7 +101,7 @@ router.put('/users/:id/toggle-status', (req, res) => {
       return res.status(404).json({ error: 'Usuário não encontrado' });
     }
     
-    const newStatus = user.is_active ? 0 : 1;
+    const _newStatus = user.is_active ? 0 : 1;
     
     db.run('UPDATE users SET is_active = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?', 
            [newStatus, id], (err) => {
@@ -121,17 +121,17 @@ router.put('/users/:id/toggle-status', (req, res) => {
 // Gerenciar produtos
 router.get('/products', (req, res) => {
   const { page = 1, limit = 20, search, category_id } = req.query;
-  const offset = (page - 1) * limit;
+  const _offset = (page - 1) * limit;
   
-  let sql = `SELECT p.*, c.name as category_name 
+  let _sql = `SELECT p.*, c.name as category_name 
              FROM products p 
              LEFT JOIN categories c ON p.category_id = c.id 
              WHERE 1=1`;
-  const params = [];
+  const _params = [];
   
   if (search) {
     sql += ' AND (p.name LIKE ? OR p.description LIKE ?)';
-    const searchTerm = `%${search}%`;
+    const _searchTerm = `%${search}%`;
     params.push(searchTerm, searchTerm);
   }
   
@@ -165,7 +165,7 @@ router.post('/products', (req, res) => {
     return res.status(400).json({ error: 'Nome e preço são obrigatórios' });
   }
   
-  const sql = `INSERT INTO products (
+  const _sql = `INSERT INTO products (
     name, description, price, original_price, category_id,
     image_url, origin, roast_level, flavor_notes, processing_method,
     altitude, stock_quantity, is_featured
@@ -197,7 +197,7 @@ router.put('/products/:id', (req, res) => {
     altitude, stock_quantity, is_featured, is_active
   } = req.body;
   
-  const sql = `UPDATE products SET
+  const _sql = `UPDATE products SET
     name = COALESCE(?, name),
     description = COALESCE(?, description),
     price = COALESCE(?, price),
@@ -236,13 +236,13 @@ router.put('/products/:id', (req, res) => {
 // Gerenciar pedidos
 router.get('/orders', (req, res) => {
   const { page = 1, limit = 20, status, user_id } = req.query;
-  const offset = (page - 1) * limit;
+  const _offset = (page - 1) * limit;
   
-  let sql = `SELECT o.*, u.name as user_name, u.email as user_email
+  let _sql = `SELECT o.*, u.name as user_name, u.email as user_email
              FROM orders o
              JOIN users u ON o.user_id = u.id
              WHERE 1=1`;
-  const params = [];
+  const _params = [];
   
   if (status) {
     sql += ' AND o.status = ?';
@@ -272,7 +272,7 @@ router.put('/orders/:id/status', (req, res) => {
   const { id } = req.params;
   const { status } = req.body;
   
-  const validStatuses = ['pending', 'processing', 'shipped', 'delivered', 'cancelled'];
+  const _validStatuses = ['pending', 'processing', 'shipped', 'delivered', 'cancelled'];
   
   if (!status || !validStatuses.includes(status)) {
     return res.status(400).json({ error: 'Status inválido' });

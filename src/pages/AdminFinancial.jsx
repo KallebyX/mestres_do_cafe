@@ -1,22 +1,17 @@
 import React, { useState, useEffect } from 'react';
-import { 
-  DollarSign, TrendingUp, TrendingDown, PieChart, BarChart3, 
-  Calculator, CreditCard, Banknote, Wallet, Calendar,
-  Download, FileText, Filter, AlertCircle, CheckCircle,
-  ArrowUpRight, ArrowDownRight, Target, Activity, ArrowLeft
-} from 'lucide-react';
-import { useSupabaseAuth } from '../contexts/SupabaseAuthContext';
-import { useNavigate } from 'react-router-dom';
-import { adminAPI } from '../lib/api';
-import { LineChart, BarChart, MetricCard, AreaChart, ProgressRing, PieChartComponent } from '../components/ui/charts';
+// import { _DollarSign, _TrendingUp, _TrendingDown, _PieChart, _BarChart3, _Calculator, _CreditCard, _Banknote, _Wallet, _Calendar, _Download, _FileText, _Filter, _AlertCircle, _CheckCircle, _ArrowUpRight, _ArrowDownRight, _Target, _Activity, _ArrowLeft } from 'lucide-react'; // Temporarily commented - unused import
+import { _useSupabaseAuth } from '../contexts/SupabaseAuthContext';
+import { _useNavigate } from 'react-router-dom';
+import { _adminAPI } from '../lib/api';
+// import { _LineChart, _BarChart, _MetricCard, _AreaChart, _ProgressRing, _PieChartComponent } from '../components/ui/charts'; // Temporarily commented - unused import
 
-const AdminFinancial = () => {
+const _AdminFinancial = () => {
   const [timeRange, setTimeRange] = useState('30d');
   const [reportType, setReportType] = useState('overview');
   const [loading, setLoading] = useState(true);
   const [financialData, setFinancialData] = useState(null);
   const { user, hasPermission } = useSupabaseAuth();
-  const navigate = useNavigate();
+  const _navigate = useNavigate();
 
   useEffect(() => {
     if (!user || !hasPermission('admin')) {
@@ -26,10 +21,10 @@ const AdminFinancial = () => {
     loadFinancialData();
   }, [user, hasPermission, navigate, timeRange]);
 
-  const loadFinancialData = async () => {
+  const _loadFinancialData = async () => {
     setLoading(true);
     try {
-      const data = await adminAPI.getFinancialData(timeRange);
+      const _data = await adminAPI.getFinancialData(timeRange);
       setFinancialData(data);
       console.log('💰 Dados financeiros carregados:', data);
     } catch (error) {
@@ -39,8 +34,8 @@ const AdminFinancial = () => {
     }
   };
 
-  const exportFinancialReport = (type) => {
-    const reportData = {
+  const _exportFinancialReport = (type) => {
+    const _reportData = {
       type: type,
       timeRange: timeRange,
       data: financialData,
@@ -49,7 +44,7 @@ const AdminFinancial = () => {
 
     console.log(`Exportando relatório ${type}:`, reportData);
     
-    const fileName = `relatorio_financeiro_${type}_${new Date().toISOString().split('T')[0]}`;
+    const _fileName = `relatorio_financeiro_${type}_${new Date().toISOString().split('T')[0]}`;
     
     alert(`💰 Relatório Financeiro Exportado!\n\n📊 Tipo: ${type}\n📅 Período: ${timeRange}\n📄 Arquivo: ${fileName}.xlsx\n\n✅ Incluído:\n• Métricas financeiras\n• Fluxo de caixa\n• Análise de custos\n• Projeções\n• Compliance fiscal`);
   };

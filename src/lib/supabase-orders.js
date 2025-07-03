@@ -1,7 +1,7 @@
-import { supabase } from './supabase';
+import { _supabase } from './supabase';
 
 // Verificar se tabela existe
-const tableExists = async (tableName) => {
+const _tableExists = async (tableName) => {
   try {
     const { data, error } = await supabase
       .from(tableName)
@@ -14,13 +14,13 @@ const tableExists = async (tableName) => {
 };
 
 // Criar novo pedido
-export const createOrder = async (orderData) => {
+export const _createOrder = async (orderData) => {
   try {
     const { user, items, subtotal, shippingCost, discountAmount, total, shippingAddress, paymentMethod, notes } = orderData;
 
     // Verificar se tabelas existem
-    const ordersExists = await tableExists('orders');
-    const orderItemsExists = await tableExists('order_items');
+    const _ordersExists = await tableExists('orders');
+    const _orderItemsExists = await tableExists('order_items');
 
     if (!ordersExists) {
       console.log('⚠️ Tabela orders não existe, simulando criação');
@@ -52,7 +52,7 @@ export const createOrder = async (orderData) => {
 
     // Criar os itens do pedido apenas se tabela existir
     if (orderItemsExists) {
-      const orderItems = items.map(item => ({
+      const _orderItems = items.map(item => ({
         order_id: order.id,
         product_id: item.id,
         quantity: item.quantity,
@@ -104,10 +104,10 @@ export const createOrder = async (orderData) => {
 };
 
 // Buscar pedidos do usuário - QUERY ROBUSTA
-export const getUserOrders = async (userId) => {
+export const _getUserOrders = async (userId) => {
   try {
-    const ordersExists = await tableExists('orders');
-    const orderItemsExists = await tableExists('order_items');
+    const _ordersExists = await tableExists('orders');
+    const _orderItemsExists = await tableExists('order_items');
 
     if (!ordersExists) {
       console.log('⚠️ Tabela orders não existe, retornando array vazio');
@@ -115,7 +115,7 @@ export const getUserOrders = async (userId) => {
     }
 
     // Query simplificada baseada nas tabelas disponíveis
-    const selectFields = orderItemsExists 
+    const _selectFields = orderItemsExists 
       ? `*, order_items(*)`
       : '*';
 
@@ -139,10 +139,10 @@ export const getUserOrders = async (userId) => {
 };
 
 // Buscar pedido por ID - QUERY ROBUSTA
-export const getOrderById = async (orderId, userId) => {
+export const _getOrderById = async (orderId, userId) => {
   try {
-    const ordersExists = await tableExists('orders');
-    const orderItemsExists = await tableExists('order_items');
+    const _ordersExists = await tableExists('orders');
+    const _orderItemsExists = await tableExists('order_items');
 
     if (!ordersExists) {
       console.log('⚠️ Tabela orders não existe');
@@ -150,7 +150,7 @@ export const getOrderById = async (orderId, userId) => {
     }
 
     // Query simplificada baseada nas tabelas disponíveis
-    const selectFields = orderItemsExists 
+    const _selectFields = orderItemsExists 
       ? `*, order_items(*)`
       : '*';
 
@@ -174,11 +174,11 @@ export const getOrderById = async (orderId, userId) => {
 };
 
 // ADMIN: Buscar todos os pedidos - QUERY ROBUSTA
-export const getAllOrders = async () => {
+export const _getAllOrders = async () => {
   try {
-    const ordersExists = await tableExists('orders');
-    const orderItemsExists = await tableExists('order_items');
-    const usersExists = await tableExists('users');
+    const _ordersExists = await tableExists('orders');
+    const _orderItemsExists = await tableExists('order_items');
+    const _usersExists = await tableExists('users');
 
     if (!ordersExists) {
       console.log('⚠️ Tabela orders não existe, retornando array vazio');
@@ -186,7 +186,7 @@ export const getAllOrders = async () => {
     }
 
     // Query simplificada baseada nas tabelas disponíveis
-    let selectFields = '*';
+    let _selectFields = '*';
     
     if (usersExists && orderItemsExists) {
       selectFields = `*, users(name, email), order_items(*)`;
@@ -215,16 +215,16 @@ export const getAllOrders = async () => {
 };
 
 // ADMIN: Atualizar status do pedido - FUNÇÃO ROBUSTA
-export const updateOrderStatus = async (orderId, newStatus) => {
+export const _updateOrderStatus = async (orderId, newStatus) => {
   try {
-    const ordersExists = await tableExists('orders');
+    const _ordersExists = await tableExists('orders');
 
     if (!ordersExists) {
       console.log('📝 Simulando atualização de status (tabela não existe)');
       return { success: true, message: 'Status atualizado' };
     }
 
-    const updates = {
+    const _updates = {
       status: newStatus,
       updated_at: new Date().toISOString()
     };
@@ -254,9 +254,9 @@ export const updateOrderStatus = async (orderId, newStatus) => {
 };
 
 // ADMIN: Atualizar código de rastreamento - FUNÇÃO ROBUSTA
-export const updateOrderTracking = async (orderId, trackingCode) => {
+export const _updateOrderTracking = async (orderId, trackingCode) => {
   try {
-    const ordersExists = await tableExists('orders');
+    const _ordersExists = await tableExists('orders');
 
     if (!ordersExists) {
       console.log('📝 Simulando atualização de rastreamento (tabela não existe)');
@@ -286,10 +286,10 @@ export const updateOrderTracking = async (orderId, trackingCode) => {
 };
 
 // Cancelar pedido - FUNÇÃO ROBUSTA
-export const cancelOrder = async (orderId, userId) => {
+export const _cancelOrder = async (orderId, userId) => {
   try {
-    const ordersExists = await tableExists('orders');
-    const orderItemsExists = await tableExists('order_items');
+    const _ordersExists = await tableExists('orders');
+    const _orderItemsExists = await tableExists('order_items');
 
     if (!ordersExists) {
       console.log('📝 Simulando cancelamento (tabela não existe)');
@@ -297,7 +297,7 @@ export const cancelOrder = async (orderId, userId) => {
     }
 
     // Verificar se o pedido pode ser cancelado
-    const selectFields = orderItemsExists ? 'status, order_items(*)' : 'status';
+    const _selectFields = orderItemsExists ? 'status, order_items(*)' : 'status';
     
     const { data: order, error: checkError } = await supabase
       .from('orders')
@@ -356,9 +356,9 @@ export const cancelOrder = async (orderId, userId) => {
 };
 
 // Buscar estatísticas de pedidos para admin - FUNÇÃO ROBUSTA
-export const getOrderStats = async () => {
+export const _getOrderStats = async () => {
   try {
-    const ordersExists = await tableExists('orders');
+    const _ordersExists = await tableExists('orders');
 
     if (!ordersExists) {
       console.log('⚠️ Tabela orders não existe para estatísticas');
@@ -382,7 +382,7 @@ export const getOrderStats = async () => {
       }};
     }
 
-    const stats = {
+    const _stats = {
       total: data.length,
       pending: data.filter(o => o.status === 'pending').length,
       confirmed: data.filter(o => o.status === 'confirmed').length,
@@ -394,9 +394,9 @@ export const getOrderStats = async () => {
         .filter(o => o.status === 'delivered')
         .reduce((sum, o) => sum + parseFloat(o.total_amount), 0),
       monthlyRevenue: data
-        .filter(o => {
-          const orderDate = new Date(o.created_at);
-          const currentMonth = new Date().getMonth();
+        .filter(_o => {
+          const _orderDate = new Date(o.created_at);
+          const _currentMonth = new Date().getMonth();
           return orderDate.getMonth() === currentMonth && o.status === 'delivered';
         })
         .reduce((sum, o) => sum + parseFloat(o.total_amount), 0)
@@ -415,11 +415,11 @@ export const getOrderStats = async () => {
 };
 
 // Buscar pedidos por status - FUNÇÃO ROBUSTA
-export const getOrdersByStatus = async (status) => {
+export const _getOrdersByStatus = async (status) => {
   try {
-    const ordersExists = await tableExists('orders');
-    const orderItemsExists = await tableExists('order_items');
-    const usersExists = await tableExists('users');
+    const _ordersExists = await tableExists('orders');
+    const _orderItemsExists = await tableExists('order_items');
+    const _usersExists = await tableExists('users');
 
     if (!ordersExists) {
       console.log('⚠️ Tabela orders não existe, retornando array vazio');
@@ -427,7 +427,7 @@ export const getOrdersByStatus = async (status) => {
     }
 
     // Query simplificada baseada nas tabelas disponíveis
-    let selectFields = '*';
+    let _selectFields = '*';
     
     if (usersExists && orderItemsExists) {
       selectFields = `*, users(name, email), order_items(*)`;

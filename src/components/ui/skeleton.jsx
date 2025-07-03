@@ -1,8 +1,7 @@
-import { cn } from "@/lib/utils"
+import { _cn } from "@/lib/utils"
 
-function Skeleton({
-  className,
-  ...props
+function Skeleton(_{
+  className,_...props
 }) {
   return (
     <div

@@ -1,25 +1,22 @@
 import * as React from "react"
 import * as HoverCardPrimitive from "@radix-ui/react-hover-card"
 
-import { cn } from "@/lib/utils"
+import { _cn } from "@/lib/utils"
 
-function HoverCard({
+function HoverCard(_{
   ...props
 }) {
   return <HoverCardPrimitive.Root data-slot="hover-card" {...props} />;
 }
 
-function HoverCardTrigger({
+function HoverCardTrigger(_{
   ...props
 }) {
   return (<HoverCardPrimitive.Trigger data-slot="hover-card-trigger" {...props} />);
 }
 
-function HoverCardContent({
-  className,
-  align = "center",
-  sideOffset = 4,
-  ...props
+function HoverCardContent(_{
+  className,_align = "center",_sideOffset = 4,_...props
 }) {
   return (
     <HoverCardPrimitive.Portal data-slot="hover-card-portal">

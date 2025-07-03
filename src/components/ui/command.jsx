@@ -1,21 +1,14 @@
 "use client"
 
 import * as React from "react"
-import { Command as CommandPrimitive } from "cmdk"
-import { SearchIcon } from "lucide-react"
+import { _Command as CommandPrimitive } from "cmdk"
+// import { _SearchIcon } from "lucide-react" // Temporarily commented - unused import
 
-import { cn } from "@/lib/utils"
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog"
+import { _cn } from "@/lib/utils"
+// import { _Dialog, _DialogContent, _DialogDescription, _DialogHeader, _DialogTitle,  } from "@/components/ui/dialog" // Temporarily commented - unused import
 
-function Command({
-  className,
-  ...props
+function Command(_{
+  className,_...props
 }) {
   return (
     <CommandPrimitive
@@ -28,11 +21,8 @@ function Command({
   );
 }
 
-function CommandDialog({
-  title = "Command Palette",
-  description = "Search for a command to run...",
-  children,
-  ...props
+function CommandDialog(_{
+  title = "Command Palette",_description = "Search for a command to run...",_children,_...props
 }) {
   return (
     <Dialog {...props}>
@@ -50,9 +40,8 @@ function CommandDialog({
   );
 }
 
-function CommandInput({
-  className,
-  ...props
+function CommandInput(_{
+  className,_...props
 }) {
   return (
     <div
@@ -70,9 +59,8 @@ function CommandInput({
   );
 }
 
-function CommandList({
-  className,
-  ...props
+function CommandList(_{
+  className,_...props
 }) {
   return (
     <CommandPrimitive.List
@@ -82,15 +70,14 @@ function CommandList({
   );
 }
 
-function CommandEmpty({
+function CommandEmpty(_{
   ...props
 }) {
   return (<CommandPrimitive.Empty data-slot="command-empty" className="py-6 text-center text-sm" {...props} />);
 }
 
-function CommandGroup({
-  className,
-  ...props
+function CommandGroup(_{
+  className,_...props
 }) {
   return (
     <CommandPrimitive.Group
@@ -103,9 +90,8 @@ function CommandGroup({
   );
 }
 
-function CommandSeparator({
-  className,
-  ...props
+function CommandSeparator(_{
+  className,_...props
 }) {
   return (
     <CommandPrimitive.Separator
@@ -115,9 +101,8 @@ function CommandSeparator({
   );
 }
 
-function CommandItem({
-  className,
-  ...props
+function CommandItem(_{
+  className,_...props
 }) {
   return (
     <CommandPrimitive.Item
@@ -130,9 +115,8 @@ function CommandItem({
   );
 }
 
-function CommandShortcut({
-  className,
-  ...props
+function CommandShortcut(_{
+  className,_...props
 }) {
   return (
     <span

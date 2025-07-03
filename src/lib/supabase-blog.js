@@ -1,7 +1,7 @@
-import { supabase } from './supabase';
+import { _supabase } from './supabase';
 
 // Buscar todos os posts publicados
-export const getAllBlogPosts = async (limit = 10, offset = 0) => {
+export const _getAllBlogPosts = async (limit = 10, offset = 0) => {
   try {
     const { data, error, count } = await supabase
       .from('blog_posts')
@@ -23,7 +23,7 @@ export const getAllBlogPosts = async (limit = 10, offset = 0) => {
 };
 
 // Buscar post por ID
-export const getBlogPostById = async (id) => {
+export const _getBlogPostById = async (id) => {
   try {
     const { data, error } = await supabase
       .from('blog_posts')
@@ -45,7 +45,7 @@ export const getBlogPostById = async (id) => {
 };
 
 // Buscar post por slug
-export const getBlogPostBySlug = async (slug) => {
+export const _getBlogPostBySlug = async (slug) => {
   try {
     const { data, error } = await supabase
       .from('blog_posts')
@@ -67,7 +67,7 @@ export const getBlogPostBySlug = async (slug) => {
 };
 
 // Buscar posts por categoria
-export const getBlogPostsByCategory = async (category, limit = 10, offset = 0) => {
+export const _getBlogPostsByCategory = async (category, limit = 10, offset = 0) => {
   try {
     const { data, error, count } = await supabase
       .from('blog_posts')
@@ -90,7 +90,7 @@ export const getBlogPostsByCategory = async (category, limit = 10, offset = 0) =
 };
 
 // Buscar posts em destaque
-export const getFeaturedBlogPosts = async (limit = 3) => {
+export const _getFeaturedBlogPosts = async (limit = 3) => {
   try {
     const { data, error } = await supabase
       .from('blog_posts')
@@ -113,7 +113,7 @@ export const getFeaturedBlogPosts = async (limit = 3) => {
 };
 
 // ADMIN: Buscar todos os posts (incluindo rascunhos)
-export const getAllBlogPostsAdmin = async () => {
+export const _getAllBlogPostsAdmin = async () => {
   try {
     const { data, error } = await supabase
       .from('blog_posts')
@@ -133,9 +133,9 @@ export const getAllBlogPostsAdmin = async () => {
 };
 
 // ADMIN: Criar novo post
-export const createBlogPost = async (postData) => {
+export const _createBlogPost = async (postData) => {
   try {
-    const slug = postData.title
+    const _slug = postData.title
       .toLowerCase()
       .normalize('NFD')
       .replace(/[\u0300-\u036f]/g, '')
@@ -175,9 +175,9 @@ export const createBlogPost = async (postData) => {
 };
 
 // ADMIN: Atualizar post
-export const updateBlogPost = async (id, postData) => {
+export const _updateBlogPost = async (id, postData) => {
   try {
-    const updates = {
+    const _updates = {
       title: postData.title,
       excerpt: postData.excerpt,
       content: postData.content,
@@ -216,7 +216,7 @@ export const updateBlogPost = async (id, postData) => {
 };
 
 // ADMIN: Deletar post
-export const deleteBlogPost = async (id) => {
+export const _deleteBlogPost = async (id) => {
   try {
     const { error } = await supabase
       .from('blog_posts')
@@ -236,7 +236,7 @@ export const deleteBlogPost = async (id) => {
 };
 
 // Incrementar visualizações
-export const incrementPostViews = async (id) => {
+export const _incrementPostViews = async (id) => {
   try {
     const { error } = await supabase.rpc('increment_post_views', {
       post_id: id
@@ -253,7 +253,7 @@ export const incrementPostViews = async (id) => {
 // FUNCIONALIDADES DE INTERAÇÃO SOCIAL
 
 // Curtir/descurtir post
-export const togglePostLike = async (postId, userId) => {
+export const _togglePostLike = async (postId, userId) => {
   try {
     // Verificar se já curtiu
     const { data: existingLike, error: checkError } = await supabase
@@ -306,7 +306,7 @@ export const togglePostLike = async (postId, userId) => {
 };
 
 // Verificar se usuário curtiu o post
-export const checkUserLiked = async (postId, userId) => {
+export const _checkUserLiked = async (postId, userId) => {
   try {
     const { data, error } = await supabase
       .from('blog_likes')
@@ -328,7 +328,7 @@ export const checkUserLiked = async (postId, userId) => {
 };
 
 // Adicionar comentário
-export const addComment = async (postId, userId, content, userName) => {
+export const _addComment = async (postId, userId, content, userName) => {
   try {
     const { data, error } = await supabase
       .from('blog_comments')
@@ -356,7 +356,7 @@ export const addComment = async (postId, userId, content, userName) => {
 };
 
 // Buscar comentários do post
-export const getPostComments = async (postId) => {
+export const _getPostComments = async (postId) => {
   try {
     const { data, error } = await supabase
       .from('blog_comments')
@@ -377,7 +377,7 @@ export const getPostComments = async (postId) => {
 };
 
 // Remover comentário (apenas o autor ou admin)
-export const deleteComment = async (commentId, userId) => {
+export const _deleteComment = async (commentId, userId) => {
   try {
     // Buscar o comentário para verificar se é do usuário
     const { data: comment, error: fetchError } = await supabase
@@ -416,7 +416,7 @@ export const deleteComment = async (commentId, userId) => {
 };
 
 // Registrar compartilhamento
-export const recordShare = async (postId, platform) => {
+export const _recordShare = async (postId, platform) => {
   try {
     const { error } = await supabase
       .from('blog_shares')
@@ -438,7 +438,7 @@ export const recordShare = async (postId, platform) => {
 };
 
 // Buscar categorias com contagem
-export const getBlogCategories = async () => {
+export const _getBlogCategories = async () => {
   try {
     const { data, error } = await supabase
       .from('blog_posts')
@@ -451,14 +451,14 @@ export const getBlogCategories = async () => {
     }
 
     // Contar posts por categoria
-    const categoryCount = {};
-    data.forEach(post => {
+    const _categoryCount = {};
+    data.forEach(_post => {
       if (post.category) {
         categoryCount[post.category] = (categoryCount[post.category] || 0) + 1;
       }
     });
 
-    const categories = Object.entries(categoryCount).map(([name, count]) => ({
+    const _categories = Object.entries(categoryCount).map(([name, count]) => ({
       name,
       count,
       slug: name.toLowerCase().replace(/\s+/g, '-')

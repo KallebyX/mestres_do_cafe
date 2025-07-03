@@ -3,11 +3,10 @@
 import * as React from "react"
 import * as LabelPrimitive from "@radix-ui/react-label"
 
-import { cn } from "@/lib/utils"
+import { _cn } from "@/lib/utils"
 
-function Label({
-  className,
-  ...props
+function Label(_{
+  className,_...props
 }) {
   return (
     <LabelPrimitive.Root

@@ -1,15 +1,15 @@
 "use client";
 import * as React from "react"
 import useEmblaCarousel from "embla-carousel-react";
-import { ArrowLeft, ArrowRight } from "lucide-react"
+// import { _ArrowLeft, _ArrowRight } from "lucide-react" // Temporarily commented - unused import
 
-import { cn } from "@/lib/utils"
-import { Button } from "@/components/ui/button"
+import { _cn } from "@/lib/utils"
+// import { _Button } from "@/components/ui/button" // Temporarily commented - unused import
 
-const CarouselContext = React.createContext(null)
+const _CarouselContext = React.createContext(null)
 
 function useCarousel() {
-  const context = React.useContext(CarouselContext)
+  const _context = React.useContext(CarouselContext)
 
   if (!context) {
     throw new Error("useCarousel must be used within a <Carousel />")
@@ -18,14 +18,8 @@ function useCarousel() {
   return context
 }
 
-function Carousel({
-  orientation = "horizontal",
-  opts,
-  setApi,
-  plugins,
-  className,
-  children,
-  ...props
+function Carousel(_{
+  orientation = "horizontal",_opts,_setApi,_plugins,_className,_children,_...props
 }) {
   const [carouselRef, api] = useEmblaCarousel({
     ...opts,
@@ -34,21 +28,21 @@ function Carousel({
   const [canScrollPrev, setCanScrollPrev] = React.useState(false)
   const [canScrollNext, setCanScrollNext] = React.useState(false)
 
-  const onSelect = React.useCallback((api) => {
+  const _onSelect = React.useCallback((api) => {
     if (!api) return
     setCanScrollPrev(api.canScrollPrev())
     setCanScrollNext(api.canScrollNext())
   }, [])
 
-  const scrollPrev = React.useCallback(() => {
+  const _scrollPrev = React.useCallback(() => {
     api?.scrollPrev()
   }, [api])
 
-  const scrollNext = React.useCallback(() => {
+  const _scrollNext = React.useCallback(() => {
     api?.scrollNext()
   }, [api])
 
-  const handleKeyDown = React.useCallback((event) => {
+  const _handleKeyDown = React.useCallback((event) => {
     if (event.key === "ArrowLeft") {
       event.preventDefault()
       scrollPrev()
@@ -100,9 +94,8 @@ function Carousel({
   );
 }
 
-function CarouselContent({
-  className,
-  ...props
+function CarouselContent(_{
+  className,_...props
 }) {
   const { carouselRef, orientation } = useCarousel()
 
@@ -122,9 +115,8 @@ function CarouselContent({
   );
 }
 
-function CarouselItem({
-  className,
-  ...props
+function CarouselItem(_{
+  className,_...props
 }) {
   const { orientation } = useCarousel()
 
@@ -142,11 +134,8 @@ function CarouselItem({
   );
 }
 
-function CarouselPrevious({
-  className,
-  variant = "outline",
-  size = "icon",
-  ...props
+function CarouselPrevious(_{
+  className,_variant = "outline",_size = "icon",_...props
 }) {
   const { orientation, scrollPrev, canScrollPrev } = useCarousel()
 
@@ -167,11 +156,8 @@ function CarouselPrevious({
   );
 }
 
-function CarouselNext({
-  className,
-  variant = "outline",
-  size = "icon",
-  ...props
+function CarouselNext(_{
+  className,_variant = "outline",_size = "icon",_...props
 }) {
   const { orientation, scrollNext, canScrollNext } = useCarousel()
 

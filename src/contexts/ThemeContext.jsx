@@ -6,7 +6,7 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 
 // Cores da marca Mestres do Café
-const BRAND_COLORS = {
+const _BRAND_COLORS = {
   dark: '#101820',      // Cor principal escura
   gold: '#b58150',      // Cor dourada/âmbar
   light: '#f7fcff',     // Cor clara
@@ -15,7 +15,7 @@ const BRAND_COLORS = {
 };
 
 // Definição dos temas
-const themes = {
+const _themes = {
   light: {
     name: 'light',
     colors: {
@@ -92,21 +92,21 @@ const themes = {
   }
 };
 
-const ThemeContext = createContext();
+const _ThemeContext = createContext();
 
-export const useTheme = () => {
-  const context = useContext(ThemeContext);
+export const _useTheme = () => {
+  const _context = useContext(ThemeContext);
   if (!context) {
     throw new Error('useTheme deve ser usado dentro de um ThemeProvider');
   }
   return context;
 };
 
-export const ThemeProvider = ({ children }) => {
+export const _ThemeProvider = ({ children }) => {
   // Tentar recuperar tema salvo ou usar claro como padrão
   const [currentTheme, setCurrentTheme] = useState(() => {
     try {
-      const savedTheme = localStorage.getItem('mestres-cafe-theme');
+      const _savedTheme = localStorage.getItem('mestres-cafe-theme');
       return savedTheme || 'light';
     } catch (error) {
       console.warn('Erro ao carregar tema do localStorage:', error);
@@ -116,8 +116,8 @@ export const ThemeProvider = ({ children }) => {
 
   // Aplicar tema ao documento
   useEffect(() => {
-    const theme = themes[currentTheme];
-    const root = document.documentElement;
+    const _theme = themes[currentTheme];
+    const _root = document.documentElement;
 
     // Definir variáveis CSS customizadas
     Object.entries(theme.colors).forEach(([category, colors]) => {
@@ -152,19 +152,19 @@ export const ThemeProvider = ({ children }) => {
   }, [currentTheme]);
 
   // Função para alternar tema
-  const toggleTheme = () => {
+  const _toggleTheme = () => {
     setCurrentTheme(prev => prev === 'light' ? 'dark' : 'light');
   };
 
   // Função para definir tema específico
-  const setTheme = (themeName) => {
+  const _setTheme = (themeName) => {
     if (themes[themeName]) {
       setCurrentTheme(themeName);
     }
   };
 
   // Detectar preferência do sistema
-  const getSystemTheme = () => {
+  const _getSystemTheme = () => {
     if (typeof window !== 'undefined' && window.matchMedia) {
       return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
     }
@@ -172,11 +172,11 @@ export const ThemeProvider = ({ children }) => {
   };
 
   // Usar tema do sistema
-  const useSystemTheme = () => {
+  const _useSystemTheme = () => {
     setCurrentTheme(getSystemTheme());
   };
 
-  const value = {
+  const _value = {
     // Estado atual
     currentTheme,
     theme: themes[currentTheme],

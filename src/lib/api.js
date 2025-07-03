@@ -1,50 +1,22 @@
 // Importar APIs do Supabase em vez do backend Node.js
-import { supabase } from './supabase.js';
-import { 
-  getAdminStats, 
-  getAdminUsers, 
-  getAdminOrders, 
-  getMyOrders,
-  updateUser,
-  deleteUser,
-  updateOrderStatus,
-  getAnalyticsData,
-  getFinancialData
-} from './supabase-admin-full.js';
+import { _supabase } from './supabase.js';
+import { _getAdminStats, _getAdminUsers, _getAdminOrders, _getMyOrders, _updateUser, _deleteUser, _updateOrderStatus, _getAnalyticsData, _getFinancialData } from './supabase-admin-full.js';
 
-import {
-  getAllCustomers,
-  getAdminCustomers,
-  createManualCustomer,
-  toggleAnyCustomerStatus
-} from './supabase-admin-api.js';
+import { _getAllCustomers, _getAdminCustomers, _createManualCustomer, _toggleAnyCustomerStatus } from './supabase-admin-api.js';
 
-import {
-  getAllProducts,
-  getAllProductsAdmin,
-  createProduct,
-  updateProduct,
-  deleteProduct,
-  toggleProductStatus,
-  updateProductStock,
-  getFeaturedProducts,
-  getProductById,
-  getProductByIdAdmin,
-  getProductsByCategory,
-  getProductsWithFilters
-} from './supabase-products.js';
+import { _getAllProducts, _getAllProductsAdmin, _createProduct, _updateProduct, _deleteProduct, _toggleProductStatus, _updateProductStock, _getFeaturedProducts, _getProductById, _getProductByIdAdmin, _getProductsByCategory, _getProductsWithFilters } from './supabase-products.js';
 
 // =============================================
 // CONFIGURAÇÃO BASE (MANTIDA PARA COMPATIBILIDADE)
 // =============================================
 
-const API_BASE_URL = 'http://localhost:5000/api';
+const _API_BASE_URL = 'http://localhost:5000/api';
 
 // =============================================
 // AUTH API - USANDO SUPABASE
 // =============================================
 
-export const authAPI = {
+export const _authAPI = {
   // Login
   async login({ email, password }) {
     try {
@@ -65,7 +37,7 @@ export const authAPI = {
           .eq('id', data.user.id)
           .single();
 
-        const userData = {
+        const _userData = {
           id: data.user.id,
           email: data.user.email,
           ...userProfile
@@ -153,7 +125,7 @@ export const authAPI = {
   // Obter usuário atual
   getCurrentUser() {
     try {
-      const userData = localStorage.getItem('user');
+      const _userData = localStorage.getItem('user');
       return userData ? JSON.parse(userData) : null;
     } catch (error) {
       console.error('Erro ao obter usuário atual:', error);
@@ -231,11 +203,11 @@ export const authAPI = {
 // ADMIN API - USANDO SUPABASE
 // =============================================
 
-export const adminAPI = {
+export const _adminAPI = {
   // Estatísticas do dashboard
   async getStats() {
     try {
-      const response = await getAdminStats();
+      const _response = await getAdminStats();
       if (!response.success) {
         throw new Error(response.error);
       }
@@ -249,7 +221,7 @@ export const adminAPI = {
   // Gerenciamento de usuários
   async getUsers() {
     try {
-      const response = await getAdminUsers();
+      const _response = await getAdminUsers();
       if (!response.success) {
         throw new Error(response.error);
       }
@@ -262,7 +234,7 @@ export const adminAPI = {
 
   async updateUser(userId, userData) {
     try {
-      const response = await updateUser(userId, userData);
+      const _response = await updateUser(userId, userData);
       if (!response.success) {
         throw new Error(response.error);
       }
@@ -275,7 +247,7 @@ export const adminAPI = {
 
   async deleteUser(userId) {
     try {
-      const response = await deleteUser(userId);
+      const _response = await deleteUser(userId);
       if (!response.success) {
         throw new Error(response.error);
       }
@@ -289,7 +261,7 @@ export const adminAPI = {
   // Gerenciamento de pedidos
   async getOrders() {
     try {
-      const response = await getAdminOrders();
+      const _response = await getAdminOrders();
       if (!response.success) {
         throw new Error(response.error);
       }
@@ -302,7 +274,7 @@ export const adminAPI = {
 
   async updateOrderStatus(orderId, status) {
     try {
-      const response = await updateOrderStatus(orderId, status);
+      const _response = await updateOrderStatus(orderId, status);
       if (!response.success) {
         throw new Error(response.error);
       }
@@ -316,7 +288,7 @@ export const adminAPI = {
   // Analytics
   async getAnalytics(timeRange = '30d') {
     try {
-      const response = await getAnalyticsData(timeRange);
+      const _response = await getAnalyticsData(timeRange);
       if (!response.success) {
         throw new Error(response.error);
       }
@@ -330,7 +302,7 @@ export const adminAPI = {
   // Financeiro
   async getFinancialData(timeRange = '30d') {
     try {
-      const response = await getFinancialData(timeRange);
+      const _response = await getFinancialData(timeRange);
       if (!response.success) {
         throw new Error(response.error);
       }
@@ -346,10 +318,10 @@ export const adminAPI = {
 // ORDERS API - USANDO SUPABASE
 // =============================================
 
-export const ordersAPI = {
+export const _ordersAPI = {
   async getAll(filters = {}) {
     try {
-      const response = await getAdminOrders(filters);
+      const _response = await getAdminOrders(filters);
       if (!response.success) {
         throw new Error(response.error);
       }
@@ -369,7 +341,7 @@ export const ordersAPI = {
       }
 
       console.log('📦 Buscando pedidos para usuário:', userId);
-      const response = await getMyOrders(userId);
+      const _response = await getMyOrders(userId);
       
       if (!response.success) {
         throw new Error(response.error);
@@ -384,7 +356,7 @@ export const ordersAPI = {
 
   async updateStatus(orderId, newStatus) {
     try {
-      const response = await updateOrderStatus(orderId, newStatus);
+      const _response = await updateOrderStatus(orderId, newStatus);
       if (!response.success) {
         throw new Error(response.error);
       }
@@ -400,11 +372,11 @@ export const ordersAPI = {
 // PRODUCTS API - USANDO SUPABASE
 // =============================================
 
-export const productsAPI = {
+export const _productsAPI = {
   // Buscar todos os produtos ativos
   async getAll(filters = {}) {
     try {
-      const response = filters ? await getProductsWithFilters(filters) : await getAllProducts();
+      const _response = filters ? await getProductsWithFilters(filters) : await getAllProducts();
       if (!response.success) {
         throw new Error(response.error);
       }
@@ -418,7 +390,7 @@ export const productsAPI = {
   // Buscar todos os produtos (incluindo inativos) - para admin
   async getAllAdmin() {
     try {
-      const response = await getAllProductsAdmin();
+      const _response = await getAllProductsAdmin();
       if (!response.success) {
         throw new Error(response.error);
       }
@@ -432,7 +404,7 @@ export const productsAPI = {
   // Buscar produtos em destaque
   async getFeatured() {
     try {
-      const response = await getFeaturedProducts();
+      const _response = await getFeaturedProducts();
       if (!response.success) {
         throw new Error(response.error);
       }
@@ -446,7 +418,7 @@ export const productsAPI = {
   // Buscar produto por ID
   async getById(id) {
     try {
-      const response = await getProductById(id);
+      const _response = await getProductById(id);
       if (!response.success) {
         throw new Error(response.error);
       }
@@ -460,7 +432,7 @@ export const productsAPI = {
   // Buscar produto por ID (admin)
   async getByIdAdmin(id) {
     try {
-      const response = await getProductByIdAdmin(id);
+      const _response = await getProductByIdAdmin(id);
       if (!response.success) {
         throw new Error(response.error);
       }
@@ -474,7 +446,7 @@ export const productsAPI = {
   // Buscar produtos por categoria
   async getByCategory(category) {
     try {
-      const response = await getProductsByCategory(category);
+      const _response = await getProductsByCategory(category);
       if (!response.success) {
         throw new Error(response.error);
       }
@@ -488,7 +460,7 @@ export const productsAPI = {
   // Criar produto
   async create(productData) {
     try {
-      const response = await createProduct(productData);
+      const _response = await createProduct(productData);
       if (!response.success) {
         throw new Error(response.error);
       }
@@ -502,7 +474,7 @@ export const productsAPI = {
   // Atualizar produto
   async update(id, productData) {
     try {
-      const response = await updateProduct(id, productData);
+      const _response = await updateProduct(id, productData);
       if (!response.success) {
         throw new Error(response.error);
       }
@@ -516,7 +488,7 @@ export const productsAPI = {
   // Deletar produto
   async delete(id) {
     try {
-      const response = await deleteProduct(id);
+      const _response = await deleteProduct(id);
       if (!response.success) {
         throw new Error(response.error);
       }
@@ -530,7 +502,7 @@ export const productsAPI = {
   // Ativar/Desativar produto
   async toggleStatus(id, isActive) {
     try {
-      const response = await toggleProductStatus(id, isActive);
+      const _response = await toggleProductStatus(id, isActive);
       if (!response.success) {
         throw new Error(response.error);
       }
@@ -544,7 +516,7 @@ export const productsAPI = {
   // Atualizar estoque
   async updateStock(id, stock) {
     try {
-      const response = await updateProductStock(id, stock);
+      const _response = await updateProductStock(id, stock);
       if (!response.success) {
         throw new Error(response.error);
       }
@@ -560,10 +532,10 @@ export const productsAPI = {
 // CUSTOMERS API - USANDO SUPABASE 
 // =============================================
 
-export const customersAPI = {
+export const _customersAPI = {
   async getAll(filters = {}) {
     try {
-      const response = await getAllCustomers(filters);
+      const _response = await getAllCustomers(filters);
       if (!response.success) {
         throw new Error(response.error);
       }
@@ -576,7 +548,7 @@ export const customersAPI = {
 
   async getAdminCreated(filters = {}) {
     try {
-      const response = await getAdminCustomers(filters);
+      const _response = await getAdminCustomers(filters);
       if (!response.success) {
         throw new Error(response.error);
       }
@@ -589,7 +561,7 @@ export const customersAPI = {
 
   async create(customerData) {
     try {
-      const response = await createManualCustomer(customerData);
+      const _response = await createManualCustomer(customerData);
       if (!response.success) {
         throw new Error(response.error);
       }
@@ -602,7 +574,7 @@ export const customersAPI = {
 
   async toggleStatus(customerId) {
     try {
-      const response = await toggleAnyCustomerStatus(customerId);
+      const _response = await toggleAnyCustomerStatus(customerId);
       if (!response.success) {
         throw new Error(response.error);
       }
@@ -619,7 +591,7 @@ export const customersAPI = {
 // =============================================
 
 // Função auxiliar para fazer requisições (não mais usada)
-const makeRequest = async (endpoint, options = {}) => {
+const _makeRequest = async (endpoint, options = {}) => {
   console.warn('⚠️ makeRequest() é legacy - usando Supabase APIs diretamente');
   throw new Error('Esta função não é mais usada. Use as APIs do Supabase diretamente.');
 };

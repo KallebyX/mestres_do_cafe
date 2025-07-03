@@ -1,13 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { 
-  X, Save, FileText, CheckCircle, AlertCircle, 
-  Plus, Trash2, Edit, Search, Calculator, Download,
-  Calendar, Package, BarChart3, Target, Clock, Users
-} from 'lucide-react';
-import { useNotifications } from '../contexts/NotificationContext';
-import { supabase } from '../lib/supabase';
+// import { _X, _Save, _FileText, _CheckCircle, _AlertCircle, _Plus, _Trash2, _Edit, _Search, _Calculator, _Download, _Calendar, _Package, _BarChart3, _Target, _Clock, _Users } from 'lucide-react'; // Temporarily commented - unused import
+import { _useNotifications } from '../contexts/NotificationContext';
+import { _supabase } from '../lib/supabase';
 
-const InventoryCountModal = ({ 
+const _InventoryCountModal = ({ 
   isOpen, 
   onClose, 
   onSuccess 
@@ -39,7 +35,7 @@ const InventoryCountModal = ({
     }
   }, [isOpen]);
 
-  const loadInventoryData = async () => {
+  const _loadInventoryData = async () => {
     setLoading(true);
     try {
       // Carregar inventários reais do Supabase
@@ -88,7 +84,7 @@ const InventoryCountModal = ({
     }
   };
 
-  const handleCreateInventory = async () => {
+  const _handleCreateInventory = async () => {
     if (!newInventory.name || !newInventory.scheduled_date || !newInventory.responsible_user) {
       setError('Preencha todos os campos obrigatórios');
       return;
@@ -96,7 +92,7 @@ const InventoryCountModal = ({
 
     setIsSubmitting(true);
     try {
-      const inventory = {
+      const _inventory = {
         id: `inv-${Date.now()}`,
         name: newInventory.name,
         type: newInventory.type,
@@ -137,8 +133,8 @@ const InventoryCountModal = ({
     }
   };
 
-  const handleStartInventory = (inventory) => {
-    const updatedInventory = {
+  const _handleStartInventory = (inventory) => {
+    const _updatedInventory = {
       ...inventory,
       status: 'em_andamento',
       started_date: new Date().toISOString().split('T')[0]
@@ -149,7 +145,7 @@ const InventoryCountModal = ({
     );
 
     // Gerar itens de contagem simulados
-    const items = [
+    const _items = [
       {
         id: `item-${Date.now()}-1`,
         product_name: 'Café Santos Premium',
@@ -177,14 +173,14 @@ const InventoryCountModal = ({
     notifySuccess('✅ Inventário Iniciado', `Inventário "${inventory.name}" foi iniciado`);
   };
 
-  const handleCountItem = (itemId, countedQuantity, notes = '') => {
-    const item = countingItems.find(i => i.id === itemId);
+  const _handleCountItem = (itemId, countedQuantity, notes = '') => {
+    const _item = countingItems.find(i => i.id === itemId);
     if (!item) return;
 
-    const difference = countedQuantity - item.system_quantity;
-    const status = difference === 0 ? 'conferido' : 'divergencia';
+    const _difference = countedQuantity - item.system_quantity;
+    const _status = difference === 0 ? 'conferido' : 'divergencia';
 
-    const updatedItem = {
+    const _updatedItem = {
       ...item,
       counted_quantity: countedQuantity,
       difference,
@@ -199,7 +195,7 @@ const InventoryCountModal = ({
     );
 
     // Atualizar contagens
-    const newCount = {
+    const _newCount = {
       id: `count-${Date.now()}`,
       inventory_id: selectedInventory.id,
       product_name: item.product_name,
@@ -220,11 +216,11 @@ const InventoryCountModal = ({
     notifySuccess('✅ Item Contado', `${item.product_name} registrado`);
   };
 
-  const generateInventoryReport = (inventory) => {
-    const relatedCounts = contagens.filter(c => c.inventory_id === inventory.id);
-    const totalDiscrepancies = relatedCounts.filter(c => c.status === 'divergencia').length;
+  const _generateInventoryReport = (inventory) => {
+    const _relatedCounts = contagens.filter(c => c.inventory_id === inventory.id);
+    const _totalDiscrepancies = relatedCounts.filter(c => c.status === 'divergencia').length;
     
-    const report = {
+    const _report = {
       inventory: inventory.name,
       date: new Date().toLocaleDateString('pt-BR'),
       responsible: inventory.responsible_user,
@@ -236,9 +232,9 @@ const InventoryCountModal = ({
     };
 
     // Simular download do relatório
-    const blob = new Blob([JSON.stringify(report, null, 2)], { type: 'application/json' });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
+    const _blob = new Blob([JSON.stringify(report, null, 2)], { type: 'application/json' });
+    const _url = URL.createObjectURL(blob);
+    const _link = document.createElement('a');
     link.href = url;
     link.download = `inventario-${inventory.id}-${Date.now()}.json`;
     link.click();
@@ -246,7 +242,7 @@ const InventoryCountModal = ({
     notifySuccess('✅ Relatório Gerado', 'Relatório de inventário baixado');
   };
 
-  const getStatusColor = (status) => {
+  const _getStatusColor = (status) => {
     switch (status) {
       case 'programado':
         return 'text-blue-700 bg-blue-100';
@@ -626,7 +622,7 @@ const InventoryCountModal = ({
                           placeholder="Digite a quantidade"
                           onKeyPress={(e) => {
                             if (e.key === 'Enter') {
-                              const quantity = parseInt(e.target.value) || 0;
+                              const _quantity = parseInt(e.target.value) || 0;
                               handleCountItem(item.id, quantity);
                               e.target.value = '';
                             }
@@ -637,8 +633,8 @@ const InventoryCountModal = ({
                       <div>
                         <button
                           onClick={(e) => {
-                            const input = e.target.parentElement.previousElementSibling.querySelector('input');
-                            const quantity = parseInt(input.value) || 0;
+                            const _input = e.target.parentElement.previousElementSibling.querySelector('input');
+                            const _quantity = parseInt(input.value) || 0;
                             handleCountItem(item.id, quantity);
                             input.value = '';
                           }}

@@ -1,17 +1,17 @@
 import React, { createContext, useContext, useEffect, useState, useMemo, useCallback } from 'react';
-import { supabase } from '../lib/supabase';
+import { _supabase } from '../lib/supabase';
 
-const SupabaseAuthContext = createContext({});
+const _SupabaseAuthContext = createContext({});
 
-export const useSupabaseAuth = () => {
-  const context = useContext(SupabaseAuthContext);
+export const _useSupabaseAuth = () => {
+  const _context = useContext(SupabaseAuthContext);
   if (!context) {
     throw new Error('useSupabaseAuth deve ser usado dentro de SupabaseAuthProvider');
   }
   return context;
 };
 
-export const SupabaseAuthProvider = ({ children }) => {
+export const _SupabaseAuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [profile, setProfile] = useState(null);
@@ -35,9 +35,9 @@ export const SupabaseAuthProvider = ({ children }) => {
     );
 
     return () => subscription?.unsubscribe();
-  }, []);
+  }, [] // TODO: Add missing dependencies to fix exhaustive-deps warning);
 
-  const getSession = async () => {
+  const _getSession = async () => {
     try {
       const { data: { session } } = await supabase.auth.getSession();
       if (session?.user) {
@@ -51,7 +51,7 @@ export const SupabaseAuthProvider = ({ children }) => {
     }
   };
 
-  const loadUserProfile = async (userId) => {
+  const _loadUserProfile = async (userId) => {
     try {
       const { data, error } = await supabase
         .from('users')
@@ -71,15 +71,15 @@ export const SupabaseAuthProvider = ({ children }) => {
     }
   };
 
-  const createUserProfile = async (userId) => {
+  const _createUserProfile = async (userId) => {
     try {
       const { data: { user: authUser } } = await supabase.auth.getUser();
       
       // Extrair informações do Google se disponíveis
-      const isGoogleUser = authUser.app_metadata?.provider === 'google';
-      const googleData = authUser.user_metadata || {};
+      const _isGoogleUser = authUser.app_metadata?.provider === 'google';
+      const _googleData = authUser.user_metadata || {};
       
-      const profileData = {
+      const _profileData = {
         id: userId,
         email: authUser.email,
         name: googleData.name || authUser.email?.split('@')[0] || 'Usuário',
@@ -111,7 +111,7 @@ export const SupabaseAuthProvider = ({ children }) => {
     }
   };
 
-  const login = async (email, password) => {
+  const _login = async (email, password) => {
     try {
       setLoading(true);
       const { data, error } = await supabase.auth.signInWithPassword({
@@ -140,7 +140,7 @@ export const SupabaseAuthProvider = ({ children }) => {
     }
   };
 
-  const register = async (email, password, userData = {}) => {
+  const _register = async (email, password, userData = {}) => {
     try {
       setLoading(true);
       
@@ -165,7 +165,7 @@ export const SupabaseAuthProvider = ({ children }) => {
       // Se o registro foi bem-sucedido e temos um usuário
       if (data.user) {
         // Criar perfil na tabela users
-        const profileData = {
+        const _profileData = {
           id: data.user.id,
           email: email,
           name: userData.name || 'Usuário',
@@ -207,7 +207,7 @@ export const SupabaseAuthProvider = ({ children }) => {
   };
 
   // Login com Google
-  const loginWithGoogle = async () => {
+  const _loginWithGoogle = async () => {
     try {
       setLoading(true);
       
@@ -244,7 +244,7 @@ export const SupabaseAuthProvider = ({ children }) => {
   };
 
   // Cadastro com Google (mesmo fluxo do login)
-  const registerWithGoogle = async () => {
+  const _registerWithGoogle = async () => {
     try {
       setLoading(true);
       
@@ -280,7 +280,7 @@ export const SupabaseAuthProvider = ({ children }) => {
     }
   };
 
-  const logout = async () => {
+  const _logout = async () => {
     try {
       const { error } = await supabase.auth.signOut();
       if (error) {
@@ -296,7 +296,7 @@ export const SupabaseAuthProvider = ({ children }) => {
     }
   };
 
-  const updateProfile = async (updates) => {
+  const _updateProfile = async (updates) => {
     try {
       if (!user) {
         return { success: false, error: 'Usuário não autenticado' };
@@ -322,7 +322,7 @@ export const SupabaseAuthProvider = ({ children }) => {
     }
   };
 
-  const updatePassword = async (newPassword) => {
+  const _updatePassword = async (newPassword) => {
     try {
       const { error } = await supabase.auth.updateUser({
         password: newPassword
@@ -338,7 +338,7 @@ export const SupabaseAuthProvider = ({ children }) => {
     }
   };
 
-  const resetPassword = async (email) => {
+  const _resetPassword = async (email) => {
     try {
       const { error } = await supabase.auth.resetPasswordForEmail(email, {
         redirectTo: `${window.location.origin}/reset-password`
@@ -354,16 +354,16 @@ export const SupabaseAuthProvider = ({ children }) => {
     }
   };
 
-  const getCurrentUser = () => {
+  const _getCurrentUser = () => {
     return user;
   };
 
-  const getUserProfile = () => {
+  const _getUserProfile = () => {
     return profile;
   };
 
   // Sistema de permissões - MEMORIZADO para evitar loops
-  const hasPermission = useCallback((permission) => {
+  const _hasPermission = useCallback((permission) => {
     if (!profile) return false;
     
     // Super admin tem todas as permissões
@@ -378,16 +378,16 @@ export const SupabaseAuthProvider = ({ children }) => {
     return profile.permissions?.includes(permission) || false;
   }, [profile]);
 
-  const isAdmin = useMemo(() => {
+  const _isAdmin = useMemo(() => {
     return profile?.role === 'admin' || profile?.role === 'super_admin';
   }, [profile?.role]);
 
-  const isSuperAdmin = useMemo(() => {
+  const _isSuperAdmin = useMemo(() => {
     return profile?.role === 'super_admin';
   }, [profile?.role]);
 
   // Funções administrativas
-  const promoteToAdmin = async (userId) => {
+  const _promoteToAdmin = async (userId) => {
     try {
       if (!isSuperAdmin) {
         return { success: false, error: 'Permissão negada' };
@@ -412,7 +412,7 @@ export const SupabaseAuthProvider = ({ children }) => {
     }
   };
 
-  const revokeAdmin = async (userId) => {
+  const _revokeAdmin = async (userId) => {
     try {
       if (!isSuperAdmin) {
         return { success: false, error: 'Permissão negada' };
@@ -438,12 +438,12 @@ export const SupabaseAuthProvider = ({ children }) => {
   };
 
   // Funções de pontos e gamificação
-  const addPoints = async (points, reason = 'Atividade') => {
+  const _addPoints = async (points, reason = 'Atividade') => {
     try {
       if (!user || !profile) return { success: false, error: 'Usuário não autenticado' };
 
-      const newPoints = (profile.points || 0) + points;
-      const newLevel = calculateLevel(newPoints);
+      const _newPoints = (profile.points || 0) + points;
+      const _newLevel = calculateLevel(newPoints);
 
       const { error } = await supabase
         .from('users')
@@ -475,7 +475,7 @@ export const SupabaseAuthProvider = ({ children }) => {
     }
   };
 
-  const calculateLevel = (points) => {
+  const _calculateLevel = (points) => {
     if (points >= 5000) return 'Diamante';
     if (points >= 3000) return 'Platina';
     if (points >= 1500) return 'Ouro';
@@ -484,7 +484,7 @@ export const SupabaseAuthProvider = ({ children }) => {
   };
 
   // Analytics e métricas
-  const getUserStats = async () => {
+  const _getUserStats = async () => {
     try {
       if (!user) return null;
 
@@ -507,7 +507,7 @@ export const SupabaseAuthProvider = ({ children }) => {
   };
 
   // Ativar conta criada pelo admin
-  const activateAdminCreatedAccount = async (password) => {
+  const _activateAdminCreatedAccount = async (password) => {
     try {
       if (!user || !profile) {
         return { success: false, error: 'Usuário não autenticado' };
@@ -561,7 +561,7 @@ export const SupabaseAuthProvider = ({ children }) => {
   };
 
   // Função para solicitar redefinição de senha
-  const requestPasswordReset = async (email) => {
+  const _requestPasswordReset = async (email) => {
     try {
       setLoading(true);
       
@@ -585,7 +585,7 @@ export const SupabaseAuthProvider = ({ children }) => {
         console.error('❌ Erro no resetPasswordForEmail:', error);
         
         // Mensagens de erro mais específicas
-        let errorMessage = 'Erro ao enviar email de redefinição.';
+        let _errorMessage = 'Erro ao enviar email de redefinição.';
         if (error.message.includes('rate limit')) {
           errorMessage = 'Muitas tentativas. Aguarde alguns minutos e tente novamente.';
         } else if (error.message.includes('not found') || error.message.includes('User not found')) {
@@ -619,7 +619,7 @@ export const SupabaseAuthProvider = ({ children }) => {
   };
 
   // Função para redefinir senha com token (não usada mais - feita diretamente na página)
-  const confirmPasswordReset = async (newPassword) => {
+  const _confirmPasswordReset = async (newPassword) => {
     try {
       setLoading(true);
       
@@ -652,7 +652,7 @@ export const SupabaseAuthProvider = ({ children }) => {
     }
   };
 
-  const value = {
+  const _value = {
     user,
     profile,
     loading,

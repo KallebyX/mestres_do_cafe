@@ -1,21 +1,8 @@
 import React from 'react';
-import { 
-  Coffee, 
-  Award, 
-  Users, 
-  MapPin, 
-  Target, 
-  Heart, 
-  Leaf,
-  TrendingUp,
-  Star,
-  CheckCircle,
-  ArrowRight,
-  Shield
-} from 'lucide-react';
+// import { _Coffee, _Award, _Users, _MapPin, _Target, _Heart, _Leaf, _TrendingUp, _Star, _CheckCircle, _ArrowRight, _Shield } from 'lucide-react'; // Temporarily commented - unused import
 
-const AboutPage = () => {
-  const achievements = [
+const _AboutPage = () => {
+  const _achievements = [
     {
       number: "1000+",
       label: "Clientes Satisfeitos",
@@ -42,7 +29,7 @@ const AboutPage = () => {
     }
   ];
 
-  const values = [
+  const _values = [
     {
       icon: Target,
       title: "Excelência",
@@ -63,7 +50,7 @@ const AboutPage = () => {
     }
   ];
 
-  const process = [
+  const _process = [
     {
       step: "01",
       title: "Seleção Rigorosa",
@@ -86,7 +73,7 @@ const AboutPage = () => {
     }
   ];
 
-  const team = [
+  const _team = [
     {
       name: "Daniel Nascimento",
       role: "Fundador & Mestre Torrador",

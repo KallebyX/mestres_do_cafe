@@ -1,5 +1,5 @@
 import 'dotenv/config';
-import { supabaseAdmin } from '../src/lib/supabaseClient.js';
+import { _supabaseAdmin } from '../src/lib/supabaseClient.js';
 
 console.log('🔧 CORRIGINDO RLS POLICIES PARA 100% FUNCIONALIDADE');
 console.log('===================================================');
@@ -8,7 +8,7 @@ console.log('===================================================');
 // POLÍTICAS RLS PARA CORREÇÃO
 // =============================================
 
-const rlsPolicies = [
+const _rlsPolicies = [
   {
     name: 'Permitir leitura pública de produtos',
     sql: `
@@ -96,7 +96,7 @@ const rlsPolicies = [
 // ADICIONAR COLUNAS FALTANTES
 // =============================================
 
-const missingColumns = [
+const _missingColumns = [
   {
     name: 'Adicionar colunas extras em users',
     sql: `
@@ -141,12 +141,12 @@ const missingColumns = [
 // FUNÇÕES DE EXECUÇÃO
 // =============================================
 
-async function executeSQL(description, sql) {
+async function executeSQL(_description,_sql) {
   try {
     console.log(`\n🔧 ${description}...`);
     
     // Dividir o SQL em comandos individuais
-    const commands = sql.split(';').filter(cmd => cmd.trim());
+    const _commands = sql.split(';').filter(cmd => cmd.trim());
     
     for (const command of commands) {
       if (command.trim()) {
@@ -179,7 +179,7 @@ async function testBasicOperations() {
   try {
     // Teste 1: Criar usuário
     console.log('\n👤 Testando criação de usuário...');
-    const testUser = {
+    const _testUser = {
       email: `usuario.teste.${Date.now()}@mestrescafe.com`,
       name: 'Usuário Teste Completo',
       user_type: 'customer',
@@ -208,7 +208,7 @@ async function testBasicOperations() {
     
     // Teste 2: Criar produto
     console.log('\n📦 Testando criação de produto...');
-    const testProduct = {
+    const _testProduct = {
       name: `Café Teste Premium ${Date.now()}`,
       description: 'Produto criado durante teste de funcionalidade completa',
       price: 49.90,
@@ -249,7 +249,7 @@ async function testBasicOperations() {
     
     // Teste 3: Criar pedido completo
     console.log('\n🛒 Testando sistema de pedidos completo...');
-    const testOrder = {
+    const _testOrder = {
       user_id: userData.id,
       total_amount: 99.80,
       status: 'completed',
@@ -274,7 +274,7 @@ async function testBasicOperations() {
       console.log('📍 Endereço:', orderData.shipping_address);
       
       // Criar item do pedido
-      const orderItem = {
+      const _orderItem = {
         order_id: orderData.id,
         product_id: productData.id,
         quantity: 2,
@@ -299,8 +299,8 @@ async function testBasicOperations() {
     
     // Teste 4: Atualizar gamificação
     console.log('\n🎮 Testando sistema de gamificação...');
-    const newPoints = userData.points + orderData.points_earned;
-    let newLevel = userData.level;
+    const _newPoints = userData.points + orderData.points_earned;
+    let _newLevel = userData.level;
     
     // Lógica de níveis
     if (newPoints >= 500) newLevel = 'mestre';
@@ -329,7 +329,7 @@ async function testBasicOperations() {
     
     // Teste 5: Criar histórico de pontos
     console.log('\n📈 Testando histórico de pontos...');
-    const pointsHistory = {
+    const _pointsHistory = {
       user_id: userData.id,
       order_id: orderData.id,
       points_earned: orderData.points_earned,
@@ -389,7 +389,7 @@ async function fixEverything() {
     console.log('\n🧪 FASE 3: TESTANDO FUNCIONALIDADES');
     console.log('===================================');
     
-    const testResult = await testBasicOperations();
+    const _testResult = await testBasicOperations();
     
     // 4. Resumo final
     console.log('\n' + '='.repeat(50));

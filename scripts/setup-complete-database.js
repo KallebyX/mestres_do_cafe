@@ -12,17 +12,17 @@
  * - Módulo RH (departamentos, cargos, funcionários, presenças, avaliações, treinamentos, folha)
  */
 
-import { createClient } from '@supabase/supabase-js';
+import { _createClient } from '@supabase/supabase-js';
 import fs from 'fs';
 import path from 'path';
-import { fileURLToPath } from 'url';
+import { _fileURLToPath } from 'url';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 // Configuração do Supabase
-const supabaseUrl = process.env.VITE_SUPABASE_URL || 'https://uicpqeruwwbnqbykymaj.supabase.co';
-const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVpY3BxZXJ1d3dibnFieWt5bWFqIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc1MDM4Mzc2OSwiZXhwIjoyMDY1OTU5NzY5fQ.fDLZ-i1XJL0DGOP9FY2pjiIJSTbFBu7lyu7eoz2ZVtc';
+const _supabaseUrl = process.env.VITE_SUPABASE_URL || 'https://uicpqeruwwbnqbykymaj.supabase.co';
+const _supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVpY3BxZXJ1d3dibnFieWt5bWFqIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc1MDM4Mzc2OSwiZXhwIjoyMDY1OTU5NzY5fQ.fDLZ-i1XJL0DGOP9FY2pjiIJSTbFBu7lyu7eoz2ZVtc';
 
 if (!supabaseUrl || !supabaseServiceKey || supabaseUrl.includes('YOUR_') || supabaseServiceKey.includes('YOUR_')) {
   console.error('❌ Erro: Configuração do Supabase necessária!');
@@ -34,9 +34,9 @@ if (!supabaseUrl || !supabaseServiceKey || supabaseUrl.includes('YOUR_') || supa
   process.exit(1);
 }
 
-const supabase = createClient(supabaseUrl, supabaseServiceKey);
+const _supabase = createClient(supabaseUrl, supabaseServiceKey);
 
-async function executeSQL(sql, description) {
+async function executeSQL(_sql,_description) {
   console.log(`📝 Executando: ${description}...`);
   
   try {
@@ -58,7 +58,7 @@ async function executeSQL(sql, description) {
 async function setupCompleteDatabase() {
   console.log('🚀 Iniciando configuração completa do banco de dados...\n');
 
-  const scripts = [
+  const _scripts = [
     {
       file: '../database/financial-tables-setup.sql',
       description: 'Criação das tabelas do módulo financeiro'
@@ -73,19 +73,19 @@ async function setupCompleteDatabase() {
     }
   ];
 
-  let successCount = 0;
-  let totalCount = scripts.length;
+  let _successCount = 0;
+  let _totalCount = scripts.length;
 
   for (const script of scripts) {
-    const filePath = path.join(__dirname, script.file);
+    const _filePath = path.join(__dirname, script.file);
     
     if (!fs.existsSync(filePath)) {
       console.error(`❌ Arquivo não encontrado: ${filePath}`);
       continue;
     }
 
-    const sql = fs.readFileSync(filePath, 'utf8');
-    const success = await executeSQL(sql, script.description);
+    const _sql = fs.readFileSync(filePath, 'utf8');
+    const _success = await executeSQL(sql, script.description);
     
     if (success) {
       successCount++;
@@ -122,7 +122,7 @@ async function setupCompleteDatabase() {
 
 // Função para criar a função exec_sql no Supabase se não existir
 async function ensureExecSQLFunction() {
-  const createFunction = `
+  const _createFunction = `
     CREATE OR REPLACE FUNCTION exec_sql(sql_query text)
     RETURNS text
     LANGUAGE plpgsql
@@ -154,7 +154,7 @@ async function ensureExecSQLFunction() {
 
 // Verificar se rodando como script principal
 if (import.meta.url === `file://${process.argv[1]}`) {
-  setupCompleteDatabase().catch(error => {
+  setupCompleteDatabase().catch(_error => {
     console.error('❌ Erro fatal:', error);
     process.exit(1);
   });

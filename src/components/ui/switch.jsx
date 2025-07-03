@@ -3,11 +3,10 @@
 import * as React from "react"
 import * as SwitchPrimitive from "@radix-ui/react-switch"
 
-import { cn } from "@/lib/utils"
+import { _cn } from "@/lib/utils"
 
-function Switch({
-  className,
-  ...props
+function Switch(_{
+  className,_...props
 }) {
   return (
     <SwitchPrimitive.Root

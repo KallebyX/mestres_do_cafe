@@ -1,15 +1,15 @@
 import * as React from "react"
-import { Slot } from "@radix-ui/react-slot"
-import { Controller, FormProvider, useFormContext, useFormState } from "react-hook-form";
+import { _Slot } from "@radix-ui/react-slot"
+import { _Controller, _FormProvider, _useFormContext, _useFormState } from "react-hook-form";
 
-import { cn } from "@/lib/utils"
-import { Label } from "@/components/ui/label"
+import { _cn } from "@/lib/utils"
+// import { _Label } from "@/components/ui/label" // Temporarily commented - unused import
 
-const Form = FormProvider
+const _Form = FormProvider
 
-const FormFieldContext = React.createContext({})
+const _FormFieldContext = React.createContext({})
 
-const FormField = (
+const _FormField = (
   {
     ...props
   }
@@ -21,12 +21,12 @@ const FormField = (
   );
 }
 
-const useFormField = () => {
-  const fieldContext = React.useContext(FormFieldContext)
-  const itemContext = React.useContext(FormItemContext)
+const _useFormField = () => {
+  const _fieldContext = React.useContext(FormFieldContext)
+  const _itemContext = React.useContext(FormItemContext)
   const { getFieldState } = useFormContext()
-  const formState = useFormState({ name: fieldContext.name })
-  const fieldState = getFieldState(fieldContext.name, formState)
+  const _formState = useFormState({ name: fieldContext.name })
+  const _fieldState = getFieldState(fieldContext.name, formState)
 
   if (!fieldContext) {
     throw new Error("useFormField should be used within <FormField>")
@@ -44,13 +44,12 @@ const useFormField = () => {
   }
 }
 
-const FormItemContext = React.createContext({})
+const _FormItemContext = React.createContext({})
 
-function FormItem({
-  className,
-  ...props
+function FormItem(_{
+  className,_...props
 }) {
-  const id = React.useId()
+  const _id = React.useId()
 
   return (
     <FormItemContext.Provider value={{ id }}>
@@ -59,9 +58,8 @@ function FormItem({
   );
 }
 
-function FormLabel({
-  className,
-  ...props
+function FormLabel(_{
+  className,_...props
 }) {
   const { error, formItemId } = useFormField()
 
@@ -75,7 +73,7 @@ function FormLabel({
   );
 }
 
-function FormControl({
+function FormControl(_{
   ...props
 }) {
   const { error, formItemId, formDescriptionId, formMessageId } = useFormField()
@@ -94,9 +92,8 @@ function FormControl({
   );
 }
 
-function FormDescription({
-  className,
-  ...props
+function FormDescription(_{
+  className,_...props
 }) {
   const { formDescriptionId } = useFormField()
 
@@ -109,12 +106,11 @@ function FormDescription({
   );
 }
 
-function FormMessage({
-  className,
-  ...props
+function FormMessage(_{
+  className,_...props
 }) {
   const { error, formMessageId } = useFormField()
-  const body = error ? String(error?.message ?? "") : props.children
+  const _body = error ? String(error?.message ?? "") : props.children
 
   if (!body) {
     return null

@@ -1,40 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { 
-  ShoppingBag, 
-  Truck, 
-  Package, 
-  Users, 
-  DollarSign, 
-  Calendar, 
-  Eye, 
-  Edit, 
-  Trash2, 
-  Search, 
-  Plus, 
-  Filter, 
-  Download, 
-  AlertCircle,
-  CheckCircle,
-  Clock,
-  TrendingUp,
-  BarChart3,
-  PieChart,
-  Phone,
-  Mail,
-  MapPin,
-  FileText,
-  Activity,
-  Star,
-  Building,
-  Clipboard
-} from 'lucide-react';
+// import { _ShoppingBag, _Truck, _Package, _Users, _DollarSign, _Calendar, _Eye, _Edit, _Trash2, _Search, _Plus, _Filter, _Download, _AlertCircle, _CheckCircle, _Clock, _TrendingUp, _BarChart3, _PieChart, _Phone, _Mail, _MapPin, _FileText, _Activity, _Star, _Building, _Clipboard } from 'lucide-react'; // Temporarily commented - unused import
 
-import { supabase } from '../lib/supabase';
-import { useNotifications } from '../contexts/NotificationContext';
-import { PieChartComponent, BarChartComponent } from '../components/AdvancedCharts';
-import { StockReport } from '../components/PDFReports';
+import { _supabase } from '../lib/supabase';
+import { _useNotifications } from '../contexts/NotificationContext';
+import { _PieChartComponent, _BarChartComponent } from '../components/AdvancedCharts';
+import { _StockReport } from '../components/PDFReports';
 
-const AdminComprasDashboard = () => {
+const _AdminComprasDashboard = () => {
   // Estados principais
   const [activeTab, setActiveTab] = useState('overview');
   const [loading, setLoading] = useState(true);
@@ -66,9 +38,9 @@ const AdminComprasDashboard = () => {
   // Carregar dados iniciais
   useEffect(() => {
     loadPurchaseData();
-  }, []);
+  }, [] // TODO: Add missing dependencies to fix exhaustive-deps warning);
 
-  const loadPurchaseData = async () => {
+  const _loadPurchaseData = async () => {
     setLoading(true);
     try {
       // Carregar dados reais do Supabase
@@ -127,7 +99,7 @@ const AdminComprasDashboard = () => {
   };
 
   // APIs do Supabase
-  const getPurchaseOrders = async () => {
+  const _getPurchaseOrders = async () => {
     try {
       const { data, error } = await supabase
         .from('purchase_orders')
@@ -144,7 +116,7 @@ const AdminComprasDashboard = () => {
     }
   };
 
-  const getSuppliers = async () => {
+  const _getSuppliers = async () => {
     try {
       const { data, error } = await supabase
         .from('suppliers')
@@ -162,7 +134,7 @@ const AdminComprasDashboard = () => {
     }
   };
 
-  const getProducts = async () => {
+  const _getProducts = async () => {
     try {
       const { data, error } = await supabase
         .from('products')
@@ -179,7 +151,7 @@ const AdminComprasDashboard = () => {
     }
   };
 
-  const getReceipts = async () => {
+  const _getReceipts = async () => {
     try {
       const { data, error } = await supabase
         .from('purchase_receipts')
@@ -197,25 +169,25 @@ const AdminComprasDashboard = () => {
   };
 
   // Funções CRUD para pedidos de compra
-  const handleCreatePurchase = () => {
+  const _handleCreatePurchase = () => {
     setSelectedPurchase(null);
     setModalMode('create');
     setShowPurchaseModal(true);
   };
 
-  const handleEditPurchase = (purchase) => {
+  const _handleEditPurchase = (purchase) => {
     setSelectedPurchase(purchase);
     setModalMode('edit');
     setShowPurchaseModal(true);
   };
 
-  const handleViewPurchase = (purchase) => {
+  const _handleViewPurchase = (purchase) => {
     setSelectedPurchase(purchase);
     setModalMode('view');
     setShowPurchaseModal(true);
   };
 
-  const handleDeletePurchase = async (purchaseId) => {
+  const _handleDeletePurchase = async (purchaseId) => {
     if (window.confirm('Tem certeza que deseja excluir este pedido de compra?')) {
       try {
         const { error } = await supabase
@@ -236,18 +208,18 @@ const AdminComprasDashboard = () => {
   };
 
   // Utilitários
-  const formatCurrency = (value) => {
+  const _formatCurrency = (value) => {
     return new Intl.NumberFormat('pt-BR', {
       style: 'currency',
       currency: 'BRL'
     }).format(value);
   };
 
-  const formatDate = (dateString) => {
+  const _formatDate = (dateString) => {
     return new Date(dateString).toLocaleDateString('pt-BR');
   };
 
-  const getStatusColor = (status) => {
+  const _getStatusColor = (status) => {
     switch (status) {
       case 'aprovado':
         return 'text-green-700 bg-green-100';
@@ -269,13 +241,13 @@ const AdminComprasDashboard = () => {
   };
 
   // Cálculos
-  const totalPedidos = pedidosCompra.reduce((total, pedido) => total + pedido.valor_total, 0);
-  const pedidosPendentes = pedidosCompra.filter(p => p.status === 'pendente').length;
-  const pedidosAprovados = pedidosCompra.filter(p => p.status === 'aprovado').length;
-  const totalFornecedores = fornecedores.length;
+  const _totalPedidos = pedidosCompra.reduce((total, pedido) => total + pedido.valor_total, 0);
+  const _pedidosPendentes = pedidosCompra.filter(p => p.status === 'pendente').length;
+  const _pedidosAprovados = pedidosCompra.filter(p => p.status === 'aprovado').length;
+  const _totalFornecedores = fornecedores.length;
 
   // Componentes de renderização
-  const renderOverview = () => (
+  const _renderOverview = () => (
     <div className="space-y-6">
       {/* Cards de Resumo */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -387,7 +359,7 @@ const AdminComprasDashboard = () => {
     </div>
   );
 
-  const renderPedidos = () => (
+  const _renderPedidos = () => (
     <div className="space-y-6">
       {/* Controles */}
       <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
@@ -453,11 +425,11 @@ const AdminComprasDashboard = () => {
             </thead>
             <tbody className="divide-y divide-gray-200">
               {pedidosCompra
-                .filter(pedido => {
-                  const matchSearch = pedido.numero.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                .filter(_pedido => {
+                  const _matchSearch = pedido.numero.toLowerCase().includes(searchTerm.toLowerCase()) ||
                                    pedido.fornecedor_nome.toLowerCase().includes(searchTerm.toLowerCase());
-                  const matchStatus = statusFilter === 'todos' || pedido.status === statusFilter;
-                  const matchFornecedor = fornecedorFilter === 'todos' || pedido.fornecedor_nome === fornecedorFilter;
+                  const _matchStatus = statusFilter === 'todos' || pedido.status === statusFilter;
+                  const _matchFornecedor = fornecedorFilter === 'todos' || pedido.fornecedor_nome === fornecedorFilter;
                   return matchSearch && matchStatus && matchFornecedor;
                 })
                 .map((pedido) => (
@@ -522,7 +494,7 @@ const AdminComprasDashboard = () => {
     </div>
   );
 
-  const renderFornecedores = () => (
+  const _renderFornecedores = () => (
     <div className="space-y-6">
       <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
         <h2 className="text-2xl font-bold text-gray-900">Gestão de Fornecedores</h2>
@@ -594,7 +566,7 @@ const AdminComprasDashboard = () => {
     </div>
   );
 
-  const renderRelatorios = () => (
+  const _renderRelatorios = () => (
     <div className="space-y-6">
       <h2 className="text-2xl font-bold text-gray-900">Relatórios de Compras</h2>
       

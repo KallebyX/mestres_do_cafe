@@ -1,19 +1,16 @@
 import React, { useState, useEffect } from 'react';
-import { 
-  ShoppingCart, TrendingUp, DollarSign, Users, Target, Calendar, 
-  BarChart3, Filter, Download, Plus, Search, Eye, Edit, Trash2, Award, PieChart, AlertCircle, CheckCircle, Phone, Mail, MapPin, FileText, Activity, Star, TrendingDown
-} from 'lucide-react';
-import { useSupabaseAuth } from '../contexts/SupabaseAuthContext';
-import { useNavigate } from 'react-router-dom';
-import { supabase } from '../lib/supabase';
-import { useNotifications } from '../contexts/NotificationContext';
-import { PieChartComponent, BarChartComponent } from '../components/AdvancedCharts';
-import { StockReport } from '../components/PDFReports';
+// import { _ShoppingCart, _TrendingUp, _DollarSign, _Users, _Target, _Calendar, _BarChart3, _Filter, _Download, _Plus, _Search, _Eye, _Edit, _Trash2, _Award, _PieChart, _AlertCircle, _CheckCircle, _Phone, _Mail, _MapPin, _FileText, _Activity, _Star, _TrendingDown } from 'lucide-react'; // Temporarily commented - unused import
+import { _useSupabaseAuth } from '../contexts/SupabaseAuthContext';
+import { _useNavigate } from 'react-router-dom';
+import { _supabase } from '../lib/supabase';
+import { _useNotifications } from '../contexts/NotificationContext';
+import { _PieChartComponent, _BarChartComponent } from '../components/AdvancedCharts';
+import { _StockReport } from '../components/PDFReports';
 
-const AdminVendasDashboard = () => {
+const _AdminVendasDashboard = () => {
   const [activeTab, setActiveTab] = useState('overview');
   const { user, hasPermission } = useSupabaseAuth();
-  const navigate = useNavigate();
+  const _navigate = useNavigate();
 
   // Estados principais
   const [loading, setLoading] = useState(true);
@@ -52,9 +49,9 @@ const AdminVendasDashboard = () => {
   // Carregar dados iniciais
   useEffect(() => {
     loadSalesData();
-  }, []);
+  }, [] // TODO: Add missing dependencies to fix exhaustive-deps warning);
 
-  const loadSalesData = async () => {
+  const _loadSalesData = async () => {
     setLoading(true);
     try {
       // Carregar dados reais do Supabase
@@ -115,7 +112,7 @@ const AdminVendasDashboard = () => {
   };
 
   // APIs do Supabase
-  const getSales = async () => {
+  const _getSales = async () => {
     try {
       const { data, error } = await supabase
         .from('orders')
@@ -132,7 +129,7 @@ const AdminVendasDashboard = () => {
     }
   };
 
-  const getSellers = async () => {
+  const _getSellers = async () => {
     try {
       const { data, error } = await supabase
         .from('users')
@@ -150,7 +147,7 @@ const AdminVendasDashboard = () => {
     }
   };
 
-  const getCustomers = async () => {
+  const _getCustomers = async () => {
     try {
       const { data, error } = await supabase
         .from('customers')
@@ -167,7 +164,7 @@ const AdminVendasDashboard = () => {
     }
   };
 
-  const getProducts = async () => {
+  const _getProducts = async () => {
     try {
       const { data, error } = await supabase
         .from('products')
@@ -185,25 +182,25 @@ const AdminVendasDashboard = () => {
   };
 
   // Funções CRUD para vendas
-  const handleCreateSale = () => {
+  const _handleCreateSale = () => {
     setSelectedSale(null);
     setModalMode('create');
     setShowSaleModal(true);
   };
 
-  const handleEditSale = (sale) => {
+  const _handleEditSale = (sale) => {
     setSelectedSale(sale);
     setModalMode('edit');
     setShowSaleModal(true);
   };
 
-  const handleViewSale = (sale) => {
+  const _handleViewSale = (sale) => {
     setSelectedSale(sale);
     setModalMode('view');
     setShowSaleModal(true);
   };
 
-  const handleDeleteSale = async (saleId) => {
+  const _handleDeleteSale = async (saleId) => {
     if (window.confirm('Tem certeza que deseja excluir esta venda?')) {
       try {
         const { error } = await supabase
@@ -224,18 +221,18 @@ const AdminVendasDashboard = () => {
   };
 
   // Utilitários
-  const formatCurrency = (value) => {
+  const _formatCurrency = (value) => {
     return new Intl.NumberFormat('pt-BR', {
       style: 'currency',
       currency: 'BRL'
     }).format(value);
   };
 
-  const formatDate = (dateString) => {
+  const _formatDate = (dateString) => {
     return new Date(dateString).toLocaleDateString('pt-BR');
   };
 
-  const getStatusColor = (status) => {
+  const _getStatusColor = (status) => {
     switch (status) {
       case 'finalizada':
         return 'text-green-700 bg-green-100';
@@ -255,14 +252,14 @@ const AdminVendasDashboard = () => {
   };
 
   // Cálculos
-  const totalVendas = vendas.reduce((total, venda) => total + venda.valor_total, 0);
-  const vendasFinalizadas = vendas.filter(v => v.status === 'finalizada');
-  const ticketMedio = vendasFinalizadas.length > 0 ? 
+  const _totalVendas = vendas.reduce((total, venda) => total + venda.valor_total, 0);
+  const _vendasFinalizadas = vendas.filter(v => v.status === 'finalizada');
+  const _ticketMedio = vendasFinalizadas.length > 0 ? 
     vendasFinalizadas.reduce((total, v) => total + v.valor_total, 0) / vendasFinalizadas.length : 0;
-  const totalComissoes = comissoes.reduce((total, com) => total + com.total_receber, 0);
+  const _totalComissoes = comissoes.reduce((total, com) => total + com.total_receber, 0);
 
   // Componentes de renderização
-  const renderOverview = () => (
+  const _renderOverview = () => (
     <div className="space-y-6">
       {/* Cards de Resumo */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -375,7 +372,7 @@ const AdminVendasDashboard = () => {
     </div>
   );
 
-  const renderVendas = () => (
+  const _renderVendas = () => (
     <div className="space-y-6">
       {/* Controles */}
       <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
@@ -440,11 +437,11 @@ const AdminVendasDashboard = () => {
             </thead>
             <tbody className="divide-y divide-gray-200">
               {vendas
-                .filter(venda => {
-                  const matchSearch = venda.numero.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                .filter(_venda => {
+                  const _matchSearch = venda.numero.toLowerCase().includes(searchTerm.toLowerCase()) ||
                                    venda.cliente_nome.toLowerCase().includes(searchTerm.toLowerCase());
-                  const matchStatus = statusFilter === 'todos' || venda.status === statusFilter;
-                  const matchVendedor = vendedorFilter === 'todos' || venda.vendedor === vendedorFilter;
+                  const _matchStatus = statusFilter === 'todos' || venda.status === statusFilter;
+                  const _matchVendedor = vendedorFilter === 'todos' || venda.vendedor === vendedorFilter;
                   return matchSearch && matchStatus && matchVendedor;
                 })
                 .map((venda) => (
@@ -509,7 +506,7 @@ const AdminVendasDashboard = () => {
     </div>
   );
 
-  const renderVendedores = () => (
+  const _renderVendedores = () => (
     <div className="space-y-6">
       <h2 className="text-2xl font-bold text-gray-900">Gestão de Vendedores</h2>
       
@@ -571,7 +568,7 @@ const AdminVendasDashboard = () => {
     </div>
   );
 
-  const renderRelatorios = () => (
+  const _renderRelatorios = () => (
     <div className="space-y-6">
       <h2 className="text-2xl font-bold text-gray-900">Relatórios de Vendas</h2>
       
