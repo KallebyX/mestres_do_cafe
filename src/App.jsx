@@ -6,47 +6,72 @@ import { CartProvider } from './contexts/CartContext';
 import { NotificationProvider } from './contexts/NotificationContext';
 import { Header } from './components/Header';
 import { Footer } from './components/Footer';
-import LandingPage from './pages/LandingPage';
-import LoginPage from './pages/LoginPage';
-import RegisterPage from './pages/RegisterPage';
-import MarketplacePage from './pages/MarketplacePage';
-import ProductDetailPage from './pages/ProductDetailPage';
-import CartPage from './pages/CartPage';
-import CheckoutPage from './pages/CheckoutPage';
-import CustomerDashboard from './pages/CustomerDashboard';
-import AdminDashboard from './pages/AdminDashboard';
-import GamificationPage from './pages/GamificationPage';
-import ProfilePage from './pages/ProfilePage';
-import OrdersPage from './pages/OrdersPage';
-import AboutPage from './pages/AboutPage';
-import ContactPage from './pages/ContactPage';
-import MapPage from './pages/MapPage';
-import CoursesPage from './pages/CoursesPage';
-import ForumPage from './pages/ForumPage';
-import BlogPage from './pages/BlogPage';
-import BlogPostDetailPage from './pages/BlogPostDetailPage';
-import AdminBlogManager from './pages/AdminBlogManager';
-import AdminCRMDashboard from './pages/AdminCRMDashboard';
-import AdminFinancialReports from './pages/AdminFinancialReports';
-import AdminAnalytics from './pages/AdminAnalytics';
-import AdminFinancial from './pages/AdminFinancial';
-import AdminFinanceiroDashboard from './pages/AdminFinanceiroDashboard';
-import AdminEstoqueDashboard from './pages/AdminEstoqueDashboard';
-import AdminEstoqueDashboardEnterprise from './pages/AdminEstoqueDashboardEnterprise';
-import AdminRHDashboard from './pages/AdminRHDashboard';
-import AdminVendasDashboard from './pages/AdminVendasDashboard';
-import AdminComprasDashboard from './pages/AdminComprasDashboard';
-import AdminProducaoDashboard from './pages/AdminProducaoDashboard';
-import AdminContabilidadeDashboard from './pages/AdminContabilidadeDashboard';
-import AdminBIDashboard from './pages/AdminBIDashboard';
-import AdminConfigDashboard from './pages/AdminConfigDashboard';
-import AccountActivationPage from './pages/AccountActivationPage';
-import ForgotPasswordPage from './pages/ForgotPasswordPage';
-import ResetPasswordPage from './pages/ResetPasswordPage';
-import AuthCallbackPage from './pages/AuthCallbackPage';
+import { lazy, Suspense } from 'react';
+import LoadingStates from './components/LoadingStates';
+
+// ✅ LAZY LOADING - Páginas públicas
+const LandingPage = lazy(() => import('./pages/LandingPage'));
+const AboutPage = lazy(() => import('./pages/AboutPage'));
+const ContactPage = lazy(() => import('./pages/ContactPage'));
+const LoginPage = lazy(() => import('./pages/LoginPage'));
+const RegisterPage = lazy(() => import('./pages/RegisterPage'));
+
+// ✅ LAZY LOADING - E-commerce
+const MarketplacePage = lazy(() => import('./pages/MarketplacePage'));
+const ProductDetailPage = lazy(() => import('./pages/ProductDetailPage'));
+const CartPage = lazy(() => import('./pages/CartPage'));
+const CheckoutPage = lazy(() => import('./pages/CheckoutPage'));
+
+// ✅ LAZY LOADING - Dashboards (grandes)
+const CustomerDashboard = lazy(() => import('./pages/CustomerDashboard'));
+const AdminDashboard = lazy(() => import('./pages/AdminDashboard'));
+
+// ✅ LAZY LOADING - Módulos Admin (muito grandes)
+const AdminCRMDashboard = lazy(() => import('./pages/AdminCRMDashboard'));
+const AdminEstoqueDashboard = lazy(() => import('./pages/AdminEstoqueDashboard'));
+const AdminEstoqueDashboardEnterprise = lazy(() => import('./pages/AdminEstoqueDashboardEnterprise'));
+const AdminFinanceiroDashboard = lazy(() => import('./pages/AdminFinanceiroDashboard'));
+const AdminRHDashboard = lazy(() => import('./pages/AdminRHDashboard'));
+const AdminVendasDashboard = lazy(() => import('./pages/AdminVendasDashboard'));
+const AdminComprasDashboard = lazy(() => import('./pages/AdminComprasDashboard'));
+const AdminProducaoDashboard = lazy(() => import('./pages/AdminProducaoDashboard'));
+const AdminContabilidadeDashboard = lazy(() => import('./pages/AdminContabilidadeDashboard'));
+const AdminBIDashboard = lazy(() => import('./pages/AdminBIDashboard'));
+const AdminConfigDashboard = lazy(() => import('./pages/AdminConfigDashboard'));
+
+// ✅ LAZY LOADING - Funcionalidades extras
+const BlogPage = lazy(() => import('./pages/BlogPage'));
+const BlogPostDetailPage = lazy(() => import('./pages/BlogPostDetailPage'));
+const CoursesPage = lazy(() => import('./pages/CoursesPage'));
+const GamificationPage = lazy(() => import('./pages/GamificationPage'));
+const ForumPage = lazy(() => import('./pages/ForumPage'));
+const MapPage = lazy(() => import('./pages/MapPage'));
+const ProfilePage = lazy(() => import('./pages/ProfilePage'));
+const OrdersPage = lazy(() => import('./pages/OrdersPage'));
+
+// ✅ LAZY LOADING - Páginas especiais
+const AdminAnalytics = lazy(() => import('./pages/AdminAnalytics'));
+const AdminBlogManager = lazy(() => import('./pages/AdminBlogManager'));
+const AdminFinancial = lazy(() => import('./pages/AdminFinancial'));
+const AdminFinancialReports = lazy(() => import('./pages/AdminFinancialReports'));
+const AccountActivationPage = lazy(() => import('./pages/AccountActivationPage'));
+const AuthCallbackPage = lazy(() => import('./pages/AuthCallbackPage'));
+const CustomerDetailView = lazy(() => import('./pages/CustomerDetailView'));
+const FileUploadDemo = lazy(() => import('./pages/FileUploadDemo'));
+
+// Páginas de erro (sempre carregadas)
 import NotFoundPage from './pages/NotFoundPage';
-import CustomerDetailView from './pages/CustomerDetailView';
-import './App.css';
+
+// ✅ COMPONENTE DE LOADING OTIMIZADO
+const PageLoader = () => (
+  <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-amber-50 to-orange-100 dark:from-gray-900 dark:to-gray-800">
+    <div className="text-center">
+      <LoadingStates.skeleton className="w-32 h-8 mx-auto mb-4" />
+      <LoadingStates.skeleton className="w-48 h-4 mx-auto mb-2" />
+      <LoadingStates.skeleton className="w-36 h-4 mx-auto" />
+    </div>
+  </div>
+);
 
 function App() {
   return (
@@ -55,61 +80,78 @@ function App() {
         <NotificationProvider>
           <CartProvider>
             <Router>
-            <div className="App min-h-screen transition-colors duration-300" style={{
-              backgroundColor: 'var(--color-bg-primary)',
-              color: 'var(--color-text-primary)'
-            }}>
-              <Header />
-
-              <main className="flex-1">
-                <Routes>
-                  <Route path="/" element={<LandingPage />} />
-                  <Route path="/login" element={<LoginPage />} />
-                  <Route path="/register" element={<RegisterPage />} />
-                  <Route path="/activate/:token" element={<AccountActivationPage />} />
-                  <Route path="/forgot-password" element={<ForgotPasswordPage />} />
-                  <Route path="/reset-password" element={<ResetPasswordPage />} />
-                  <Route path="/auth/callback" element={<AuthCallbackPage />} />
-                  <Route path="/marketplace" element={<MarketplacePage />} />
-                  <Route path="/produto/:id" element={<ProductDetailPage />} />
-                  <Route path="/carrinho" element={<CartPage />} />
-                  <Route path="/checkout" element={<CheckoutPage />} />
-                  <Route path="/dashboard" element={<CustomerDashboard />} />
-                  <Route path="/admin" element={<AdminDashboard />} />
-                  <Route path="/admin/dashboard" element={<AdminDashboard />} />
-                  <Route path="/admin/crm" element={<AdminCRMDashboard />} />
-                  <Route path="/admin/customer/:customerId" element={<CustomerDetailView />} />
-                  <Route path="/admin/blog" element={<AdminBlogManager />} />
-                  <Route path="/admin/financeiro" element={<AdminFinanceiroDashboard />} />
-                  <Route path="/admin/financeiro/relatorios" element={<AdminFinancialReports />} />
-                  <Route path="/admin/estoque" element={<AdminEstoqueDashboard />} />
-                  <Route path="/admin/estoque-enterprise" element={<AdminEstoqueDashboardEnterprise />} />
-                  <Route path="/admin/rh" element={<AdminRHDashboard />} />
-                  <Route path="/admin/vendas" element={<AdminVendasDashboard />} />
-                  <Route path="/admin/compras" element={<AdminComprasDashboard />} />
-                  <Route path="/admin/producao" element={<AdminProducaoDashboard />} />
-                  <Route path="/admin/contabilidade" element={<AdminContabilidadeDashboard />} />
-                  <Route path="/admin/bi" element={<AdminBIDashboard />} />
-                  <Route path="/admin/config" element={<AdminConfigDashboard />} />
-                  <Route path="/admin/analytics" element={<AdminAnalytics />} />
-                  <Route path="/gamificacao" element={<GamificationPage />} />
-                  <Route path="/cursos" element={<CoursesPage />} />
-                  <Route path="/blog" element={<BlogPage />} />
-                  <Route path="/blog/:slug" element={<BlogPostDetailPage />} />
-                  <Route path="/forum" element={<ForumPage />} />
-                  <Route path="/contato" element={<ContactPage />} />
-                  <Route path="/sobre" element={<AboutPage />} />
-                  <Route path="/perfil" element={<ProfilePage />} />
-                  <Route path="/pedidos" element={<OrdersPage />} />
-                  <Route path="/localizacoes" element={<MapPage />} />
-                  <Route path="*" element={<NotFoundPage />} />
-                </Routes>
-              </main>
-              <Footer />
-            </div>
-                      </Router>
-          </CartProvider>
-        </NotificationProvider>
+              <div className="min-h-screen bg-white dark:bg-gray-900 text-gray-900 dark:text-white transition-colors duration-300">
+                <Header />
+                
+                {/* ✅ SUSPENSE WRAPPER - Carregamento otimizado */}
+                <Suspense fallback={<PageLoader />}>
+                  <Routes>
+                    {/* Páginas públicas */}
+                    <Route path="/" element={<LandingPage />} />
+                    <Route path="/about" element={<AboutPage />} />
+                    <Route path="/contact" element={<ContactPage />} />
+                    <Route path="/login" element={<LoginPage />} />
+                    <Route path="/register" element={<RegisterPage />} />
+                    
+                    {/* E-commerce */}
+                    <Route path="/marketplace" element={<MarketplacePage />} />
+                    <Route path="/product/:id" element={<ProductDetailPage />} />
+                    <Route path="/cart" element={<CartPage />} />
+                    <Route path="/checkout" element={<CheckoutPage />} />
+                    
+                    {/* Dashboards */}
+                    <Route path="/dashboard" element={<CustomerDashboard />} />
+                    <Route path="/profile" element={<ProfilePage />} />
+                    <Route path="/orders" element={<OrdersPage />} />
+                    
+                    {/* Admin - Dashboard Principal */}
+                    <Route path="/admin/dashboard" element={<AdminDashboard />} />
+                    <Route path="/admin/analytics" element={<AdminAnalytics />} />
+                    
+                    {/* Admin - Módulos ERP */}
+                    <Route path="/admin/crm" element={<AdminCRMDashboard />} />
+                    <Route path="/admin/estoque" element={<AdminEstoqueDashboard />} />
+                    <Route path="/admin/estoque-enterprise" element={<AdminEstoqueDashboardEnterprise />} />
+                    <Route path="/admin/financeiro" element={<AdminFinanceiroDashboard />} />
+                    <Route path="/admin/rh" element={<AdminRHDashboard />} />
+                    <Route path="/admin/vendas" element={<AdminVendasDashboard />} />
+                    <Route path="/admin/compras" element={<AdminComprasDashboard />} />
+                    <Route path="/admin/producao" element={<AdminProducaoDashboard />} />
+                    <Route path="/admin/contabilidade" element={<AdminContabilidadeDashboard />} />
+                    <Route path="/admin/bi" element={<AdminBIDashboard />} />
+                    <Route path="/admin/config" element={<AdminConfigDashboard />} />
+                    
+                    {/* Admin - Funcionalidades */}
+                    <Route path="/admin/blog" element={<AdminBlogManager />} />
+                    <Route path="/admin/financial" element={<AdminFinancial />} />
+                    <Route path="/admin/financial-reports" element={<AdminFinancialReports />} />
+                    <Route path="/admin/customers/:id" element={<CustomerDetailView />} />
+                    
+                    {/* Conteúdo */}
+                    <Route path="/blog" element={<BlogPage />} />
+                    <Route path="/blog/:slug" element={<BlogPostDetailPage />} />
+                    <Route path="/courses" element={<CoursesPage />} />
+                    
+                    {/* Funcionalidades extras */}
+                    <Route path="/gamification" element={<GamificationPage />} />
+                    <Route path="/forum" element={<ForumPage />} />
+                    <Route path="/map" element={<MapPage />} />
+                    
+                    {/* Páginas especiais */}
+                    <Route path="/auth/callback" element={<AuthCallbackPage />} />
+                    <Route path="/activate-account" element={<AccountActivationPage />} />
+                    <Route path="/file-upload-demo" element={<FileUploadDemo />} />
+                    
+                    {/* 404 - Sempre carregada */}
+                    <Route path="*" element={<NotFoundPage />} />
+                  </Routes>
+                </Suspense>
+                
+                <Footer />
+              </div>
+            </Router>
+          </NotificationProvider>
+        </CartProvider>
       </SupabaseAuthProvider>
     </ThemeProvider>
   );
