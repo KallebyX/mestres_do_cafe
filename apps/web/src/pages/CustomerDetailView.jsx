@@ -8,7 +8,7 @@ import {
   BarChart3, PieChart, Users, Coffee, Award, Tag, Heart, Gift
 } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
-import { getCustomerDetails, updateCustomerNotes, resetCustomerPassword, addCustomerInteraction, addCustomerTask, updateTaskStatus } from "../lib/api"
+import { getCustomerDetails, updateCustomerNotes, resetCustomerPassword, addCustomerInteraction, addCustomerTask, updateTaskStatus } from "@/lib/api"
 
 const CustomerDetailView = () => {
   const { customerId } = useParams();

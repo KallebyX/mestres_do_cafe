@@ -5,7 +5,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { useCart } from '../contexts/CartContext';
 import { Header } from '../components/Header';
 import { Footer } from '../components/Footer';
-import { getById, getFiltered } from "../lib/api"
+import { getById, getFiltered } from "@/lib/api"
 import { FullScreenLoading, ErrorMessage, useDataState } from '../components/LoadingStates';
 
 const ProductPage = () => {

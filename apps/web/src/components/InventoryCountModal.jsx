@@ -5,7 +5,7 @@ import {
   Calendar, Package, BarChart3, Target, Clock, Users
 } from 'lucide-react';
 import { useNotifications } from '../contexts/NotificationContext';
-import { supabase } from "../lib/api"
+import { supabase } from "@/lib/api"
 
 const InventoryCountModal = ({ 
   isOpen, 

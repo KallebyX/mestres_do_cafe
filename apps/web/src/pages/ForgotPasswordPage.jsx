@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { supabase } from "../lib/api"
+import { supabase } from "@/lib/api"
 import { Mail, ArrowLeft, CheckCircle, AlertCircle } from 'lucide-react';
 
 const ForgotPasswordPage = () => {

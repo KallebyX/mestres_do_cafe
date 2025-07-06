@@ -3,7 +3,7 @@ import {
   X, Save, AlertCircle, Package, DollarSign, 
   Hash, BarChart3, ShoppingCart, Truck, Eye, Upload
 } from 'lucide-react';
-import { stockAPI } from "../lib/api"
+import { stockAPI } from "@/lib/api"
 import { useNotifications } from '../contexts/NotificationContext';
 
 const ProductStockModal = ({ 

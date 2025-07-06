@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { Search, Filter, Plus, Edit3, Trash2, ShoppingCart, Star, Coffee } from 'lucide-react';
-import { getAllProducts } from "../lib/api"
+import { getAllProducts } from "@/lib/api"
 
 const MarketplacePageNew = () => {
   const [products, setProducts] = useState([]);

@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Search, Filter, Star, ShoppingCart, Heart, ChevronDown, Coffee, TrendingUp } from 'lucide-react';
 import { useCart } from '../contexts/CartContext';
 import { useAuth } from '../contexts/AuthContext';
-import { getAllProducts } from "../lib/api"
+import { getAllProducts } from "@/lib/api"
 import { useNavigate } from 'react-router-dom';
 
 const MarketplacePage = () => {

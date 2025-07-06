@@ -5,7 +5,7 @@ import { Button } from '../components/ui/button'
 import { Calendar, User, ArrowRight, Tag, Edit3, Clock, Heart, MessageCircle, Eye } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import { LoadingSpinner } from '../components/LoadingStates'
-import { getAllBlogPosts, getBlogCategories } from "../lib/api"
+import { getAllBlogPosts, getBlogCategories } from "@/lib/api"
 
 const BlogPage = () => {
   const [articles, setArticles] = useState([]);

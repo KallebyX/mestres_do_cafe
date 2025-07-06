@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { supabase } from "../lib/api"
+import { supabase } from "@/lib/api"
 import { Coffee, Shield, CheckCircle } from 'lucide-react';
 import Logo from '../components/Logo';
 

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useAuth } from '../contexts/AuthContext';
-import { authAPI } from '../lib/api';
+import { authAPI } from "@/lib/api";
 import { CheckCircle, XCircle, User, Shield, Coffee } from 'lucide-react';
 
 const AuthTestPanel = () => {

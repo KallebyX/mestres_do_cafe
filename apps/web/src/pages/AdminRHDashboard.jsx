@@ -8,12 +8,12 @@ import {
 } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
-import { supabase } from "../lib/api"
+import { supabase } from "@/lib/api"
 import EmployeeModal from '../components/EmployeeModal';
 import { useNotifications } from '../contexts/NotificationContext';
 import { PieChartComponent, BarChartComponent } from '../components/AdvancedCharts';
 import { StockReport } from '../components/PDFReports';
-import { hrAPI } from "../lib/api"
+import { hrAPI } from "@/lib/api"
 
 const AdminRHDashboard = () => {
   const [activeTab, setActiveTab] = useState('overview');

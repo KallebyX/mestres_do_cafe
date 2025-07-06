@@ -16,7 +16,7 @@ import {
   formatCurrency as formatChartCurrency 
 } from '../components/AdvancedCharts';
 import { FinancialReport } from '../components/PDFReports';
-import { financialAPI } from "../lib/api"
+import { financialAPI } from "@/lib/api"
 import FinancialModal from '../components/FinancialModal';
 import { useNotifications } from '../contexts/NotificationContext';
 

@@ -9,7 +9,7 @@ import {
   getProductCategories, 
   getRoastLevels,
   validateProductData 
-} from "../lib/api"
+} from "@/lib/api"
 
 const ProductModal = ({ 
   isOpen, 

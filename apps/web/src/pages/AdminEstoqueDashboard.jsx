@@ -7,7 +7,7 @@ import {
 } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
-import { stockAPI } from "../lib/api"
+import { stockAPI } from "@/lib/api"
 import { useNotifications } from '../contexts/NotificationContext';
 import ProductStockModal from '../components/ProductStockModal';
 import SupplierModal from '../components/SupplierModal';

@@ -13,7 +13,7 @@ import { StockReport } from '../components/PDFReports';
 import ProductLocationModal from '../components/ProductLocationModal';
 import BarcodeScanner from '../components/BarcodeScanner';
 import BatchControlModal from '../components/BatchControlModal';
-import { stockAPI } from "../lib/api"
+import { stockAPI } from "@/lib/api"
 
 const AdminEstoqueDashboardEnterprise = () => {
   const [activeTab, setActiveTab] = useState('overview');

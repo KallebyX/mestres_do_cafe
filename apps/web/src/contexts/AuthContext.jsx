@@ -1,5 +1,5 @@
+import { authAPI } from "@/lib/api";
 import React, { createContext, useContext, useEffect, useState } from "react";
-import { authAPI } from "../lib/api";
 
 const AuthContext = createContext();
 

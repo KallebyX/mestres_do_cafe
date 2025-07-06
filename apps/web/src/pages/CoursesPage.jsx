@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { BookOpen, Clock, Users, Star, PlayCircle, Award } from 'lucide-react';
-import { getAllCourses, getActiveCourses } from "../lib/api"
+import { getAllCourses, getActiveCourses } from "@/lib/api"
 
 const CoursesPage = () => {
   const [courses, setCourses] = useState([]);
