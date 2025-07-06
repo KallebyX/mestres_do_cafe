@@ -25,25 +25,32 @@ from controllers.products import products_bp
 
 # Importações dos controladores
 from controllers.routes.auth import auth_bp
+from controllers.routes.health import health_bp
 
 # Importações locais
 from models.database import db
 from models.products import Category, Product
 from models.user import User
+from config import config
+from middleware.error_handler import register_error_handlers
+from utils.logger import setup_logging
 
 # from controllers.orders import orders_bp
 
-def create_app():
+def create_app(config_name=None):
     """Factory function para criar a aplicação Flask"""
     app = Flask(__name__,
                 static_folder=os.path.join(os.path.dirname(__file__), '..', '..', 'web'),
                 static_url_path='')
 
-    # Configurações
-    app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'dev-secret-key-change-in-production')
-    app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL', 'sqlite:///mestres_cafe.db')
-    app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-    app.config['JWT_SECRET_KEY'] = os.environ.get('JWT_SECRET_KEY', 'jwt-secret-change-in-production')
+    # Configurações baseadas no ambiente
+    if config_name is None:
+        config_name = os.environ.get('FLASK_ENV', 'development')
+    
+    app.config.from_object(config[config_name])
+    
+    # Inicializar configurações específicas do ambiente
+    config[config_name].init_app(app)
 
     # Desabilita redirects automáticos para resolver problema de CORS
     app.url_map.strict_slashes = False
@@ -51,27 +58,20 @@ def create_app():
     # Inicializa extensões
     db.init_app(app)
 
-    # Configuração de CORS para desenvolvimento e produção
-    cors_origins = [
-        "http://localhost:3000",
-        "http://localhost:5173",
-        "http://localhost:8080",
-        "https://mestres-cafe-web.onrender.com",  # Render frontend
-        "https://*.netlify.app",  # Netlify (opcional)
-        "https://*.vercel.app"   # Vercel (opcional)
-    ]
+    # Configuração de CORS usando as configurações do ambiente
+    CORS(app, origins=app.config['CORS_ORIGINS'])
 
-    # Adicionar origins personalizadas via variável de ambiente
-    custom_origins = os.environ.get('CORS_ORIGINS', '').split(',')
-    if custom_origins and custom_origins[0]:
-        cors_origins.extend([origin.strip() for origin in custom_origins])
+    # Registra error handlers
+    register_error_handlers(app)
 
-    CORS(app, origins=cors_origins)
+    # Configura logging
+    setup_logging(app)
 
     # Registra blueprints
     app.register_blueprint(auth_bp, url_prefix='/api/auth')
     app.register_blueprint(products_bp, url_prefix='/api/products')
     app.register_blueprint(cart_bp, url_prefix='/api/cart')
+    app.register_blueprint(health_bp, url_prefix='/api')
     # app.register_blueprint(blog_bp, url_prefix='/api/blog')
     # app.register_blueprint(newsletter_bp, url_prefix='/api/newsletter')
     # app.register_blueprint(orders_bp, url_prefix='/api/orders')
