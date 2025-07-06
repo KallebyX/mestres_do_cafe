@@ -1,37 +1,64 @@
-from flask import Blueprint, request, jsonify
+from flask import Blueprint, request, jsonify, current_app
 from werkzeug.security import generate_password_hash, check_password_hash
 import jwt
 import datetime
 from models.user import User
 from models.base import db
+from schemas.auth import LoginSchema, RegisterSchema, validate_request_data, format_validation_errors
+from middleware.error_handler import AuthenticationAPIError, ValidationAPIError, ResourceAPIError
+from marshmallow import ValidationError
 
 auth_bp = Blueprint('auth', __name__)
 
 @auth_bp.route('/login', methods=['POST'])
 def login():
     try:
-        data = request.get_json()
-        email = data.get('email')
-        password = data.get('password')
+        # Validar dados de entrada
+        request_data = request.get_json()
+        if not request_data:
+            raise ValidationAPIError('Dados JSON não fornecidos')
         
-        if not email or not password:
-            return jsonify({'error': 'Email e senha são obrigatórios'}), 400
+        # Validar com schema
+        validated_data, errors = validate_request_data(LoginSchema, request_data)
+        if errors:
+            raise ValidationAPIError(
+                'Dados de entrada inválidos',
+                details=errors
+            )
         
+        email = validated_data['email']
+        password = validated_data['password']
+        
+        # Buscar usuário
         user = User.query.filter_by(email=email).first()
         
-        if not user or not check_password_hash(user.password_hash, password):
-            return jsonify({'error': 'Credenciais inválidas'}), 401
+        if not user:
+            raise AuthenticationAPIError('Credenciais inválidas')
         
-        # Gerar token JWT
-        token = jwt.encode({
+        if not user.is_active:
+            raise AuthenticationAPIError('Conta inativa. Entre em contato com o suporte')
+        
+        if not check_password_hash(user.password_hash, password):
+            raise AuthenticationAPIError('Credenciais inválidas')
+        
+        # Gerar token JWT usando configuração
+        token_payload = {
             'user_id': user.id,
             'email': user.email,
             'username': user.username,
             'is_admin': user.is_admin,
-            'exp': datetime.datetime.utcnow() + datetime.timedelta(hours=24)
-        }, 'mestres_cafe_secret_key_2024', algorithm='HS256')
+            'exp': datetime.datetime.utcnow() + current_app.config['JWT_ACCESS_TOKEN_EXPIRES']
+        }
+        
+        token = jwt.encode(
+            token_payload,
+            current_app.config['JWT_SECRET_KEY'],
+            algorithm='HS256'
+        )
         
         return jsonify({
+            'success': True,
+            'message': 'Login realizado com sucesso',
             'token': token,
             'user': {
                 'id': user.id,
@@ -43,24 +70,40 @@ def login():
             }
         })
         
+    except (ValidationAPIError, AuthenticationAPIError):
+        raise  # Re-raise para ser tratado pelo error handler
     except Exception as e:
-        return jsonify({'error': str(e)}), 500
+        current_app.logger.error(f'Erro inesperado no login: {str(e)}')
+        raise AuthenticationAPIError('Erro interno no processo de login')
 
 @auth_bp.route('/register', methods=['POST'])
 def register():
     try:
-        data = request.get_json()
-        email = data.get('email')
-        password = data.get('password')
-        name = data.get('name')
+        # Validar dados de entrada
+        request_data = request.get_json()
+        if not request_data:
+            raise ValidationAPIError('Dados JSON não fornecidos')
         
-        if not email or not password or not name:
-            return jsonify({'error': 'Email, senha e nome são obrigatórios'}), 400
+        # Validar com schema
+        validated_data, errors = validate_request_data(RegisterSchema, request_data)
+        if errors:
+            raise ValidationAPIError(
+                'Dados de entrada inválidos',
+                details=errors
+            )
+        
+        email = validated_data['email']
+        password = validated_data['password']
+        name = validated_data['name']
         
         # Verificar se usuário já existe
         existing_user = User.query.filter_by(email=email).first()
         if existing_user:
-            return jsonify({'error': 'Usuário já existe'}), 400
+            raise ResourceAPIError(
+                'Usuário já existe com este email',
+                error_code=4301,
+                status_code=409
+            )
         
         # Criar novo usuário
         password_hash = generate_password_hash(password, method='pbkdf2:sha256')
@@ -76,6 +119,7 @@ def register():
         db.session.commit()
         
         return jsonify({
+            'success': True,
             'message': 'Usuário criado com sucesso',
             'user': {
                 'id': new_user.id,
@@ -86,28 +130,50 @@ def register():
             }
         }), 201
         
+    except (ValidationAPIError, ResourceAPIError):
+        db.session.rollback()
+        raise  # Re-raise para ser tratado pelo error handler
     except Exception as e:
         db.session.rollback()
-        return jsonify({'error': str(e)}), 500
+        current_app.logger.error(f'Erro inesperado no registro: {str(e)}')
+        raise ValidationAPIError('Erro interno no processo de registro')
 
 @auth_bp.route('/me', methods=['GET'])
 def get_current_user():
     try:
+        # Verificar se token foi fornecido
         token = request.headers.get('Authorization')
         if not token:
-            return jsonify({'error': 'Token não fornecido'}), 401
+            raise AuthenticationAPIError('Token não fornecido')
         
         # Remover 'Bearer ' do token
         if token.startswith('Bearer '):
             token = token[7:]
+        else:
+            raise AuthenticationAPIError('Formato de token inválido. Use: Bearer <token>')
         
-        decoded = jwt.decode(token, 'mestres_cafe_secret_key_2024', algorithms=['HS256'])
+        # Decodificar token usando configuração
+        try:
+            decoded = jwt.decode(
+                token,
+                current_app.config['JWT_SECRET_KEY'],
+                algorithms=['HS256']
+            )
+        except jwt.ExpiredSignatureError:
+            raise AuthenticationAPIError('Token expirado')
+        except jwt.InvalidTokenError:
+            raise AuthenticationAPIError('Token inválido')
+        
+        # Buscar usuário
         user = User.query.get(decoded['user_id'])
-        
         if not user:
-            return jsonify({'error': 'Usuário não encontrado'}), 404
+            raise ResourceAPIError('Usuário não encontrado', error_code=4300)
+        
+        if not user.is_active:
+            raise AuthenticationAPIError('Conta inativa')
         
         return jsonify({
+            'success': True,
             'user': {
                 'id': user.id,
                 'email': user.email,
@@ -115,18 +181,20 @@ def get_current_user():
                 'full_name': user.full_name,
                 'is_admin': user.is_admin,
                 'is_active': user.is_active,
-                'email_verified': user.email_verified
+                'email_verified': getattr(user, 'email_verified', False)
             }
         })
         
-    except jwt.ExpiredSignatureError:
-        return jsonify({'error': 'Token expirado'}), 401
-    except jwt.InvalidTokenError:
-        return jsonify({'error': 'Token inválido'}), 401
+    except (AuthenticationAPIError, ResourceAPIError):
+        raise  # Re-raise para ser tratado pelo error handler
     except Exception as e:
-        return jsonify({'error': str(e)}), 500
+        current_app.logger.error(f'Erro inesperado ao obter usuário: {str(e)}')
+        raise AuthenticationAPIError('Erro interno ao obter dados do usuário')
 
 @auth_bp.route('/logout', methods=['POST'])
 def logout():
-    return jsonify({'message': 'Logout realizado com sucesso'})
+    return jsonify({
+        'success': True,
+        'message': 'Logout realizado com sucesso'
+    })
 
