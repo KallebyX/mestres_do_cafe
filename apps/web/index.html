@@ -2,20 +2,215 @@
 <html lang="pt-BR">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    
+    <!-- Favicon e ícones -->
+    <link rel="icon" type="image/png" href="/logo-para-fundo-branco.png" />
+    <link rel="apple-touch-icon" sizes="180x180" href="/logo-para-fundo-branco.png" />
+    <link rel="icon" type="image/png" sizes="32x32" href="/logo-para-fundo-branco.png" />
+    <link rel="icon" type="image/png" sizes="16x16" href="/logo-para-fundo-branco.png" />
+    
+    <!-- Viewport e responsividade -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta
-      name="description"
-      content="Mestres do Café - Torrefação artesanal de cafés especiais em Santa Maria - RS. Mais de 5 anos de experiência levando o melhor café até você."
-    />
-    <meta
-      name="keywords"
-      content="café especial, torrefação artesanal, Santa Maria, RS, café gourmet, mestres do café"
-    />
-    <title>Mestres do Café - Torrefação Artesanal de Cafés Especiais</title>
+    
+    <!-- SEO Meta Tags -->
+    <meta name="description" content="Mestres do Café - Torrefação artesanal de cafés especiais em Santa Maria - RS. Mais de 5 anos de experiência levando o melhor café até você. E-commerce completo com sistema ERP integrado." />
+    <meta name="keywords" content="café especial, torrefação artesanal, Santa Maria, RS, café gourmet, mestres do café, e-commerce, cafés especiais, grãos de café, café premium" />
+    <meta name="author" content="Mestres do Café" />
+    <meta name="robots" content="index, follow" />
+    <meta name="googlebot" content="index, follow" />
+    
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://mestresdocafe.com.br/" />
+    <meta property="og:title" content="Mestres do Café - Torrefação Artesanal de Cafés Especiais" />
+    <meta property="og:description" content="Torrefação artesanal de cafés especiais em Santa Maria - RS. Mais de 5 anos de experiência levando o melhor café até você." />
+    <meta property="og:image" content="https://mestresdocafe.com.br/logo-para-fundo-branco.png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:locale" content="pt_BR" />
+    <meta property="og:site_name" content="Mestres do Café" />
+    
+    <!-- Twitter -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:url" content="https://mestresdocafe.com.br/" />
+    <meta name="twitter:title" content="Mestres do Café - Torrefação Artesanal de Cafés Especiais" />
+    <meta name="twitter:description" content="Torrefação artesanal de cafés especiais em Santa Maria - RS. Mais de 5 anos de experiência levando o melhor café até você." />
+    <meta name="twitter:image" content="https://mestresdocafe.com.br/logo-para-fundo-branco.png" />
+    
+    <!-- Informações da empresa -->
+    <meta name="application-name" content="Mestres do Café" />
+    <meta name="theme-color" content="#101820" />
+    <meta name="msapplication-navbutton-color" content="#101820" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-title" content="Mestres do Café" />
+    
+    <!-- Preload fonts importantes -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400;1,500;1,600;1,700&family=Montserrat:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap" rel="stylesheet" />
+    
+    <!-- Preload recursos críticos -->
+    <link rel="modulepreload" href="/src/main.jsx" />
+    <link rel="preload" href="/src/index.css" as="style" />
+    
+    <!-- DNS Prefetch para domínios externos -->
+    <link rel="dns-prefetch" href="//fonts.googleapis.com" />
+    <link rel="dns-prefetch" href="//fonts.gstatic.com" />
+    <link rel="dns-prefetch" href="//api.mestresdocafe.com.br" />
+    
+    <!-- Structured Data - JSON-LD -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "LocalBusiness",
+      "name": "Mestres do Café",
+      "description": "Torrefação artesanal de cafés especiais em Santa Maria - RS",
+      "url": "https://mestresdocafe.com.br",
+      "logo": "https://mestresdocafe.com.br/logo-para-fundo-branco.png",
+      "image": "https://mestresdocafe.com.br/logo-para-fundo-branco.png",
+      "telephone": "+55-55-9999-9999",
+      "address": {
+        "@type": "PostalAddress",
+        "streetAddress": "Rua Exemplo, 123",
+        "addressLocality": "Santa Maria",
+        "addressRegion": "RS",
+        "postalCode": "97000-000",
+        "addressCountry": "BR"
+      },
+      "geo": {
+        "@type": "GeoCoordinates",
+        "latitude": -29.6914,
+        "longitude": -53.8008
+      },
+      "openingHours": [
+        "Mo-Fr 08:00-18:00",
+        "Sa 08:00-16:00"
+      ],
+      "servesCuisine": "Café",
+      "priceRange": "$$",
+      "aggregateRating": {
+        "@type": "AggregateRating",
+        "ratingValue": "4.8",
+        "reviewCount": "150"
+      }
+    }
+    </script>
+    
+    <!-- Título da página -->
+    <title>Mestres do Café - Torrefação Artesanal de Cafés Especiais | Santa Maria - RS</title>
+    
+    <!-- Estilos inline críticos para evitar FOUC -->
+    <style>
+      /* Critical CSS para evitar FOUC */
+      * {
+        box-sizing: border-box;
+      }
+      
+      body {
+        margin: 0;
+        font-family: 'Montserrat', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        font-size: 16px;
+        line-height: 1.6;
+        color: #101820;
+        background-color: #f7fcff;
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+      }
+      
+      #root {
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+      }
+      
+      /* Loading spinner */
+      .app-loading {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: #f7fcff;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 9999;
+      }
+      
+      .app-loading::after {
+        content: '';
+        width: 40px;
+        height: 40px;
+        border: 3px solid #e5e7eb;
+        border-top: 3px solid #b58150;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+      }
+      
+      @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+      }
+      
+      /* Esconder loading quando app carrega */
+      .app-loaded .app-loading {
+        display: none;
+      }
+    </style>
   </head>
   <body>
+    <!-- Loading Screen -->
+    <div class="app-loading" id="app-loading"></div>
+    
+    <!-- React App Root -->
     <div id="root"></div>
+    
+    <!-- Fallback para usuários com JavaScript desabilitado -->
+    <noscript>
+      <div style="padding: 20px; text-align: center; background: #f7fcff; min-height: 100vh; display: flex; align-items: center; justify-content: center; flex-direction: column;">
+        <h1 style="color: #101820; font-family: 'Cormorant Garamond', serif; margin-bottom: 20px;">Mestres do Café</h1>
+        <p style="color: #666; max-width: 600px; line-height: 1.6;">
+          Para ter a melhor experiência em nosso site, é necessário habilitar o JavaScript em seu navegador.
+          Nosso e-commerce oferece uma experiência completa e interativa para você escolher os melhores cafés especiais.
+        </p>
+        <p style="color: #666; margin-top: 20px;">
+          <strong>Contato:</strong> (55) 9999-9999 | contato@mestresdocafe.com.br
+        </p>
+      </div>
+    </noscript>
+    
+    <!-- Script principal -->
     <script type="module" src="/src/main.jsx"></script>
+    
+    <!-- Script para remover loading quando app carrega -->
+    <script>
+      // Remove loading screen quando React app carrega
+      window.addEventListener('load', function() {
+        const loading = document.getElementById('app-loading');
+        const root = document.getElementById('root');
+        
+        // Aguarda um pouco para garantir que o React renderizou
+        setTimeout(() => {
+          if (root && root.children.length > 0) {
+            loading.style.opacity = '0';
+            loading.style.transition = 'opacity 0.3s ease';
+            setTimeout(() => {
+              loading.style.display = 'none';
+              document.body.classList.add('app-loaded');
+            }, 300);
+          }
+        }, 500);
+      });
+      
+      // Fallback se o evento load não disparar
+      setTimeout(() => {
+        const loading = document.getElementById('app-loading');
+        if (loading && loading.style.display !== 'none') {
+          loading.style.display = 'none';
+          document.body.classList.add('app-loaded');
+        }
+      }, 5000);
+    </script>
   </body>
 </html>

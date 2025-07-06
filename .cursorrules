@@ -1,0 +1,249 @@
+# Cursor Rules para Projeto Mestres do Café
+
+## Context Engineering Principles
+
+Você é um assistente de IA especializado em desenvolvimento full-stack trabalhando no projeto "Mestres do Café" - um sistema enterprise de e-commerce e ERP para torrefação artesanal de cafés especiais.
+
+### Princípios Fundamentais
+
+1. **Compartilhamento de Contexto Completo**: Sempre considere o contexto completo do projeto, incluindo arquitetura, padrões estabelecidos e decisões anteriores.
+
+2. **Preservação de Decisões**: Mantenha consistência com decisões arquiteturais já tomadas e documente novas decisões importantes.
+
+3. **Evitar Conflitos**: Não sugira mudanças que conflitem com a arquitetura existente ou padrões estabelecidos.
+
+## Contexto do Projeto
+
+### Arquitetura
+- **Tipo**: Monorepo enterprise
+- **Padrão**: Clean Architecture + Domain Driven Design
+- **Estrutura**: Frontend (React) + Backend (Flask) + Database (PostgreSQL)
+
+### Stack Tecnológica
+
+#### Frontend
+- React 18 + TypeScript
+- Vite (build tool)
+- Tailwind CSS + Shadcn/UI
+- React Query (state management)
+- React Hook Form (formulários)
+
+#### Backend
+- Flask + Python 3.9+
+- SQLAlchemy (ORM)
+- Alembic (migrações)
+- JWT (autenticação)
+- Celery (tasks assíncronas)
+
+#### Database
+- PostgreSQL (produção)
+- SQLite (desenvolvimento)
+- Redis (cache/sessions)
+
+### Estrutura de Diretórios
+
+```
+mestres_do_cafe/
+├── apps/
+│   ├── web/          # Frontend React
+│   └── api/          # Backend Flask
+├── packages/
+│   ├── shared/       # Tipos e interfaces compartilhadas
+│   ├── ui/           # Componentes UI reutilizáveis
+│   └── database/     # Schemas e configurações DB
+├── tools/            # Ferramentas e scripts
+├── tests/            # Testes (unit, integration, e2e)
+└── docs/             # Documentação
+```
+
+## Regras de Desenvolvimento
+
+### TypeScript/React
+- Use TypeScript estrito com tipos explícitos
+- Componentes funcionais com hooks
+- Props interfaces bem definidas
+- Error boundaries para componentes críticos
+- Testes unitários obrigatórios para novos componentes
+
+### Python/Flask
+- Type hints obrigatórios em todas as funções
+- Docstrings em formato Google
+- Separação clara: controllers → services → models
+- Validação de entrada com Pydantic
+- Testes de integração para todas as APIs
+
+### Padrões de Código
+
+#### Nomenclatura
+- **Componentes React**: PascalCase (ex: `ProductCard`)
+- **Hooks**: camelCase com prefixo `use` (ex: `useProductData`)
+- **Funções Python**: snake_case (ex: `get_product_by_id`)
+- **Classes Python**: PascalCase (ex: `ProductService`)
+- **Constantes**: UPPER_SNAKE_CASE (ex: `MAX_PRODUCTS_PER_PAGE`)
+
+#### Estrutura de Arquivos
+- **React**: Um componente por arquivo
+- **Python**: Uma classe por arquivo (exceto DTOs simples)
+- **Testes**: Espelhar estrutura do código fonte
+- **Tipos**: Agrupar por domínio de negócio
+
+### Qualidade de Código
+
+#### Obrigatório
+- ESLint + Prettier para TypeScript
+- Black + isort para Python
+- Type checking rigoroso
+- Cobertura de testes mínima: 80%
+- Documentação para APIs públicas
+
+#### Proibido
+- `any` em TypeScript (use `unknown` se necessário)
+- Imports relativos profundos (use aliases)
+- Hardcoded strings (use constantes)
+- Console.log em produção (use logger)
+- Credenciais em código (use env vars)
+
+### Tratamento de Erros
+
+#### Frontend
+```typescript
+// Error boundaries para componentes críticos
+// Fallbacks graceful
+// Notificações user-friendly
+// Retry automático para falhas de rede
+```
+
+#### Backend
+```python
+# Exception handling estruturado
+# Logs detalhados para debugging
+# Status codes HTTP apropriados
+# Validação de entrada robusta
+```
+
+### Performance
+
+#### Frontend
+- Lazy loading para rotas e componentes pesados
+- Memoização com React.memo, useMemo, useCallback
+- Otimização de imagens (WebP, lazy loading)
+- Bundle splitting por rota
+
+#### Backend
+- Indexação adequada no banco
+- Cache em múltiplas camadas (Redis, aplicação)
+- Paginação para listas grandes
+- Compressão de responses
+
+### Segurança
+
+#### Geral
+- Sanitização de todos os inputs
+- Validação no frontend E backend
+- Rate limiting em APIs críticas
+- Logs sem dados sensíveis
+
+#### Autenticação
+- JWT com refresh tokens
+- Passwords hasheadas (bcrypt)
+- 2FA para admins
+- Session timeout apropriado
+
+### Testes
+
+#### Estrutura
+```
+tests/
+├── unit/           # Testes unitários
+├── integration/    # Testes de integração
+└── e2e/           # Testes end-to-end
+```
+
+#### Cobertura Mínima
+- Funções críticas de negócio: 100%
+- Controllers/Services: 90%
+- Componentes React: 80%
+- Utilities: 95%
+
+### Deployment
+
+#### Ambientes
+- **Development**: Local com Docker
+- **Staging**: Testes de integração
+- **Production**: Alta disponibilidade no Render
+
+#### CI/CD
+- Testes automatizados obrigatórios
+- Build e deploy automatizados
+- Rollback automático em falhas
+- Monitoramento pós-deploy
+
+## Prompts Específicos
+
+### Para Code Review
+Ao revisar código, considere:
+1. Aderência aos padrões do projeto
+2. Impactos em performance e segurança
+3. Testabilidade e manutenibilidade
+4. Consistência com arquitetura existente
+5. Documentação adequada
+
+### Para Implementação de Features
+Ao implementar novas funcionalidades:
+1. Analise requisitos de negócio completos
+2. Siga padrões Clean Architecture
+3. Implemente testes desde o início
+4. Considere impactos em performance
+5. Mantenha compatibilidade com APIs existentes
+
+### Para Debugging
+Ao debugar problemas:
+1. Analise contexto completo da aplicação
+2. Verifique logs e traces disponíveis
+3. Considere estado e dependências
+4. Teste em ambiente similar
+5. Documente solução encontrada
+
+### Para Refatoração
+Ao refatorar código:
+1. Mantenha funcionalidade existente
+2. Preserve ou melhore performance
+3. Mantenha cobertura de testes
+4. Siga padrões arquiteturais
+5. Documente mudanças significativas
+
+## Model Context Protocol (MCP)
+
+### Configuração
+- Use servidores MCP para acesso a dados externos
+- Mantenha conexões seguras e autenticadas
+- Implemente fallbacks para indisponibilidade
+- Monitore performance das integrações
+
+### Servidores Recomendados
+- **Git**: Para operações de repositório
+- **Filesystem**: Para operações de arquivo seguras
+- **Memory**: Para sistema de conhecimento persistente
+- **PostgreSQL**: Para consultas de banco (quando aplicável)
+
+## Comandos Úteis
+
+### Desenvolvimento
+```bash
+make dev              # Inicia frontend + backend
+make dev-web          # Apenas frontend
+make dev-api          # Apenas backend
+make test             # Todos os testes
+make build            # Build completo
+```
+
+### Qualidade
+```bash
+npm run lint          # ESLint frontend
+npm run format        # Prettier frontend
+python -m black .     # Format Python
+python -m pytest     # Testes Python
+```
+
+Sempre mantenha essas regras em mente ao trabalhar no projeto Mestres do Café. A consistência e qualidade são fundamentais para o sucesso do sistema enterprise.
+

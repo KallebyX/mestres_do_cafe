@@ -1,0 +1,294 @@
+{
+  "mcpVersion": "2025-06-18",
+  "name": "mestres-do-cafe-mcp",
+  "description": "Model Context Protocol configuration for Mestres do Café project",
+  "servers": {
+    "filesystem": {
+      "command": "npx",
+      "args": ["@modelcontextprotocol/server-filesystem", "/Users/kalleby/Downloads/mestres_cafe_enterprise"],
+      "description": "Secure file operations for project files",
+      "capabilities": {
+        "tools": [
+          "read_file",
+          "write_file",
+          "create_directory",
+          "list_directory",
+          "move_file",
+          "search_files"
+        ],
+        "resources": [
+          "file://apps/",
+          "file://packages/",
+          "file://tests/",
+          "file://docs/"
+        ]
+      },
+      "config": {
+        "allowedPaths": [
+          "/Users/kalleby/Downloads/mestres_cafe_enterprise/apps",
+          "/Users/kalleby/Downloads/mestres_cafe_enterprise/packages",
+          "/Users/kalleby/Downloads/mestres_cafe_enterprise/tests",
+          "/Users/kalleby/Downloads/mestres_cafe_enterprise/docs",
+          "/Users/kalleby/Downloads/mestres_cafe_enterprise/tools"
+        ],
+        "deniedPaths": [
+          "/Users/kalleby/Downloads/mestres_cafe_enterprise/.env",
+          "/Users/kalleby/Downloads/mestres_cafe_enterprise/.env.local",
+          "/Users/kalleby/Downloads/mestres_cafe_enterprise/node_modules",
+          "/Users/kalleby/Downloads/mestres_cafe_enterprise/.git"
+        ]
+            }
+    },
+    "postgres": {
+      "command": "npx",
+      "args": ["@modelcontextprotocol/server-postgres", "postgresql://localhost:5432/mestres_cafe_dev"],
+      "description": "PostgreSQL database operations for Mestres do Café",
+      "capabilities": {
+        "tools": [
+          "query",
+          "schema",
+          "list_tables",
+          "describe_table"
+        ],
+        "resources": [
+          "postgres://schema",
+          "postgres://tables"
+        ]
+      },
+      "config": {
+        "readOnly": false,
+        "maxConnections": 10,
+        "enableIntrospection": true
+      }
+    },
+    "sequential-thinking": {
+      "command": "npx",
+      "args": ["@modelcontextprotocol/server-sequential-thinking"],
+      "description": "Dynamic problem-solving through thought sequences",
+      "capabilities": {
+        "tools": [
+          "create_thought_sequence",
+          "add_thought",
+          "reflect_on_thoughts",
+          "synthesize_solution"
+        ]
+      },
+      "config": {
+        "maxThoughts": 50,
+        "enableReflection": true,
+        "autoSynthesize": true
+      }
+    }
+  },
+  "projectContext": {
+    "name": "Mestres do Café",
+    "type": "enterprise-ecommerce-erp",
+    "domain": "coffee-roasting-business",
+    "architecture": {
+      "pattern": "clean-architecture",
+      "style": "monorepo",
+      "frontend": {
+        "framework": "react",
+        "language": "typescript",
+        "buildTool": "vite",
+        "styling": "tailwindcss",
+        "stateManagement": "react-query",
+        "forms": "react-hook-form"
+      },
+      "backend": {
+        "framework": "flask",
+        "language": "python",
+        "orm": "sqlalchemy",
+        "migrations": "alembic",
+        "auth": "jwt",
+        "tasks": "celery"
+      },
+      "database": {
+        "primary": "postgresql",
+        "development": "sqlite",
+        "cache": "redis"
+      },
+      "deployment": {
+        "containerization": "docker",
+        "cicd": "github-actions",
+        "hosting": "render"
+      }
+    },
+    "businessDomain": {
+      "primaryFunctions": [
+        "e-commerce",
+        "inventory-management",
+        "order-processing",
+        "customer-management",
+        "financial-reporting",
+        "supplier-management"
+      ],
+      "userRoles": [
+        "customer",
+        "admin",
+        "manager",
+        "operator"
+      ],
+      "keyEntities": [
+        "product",
+        "order",
+        "customer",
+        "inventory",
+        "supplier",
+        "payment"
+      ]
+    },
+    "codeStandards": {
+      "typescript": {
+        "strict": true,
+        "noImplicitAny": true,
+        "exactOptionalPropertyTypes": true,
+        "noImplicitReturns": true
+      },
+      "python": {
+        "typeHints": "required",
+        "docstrings": "google-style",
+        "formatting": "black",
+        "imports": "isort",
+        "linting": "flake8"
+      },
+      "testing": {
+        "minCoverage": 80,
+        "unitTests": "required",
+        "integrationTests": "required",
+        "e2eTests": "critical-paths"
+      }
+    }
+  },
+  "contextEngineering": {
+    "principles": [
+      {
+        "name": "share-complete-context",
+        "description": "Always share complete context and full agent traces, not just individual messages",
+        "priority": "high"
+      },
+      {
+        "name": "preserve-decision-history",
+        "description": "Actions carry implicit decisions, maintain decision history to avoid conflicts",
+        "priority": "high"
+      },
+      {
+        "name": "maintain-architectural-consistency",
+        "description": "Ensure all suggestions align with established architectural patterns",
+        "priority": "high"
+      },
+      {
+        "name": "consider-system-impact",
+        "description": "Analyze impact on entire system, not just immediate code changes",
+        "priority": "medium"
+      },
+      {
+        "name": "document-significant-changes",
+        "description": "Document architectural decisions and significant code changes",
+        "priority": "medium"
+      }
+    ],
+    "strategies": {
+      "codeReview": {
+        "includeFullContext": true,
+        "analyzeArchitecturalImpact": true,
+        "checkConsistencyWithPatterns": true,
+        "validateAgainstStandards": true,
+        "considerPerformanceImplications": true
+      },
+      "featureImplementation": {
+        "analyzeBusinessRequirements": true,
+        "designArchitecturalApproach": true,
+        "implementWithTests": true,
+        "documentDecisions": true,
+        "validateIntegration": true
+      },
+      "debugging": {
+        "analyzeFullSystemContext": true,
+        "examineRelatedComponents": true,
+        "checkConfigurationState": true,
+        "reviewRecentChanges": true,
+        "validateEnvironmentSetup": true
+      },
+      "refactoring": {
+        "preserveFunctionality": true,
+        "maintainTestCoverage": true,
+        "improveCodeQuality": true,
+        "followArchitecturalPatterns": true,
+        "documentChanges": true
+      }
+    }
+  },
+  "workflows": {
+    "development": {
+      "newFeature": [
+        "analyze-requirements",
+        "design-architecture",
+        "implement-backend-logic",
+        "implement-frontend-components",
+        "write-comprehensive-tests",
+        "update-documentation",
+        "conduct-code-review"
+      ],
+      "bugFix": [
+        "reproduce-issue",
+        "analyze-root-cause",
+        "design-fix-approach",
+        "implement-fix",
+        "write-regression-tests",
+        "verify-fix-effectiveness",
+        "update-documentation"
+      ],
+      "refactoring": [
+        "identify-improvement-areas",
+        "plan-refactoring-approach",
+        "implement-incremental-changes",
+        "maintain-test-coverage",
+        "verify-functionality-preservation",
+        "update-documentation"
+      ]
+    },
+    "codeReview": {
+      "checklist": [
+        "architectural-consistency",
+        "code-quality-standards",
+        "test-coverage-adequacy",
+        "performance-implications",
+        "security-considerations",
+        "documentation-completeness"
+      ]
+    }
+  },
+  "integrations": {
+    "cursor": {
+      "rulesFile": ".cursorrules",
+      "configFile": ".cursor/rules",
+      "enableContextSharing": true,
+      "preserveDecisionHistory": true
+    },
+    "kiloCode": {
+      "configFile": ".vscode/kilo-code.json",
+      "enableMCPIntegration": true,
+      "useProjectContext": true,
+      "followContextEngineering": true
+    },
+    "git": {
+      "enableCommitMessageGeneration": true,
+      "enforceConventionalCommits": true,
+      "trackArchitecturalDecisions": true
+    }
+  },
+  "monitoring": {
+    "contextQuality": {
+      "trackDecisionConsistency": true,
+      "measureContextCompleteness": true,
+      "monitorArchitecturalAlignment": true
+    },
+    "codeQuality": {
+      "trackTestCoverage": true,
+      "monitorCodeComplexity": true,
+      "validateStandardsCompliance": true
+    }
+  }
+}
+

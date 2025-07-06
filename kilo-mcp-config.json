@@ -1,0 +1,120 @@
+{
+  "name": "Mestres do Café MCP Configuration",
+  "version": "1.0.0",
+  "description": "Configuração dos servidores MCP para o projeto Mestres do Café Enterprise",
+  "mcpServers": {
+    "filesystem": {
+      "name": "filesystem",
+      "description": "Operações de arquivo seguras para o projeto",
+      "command": "npx",
+      "args": ["@modelcontextprotocol/server-filesystem", "/Users/kalleby/Downloads/mestres_cafe_enterprise"],
+      "env": {
+        "PATH": "/Users/kalleby/.npm-global/bin:/usr/local/bin:/usr/bin:/bin"
+      },
+      "capabilities": {
+        "tools": ["read_file", "write_file", "create_directory", "list_directory", "move_file", "search_files"],
+        "resources": ["file://apps/", "file://packages/", "file://tests/", "file://docs/"]
+      },
+      "config": {
+        "allowedPaths": [
+          "/Users/kalleby/Downloads/mestres_cafe_enterprise/apps",
+          "/Users/kalleby/Downloads/mestres_cafe_enterprise/packages",
+          "/Users/kalleby/Downloads/mestres_cafe_enterprise/tests",
+          "/Users/kalleby/Downloads/mestres_cafe_enterprise/docs",
+          "/Users/kalleby/Downloads/mestres_cafe_enterprise/tools"
+        ],
+        "deniedPaths": [
+          "/Users/kalleby/Downloads/mestres_cafe_enterprise/.env",
+          "/Users/kalleby/Downloads/mestres_cafe_enterprise/.env.local",
+          "/Users/kalleby/Downloads/mestres_cafe_enterprise/node_modules",
+          "/Users/kalleby/Downloads/mestres_cafe_enterprise/.git"
+        ]
+      }
+    },
+    "postgres": {
+      "name": "postgres",
+      "description": "Operações de banco PostgreSQL",
+      "command": "npx",
+      "args": ["@modelcontextprotocol/server-postgres", "postgresql://localhost:5432/mestres_cafe_dev"],
+      "env": {
+        "PATH": "/Users/kalleby/.npm-global/bin:/usr/local/bin:/usr/bin:/bin",
+        "POSTGRES_HOST": "localhost",
+        "POSTGRES_PORT": "5432",
+        "POSTGRES_DB": "mestres_cafe_dev"
+      },
+      "capabilities": {
+        "tools": ["query", "schema", "list_tables", "describe_table"],
+        "resources": ["postgres://schema", "postgres://tables"]
+      },
+      "config": {
+        "readOnly": false,
+        "maxConnections": 10,
+        "enableIntrospection": true
+      }
+    },
+    "sequential-thinking": {
+      "name": "sequential-thinking",
+      "description": "Servidor de pensamento sequencial para resolução de problemas",
+      "command": "npx",
+      "args": ["@modelcontextprotocol/server-sequential-thinking"],
+      "env": {
+        "PATH": "/Users/kalleby/.npm-global/bin:/usr/local/bin:/usr/bin:/bin"
+      },
+      "capabilities": {
+        "tools": ["create_thought_sequence", "add_thought", "reflect_on_thoughts", "synthesize_solution"]
+      },
+      "config": {
+        "maxThoughts": 50,
+        "enableReflection": true,
+        "autoSynthesize": true
+      }
+    }
+  },
+  "projectContext": {
+    "name": "Mestres do Café Enterprise",
+    "type": "monorepo",
+    "description": "Sistema enterprise de e-commerce e ERP para torrefação de cafés especiais",
+    "architecture": {
+      "pattern": "clean-architecture",
+      "style": "monorepo",
+      "frontend": {
+        "framework": "react",
+        "language": "typescript",
+        "buildTool": "vite"
+      },
+      "backend": {
+        "framework": "flask",
+        "language": "python",
+        "orm": "sqlalchemy"
+      },
+      "database": {
+        "primary": "postgresql",
+        "development": "sqlite",
+        "cache": "redis"
+      }
+    },
+    "codeStandards": {
+      "typescript": {
+        "strict": true,
+        "noImplicitAny": true
+      },
+      "python": {
+        "typeHints": true,
+        "docstrings": "google-style",
+        "formatting": "black"
+      }
+    }
+  },
+  "integration": {
+    "kiloCode": {
+      "enabled": true,
+      "contextEngineering": true,
+      "followProjectPatterns": true,
+      "preserveDecisionHistory": true
+    },
+    "vscode": {
+      "configFile": ".vscode/kilo-code.json",
+      "settingsFile": ".vscode/settings.json"
+    }
+  }
+} 

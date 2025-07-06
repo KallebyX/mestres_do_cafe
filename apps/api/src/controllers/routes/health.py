@@ -3,7 +3,7 @@ from datetime import datetime
 import psutil
 import os
 from ...models.base import db
-from utils.cache import cache_manager
+from ...utils.cache import cache_manager
 from sqlalchemy import text
 import redis
 

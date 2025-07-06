@@ -1,6 +1,7 @@
 import os
 from datetime import timedelta
 
+
 class Config:
     """Base configuration class"""
     SECRET_KEY = os.environ.get('SECRET_KEY') or 'dev-secret-key-change-in-production'
@@ -48,7 +49,14 @@ class DevelopmentConfig(Config):
     SQLALCHEMY_ECHO = True
     
     # More permissive CORS for development
-    CORS_ORIGINS = ['http://localhost:3000', 'http://127.0.0.1:3000']
+    CORS_ORIGINS = [
+        'http://localhost:3000',
+        'http://127.0.0.1:3000',
+        'http://localhost:5000',
+        'http://127.0.0.1:5000',
+        'http://localhost:5001',
+        'http://127.0.0.1:5001'
+    ]
     
     # Disable JWT validation in development for easier testing
     JWT_SECRET_KEY = os.environ.get('JWT_SECRET_KEY') or 'dev-jwt-secret-key'
@@ -60,6 +68,12 @@ class ProductionConfig(Config):
     DEBUG = False
     SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL') or \
         'postgresql://user:pass@localhost/mestres_cafe'
+    
+    # CORS configuration for production
+    CORS_ORIGINS = [
+        'https://mestres-cafe-web.onrender.com',
+        'https://mestres-cafe-web-*.onrender.com'
+    ]
     
     # Strict security settings
     SESSION_COOKIE_SECURE = True

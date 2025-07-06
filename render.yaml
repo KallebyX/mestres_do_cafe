@@ -38,7 +38,7 @@ services:
     buildCommand: ./scripts/render-build.sh
     startCommand: |
       cd apps/web
-      npm run preview -- --host 0.0.0.0 --port $PORT
+      npx serve -c serve.json -p $PORT
     envVars:
       - key: NODE_ENV
         value: production

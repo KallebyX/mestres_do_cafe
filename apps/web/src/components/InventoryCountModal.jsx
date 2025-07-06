@@ -628,7 +628,7 @@ const InventoryCountModal = ({
                             if (e.key === 'Enter') {
                               const quantity = parseInt(e.target.value) || 0;
                               handleCountItem(item.id, quantity);
-                              e.target.value = ';
+                              e.target.value = '';
                             }
                           }}
                         />
@@ -640,7 +640,7 @@ const InventoryCountModal = ({
                             const input = e.target.parentElement.previousElementSibling.querySelector('input');
                             const quantity = parseInt(input.value) || 0;
                             handleCountItem(item.id, quantity);
-                            input.value = ';
+                            input.value = '';
                           }}
                           className="w-full bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-xl font-medium transition-colors"
                         >
