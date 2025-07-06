@@ -3,9 +3,9 @@ Controller de Carrinho - Mestres do Café Enterprise
 """
 
 from flask import Blueprint, request, jsonify
-from models.base import db
-from models.orders import Cart, CartItem
-from models.products import Product
+from ..models.base import db
+from ..models.orders import Cart, CartItem
+from ..models.products import Product
 
 cart_bp = Blueprint('cart', __name__)
 

@@ -3,8 +3,8 @@ Controller de Produtos - Mestres do Café Enterprise
 """
 
 from flask import Blueprint, request, jsonify
-from models.base import db
-from models.products import Product, Category
+from ..models.base import db
+from ..models.products import Product, Category
 from sqlalchemy.exc import IntegrityError
 
 products_bp = Blueprint('products', __name__)

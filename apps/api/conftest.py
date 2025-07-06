@@ -7,7 +7,7 @@ from src.models.base import db
 from src.models.user import User
 from werkzeug.security import generate_password_hash
 import jwt
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 import logging
 
 @pytest.fixture(scope='session')
@@ -134,7 +134,7 @@ def admin_token(app, admin_user):
             'email': admin_user.email,
             'username': admin_user.username,
             'is_admin': admin_user.is_admin,
-            'exp': datetime.utcnow() + timedelta(hours=1)
+            'exp': datetime.now(timezone.utc) + timedelta(hours=1)
         }
         return jwt.encode(token_payload, app.config['JWT_SECRET_KEY'], algorithm='HS256')
 
@@ -147,7 +147,7 @@ def user_token(app, regular_user):
             'email': regular_user.email,
             'username': regular_user.username,
             'is_admin': regular_user.is_admin,
-            'exp': datetime.utcnow() + timedelta(hours=1)
+            'exp': datetime.now(timezone.utc) + timedelta(hours=1)
         }
         return jwt.encode(token_payload, app.config['JWT_SECRET_KEY'], algorithm='HS256')
 
@@ -160,7 +160,7 @@ def expired_token(app, regular_user):
             'email': regular_user.email,
             'username': regular_user.username,
             'is_admin': regular_user.is_admin,
-            'exp': datetime.utcnow() - timedelta(hours=1)  # Expirado
+            'exp': datetime.now(timezone.utc) - timedelta(hours=1)  # Expirado
         }
         return jwt.encode(token_payload, app.config['JWT_SECRET_KEY'], algorithm='HS256')
 

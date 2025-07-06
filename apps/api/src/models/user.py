@@ -3,7 +3,8 @@ Modelo de Usuario - Mestres do Café Enterprise
 """
 
 from datetime import datetime
-from models.base import db
+from werkzeug.security import generate_password_hash, check_password_hash
+from .base import db
 
 
 class User(db.Model):
@@ -16,6 +17,7 @@ class User(db.Model):
     password_hash = db.Column(db.String(255), nullable=False)
     
     # Dados pessoais
+    name = db.Column(db.String(200))
     first_name = db.Column(db.String(100))
     last_name = db.Column(db.String(100))
     phone = db.Column(db.String(20))
@@ -48,15 +50,26 @@ class User(db.Model):
     @property
     def full_name(self):
         """Nome completo do usuário"""
-        if self.first_name and self.last_name:
+        if self.name:
+            return self.name
+        elif self.first_name and self.last_name:
             return f"{self.first_name} {self.last_name}"
         return self.username
+    
+    def set_password(self, password):
+        """Define a senha do usuário"""
+        self.password_hash = generate_password_hash(password)
+    
+    def check_password(self, password):
+        """Verifica a senha do usuário"""
+        return check_password_hash(self.password_hash, password)
     
     def to_dict(self):
         return {
             'id': self.id,
             'username': self.username,
             'email': self.email,
+            'name': self.name,
             'first_name': self.first_name,
             'last_name': self.last_name,
             'full_name': self.full_name,

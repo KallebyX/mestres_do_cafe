@@ -1,4 +1,4 @@
-from models.base import db
+from .base import db
 from datetime import datetime
 import uuid
 from enum import Enum
@@ -856,7 +856,7 @@ class CustomerHistory(db.Model):
     user = db.relationship('User', backref='customer_history_actions')
 
 # Import stock models to avoid circular imports
-from models.stock import StockMovement, StockAlert, ProductBatch, InventoryCount, StockLocation, MovementType
+from .stock import StockMovement, StockAlert, ProductBatch, InventoryCount, StockLocation, MovementType
 
 # ===========================================
 # MODELOS DE CURSOS
