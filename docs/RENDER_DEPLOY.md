@@ -140,6 +140,24 @@ npm ci
 npm run build
 ```
 
+### Erro "vite: not found"
+
+Se você encontrar o erro `sh: 1: vite: not found`, isso significa que o Vite não está disponível durante o build. Para resolver:
+
+1. **Verificar dependências**: O Vite deve estar em `dependencies`, não apenas em `devDependencies`
+2. **Usar script personalizado**: O projeto inclui `scripts/render-build.sh` que resolve automaticamente
+3. **Versão do Node.js**: Arquivo `.nvmrc` e `.node-version` especificam Node.js 18
+
+### Build com Script Personalizado
+
+O projeto usa `scripts/render-build.sh` que:
+
+- Instala dependências com `--include=dev`
+- Verifica se o Vite está disponível
+- Instala Vite globalmente se necessário
+- Executa o build com logs detalhados
+- Verifica se o diretório `dist` foi criado
+
 ### Problemas de CORS
 
 Verifique se a URL do frontend está configurada corretamente no backend:

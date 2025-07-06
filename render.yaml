@@ -35,10 +35,7 @@ services:
     runtime: node
     region: oregon
     plan: free
-    buildCommand: |
-      cd apps/web
-      npm ci
-      npm run build
+    buildCommand: ./scripts/render-build.sh
     startCommand: |
       cd apps/web
       npm run preview -- --host 0.0.0.0 --port $PORT
