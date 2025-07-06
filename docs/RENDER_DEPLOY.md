@@ -158,6 +158,37 @@ O projeto usa `scripts/render-build.sh` que:
 - Executa o build com logs detalhados
 - Verifica se o diretório `dist` foi criado
 
+### Erro "Could not resolve '../lib/api.js'"
+
+Se você encontrar erro de resolução de imports durante o build:
+
+**Problema**: Vite/Rollup não consegue resolver imports com extensão `.js`
+**Solução**: Use o script `scripts/fix-imports.sh` que remove extensões automaticamente
+
+```bash
+# Corrigir imports automaticamente
+./scripts/fix-imports.sh
+
+# O script converte:
+# import { api } from "../lib/api.js"  ➜  import { api } from "../lib/api"
+```
+
+### Imports Corretos para Vite
+
+**❌ Incorreto (com extensão)**:
+
+```javascript
+import { authAPI } from '../lib/api.js';
+import { cartAPI } from '../services/cart.js';
+```
+
+**✅ Correto (sem extensão)**:
+
+```javascript
+import { authAPI } from '../lib/api';
+import { cartAPI } from '../services/cart';
+```
+
 ### Problemas de CORS
 
 Verifique se a URL do frontend está configurada corretamente no backend:
