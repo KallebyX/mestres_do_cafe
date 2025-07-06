@@ -23,7 +23,7 @@ import {
   sendCompleteNewsletter, 
   validateNewsletterData,
   getNewsletterTemplates
-} from '../lib/newsletter-api';
+} from "@/lib/newsletter-api";
 
 const AdminCRMDashboard = () => {
   const [activeTab, setActiveTab] = useState('admin-only'); // 'admin-only', 'all-customers', 'newsletter'

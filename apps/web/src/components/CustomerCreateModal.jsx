@@ -14,7 +14,7 @@ import {
   formatPhone,
   formatCEP,
   fetchAddressByCEP
-} from '../lib/admin-customers-api';
+} from "@/lib/admin-customers-api";
 
 const CustomerCreateModal = ({ 
   isOpen, 
