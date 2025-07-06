@@ -59,11 +59,13 @@ cafe/
 ## 🚀 Quick Start
 
 ### Pré-requisitos
+
 - Node.js 18+
 - Python 3.9+
 - Docker (opcional)
 
 ### Instalação
+
 ```bash
 # Clonar o repositório
 git clone https://github.com/KallebyX/cafe.git
@@ -80,6 +82,7 @@ make dev
 ```
 
 ### Comandos Principais
+
 ```bash
 # Desenvolvimento
 make dev              # Inicia frontend + backend
@@ -104,12 +107,14 @@ make deploy-prod      # Deploy produção
 ## 🏛️ Padrões Enterprise
 
 ### Arquitetura
+
 - **Monorepo**: Código unificado com workspaces
 - **Microservices Ready**: Preparado para escalar
 - **Clean Architecture**: Separação clara de responsabilidades
 - **Domain Driven Design**: Organização por domínios
 
 ### Qualidade
+
 - **TypeScript**: Tipagem estática
 - **ESLint + Prettier**: Padronização de código
 - **Husky**: Git hooks para qualidade
@@ -117,6 +122,7 @@ make deploy-prod      # Deploy produção
 - **SonarQube**: Análise de qualidade
 
 ### DevOps
+
 - **Docker**: Containerização
 - **CI/CD**: Pipelines automatizados
 - **Monitoring**: Logs e métricas
@@ -125,6 +131,7 @@ make deploy-prod      # Deploy produção
 ## 📊 Stack Tecnológica
 
 ### Frontend
+
 - **React 18** + **TypeScript**
 - **Vite** (Build tool)
 - **Tailwind CSS** + **Shadcn/UI**
@@ -132,6 +139,7 @@ make deploy-prod      # Deploy produção
 - **React Hook Form** (Formulários)
 
 ### Backend
+
 - **Flask** + **Python 3.9+**
 - **SQLAlchemy** (ORM)
 - **Alembic** (Migrações)
@@ -139,11 +147,13 @@ make deploy-prod      # Deploy produção
 - **Celery** (Tasks assíncronas)
 
 ### Database
+
 - **PostgreSQL** (Produção)
 - **SQLite** (Desenvolvimento)
 - **Redis** (Cache/Sessions)
 
 ### DevOps
+
 - **Docker** + **Docker Compose**
 - **GitHub Actions** (CI/CD)
 - **Nginx** (Reverse proxy)
@@ -152,6 +162,7 @@ make deploy-prod      # Deploy produção
 ## 🔧 Configuração de Desenvolvimento
 
 ### Variáveis de Ambiente
+
 ```bash
 # Database
 DATABASE_URL=sqlite:///mestres_cafe.db
@@ -167,7 +178,50 @@ VITE_API_URL=http://localhost:5000/api
 VITE_APP_NAME=Mestres do Café
 ```
 
+## 🌐 Deploy no Render
+
+### Configuração Automática
+
+O projeto está configurado para deploy automático no [Render](https://render.com) usando o arquivo `render.yaml`.
+
+### URLs de Produção
+
+- **Frontend**: https://mestres-cafe-web.onrender.com
+- **API**: https://mestres-cafe-api.onrender.com
+- **Health Check**: https://mestres-cafe-api.onrender.com/api/health
+
+### Script de Deploy
+
+```bash
+# Preparar para deploy
+./scripts/render-deploy.sh
+
+# Commit e push
+git add .
+git commit -m "feat: ready for render deploy"
+git push origin main
+```
+
+### Documentação Completa
+
+Para instruções detalhadas de deploy, consulte: [docs/RENDER_DEPLOY.md](docs/RENDER_DEPLOY.md)
+
+#### Serviços Configurados:
+
+- **Backend**: Flask API com PostgreSQL
+- **Frontend**: React Vite com build otimizado
+- **Database**: PostgreSQL 15 (plano gratuito)
+
+#### Características:
+
+- ✅ Deploy automático via GitHub
+- ✅ HTTPS configurado
+- ✅ Variáveis de ambiente seguras
+- ✅ Health checks automatizados
+- ✅ Logs em tempo real
+
 ### Estrutura de Branches
+
 - `main`: Produção
 - `develop`: Desenvolvimento
 - `feature/*`: Novas funcionalidades
@@ -177,24 +231,28 @@ VITE_APP_NAME=Mestres do Café
 ## 📈 Roadmap
 
 ### v1.0 - MVP ✅
+
 - [x] E-commerce básico
 - [x] Gestão de produtos
 - [x] Sistema de pedidos
 - [x] Autenticação
 
 ### v1.1 - ERP Core
+
 - [ ] Gestão de estoque
 - [ ] Relatórios financeiros
 - [ ] CRM básico
 - [ ] Dashboard analytics
 
 ### v1.2 - Advanced Features
+
 - [ ] Sistema de pontos
 - [ ] Programa de fidelidade
 - [ ] Blog integrado
 - [ ] Marketplace de produtores
 
 ### v2.0 - Enterprise
+
 - [ ] Multi-tenant
 - [ ] API pública
 - [ ] Mobile app
@@ -219,4 +277,3 @@ Este projeto está sob a licença MIT. Veja o arquivo [LICENSE](LICENSE) para ma
 ---
 
 **Café Enterprise** - Sistema completo para torrefação artesanal ☕🚀
-
