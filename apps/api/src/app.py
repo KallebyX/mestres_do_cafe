@@ -5,8 +5,9 @@ Sistema de e-commerce e ERP para torrefação artesanal
 
 import os
 import sys
+
 from dotenv import load_dotenv
-from flask import Flask, send_from_directory, jsonify
+from flask import Flask, jsonify, send_from_directory
 from flask_cors import CORS
 
 # Carrega variáveis de ambiente
@@ -15,18 +16,21 @@ load_dotenv()
 # Adiciona o diretório src ao path
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
-# Importações locais
-from models.database import db
-from models.products import Product, Category
-from models.user import User
+from controllers.cart import cart_bp
 
-# Importações dos controladores
-from controllers.routes.auth import auth_bp
 # from controllers.routes.products import products_bp as products_route_bp
 # from controllers.routes.blog import blog_bp
 # from controllers.routes.newsletter import newsletter_bp
 from controllers.products import products_bp
-from controllers.cart import cart_bp
+
+# Importações dos controladores
+from controllers.routes.auth import auth_bp
+
+# Importações locais
+from models.database import db
+from models.products import Category, Product
+from models.user import User
+
 # from controllers.orders import orders_bp
 
 def create_app():
@@ -34,20 +38,36 @@ def create_app():
     app = Flask(__name__,
                 static_folder=os.path.join(os.path.dirname(__file__), '..', '..', 'web'),
                 static_url_path='')
-    
+
     # Configurações
     app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'dev-secret-key-change-in-production')
     app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL', 'sqlite:///mestres_cafe.db')
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
     app.config['JWT_SECRET_KEY'] = os.environ.get('JWT_SECRET_KEY', 'jwt-secret-change-in-production')
-    
+
     # Desabilita redirects automáticos para resolver problema de CORS
     app.url_map.strict_slashes = False
-    
+
     # Inicializa extensões
     db.init_app(app)
-    CORS(app, origins=["http://localhost:3000", "http://localhost:5173", "http://localhost:8080", "https://*.manus.space"])
-    
+
+    # Configuração de CORS para desenvolvimento e produção
+    cors_origins = [
+        "http://localhost:3000",
+        "http://localhost:5173",
+        "http://localhost:8080",
+        "https://mestres-cafe-web.onrender.com",  # Render frontend
+        "https://*.netlify.app",  # Netlify (opcional)
+        "https://*.vercel.app"   # Vercel (opcional)
+    ]
+
+    # Adicionar origins personalizadas via variável de ambiente
+    custom_origins = os.environ.get('CORS_ORIGINS', '').split(',')
+    if custom_origins and custom_origins[0]:
+        cors_origins.extend([origin.strip() for origin in custom_origins])
+
+    CORS(app, origins=cors_origins)
+
     # Registra blueprints
     app.register_blueprint(auth_bp, url_prefix='/api/auth')
     app.register_blueprint(products_bp, url_prefix='/api/products')
@@ -55,7 +75,7 @@ def create_app():
     # app.register_blueprint(blog_bp, url_prefix='/api/blog')
     # app.register_blueprint(newsletter_bp, url_prefix='/api/newsletter')
     # app.register_blueprint(orders_bp, url_prefix='/api/orders')
-    
+
     # Rota principal - API básica
     @app.route('/')
     def index():
@@ -67,7 +87,7 @@ def create_app():
                 'info': '/api/info'
             }
         })
-    
+
     # Health check
     @app.route('/api/health')
     def health_check():
@@ -77,7 +97,7 @@ def create_app():
             'version': '1.0.0',
             'environment': os.environ.get('FLASK_ENV', 'development')
         })
-    
+
     # Rota de informações da API
     @app.route('/api/info')
     def api_info():
@@ -96,7 +116,7 @@ def create_app():
                 'health': '/api/health'
             }
         })
-    
+
     # Endpoint de testimonials (mock data)
     @app.route('/api/testimonials')
     def get_testimonials():
@@ -126,7 +146,7 @@ def create_app():
                 'created_at': '2024-01-05T09:15:00Z'
             }
         ])
-    
+
     return app
 
 def seed_initial_data():
@@ -136,9 +156,9 @@ def seed_initial_data():
         if Product.query.first():
             print("✅ Dados iniciais já existem")
             return
-        
+
         print("✅ Seed data temporariamente desabilitado - aguardando correção do modelo")
-        
+
     except Exception as e:
         print(f"❌ Erro ao verificar dados iniciais: {e}")
 
@@ -151,11 +171,11 @@ if __name__ == '__main__':
         db.create_all()
         # Popula dados iniciais
         seed_initial_data()
-    
+
     # Configurações do servidor
     port = int(os.environ.get('PORT', os.environ.get('API_PORT', 5001)))
     debug = os.environ.get('FLASK_ENV') == 'development'
-    
+
     print(f"""
 🚀 Mestres do Café Enterprise API
 📍 Rodando em: http://localhost:{port}
@@ -164,6 +184,5 @@ if __name__ == '__main__':
 📊 API Info: http://localhost:{port}/api/info
 🐛 Debug: {debug}
     """)
-    
-    app.run(host='0.0.0.0', port=port, debug=debug)
 
+    app.run(host='0.0.0.0', port=port, debug=debug)
