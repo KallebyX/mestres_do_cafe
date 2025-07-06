@@ -16,24 +16,24 @@ load_dotenv()
 # Adiciona o diretório src ao path
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
-from controllers.cart import cart_bp
+from .controllers.cart import cart_bp
 
-# from controllers.routes.products import products_bp as products_route_bp
-# from controllers.routes.blog import blog_bp
-# from controllers.routes.newsletter import newsletter_bp
-from controllers.products import products_bp
+# from .controllers.routes.products import products_bp as products_route_bp
+# from .controllers.routes.blog import blog_bp
+# from .controllers.routes.newsletter import newsletter_bp
+from .controllers.products import products_bp
 
 # Importações dos controladores
-from controllers.routes.auth import auth_bp
-from controllers.routes.health import health_bp
+from .controllers.routes.auth import auth_bp
+from .controllers.routes.health import health_bp
 
 # Importações locais
 from .models.database import db
 from .models.products import Category, Product
 from .models.user import User
-from config import config
-from middleware.error_handler import register_error_handlers
-from utils.logger import setup_logging
+from .config import config
+from .middleware.error_handler import register_error_handlers
+from .utils.logger import setup_logging
 
 # from controllers.orders import orders_bp
 

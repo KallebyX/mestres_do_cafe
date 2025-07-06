@@ -11,7 +11,7 @@ class CacheManager:
     """Gerenciador de cache com Redis"""
     
     def __init__(self, redis_url: str = None):
-        self.redis_url = redis_url or current_app.config.get('REDIS_URL', 'redis://localhost:6379')
+        self.redis_url = redis_url or 'redis://localhost:6379'
         self._redis_client = None
         self._fallback_cache = {}  # Cache em memória como fallback
     
@@ -20,8 +20,18 @@ class CacheManager:
         """Lazy initialization do cliente Redis"""
         if self._redis_client is None:
             try:
+                # Try to get the Redis URL from app config if available
+                redis_url = self.redis_url
+                try:
+                    from flask import current_app
+                    if current_app:
+                        redis_url = current_app.config.get('REDIS_URL', self.redis_url)
+                except RuntimeError:
+                    # No application context, use default
+                    pass
+                
                 self._redis_client = redis.Redis.from_url(
-                    self.redis_url,
+                    redis_url,
                     decode_responses=True,
                     socket_connect_timeout=5,
                     socket_timeout=5,
@@ -30,7 +40,13 @@ class CacheManager:
                 # Teste de conexão
                 self._redis_client.ping()
             except Exception as e:
-                current_app.logger.warning(f"Redis connection failed: {e}. Using fallback cache.")
+                try:
+                    from flask import current_app
+                    if current_app:
+                        current_app.logger.warning(f"Redis connection failed: {e}. Using fallback cache.")
+                except RuntimeError:
+                    # No application context, just continue with fallback
+                    pass
                 self._redis_client = None
         return self._redis_client
     
@@ -68,7 +84,12 @@ class CacheManager:
             try:
                 return self.redis_client.setex(cache_key, timeout, serialized_value)
             except Exception as e:
-                current_app.logger.error(f"Redis set error: {e}")
+                try:
+                    from flask import current_app
+                    if current_app:
+                        current_app.logger.error(f"Redis set error: {e}")
+                except RuntimeError:
+                    pass
         
         # Fallback para cache em memória
         self._fallback_cache[cache_key] = {
@@ -87,7 +108,12 @@ class CacheManager:
                 if value is not None:
                     return self._deserialize_value(value)
             except Exception as e:
-                current_app.logger.error(f"Redis get error: {e}")
+                try:
+                    from flask import current_app
+                    if current_app:
+                        current_app.logger.error(f"Redis get error: {e}")
+                except RuntimeError:
+                    pass
         
         # Fallback para cache em memória
         if cache_key in self._fallback_cache:
@@ -107,7 +133,12 @@ class CacheManager:
             try:
                 return bool(self.redis_client.delete(cache_key))
             except Exception as e:
-                current_app.logger.error(f"Redis delete error: {e}")
+                try:
+                    from flask import current_app
+                    if current_app:
+                        current_app.logger.error(f"Redis delete error: {e}")
+                except RuntimeError:
+                    pass
         
         # Fallback para cache em memória
         if cache_key in self._fallback_cache:
@@ -123,7 +154,12 @@ class CacheManager:
             try:
                 return bool(self.redis_client.exists(cache_key))
             except Exception as e:
-                current_app.logger.error(f"Redis exists error: {e}")
+                try:
+                    from flask import current_app
+                    if current_app:
+                        current_app.logger.error(f"Redis exists error: {e}")
+                except RuntimeError:
+                    pass
         
         # Fallback para cache em memória
         if cache_key in self._fallback_cache:
@@ -143,7 +179,12 @@ class CacheManager:
                 if keys:
                     return self.redis_client.delete(*keys)
             except Exception as e:
-                current_app.logger.error(f"Redis clear_pattern error: {e}")
+                try:
+                    from flask import current_app
+                    if current_app:
+                        current_app.logger.error(f"Redis clear_pattern error: {e}")
+                except RuntimeError:
+                    pass
         
         # Fallback para cache em memória
         count = 0
@@ -172,7 +213,12 @@ class CacheManager:
                     'keys_count': self.redis_client.dbsize()
                 }
             except Exception as e:
-                current_app.logger.error(f"Redis stats error: {e}")
+                try:
+                    from flask import current_app
+                    if current_app:
+                        current_app.logger.error(f"Redis stats error: {e}")
+                except RuntimeError:
+                    pass
         
         return {
             'type': 'memory',

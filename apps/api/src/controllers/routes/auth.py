@@ -1,11 +1,11 @@
 from flask import Blueprint, request, jsonify, current_app
 from werkzeug.security import generate_password_hash, check_password_hash
 import jwt
-import datetime
+from datetime import datetime, timezone
 from ...models.user import User
 from ...models.base import db
-from schemas.auth import LoginSchema, RegisterSchema, validate_request_data, format_validation_errors
-from middleware.error_handler import AuthenticationAPIError, ValidationAPIError, ResourceAPIError
+from ...schemas.auth import LoginSchema, RegisterSchema, validate_request_data, format_validation_errors
+from ...middleware.error_handler import AuthenticationAPIError, ValidationAPIError, ResourceAPIError
 from marshmallow import ValidationError
 
 auth_bp = Blueprint('auth', __name__)
@@ -14,17 +14,21 @@ auth_bp = Blueprint('auth', __name__)
 def login():
     try:
         # Validar dados de entrada
-        request_data = request.get_json()
+        request_data = request.get_json(silent=True)
         if not request_data:
             raise ValidationAPIError('Dados JSON não fornecidos')
         
         # Validar com schema
-        validated_data, errors = validate_request_data(LoginSchema, request_data)
-        if errors:
-            raise ValidationAPIError(
-                'Dados de entrada inválidos',
-                details=errors
-            )
+        result = validate_request_data(LoginSchema, request_data)
+        if isinstance(result, tuple):
+            validated_data, errors = result
+            if errors:
+                raise ValidationAPIError(
+                    'Dados de entrada inválidos',
+                    details=errors
+                )
+        else:
+            validated_data = result
         
         email = validated_data['email']
         password = validated_data['password']
@@ -47,7 +51,7 @@ def login():
             'email': user.email,
             'username': user.username,
             'is_admin': user.is_admin,
-            'exp': datetime.datetime.utcnow() + current_app.config['JWT_ACCESS_TOKEN_EXPIRES']
+            'exp': datetime.now(timezone.utc) + current_app.config['JWT_ACCESS_TOKEN_EXPIRES']
         }
         
         token = jwt.encode(
@@ -80,17 +84,21 @@ def login():
 def register():
     try:
         # Validar dados de entrada
-        request_data = request.get_json()
+        request_data = request.get_json(silent=True)
         if not request_data:
             raise ValidationAPIError('Dados JSON não fornecidos')
         
         # Validar com schema
-        validated_data, errors = validate_request_data(RegisterSchema, request_data)
-        if errors:
-            raise ValidationAPIError(
-                'Dados de entrada inválidos',
-                details=errors
-            )
+        result = validate_request_data(RegisterSchema, request_data)
+        if isinstance(result, tuple):
+            validated_data, errors = result
+            if errors:
+                raise ValidationAPIError(
+                    'Dados de entrada inválidos',
+                    details=errors
+                )
+        else:
+            validated_data = result
         
         email = validated_data['email']
         password = validated_data['password']
@@ -106,14 +114,16 @@ def register():
             )
         
         # Criar novo usuário
-        password_hash = generate_password_hash(password, method='pbkdf2:sha256')
         new_user = User(
             email=email,
-            password_hash=password_hash,
             username=email.split('@')[0],  # Usa parte antes do @ como username
+            name=name,
             first_name=name.split(' ')[0] if ' ' in name else name,
-            last_name=' '.join(name.split(' ')[1:]) if ' ' in name else ''
+            last_name=' '.join(name.split(' ')[1:]) if ' ' in name else '',
+            is_active=True,
+            is_admin=False
         )
+        new_user.set_password(password)
         
         db.session.add(new_user)
         db.session.commit()

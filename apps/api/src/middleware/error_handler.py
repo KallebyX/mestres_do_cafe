@@ -6,7 +6,7 @@ Captura, loga e trata todos os tipos de erros sem mascarar
 import logging
 import traceback
 import sys
-from datetime import datetime
+from datetime import datetime, timezone
 from functools import wraps
 from flask import request, jsonify, current_app
 from werkzeug.exceptions import HTTPException
@@ -86,7 +86,7 @@ class APIError(Exception):
         self.status_code = status_code
         self.details = details or {}
         self.cause = cause
-        self.timestamp = datetime.utcnow().isoformat()
+        self.timestamp = datetime.now(timezone.utc).isoformat()
         super().__init__(self.message)
 
 class ValidationAPIError(APIError):
@@ -139,7 +139,7 @@ def log_error(error: Exception, request_data: Dict[str, Any]) -> str:
     """
     Loga erro com contexto completo
     """
-    error_id = f"ERR_{datetime.utcnow().strftime('%Y%m%d_%H%M%S_%f')}"
+    error_id = f"ERR_{datetime.now(timezone.utc).strftime('%Y%m%d_%H%M%S_%f')}"
     
     error_context = {
         'error_id': error_id,
@@ -151,7 +151,7 @@ def log_error(error: Exception, request_data: Dict[str, Any]) -> str:
         'request_data': request_data.get('data'),
         'user_agent': request_data.get('user_agent'),
         'remote_addr': request_data.get('remote_addr'),
-        'timestamp': datetime.utcnow().isoformat(),
+        'timestamp': datetime.now(timezone.utc).isoformat(),
         'traceback': traceback.format_exc() if not isinstance(error, APIError) else None
     }
     
@@ -194,7 +194,7 @@ def handle_validation_error(error: ValidationError) -> Tuple[Dict[str, Any], int
             'message': 'Dados de entrada inválidos',
             'details': error.messages,
             'error_id': error_id,
-            'timestamp': datetime.utcnow().isoformat()
+            'timestamp': datetime.now(timezone.utc).isoformat()
         }
     }, 400
 
@@ -211,7 +211,7 @@ def handle_sqlalchemy_error(error: SQLAlchemyError) -> Tuple[Dict[str, Any], int
                 'message': 'Violação de integridade dos dados',
                 'details': {'constraint': str(error.orig)},
                 'error_id': error_id,
-                'timestamp': datetime.utcnow().isoformat()
+                'timestamp': datetime.now(timezone.utc).isoformat()
             }
         }, 409
     
@@ -222,7 +222,7 @@ def handle_sqlalchemy_error(error: SQLAlchemyError) -> Tuple[Dict[str, Any], int
                 'message': 'Erro nos dados fornecidos',
                 'details': {'database_error': str(error.orig)},
                 'error_id': error_id,
-                'timestamp': datetime.utcnow().isoformat()
+                'timestamp': datetime.now(timezone.utc).isoformat()
             }
         }, 400
     
@@ -232,7 +232,7 @@ def handle_sqlalchemy_error(error: SQLAlchemyError) -> Tuple[Dict[str, Any], int
                 'code': ErrorCode.DATABASE_ERROR,
                 'message': 'Erro interno do banco de dados',
                 'error_id': error_id,
-                'timestamp': datetime.utcnow().isoformat()
+                'timestamp': datetime.now(timezone.utc).isoformat()
             }
         }, 500
 
@@ -257,7 +257,7 @@ def handle_jwt_error(error: jwt.PyJWTError) -> Tuple[Dict[str, Any], int]:
             'code': error_code,
             'message': message,
             'error_id': error_id,
-            'timestamp': datetime.utcnow().isoformat()
+            'timestamp': datetime.now(timezone.utc).isoformat()
         }
     }, 401
 
@@ -272,7 +272,7 @@ def handle_http_exception(error: HTTPException) -> Tuple[Dict[str, Any], int]:
             'code': error.code,
             'message': error.description,
             'error_id': error_id,
-            'timestamp': datetime.utcnow().isoformat()
+            'timestamp': datetime.now(timezone.utc).isoformat()
         }
     }, error.code
 
@@ -318,7 +318,7 @@ def handle_generic_error(error: Exception) -> Tuple[Dict[str, Any], int]:
             'code': ErrorCode.INTERNAL_ERROR,
             'message': message,
             'error_id': error_id,
-            'timestamp': datetime.utcnow().isoformat()
+            'timestamp': datetime.now(timezone.utc).isoformat()
         }
     }
     
