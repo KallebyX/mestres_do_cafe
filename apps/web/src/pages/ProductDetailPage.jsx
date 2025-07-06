@@ -8,7 +8,7 @@ import { useCart } from '../contexts/CartContext';
 import { useAuth } from '../contexts/AuthContext';
 import { productsAPI } from '../lib/api';
 import { Badge } from '../components/ui/badge';
-import { getProductById, getAllProducts } from "../lib/api.js"
+import { getProductById, getAllProducts } from "../lib/api"
 
 const ProductDetailPage = () => {
   const { id } = useParams();

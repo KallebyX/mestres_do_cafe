@@ -5,7 +5,7 @@ import {
   Hash, Truck, FileText, Search
 } from 'lucide-react';
 import { useNotifications } from '../contexts/NotificationContext';
-import { supabase } from "../lib/api.js"
+import { supabase } from "../lib/api"
 
 const BatchControlModal = ({ 
   isOpen, 

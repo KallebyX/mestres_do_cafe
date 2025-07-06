@@ -12,7 +12,7 @@ import {
   AlertCircle,
   Loader
 } from 'lucide-react';
-import { supabase } from "../lib/api.js"
+import { supabase } from "../lib/api"
 import { useNotifications } from '../contexts/NotificationContext';
 
 const FileUpload = ({

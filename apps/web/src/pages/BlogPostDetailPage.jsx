@@ -19,7 +19,7 @@ import {
   getPostComments,
   deleteComment,
   recordShare
-} from "../lib/api.js"
+} from "../lib/api"
 
 const BlogPostDetailPage = () => {
   const { slug } = useParams();

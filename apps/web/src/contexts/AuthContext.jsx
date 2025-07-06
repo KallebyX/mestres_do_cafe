@@ -1,12 +1,12 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
-import { authAPI } from '../lib/api.js';
+import React, { createContext, useContext, useEffect, useState } from "react";
+import { authAPI } from "../lib/api";
 
 const AuthContext = createContext();
 
 export const useAuth = () => {
   const context = useContext(AuthContext);
   if (!context) {
-    throw new Error('useAuth deve ser usado dentro de um AuthProvider');
+    throw new Error("useAuth deve ser usado dentro de um AuthProvider");
   }
   return context;
 };
@@ -22,7 +22,7 @@ export const AuthProvider = ({ children }) => {
       try {
         const savedUser = authAPI.getCurrentUser();
         const savedToken = authAPI.getToken();
-        
+
         if (savedUser && savedToken) {
           setUser({ ...savedUser, token: savedToken });
           // Verificar se o token ainda é válido
@@ -32,7 +32,7 @@ export const AuthProvider = ({ children }) => {
           }
         }
       } catch (error) {
-        console.error('Erro ao carregar dados do usuário:', error);
+        console.error("Erro ao carregar dados do usuário:", error);
         clearAuth();
       } finally {
         setLoading(false);
@@ -53,17 +53,17 @@ export const AuthProvider = ({ children }) => {
     try {
       setLoading(true);
       setError(null);
-      
+
       const response = await authAPI.login({ email, password });
-      
+
       if (response.success) {
         setUser({ ...response.user, token: response.token });
         return { success: true, user: response.user };
       } else {
-        throw new Error(response.error || 'Erro no login');
+        throw new Error(response.error || "Erro no login");
       }
     } catch (error) {
-      const errorMessage = error.message || 'Erro ao fazer login';
+      const errorMessage = error.message || "Erro ao fazer login";
       setError(errorMessage);
       return { success: false, error: errorMessage };
     } finally {
@@ -76,20 +76,20 @@ export const AuthProvider = ({ children }) => {
     try {
       setLoading(true);
       setError(null);
-      
+
       const response = await authAPI.register(userData);
-      
+
       if (response.success) {
-        return { 
-          success: true, 
-          message: 'Cadastro realizado com sucesso! Faça login para continuar.',
-          user: response.user 
+        return {
+          success: true,
+          message: "Cadastro realizado com sucesso! Faça login para continuar.",
+          user: response.user,
         };
       } else {
-        throw new Error(response.error || 'Erro no cadastro');
+        throw new Error(response.error || "Erro no cadastro");
       }
     } catch (error) {
-      const errorMessage = error.message || 'Erro ao fazer cadastro';
+      const errorMessage = error.message || "Erro ao fazer cadastro";
       setError(errorMessage);
       return { success: false, error: errorMessage };
     } finally {
@@ -102,7 +102,7 @@ export const AuthProvider = ({ children }) => {
     try {
       authAPI.logout();
     } catch (error) {
-      console.error('Erro ao fazer logout:', error);
+      console.error("Erro ao fazer logout:", error);
     } finally {
       clearAuth();
     }
@@ -113,18 +113,18 @@ export const AuthProvider = ({ children }) => {
     try {
       setLoading(true);
       setError(null);
-      
+
       if (!user?.token) {
-        throw new Error('Usuário não autenticado');
+        throw new Error("Usuário não autenticado");
       }
-      
+
       // Por enquanto simular sucesso até ter endpoint real
       const updatedUser = { ...user, ...profileData };
       setUser(updatedUser);
-      
+
       return { success: true, user: updatedUser };
     } catch (error) {
-      const errorMessage = error.message || 'Erro ao atualizar perfil';
+      const errorMessage = error.message || "Erro ao atualizar perfil";
       setError(errorMessage);
       return { success: false, error: errorMessage };
     } finally {
@@ -135,16 +135,16 @@ export const AuthProvider = ({ children }) => {
   // Verificar se o usuário tem permissão para uma ação
   const hasPermission = (requiredRole) => {
     if (!user) return false;
-    
+
     const roles = {
-      'admin': 3,
-      'cliente_pj': 2,
-      'cliente_pf': 1
+      admin: 3,
+      cliente_pj: 2,
+      cliente_pf: 1,
     };
-    
+
     const userRole = roles[user.user_type] || 0;
     const requiredLevel = roles[requiredRole] || 0;
-    
+
     return userRole >= requiredLevel;
   };
 
@@ -169,15 +169,10 @@ export const AuthProvider = ({ children }) => {
     hasPermission,
     isAuthenticated,
     clearError,
-    clearAuth
+    clearAuth,
   };
 
-  return (
-    <AuthContext.Provider value={value}>
-      {children}
-    </AuthContext.Provider>
-  );
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };
 
 export default AuthContext;
-

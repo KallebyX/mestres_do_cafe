@@ -3,7 +3,7 @@ import {
   X, Save, AlertCircle, User, Calendar, DollarSign, 
   Phone, Mail, MapPin, Building, UserCheck, Shield
 } from 'lucide-react';
-import { hrAPI } from "../lib/api.js"
+import { hrAPI } from "../lib/api"
 import { useNotifications } from '../contexts/NotificationContext';
 
 const EmployeeModal = ({ 

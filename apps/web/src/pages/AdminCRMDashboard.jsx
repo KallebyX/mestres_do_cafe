@@ -18,7 +18,7 @@ import {
   getAllCustomers,
   toggleAnyCustomerStatus,
   syncAuthUsersToPublic
-} from "../lib/api.js"
+} from "../lib/api"
 import { 
   sendCompleteNewsletter, 
   validateNewsletterData,

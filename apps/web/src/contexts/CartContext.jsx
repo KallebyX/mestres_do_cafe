@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { useAuth } from './AuthContext';
-import { cartAPI } from "../lib/api.js";
+import { cartAPI } from "../lib/api";
 
 // =============================================
 // CART UTILITIES - FUNÇÕES LOCAIS E SUPABASE

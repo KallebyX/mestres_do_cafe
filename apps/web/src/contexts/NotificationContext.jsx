@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
-import { supabase } from "../lib/api.js"
-import { notificationAPI } from "../lib/api.js"
+import { supabase } from "../lib/api"
+import { notificationAPI } from "../lib/api"
 import { useAuth } from './AuthContext';
 import { 
   Bell, AlertTriangle, CheckCircle, Info, DollarSign, 

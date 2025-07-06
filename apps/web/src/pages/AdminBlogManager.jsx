@@ -11,7 +11,7 @@ import {
   createBlogPost, 
   updateBlogPost, 
   deleteBlogPost 
-} from "../lib/api.js"
+} from "../lib/api"
 
 const AdminBlogManager = () => {
   const [posts, setPosts] = useState([]);

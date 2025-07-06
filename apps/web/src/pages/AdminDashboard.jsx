@@ -7,14 +7,14 @@ import {
   Clock, EyeOff, FileText, AlertCircle, CheckCircle
 } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
-import { getAllProductsAdmin } from "../lib/api.js"
-import { deleteProduct, toggleProductStatus } from "../lib/api.js"
+import { getAllProductsAdmin } from "../lib/api"
+import { deleteProduct, toggleProductStatus } from "../lib/api"
 import ProductModal from '../components/ProductModal';
-import { getStats, getUsers, addCustomerInteraction, getTopProductsByRevenue } from "../lib/api.js"
+import { getStats, getUsers, addCustomerInteraction, getTopProductsByRevenue } from "../lib/api"
 import { ordersAPI } from '../lib/api';
-import * as coursesAPI from "../lib/api.js"
-import { getAllBlogPostsAdmin, createBlogPost, updateBlogPost, deleteBlogPost, getBlogCategories } from "../lib/api.js"
-import { hrAPI } from "../lib/api.js"
+import * as coursesAPI from "../lib/api"
+import { getAllBlogPostsAdmin, createBlogPost, updateBlogPost, deleteBlogPost, getBlogCategories } from "../lib/api"
+import { hrAPI } from "../lib/api"
 import { LineChart, BarChart, MetricCard, AreaChart, ProgressRing, PieChartComponent } from '../components/ui/charts';
 
 const AdminDashboard = () => {
