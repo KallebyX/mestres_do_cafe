@@ -1,4 +1,4 @@
-from models.database import db
+from .database import db
 from enum import Enum
 from datetime import datetime
 import uuid

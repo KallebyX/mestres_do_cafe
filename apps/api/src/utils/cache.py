@@ -254,7 +254,7 @@ class CacheWarmup:
     @staticmethod
     def warm_products_cache():
         """Pré-aquece cache de produtos"""
-        from models.products import Product
+        from ..models.products import Product
         
         try:
             # Cachear produtos mais populares
@@ -272,7 +272,7 @@ class CacheWarmup:
     @staticmethod
     def warm_categories_cache():
         """Pré-aquece cache de categorias"""
-        from models.products import Category
+        from ..models.products import Category
         
         try:
             categories = Category.query.filter_by(is_active=True).all()

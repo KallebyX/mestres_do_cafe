@@ -2,8 +2,8 @@ from flask import Blueprint, request, jsonify, current_app
 from werkzeug.security import generate_password_hash, check_password_hash
 import jwt
 import datetime
-from models.user import User
-from models.base import db
+from ...models.user import User
+from ...models.base import db
 from schemas.auth import LoginSchema, RegisterSchema, validate_request_data, format_validation_errors
 from middleware.error_handler import AuthenticationAPIError, ValidationAPIError, ResourceAPIError
 from marshmallow import ValidationError

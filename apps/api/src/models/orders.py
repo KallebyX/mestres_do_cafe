@@ -5,7 +5,7 @@ Modelos de Pedidos e Carrinho - Mestres do Café Enterprise
 from datetime import datetime
 from sqlalchemy import Column, Integer, String, Float, Text, Boolean, DateTime, ForeignKey, Enum
 from sqlalchemy.orm import relationship
-from models.base import db
+from .base import db
 import enum
 
 

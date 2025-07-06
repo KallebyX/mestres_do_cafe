@@ -3,7 +3,7 @@ Modelo de Usuario - Mestres do Café Enterprise
 """
 
 from datetime import datetime
-from models.base import db
+from .base import db
 
 
 class User(db.Model):

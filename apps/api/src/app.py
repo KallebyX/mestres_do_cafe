@@ -28,9 +28,9 @@ from controllers.routes.auth import auth_bp
 from controllers.routes.health import health_bp
 
 # Importações locais
-from models.database import db
-from models.products import Category, Product
-from models.user import User
+from .models.database import db
+from .models.products import Category, Product
+from .models.user import User
 from config import config
 from middleware.error_handler import register_error_handlers
 from utils.logger import setup_logging

@@ -5,7 +5,7 @@ Modelos de Produtos - Mestres do Café Enterprise
 from datetime import datetime
 from sqlalchemy import Column, Integer, String, Float, Text, Boolean, DateTime, ForeignKey, JSON
 from sqlalchemy.orm import relationship
-from models.base import db
+from .base import db
 
 
 class Category(db.Model):

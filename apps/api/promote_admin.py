@@ -6,8 +6,8 @@ import sys
 import os
 sys.path.append(os.path.join(os.path.dirname(__file__), 'src'))
 
-from models.base import db
-from models.user import User
+from src.models.base import db
+from src.models.user import User
 from app import create_app
 
 def promote_user_to_admin(email):
