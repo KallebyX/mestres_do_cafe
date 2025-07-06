@@ -1,0 +1,38 @@
+{
+  "name": "@mestres-cafe/shared",
+  "version": "1.0.0",
+  "description": "Pacote compartilhado com utilitários, tipos e constantes",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "test": "jest",
+    "lint": "eslint src/**/*.ts",
+    "format": "prettier --write src/**/*.ts"
+  },
+  "keywords": ["mestres-cafe", "shared", "utilities"],
+  "author": "Mestres do Café Team",
+  "license": "MIT",
+  "devDependencies": {
+    "@types/jest": "^29.5.0",
+    "@types/node": "^18.15.0",
+    "@typescript-eslint/eslint-plugin": "^5.57.0",
+    "@typescript-eslint/parser": "^5.57.0",
+    "eslint": "^8.37.0",
+    "jest": "^29.5.0",
+    "prettier": "^2.8.7",
+    "ts-jest": "^29.1.0",
+    "typescript": "^5.0.2"
+  },
+  "dependencies": {
+    "date-fns": "^2.29.3",
+    "lodash": "^4.17.21",
+    "uuid": "^9.0.0",
+    "zod": "^3.21.4"
+  },
+  "publishConfig": {
+    "access": "restricted"
+  }
+}
+

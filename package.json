@@ -1,0 +1,58 @@
+{
+  "name": "cafe",
+  "version": "1.0.0",
+  "description": "Sistema enterprise de e-commerce e ERP para torrefação artesanal",
+  "private": true,
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "dev": "concurrently \"npm run dev:api\" \"npm run dev:web\"",
+    "dev:web": "cd apps/web && npm run dev",
+    "dev:api": "cd apps/api && python src/app.py",
+    "build": "npm run build:web && npm run build:api",
+    "build:web": "cd apps/web && npm run build",
+    "build:api": "cd apps/api && echo 'API build completed'",
+    "test": "npm run test:web && npm run test:api",
+    "test:web": "cd apps/web && npm run test",
+    "test:api": "cd apps/api && python -m pytest",
+    "lint": "npm run lint:web && npm run lint:api",
+    "lint:web": "cd apps/web && npm run lint",
+    "lint:api": "cd apps/api && flake8 src/",
+    "format": "npm run format:web && npm run format:api",
+    "format:web": "cd apps/web && npm run format",
+    "format:api": "cd apps/api && black src/",
+    "install:all": "npm install && cd apps/web && npm install && cd ../api && pip install -r requirements.txt",
+    "clean": "rm -rf node_modules apps/*/node_modules apps/*/dist apps/*/.next",
+    "docker:build": "docker-compose build",
+    "docker:up": "docker-compose up -d",
+    "docker:down": "docker-compose down"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2",
+    "husky": "^8.0.3",
+    "lint-staged": "^15.2.0"
+  },
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=8.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/KallebyX/cafe"
+  },
+  "keywords": [
+    "coffee",
+    "e-commerce",
+    "erp",
+    "enterprise",
+    "monorepo",
+    "react",
+    "flask",
+    "typescript"
+  ],
+  "author": "KallebyX",
+  "license": "MIT"
+}
+

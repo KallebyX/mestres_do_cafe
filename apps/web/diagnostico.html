@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🔧 Diagnóstico - Mestres do Café</title>
+    <style>
+        body {
+            background: linear-gradient(135deg, #8B4513, #D2691E);
+            color: white;
+            font-family: Arial, sans-serif;
+            padding: 50px;
+            text-align: center;
+        }
+        .diagnostic {
+            background: rgba(0,0,0,0.3);
+            padding: 30px;
+            border-radius: 10px;
+            margin: 20px 0;
+        }
+        .success { color: #00ff00; }
+        .error { color: #ff0000; }
+        .warning { color: #ffaa00; }
+    </style>
+</head>
+<body>
+    <h1>🔧 DIAGNÓSTICO MESTRES DO CAFÉ</h1>
+    
+    <div class="diagnostic">
+        <h2>✅ HTML/CSS Funcionando</h2>
+        <p class="success">Esta página está carregando corretamente!</p>
+        <p>Hora atual: <span id="time"></span></p>
+    </div>
+
+    <div class="diagnostic">
+        <h2>🔄 Status do Sistema</h2>
+        <p><strong>Frontend:</strong> <span class="success">OK</span></p>
+        <p><strong>Servidor de Desenvolvimento:</strong> <span class="success">Rodando na porta 5173</span></p>
+        <p><strong>React:</strong> <span class="warning">Verificar no console</span></p>
+    </div>
+
+    <div class="diagnostic">
+        <h2>🌐 Para acessar o sistema:</h2>
+        <p>1. Abra <a href="http://localhost:5173" style="color: #ffdd00;">http://localhost:5173</a></p>
+        <p>2. Se página em branco, pressione F12 e veja Console</p>
+        <p>3. Reporte os erros em vermelho</p>
+    </div>
+
+    <script>
+        // Atualizar hora a cada segundo
+        function updateTime() {
+            document.getElementById('time').innerText = new Date().toLocaleTimeString('pt-BR');
+        }
+        updateTime();
+        setInterval(updateTime, 1000);
+        
+        // Test JavaScript
+        console.log('🔧 Diagnóstico: JavaScript funcionando!');
+        console.log('🔧 Diagnóstico: Hora:', new Date().toLocaleTimeString());
+    </script>
+</body>
+</html> 

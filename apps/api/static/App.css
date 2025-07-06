@@ -1,0 +1,220 @@
+/* App.css - Estilos customizados do Mestres do Café */
+
+/* Variáveis CSS para cores do projeto */
+:root {
+  --coffee-primary: #d97444;
+  --coffee-secondary: #cc5a2e;
+  --coffee-dark: #a84527;
+  --coffee-light: #fdf6f1;
+  --coffee-text: #333;
+  --coffee-card: #ffffff;
+  --coffee-border: #e5e5e5;
+  --shadow-light: 0 2px 4px rgba(0,0,0,0.1);
+  --shadow-medium: 0 4px 6px rgba(0,0,0,0.1);
+  --shadow-heavy: 0 8px 15px rgba(0,0,0,0.15);
+  --radius: 8px;
+}
+
+/* Estilos específicos do App */
+.app {
+  min-height: 100vh;
+  background-color: var(--coffee-light);
+  color: var(--coffee-text);
+}
+
+/* Gradientes customizados */
+.coffee-gradient {
+  background: linear-gradient(135deg, var(--coffee-primary) 0%, var(--coffee-secondary) 100%);
+}
+
+.coffee-gradient-reverse {
+  background: linear-gradient(135deg, var(--coffee-secondary) 0%, var(--coffee-dark) 100%);
+}
+
+/* Cards específicos do café */
+.coffee-card {
+  background: var(--coffee-card);
+  border-radius: var(--radius);
+  padding: 1.5rem;
+  margin-bottom: 1rem;
+  box-shadow: var(--shadow-medium);
+  transition: all 0.3s ease;
+  border: 1px solid var(--coffee-border);
+}
+
+.coffee-card:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-heavy);
+}
+
+/* Hero section */
+.hero-section {
+  background: linear-gradient(135deg, var(--coffee-primary) 0%, var(--coffee-secondary) 100%);
+  min-height: 70vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  text-align: center;
+  padding: 2rem;
+}
+
+/* Navigation links */
+.nav-link {
+  color: white;
+  text-decoration: none;
+  padding: 0.5rem 1rem;
+  border-radius: var(--radius);
+  transition: all 0.3s ease;
+  font-weight: 500;
+}
+
+.nav-link:hover {
+  background-color: rgba(255, 255, 255, 0.2);
+  transform: translateY(-1px);
+}
+
+/* Section divider */
+.section-divider {
+  height: 3px;
+  background: var(--coffee-primary);
+  width: 4rem;
+  margin: 2rem auto;
+  border-radius: 2px;
+}
+
+/* Product cards */
+.product-card {
+  background: var(--coffee-card);
+  border-radius: var(--radius);
+  overflow: hidden;
+  box-shadow: var(--shadow-medium);
+  transition: all 0.3s ease;
+  border: 1px solid var(--coffee-border);
+}
+
+.product-card:hover {
+  transform: translateY(-5px);
+  box-shadow: var(--shadow-heavy);
+}
+
+.product-image {
+  width: 100%;
+  height: 200px;
+  object-fit: cover;
+}
+
+.product-info {
+  padding: 1.5rem;
+}
+
+.product-title {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--coffee-primary);
+  margin-bottom: 0.5rem;
+}
+
+.product-price {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--coffee-secondary);
+  margin-bottom: 1rem;
+}
+
+/* Buttons específicos */
+.btn-coffee {
+  background: var(--coffee-gradient);
+  color: white;
+  border: none;
+  padding: 0.75rem 1.5rem;
+  border-radius: var(--radius);
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-decoration: none;
+  display: inline-block;
+  text-align: center;
+}
+
+.btn-coffee:hover {
+  background: linear-gradient(135deg, var(--coffee-secondary) 0%, var(--coffee-dark) 100%);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-medium);
+}
+
+.btn-coffee:active {
+  transform: translateY(0);
+}
+
+/* Layout específico */
+.container-coffee {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 1rem;
+}
+
+.grid-coffee {
+  display: grid;
+  gap: 2rem;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+}
+
+/* Responsivo */
+@media (max-width: 768px) {
+  .hero-section {
+    min-height: 50vh;
+    padding: 1rem;
+  }
+  
+  .coffee-card {
+    padding: 1rem;
+  }
+  
+  .grid-coffee {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+}
+
+/* Loading states */
+.loading-spinner {
+  width: 2rem;
+  height: 2rem;
+  border: 3px solid var(--coffee-border);
+  border-top: 3px solid var(--coffee-primary);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin: 2rem auto;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* Form styles */
+.form-coffee {
+  background: var(--coffee-card);
+  padding: 2rem;
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-medium);
+  max-width: 400px;
+  margin: 0 auto;
+}
+
+.input-coffee {
+  width: 100%;
+  padding: 0.75rem;
+  border: 1px solid var(--coffee-border);
+  border-radius: var(--radius);
+  margin-bottom: 1rem;
+  font-size: 1rem;
+  transition: border-color 0.3s ease;
+}
+
+.input-coffee:focus {
+  outline: none;
+  border-color: var(--coffee-primary);
+  box-shadow: 0 0 0 3px rgba(217, 116, 68, 0.1);
+}
