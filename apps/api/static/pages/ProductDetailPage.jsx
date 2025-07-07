@@ -1,15 +1,19 @@
-import React, { useState, useEffect } from 'react';
-import { useParams, Link, useNavigate } from 'react-router-dom';
-import { 
-  Star, ShoppingCart, Heart, Share2, Minus, Plus, Coffee, 
-  Award, Truck, Shield, ChevronLeft, ChevronRight, Eye, ArrowLeft
+import {
+  Award,
+  Coffee,
+  Eye,
+  Heart,
+  Minus, Plus,
+  Shield,
+  ShoppingCart,
+  Star,
+  Truck
 } from 'lucide-react';
+import React, { useEffect, useState } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
+import { ReviewSystem } from '../components/reviews';
 import { useCart } from '../contexts/CartContext';
-import { useAuth } from '../contexts/AuthContext';
 import { useSupabaseAuth } from '../contexts/SupabaseAuthContext';
-import { productsAPI } from '../lib/api';
-import { Badge } from '../components/ui/badge';
-import { getProductById, getAllProducts } from "../lib/api.js"
 
 const ProductDetailPage = () => {
   const { id } = useParams();
@@ -44,9 +48,9 @@ const ProductDetailPage = () => {
     setError(null);
     
     try {
-      const result = await getProductById(id);
+      const result = await products.getById(id);
       
-      if (result.success) {
+      if (result.data && !result.error) {
         console.log('✅ Produto carregado:', result.data);
         setProduct(result.data);
         await loadRelatedProducts(result.data.category);
@@ -63,8 +67,8 @@ const ProductDetailPage = () => {
 
   const loadRelatedProducts = async (category) => {
     try {
-      const result = await getAllProducts();
-      if (result.success) {
+      const result = await products.getAll();
+      if (result.data && !result.error) {
         const related = result.data
           .filter(p => p.id !== id && p.category === category)
           .slice(0, 4);
@@ -440,6 +444,17 @@ const ProductDetailPage = () => {
           </div>
         </div>
 
+        {/* Sistema de Avaliações */}
+        <div className="mb-16">
+          <ReviewSystem
+            productId={id}
+            userId={user?.id || null}
+            isAdmin={user?.role === 'admin'}
+            showForm={!!user}
+            theme="mestres-theme"
+          />
+        </div>
+
         {/* Related Products */}
         {relatedProducts.length > 0 && (
           <div>
@@ -487,4 +502,4 @@ const ProductDetailPage = () => {
   );
 };
 
-export default ProductDetailPage; 
+export default ProductDetailPage;

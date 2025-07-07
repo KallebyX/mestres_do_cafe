@@ -1,14 +1,21 @@
-import React, { useState, useEffect } from 'react';
-import { useParams, Link, useNavigate } from 'react-router-dom';
-import { 
-  Star, ShoppingCart, Heart, Share2, Minus, Plus, Coffee, 
-  Award, Truck, Shield, ChevronLeft, ChevronRight, Eye, ArrowLeft
+import { getAllProducts, getProductById } from "@/lib/api";
+import {
+  Award,
+  Coffee,
+  Eye,
+  Heart,
+  Minus, Plus,
+  Shield,
+  ShoppingCart,
+  Star,
+  Truck
 } from 'lucide-react';
-import { useCart } from '../contexts/CartContext';
+import React, { useEffect, useState } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
+import { ReviewSystem } from '../components/reviews';
+import '../components/reviews/ReviewSystem.css';
 import { useAuth } from '../contexts/AuthContext';
-import { productsAPI } from "@/lib/api";
-import { Badge } from '../components/ui/badge';
-import { getProductById, getAllProducts } from "@/lib/api"
+import { useCart } from '../contexts/CartContext';
 
 const ProductDetailPage = () => {
   const { id } = useParams();
@@ -256,7 +263,7 @@ const ProductDetailPage = () => {
             <div>
               <div className="flex items-center space-x-2 mb-2">
                 <span className="bg-amber-100 text-amber-800 px-3 py-1 rounded-full text-sm font-medium">
-                  {product.category || 'Café Especial'}
+                  {product.category?.name || 'Café Especial'}
                 </span>
                 {product.is_featured && (
                   <span className="bg-purple-100 text-purple-800 px-3 py-1 rounded-full text-sm font-medium">
@@ -437,6 +444,11 @@ const ProductDetailPage = () => {
               </div>
             </div>
           </div>
+        </div>
+
+        {/* Reviews Section */}
+        <div className="mb-16">
+          <ReviewSystem productId={id} />
         </div>
 
         {/* Related Products */}

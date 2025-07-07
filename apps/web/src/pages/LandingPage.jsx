@@ -15,6 +15,7 @@ import { Link } from "react-router-dom";
 import { ProductSkeleton, useDataState } from "../components/LoadingStates";
 import { Button } from "../components/ui/button";
 import { getFeaturedTestimonials, getFiltered } from "@/lib/api";
+import PremiumHeroSection from "../components/PremiumHeroSection";
 
 const LandingPage = () => {
   const {
@@ -127,90 +128,8 @@ const LandingPage = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-yellow-50 via-orange-50 to-white">
-      {/* Hero Section - Design Fiel ao Mestres do Café */}
-      <section className="relative bg-gradient-to-br from-yellow-50 via-orange-50 to-pink-50 overflow-hidden">
-        {/* Background Pattern */}
-        <div className="absolute inset-0 opacity-30">
-          <div className="absolute top-1/4 right-1/4 w-96 h-96 bg-gradient-to-br from-amber-200 to-pink-200 rounded-full blur-3xl"></div>
-          <div className="absolute bottom-1/4 left-1/4 w-80 h-80 bg-gradient-to-br from-yellow-200 to-orange-200 rounded-full blur-3xl"></div>
-        </div>
-
-        <div className="relative container mx-auto px-4 py-16 lg:py-32 z-10">
-          <div className="max-w-6xl mx-auto text-center">
-            {/* SCA & Torra Artesanal Badge */}
-            <div className="flex items-center justify-center gap-2 mb-6">
-              <div className="w-6 h-6 bg-amber-600 rounded-full flex items-center justify-center">
-                <Award className="w-3 h-3 text-white" />
-              </div>
-              <span className="text-lg font-semibold text-gray-700">
-                SCA & Torra Artesanal
-              </span>
-            </div>
-
-            <h1 className="text-4xl lg:text-6xl xl:text-7xl font-bold text-gray-800 mb-6 leading-tight">
-              <span className="block font-serif">Cafés Especiais</span>
-              <span className="block text-transparent bg-clip-text bg-gradient-to-r from-amber-600 via-orange-600 to-orange-700 font-serif">
-                Direto do Produtor
-              </span>
-            </h1>
-
-            <p className="text-xl lg:text-2xl text-gray-600 mb-4 max-w-3xl mx-auto leading-relaxed">
-              Descubra sabores únicos dos melhores cafés especiais do Brasil.
-            </p>
-
-            <p className="text-lg lg:text-xl text-gray-700 font-semibold mb-12 max-w-2xl mx-auto">
-              Pontuação SCA acima de 80 pontos
-            </p>
-
-            <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-16">
-              <Link to="/marketplace">
-                <Button
-                  size="lg"
-                  className="bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-700 hover:to-orange-700 text-white px-12 py-6 text-xl font-bold shadow-2xl hover:shadow-3xl transform hover:-translate-y-2 transition-all duration-300 rounded-2xl"
-                >
-                  Explorar Cafés
-                  <ArrowRight className="ml-3 w-6 h-6" />
-                </Button>
-              </Link>
-
-              <Link to="/sobre">
-                <Button
-                  size="lg"
-                  variant="outline"
-                  className="border-2 border-amber-600 text-amber-600 hover:bg-amber-50 px-12 py-6 text-xl font-bold shadow-lg hover:shadow-xl transform hover:-translate-y-1 transition-all duration-300 rounded-2xl"
-                >
-                  <Play className="mr-3 w-6 h-6" />
-                  Ver Processo
-                </Button>
-              </Link>
-            </div>
-
-            {/* Hero Image */}
-            <div className="relative max-w-2xl mx-auto">
-              <div className="relative w-full h-96 bg-gradient-to-br from-amber-100 to-orange-100 rounded-3xl shadow-2xl flex items-center justify-center overflow-hidden">
-                <img
-                  src="/images/caneca-mestres-cafe.jpg"
-                  alt="Mestres do Café - Cafés Especiais Premium"
-                  className="w-full h-full object-cover rounded-3xl"
-                  loading="lazy"
-                  onError={(e) => {
-                    e.target.style.display = "none";
-                    e.target.nextSibling.style.display = "flex";
-                  }}
-                />
-                <div className="hidden w-full h-full items-center justify-center flex-col bg-gradient-to-br from-amber-100 to-orange-100 rounded-3xl">
-                  <div className="w-32 h-32 bg-amber-600/20 rounded-3xl flex items-center justify-center mb-6">
-                    <Coffee className="w-20 h-20 text-amber-600" />
-                  </div>
-                  <h3 className="text-2xl font-bold text-amber-600 font-serif">
-                    Mestres do Café
-                  </h3>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
+      {/* Hero Section Premium - Nova Implementação */}
+      <PremiumHeroSection />
 
       {/* Stats Section - Adaptativo por dispositivo */}
       <section className="py-16 lg:py-20 bg-white transition-all duration-300">
@@ -689,7 +608,7 @@ const LandingPage = () => {
 
                   {/* Comment */}
                   <blockquote className="text-brand-dark/80 italic leading-relaxed">
-                    "{testimonial.comment}"
+                    &ldquo;{testimonial.comment}&rdquo;
                   </blockquote>
                 </div>
               ))}

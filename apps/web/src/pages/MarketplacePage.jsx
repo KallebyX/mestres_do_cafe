@@ -35,9 +35,10 @@ const MarketplacePage = () => {
       const result = await getAllProducts();
       
       if (result.success) {
-        console.log('✅ Produtos carregados do Supabase:', result.data.length);
-        setProducts(result.data);
-        setFilteredProducts(result.data);
+        const productsArray = result.data.products || result.data || [];
+        console.log('✅ Produtos carregados do Supabase:', productsArray.length);
+        setProducts(productsArray);
+        setFilteredProducts(productsArray);
       } else {
         throw new Error(result.error || 'Erro ao carregar produtos');
       }

@@ -1,52 +1,51 @@
 import React from 'react';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import { ThemeProvider } from './contexts/ThemeContext';
-import { SupabaseAuthProvider } from './contexts/SupabaseAuthContext';
+import { Route, BrowserRouter as Router, Routes } from 'react-router-dom';
+import './App.css';
+import { Footer } from './components/Footer';
+import { Header } from './components/Header';
 import { CartProvider } from './contexts/CartContext';
 import { NotificationProvider } from './contexts/NotificationContext';
-import { Header } from './components/Header';
-import { Footer } from './components/Footer';
-import LandingPage from './pages/LandingPage';
-import LoginPage from './pages/LoginPage';
-import RegisterPage from './pages/RegisterPage';
-import MarketplacePage from './pages/MarketplacePage';
-import ProductDetailPage from './pages/ProductDetailPage';
-import CartPage from './pages/CartPage';
-import CheckoutPage from './pages/CheckoutPage';
-import CustomerDashboard from './pages/CustomerDashboard';
-import AdminDashboard from './pages/AdminDashboard';
-import GamificationPage from './pages/GamificationPage';
-import ProfilePage from './pages/ProfilePage';
-import OrdersPage from './pages/OrdersPage';
+import { SupabaseAuthProvider } from './contexts/SupabaseAuthContext';
+import { ThemeProvider } from './contexts/ThemeContext';
 import AboutPage from './pages/AboutPage';
-import ContactPage from './pages/ContactPage';
-import MapPage from './pages/MapPage';
-import CoursesPage from './pages/CoursesPage';
-import ForumPage from './pages/ForumPage';
-import BlogPage from './pages/BlogPage';
-import BlogPostDetailPage from './pages/BlogPostDetailPage';
-import AdminBlogManager from './pages/AdminBlogManager';
-import AdminCRMDashboard from './pages/AdminCRMDashboard';
-import AdminFinancialReports from './pages/AdminFinancialReports';
+import AccountActivationPage from './pages/AccountActivationPage';
 import AdminAnalytics from './pages/AdminAnalytics';
-import AdminFinancial from './pages/AdminFinancial';
-import AdminFinanceiroDashboard from './pages/AdminFinanceiroDashboard';
+import AdminBIDashboard from './pages/AdminBIDashboard';
+import AdminBlogManager from './pages/AdminBlogManager';
+import AdminComprasDashboard from './pages/AdminComprasDashboard';
+import AdminConfigDashboard from './pages/AdminConfigDashboard';
+import AdminContabilidadeDashboard from './pages/AdminContabilidadeDashboard';
+import AdminCRMDashboard from './pages/AdminCRMDashboard';
+import AdminDashboard from './pages/AdminDashboard';
 import AdminEstoqueDashboard from './pages/AdminEstoqueDashboard';
 import AdminEstoqueDashboardEnterprise from './pages/AdminEstoqueDashboardEnterprise';
+import AdminFinanceiroDashboard from './pages/AdminFinanceiroDashboard';
+import AdminFinancialReports from './pages/AdminFinancialReports';
+import AdminProducaoDashboard from './pages/AdminProducaoDashboard';
 import AdminRHDashboard from './pages/AdminRHDashboard';
 import AdminVendasDashboard from './pages/AdminVendasDashboard';
-import AdminComprasDashboard from './pages/AdminComprasDashboard';
-import AdminProducaoDashboard from './pages/AdminProducaoDashboard';
-import AdminContabilidadeDashboard from './pages/AdminContabilidadeDashboard';
-import AdminBIDashboard from './pages/AdminBIDashboard';
-import AdminConfigDashboard from './pages/AdminConfigDashboard';
-import AccountActivationPage from './pages/AccountActivationPage';
-import ForgotPasswordPage from './pages/ForgotPasswordPage';
-import ResetPasswordPage from './pages/ResetPasswordPage';
 import AuthCallbackPage from './pages/AuthCallbackPage';
-import NotFoundPage from './pages/NotFoundPage';
+import BlogPage from './pages/BlogPage';
+import BlogPostDetailPage from './pages/BlogPostDetailPage';
+import CartPage from './pages/CartPage';
+import CheckoutPage from './pages/CheckoutPage';
+import ContactPage from './pages/ContactPage';
+import CoursesPage from './pages/CoursesPage';
+import CustomerDashboard from './pages/CustomerDashboard';
 import CustomerDetailView from './pages/CustomerDetailView';
-import './App.css';
+import ForgotPasswordPage from './pages/ForgotPasswordPage';
+import ForumPage from './pages/ForumPage';
+import GamificationPage from './pages/GamificationPage';
+import LandingPage from './pages/LandingPage';
+import LoginPage from './pages/LoginPage';
+import MapPage from './pages/MapPage';
+import MarketplacePage from './pages/MarketplacePage';
+import NotFoundPage from './pages/NotFoundPage';
+import OrdersPage from './pages/OrdersPage';
+import ProductDetailPage from './pages/ProductDetailPage';
+import ProfilePage from './pages/ProfilePage';
+import RegisterPage from './pages/RegisterPage';
+import ResetPasswordPage from './pages/ResetPasswordPage';
 
 function App() {
   return (
@@ -71,6 +70,7 @@ function App() {
                   <Route path="/reset-password" element={<ResetPasswordPage />} />
                   <Route path="/auth/callback" element={<AuthCallbackPage />} />
                   <Route path="/marketplace" element={<MarketplacePage />} />
+                  <Route path="/marketplace/product/:id" element={<ProductDetailPage />} />
                   <Route path="/produto/:id" element={<ProductDetailPage />} />
                   <Route path="/carrinho" element={<CartPage />} />
                   <Route path="/checkout" element={<CheckoutPage />} />

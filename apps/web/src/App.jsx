@@ -33,6 +33,7 @@ import ContactPage from "./pages/ContactPage";
 import CoursesPage from "./pages/CoursesPage";
 import CustomerDashboard from "./pages/CustomerDashboard";
 import CustomerDetailView from "./pages/CustomerDetailView";
+import DesignSystemDemo from "./pages/DesignSystemDemo";
 import ForgotPasswordPage from "./pages/ForgotPasswordPage";
 import ForumPage from "./pages/ForumPage";
 import GamificationPage from "./pages/GamificationPage";
@@ -42,6 +43,8 @@ import MapPage from "./pages/MapPage";
 import MarketplacePage from "./pages/MarketplacePage";
 import NotFoundPage from "./pages/NotFoundPage";
 import OrdersPage from "./pages/OrdersPage";
+import PremiumProductDetailPage from "./pages/PremiumProductDetailPage";
+import ProductCardsDemo from "./pages/ProductCardsDemo";
 import ProductDetailPage from "./pages/ProductDetailPage";
 import ProfilePage from "./pages/ProfilePage";
 import RegisterPage from "./pages/RegisterPage";
@@ -55,7 +58,7 @@ function App() {
           <CartProvider>
             <Router>
               <div
-                className="App min-h-screen transition-colors duration-300 bg-brand-light text-brand-dark"
+                className="App min-h-screen transition-colors duration-300"
                 style={{
                   backgroundColor: "var(--color-bg-primary)",
                   color: "var(--color-text-primary)",
@@ -88,6 +91,14 @@ function App() {
                     <Route
                       path="/produto/:id"
                       element={<ProductDetailPage />}
+                    />
+                    <Route
+                      path="/produto-premium/:id"
+                      element={<PremiumProductDetailPage />}
+                    />
+                    <Route
+                      path="/produto-premium/:id"
+                      element={<PremiumProductDetailPage />}
                     />
                     <Route path="/carrinho" element={<CartPage />} />
                     <Route path="/checkout" element={<CheckoutPage />} />
@@ -158,6 +169,8 @@ function App() {
                     <Route path="/perfil" element={<ProfilePage />} />
                     <Route path="/pedidos" element={<OrdersPage />} />
                     <Route path="/localizacoes" element={<MapPage />} />
+                    <Route path="/design-system" element={<DesignSystemDemo />} />
+                    <Route path="/product-cards-demo" element={<ProductCardsDemo />} />
                     <Route path="*" element={<NotFoundPage />} />
                   </Routes>
                 </main>

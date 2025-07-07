@@ -325,5 +325,4 @@ IconButton.displayName = 'IconButton';
 
 export default Button;
 export { buttonVariants };
-export type { ButtonProps };
 

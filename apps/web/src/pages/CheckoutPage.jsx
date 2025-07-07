@@ -1,277 +1,389 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useCart } from '../contexts/CartContext';
-import { useAuth } from '../contexts/AuthContext';
+import CartReview from '../components/checkout/CartReview';
+import ShippingForm from '../components/checkout/ShippingForm';
+import ShippingOptions from '../components/checkout/ShippingOptions';
+import PaymentForm from '../components/checkout/PaymentForm';
+import OrderSummary from '../components/checkout/OrderSummary';
+import OrderConfirmation from '../components/checkout/OrderConfirmation';
+import CheckoutProgress from '../components/checkout/CheckoutProgress';
+import { checkoutAPI } from '../services/checkout-api';
+import './CheckoutPage.css';
+
+const CHECKOUT_STEPS = [
+  { id: 1, name: 'Carrinho', component: 'cart' },
+  { id: 2, name: 'Entrega', component: 'shipping' },
+  { id: 3, name: 'Frete', component: 'shipping-options' },
+  { id: 4, name: 'Pagamento', component: 'payment' },
+  { id: 5, name: 'Revisão', component: 'summary' },
+  { id: 6, name: 'Confirmação', component: 'confirmation' }
+];
 
 const CheckoutPage = () => {
-  const { cartItems, getTotalPrice, clearCart } = useCart();
-  const { user } = useAuth();
   const navigate = useNavigate();
+  const { cartItems, cartTotal, clearCart } = useCart();
   
-  const [formData, setFormData] = useState({
-    address: '',
-    city: '',
-    zipCode: '',
-    paymentMethod: 'pix'
+  const [currentStep, setCurrentStep] = useState(1);
+  const [sessionToken, setSessionToken] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+  
+  // Dados do checkout
+  const [checkoutData, setCheckoutData] = useState({
+    shipping: {
+      firstName: '',
+      lastName: '',
+      email: '',
+      phone: '',
+      cpf: '',
+      cep: '',
+      street: '',
+      number: '',
+      complement: '',
+      neighborhood: '',
+      city: '',
+      state: '',
+      deliveryInstructions: ''
+    },
+    shippingOption: null,
+    payment: {
+      method: '',
+      cardNumber: '',
+      cardName: '',
+      cardExpiry: '',
+      cardCvc: '',
+      installments: 1
+    },
+    totals: {
+      subtotal: 0,
+      shippingTotal: 0,
+      taxTotal: 0,
+      discountTotal: 0,
+      finalTotal: 0
+    },
+    couponCode: '',
+    order: null
   });
-  const [isProcessing, setIsProcessing] = useState(false);
 
-  // Redirecionar se não estiver logado ou carrinho vazio
-  React.useEffect(() => {
-    if (!user) {
-      navigate('/login');
-      return;
-    }
-    if (cartItems.length === 0) {
-      navigate('/cart');
-      return;
-    }
-  }, [user, cartItems, navigate]);
+  // Inicializar checkout
+  useEffect(() => {
+    const initializeCheckout = async () => {
+      if (cartItems.length === 0) {
+        navigate('/cart');
+        return;
+      }
 
-  const handleChange = (e) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value
-    });
+      try {
+        setLoading(true);
+        
+        // Simular user_id (em produção viria do contexto de autenticação)
+        const userId = 1;
+        
+        const response = await checkoutAPI.startCheckout({ user_id: userId });
+        
+        if (response.session_token) {
+          setSessionToken(response.session_token);
+          
+          // Atualizar totais iniciais
+          setCheckoutData(prev => ({
+            ...prev,
+            totals: {
+              ...prev.totals,
+              subtotal: response.checkout_session.subtotal,
+              finalTotal: response.checkout_session.final_total
+            }
+          }));
+        }
+      } catch (err) {
+        console.error('Erro ao inicializar checkout:', err);
+        setError('Erro ao inicializar checkout');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    initializeCheckout();
+  }, [cartItems.length, navigate]);
+
+  // Navegar para próxima etapa
+  const nextStep = () => {
+    if (currentStep < CHECKOUT_STEPS.length) {
+      setCurrentStep(currentStep + 1);
+    }
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setIsProcessing(true);
+  // Navegar para etapa anterior
+  const prevStep = () => {
+    if (currentStep > 1) {
+      setCurrentStep(currentStep - 1);
+    }
+  };
 
+  // Atualizar dados do checkout
+  const updateCheckoutData = (section, data) => {
+    setCheckoutData(prev => ({
+      ...prev,
+      [section]: { ...prev[section], ...data }
+    }));
+  };
+
+  // Validar CEP
+  const validateCEP = async (cep) => {
     try {
-      // Simular processamento do pedido
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      
-      // Limpar carrinho
-      clearCart();
-      
-      // Redirecionar para página de sucesso
-      alert('Pedido realizado com sucesso!');
-      navigate('/orders');
-    } catch {
-      alert('Erro ao processar pedido. Tente novamente.');
-    } finally {
-      setIsProcessing(false);
+      const response = await checkoutAPI.validateCEP({ cep });
+      return response;
+    } catch (err) {
+      console.error('Erro ao validar CEP:', err);
+      throw err;
     }
   };
 
-  const shippingCost = getTotalPrice() >= 80 ? 0 : 15;
-  const totalWithShipping = getTotalPrice() + shippingCost;
+  // Calcular frete
+  const calculateShipping = async (cep) => {
+    try {
+      setLoading(true);
+      
+      const products = cartItems.map(item => ({
+        product_id: item.id,
+        quantity: item.quantity,
+        weight: item.weight || 0.5
+      }));
 
-  if (!user || cartItems.length === 0) {
-    return null;
+      const response = await checkoutAPI.calculateShipping({
+        session_token: sessionToken,
+        user_id: 1,
+        destination_cep: cep,
+        products
+      });
+
+      return response.shipping_options;
+    } catch (err) {
+      console.error('Erro ao calcular frete:', err);
+      throw err;
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Aplicar cupom
+  const applyCoupon = async (couponCode) => {
+    try {
+      setLoading(true);
+      
+      const response = await checkoutAPI.applyCoupon({
+        session_token: sessionToken,
+        user_id: 1,
+        coupon_code: couponCode,
+        subtotal: checkoutData.totals.subtotal
+      });
+
+      // Atualizar totais
+      const newTotals = {
+        ...checkoutData.totals,
+        discountTotal: response.discount_amount,
+        shippingTotal: response.free_shipping ? 0 : checkoutData.totals.shippingTotal
+      };
+      
+      newTotals.finalTotal = newTotals.subtotal + newTotals.shippingTotal + newTotals.taxTotal - newTotals.discountTotal;
+
+      updateCheckoutData('totals', newTotals);
+      updateCheckoutData('couponCode', couponCode);
+
+      return response;
+    } catch (err) {
+      console.error('Erro ao aplicar cupom:', err);
+      throw err;
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Finalizar checkout
+  const completeCheckout = async () => {
+    try {
+      setLoading(true);
+
+      const orderData = {
+        session_token: sessionToken,
+        user_id: 1,
+        shipping_data: checkoutData.shipping,
+        payment_data: checkoutData.payment,
+        cart_data: cartItems.map(item => ({
+          product_id: item.id,
+          quantity: item.quantity,
+          price: item.price,
+          subtotal: item.price * item.quantity
+        })),
+        totals: checkoutData.totals
+      };
+
+      const response = await checkoutAPI.completeCheckout(orderData);
+      
+      updateCheckoutData('order', response.order);
+      clearCart();
+      nextStep();
+      
+      return response;
+    } catch (err) {
+      console.error('Erro ao finalizar checkout:', err);
+      throw err;
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Renderizar componente da etapa atual
+  const renderCurrentStep = () => {
+    const step = CHECKOUT_STEPS[currentStep - 1];
+    
+    switch (step.component) {
+      case 'cart':
+        return (
+          <CartReview
+            items={cartItems}
+            total={cartTotal}
+            onNext={nextStep}
+            loading={loading}
+          />
+        );
+      
+      case 'shipping':
+        return (
+          <ShippingForm
+            data={checkoutData.shipping}
+            onUpdate={(data) => updateCheckoutData('shipping', data)}
+            onNext={nextStep}
+            onPrev={prevStep}
+            onValidateCEP={validateCEP}
+            loading={loading}
+          />
+        );
+      
+      case 'shipping-options':
+        return (
+          <ShippingOptions
+            options={[]}
+            selected={checkoutData.shippingOption}
+            onSelect={(option) => {
+              updateCheckoutData('shippingOption', option);
+              updateCheckoutData('totals', {
+                ...checkoutData.totals,
+                shippingTotal: option.price,
+                finalTotal: checkoutData.totals.subtotal + option.price + checkoutData.totals.taxTotal - checkoutData.totals.discountTotal
+              });
+            }}
+            onNext={nextStep}
+            onPrev={prevStep}
+            onCalculate={() => calculateShipping(checkoutData.shipping.cep)}
+            loading={loading}
+          />
+        );
+      
+      case 'payment':
+        return (
+          <PaymentForm
+            data={checkoutData.payment}
+            onUpdate={(data) => updateCheckoutData('payment', data)}
+            onNext={nextStep}
+            onPrev={prevStep}
+            loading={loading}
+          />
+        );
+      
+      case 'summary':
+        return (
+          <OrderSummary
+            checkoutData={checkoutData}
+            items={cartItems}
+            onPrev={prevStep}
+            onConfirm={completeCheckout}
+            onApplyCoupon={applyCoupon}
+            loading={loading}
+          />
+        );
+      
+      case 'confirmation':
+        return (
+          <OrderConfirmation
+            order={checkoutData.order}
+            onContinueShopping={() => navigate('/')}
+          />
+        );
+      
+      default:
+        return <div>Etapa não encontrada</div>;
+    }
+  };
+
+  if (loading && currentStep === 1) {
+    return (
+      <div className="checkout-loading">
+        <div className="loading-spinner"></div>
+        <p>Inicializando checkout...</p>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="checkout-error">
+        <h2>Erro no Checkout</h2>
+        <p>{error}</p>
+        <button onClick={() => navigate('/cart')} className="btn btn-primary">
+          Voltar ao Carrinho
+        </button>
+      </div>
+    );
   }
 
   return (
-    <div className="min-h-screen bg-coffee-white font-montserrat">
-      <main className="py-20 px-4">
-        <div className="max-w-4xl mx-auto">
-          <div className="text-center mb-12">
-            <h1 className="font-cormorant font-bold text-4xl text-coffee-intense mb-4">
-              Finalizar Compra
-            </h1>
-            <p className="text-coffee-gray text-lg">
-              Revise seu pedido e complete as informações de entrega
-            </p>
-          </div>
-
-          <div className="grid lg:grid-cols-2 gap-8">
-            {/* Formulário de Checkout */}
-            <div className="card">
-              <h2 className="font-cormorant font-bold text-2xl text-coffee-intense mb-6">
-                Dados de Entrega
-              </h2>
-
-              <form onSubmit={handleSubmit} className="space-y-6">
-                <div>
-                  <label htmlFor="address" className="block text-coffee-intense font-medium mb-2">
-                    Endereço Completo *
-                  </label>
-                  <input
-                    type="text"
-                    id="address"
-                    name="address"
-                    value={formData.address}
-                    onChange={handleChange}
-                    required
-                    className="w-full p-3 border-2 border-coffee-cream rounded-lg focus:border-coffee-gold focus:ring-2 focus:ring-coffee-gold/10 transition-all"
-                    placeholder="Rua, número, complemento"
-                  />
-                </div>
-
-                <div className="grid md:grid-cols-2 gap-4">
-                  <div>
-                    <label htmlFor="city" className="block text-coffee-intense font-medium mb-2">
-                      Cidade *
-                    </label>
-                    <input
-                      type="text"
-                      id="city"
-                      name="city"
-                      value={formData.city}
-                      onChange={handleChange}
-                      required
-                      className="w-full p-3 border-2 border-coffee-cream rounded-lg focus:border-coffee-gold focus:ring-2 focus:ring-coffee-gold/10 transition-all"
-                      placeholder="Sua cidade"
-                    />
-                  </div>
-
-                  <div>
-                    <label htmlFor="zipCode" className="block text-coffee-intense font-medium mb-2">
-                      CEP *
-                    </label>
-                    <input
-                      type="text"
-                      id="zipCode"
-                      name="zipCode"
-                      value={formData.zipCode}
-                      onChange={handleChange}
-                      required
-                      className="w-full p-3 border-2 border-coffee-cream rounded-lg focus:border-coffee-gold focus:ring-2 focus:ring-coffee-gold/10 transition-all"
-                      placeholder="00000-000"
-                    />
-                  </div>
-                </div>
-
-                <div>
-                  <label className="block text-coffee-intense font-medium mb-4">
-                    Forma de Pagamento *
-                  </label>
-                  <div className="space-y-3">
-                    <label className="flex items-center p-4 border-2 border-coffee-cream rounded-lg cursor-pointer hover:bg-coffee-cream/50 transition-colors">
-                      <input
-                        type="radio"
-                        name="paymentMethod"
-                        value="pix"
-                        checked={formData.paymentMethod === 'pix'}
-                        onChange={handleChange}
-                        className="text-coffee-gold focus:ring-coffee-gold"
-                      />
-                      <span className="ml-3 text-coffee-intense">
-                        <span className="font-medium">PIX</span> - Aprovação instantânea
-                      </span>
-                    </label>
-
-                    <label className="flex items-center p-4 border-2 border-coffee-cream rounded-lg cursor-pointer hover:bg-coffee-cream/50 transition-colors">
-                      <input
-                        type="radio"
-                        name="paymentMethod"
-                        value="credit"
-                        checked={formData.paymentMethod === 'credit'}
-                        onChange={handleChange}
-                        className="text-coffee-gold focus:ring-coffee-gold"
-                      />
-                      <span className="ml-3 text-coffee-intense">
-                        <span className="font-medium">Cartão de Crédito</span> - Em até 12x sem juros
-                      </span>
-                    </label>
-
-                    <label className="flex items-center p-4 border-2 border-coffee-cream rounded-lg cursor-pointer hover:bg-coffee-cream/50 transition-colors">
-                      <input
-                        type="radio"
-                        name="paymentMethod"
-                        value="boleto"
-                        checked={formData.paymentMethod === 'boleto'}
-                        onChange={handleChange}
-                        className="text-coffee-gold focus:ring-coffee-gold"
-                      />
-                      <span className="ml-3 text-coffee-intense">
-                        <span className="font-medium">Boleto Bancário</span> - Vencimento em 3 dias
-                      </span>
-                    </label>
-                  </div>
-                </div>
-
-                <button
-                  type="submit"
-                  disabled={isProcessing}
-                  className="btn-primary w-full py-4 text-lg disabled:opacity-50"
-                >
-                  {isProcessing ? (
-                    <div className="flex items-center justify-center">
-                      <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-coffee-white mr-2"></div>
-                      Processando...
-                    </div>
-                  ) : (
-                    'Finalizar Pedido'
-                  )}
-                </button>
-              </form>
-            </div>
-
-            {/* Resumo do Pedido */}
-            <div className="card sticky top-8">
-              <h2 className="font-cormorant font-bold text-2xl text-coffee-intense mb-6">
-                Resumo do Pedido
-              </h2>
-
-              {/* Produtos */}
-              <div className="space-y-4 mb-6">
-                {cartItems.map((item) => (
-                  <div key={item.id} className="flex items-center space-x-4">
-                    <div className="w-16 h-16 bg-coffee-cream rounded-lg flex items-center justify-center">
-                      <span className="text-coffee-gold text-lg">☕</span>
-                    </div>
-                    <div className="flex-1">
-                      <h3 className="font-medium text-coffee-intense">{item.name}</h3>
-                      <p className="text-coffee-gray text-sm">Quantidade: {item.quantity}</p>
-                    </div>
-                    <div className="text-coffee-gold font-medium">
-                      R$ {(item.price * item.quantity).toFixed(2)}
-                    </div>
-                  </div>
-                ))}
-              </div>
-
-              {/* Totais */}
-              <div className="border-t border-coffee-cream pt-4 space-y-3">
-                <div className="flex justify-between items-center">
-                  <span className="text-coffee-gray">Subtotal</span>
-                  <span className="text-coffee-intense font-medium">
-                    R$ {getTotalPrice().toFixed(2)}
-                  </span>
-                </div>
-
-                <div className="flex justify-between items-center">
-                  <span className="text-coffee-gray">Frete</span>
-                  <span className="text-coffee-gold font-medium">
-                    {shippingCost === 0 ? 'Grátis' : `R$ ${shippingCost.toFixed(2)}`}
-                  </span>
-                </div>
-
-                <div className="border-t border-coffee-cream pt-3">
-                  <div className="flex justify-between items-center">
-                    <span className="font-cormorant font-bold text-xl text-coffee-intense">Total</span>
-                    <span className="font-cormorant font-bold text-2xl text-coffee-gold">
-                      R$ {totalWithShipping.toFixed(2)}
-                    </span>
-                  </div>
-                </div>
-              </div>
-
-              {/* Garantias */}
-              <div className="mt-8 pt-6 border-t border-coffee-cream space-y-3">
-                <div className="flex items-center space-x-3">
-                  <span className="text-coffee-gold">🔒</span>
-                  <span className="text-coffee-gray text-sm">Pagamento 100% seguro</span>
-                </div>
-                <div className="flex items-center space-x-3">
-                  <span className="text-coffee-gold">🚚</span>
-                  <span className="text-coffee-gray text-sm">Entrega garantida</span>
-                </div>
-                <div className="flex items-center space-x-3">
-                  <span className="text-coffee-gold">⭐</span>
-                  <span className="text-coffee-gray text-sm">Qualidade premium</span>
-                </div>
-              </div>
-            </div>
-          </div>
+    <div className="checkout-page">
+      <div className="container">
+        <div className="checkout-header">
+          <h1>Finalizar Compra</h1>
+          <CheckoutProgress 
+            steps={CHECKOUT_STEPS} 
+            currentStep={currentStep} 
+          />
         </div>
-      </main>
+
+        <div className="checkout-content">
+          <div className="checkout-main">
+            {renderCurrentStep()}
+          </div>
+          
+          {currentStep < CHECKOUT_STEPS.length - 1 && (
+            <div className="checkout-sidebar">
+              <div className="order-summary-widget">
+                <h3>Resumo do Pedido</h3>
+                <div className="summary-line">
+                  <span>Subtotal:</span>
+                  <span>R$ {checkoutData.totals.subtotal.toFixed(2)}</span>
+                </div>
+                {checkoutData.totals.shippingTotal > 0 && (
+                  <div className="summary-line">
+                    <span>Frete:</span>
+                    <span>R$ {checkoutData.totals.shippingTotal.toFixed(2)}</span>
+                  </div>
+                )}
+                {checkoutData.totals.discountTotal > 0 && (
+                  <div className="summary-line discount">
+                    <span>Desconto:</span>
+                    <span>-R$ {checkoutData.totals.discountTotal.toFixed(2)}</span>
+                  </div>
+                )}
+                <div className="summary-line total">
+                  <span>Total:</span>
+                  <span>R$ {checkoutData.totals.finalTotal.toFixed(2)}</span>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
     </div>
   );
 };
 
 export default CheckoutPage;
-

@@ -2,11 +2,23 @@
 Modelos de Pedidos e Carrinho - Mestres do Café Enterprise
 """
 
-from datetime import datetime
-from sqlalchemy import Column, Integer, String, Float, Text, Boolean, DateTime, ForeignKey, Enum
-from sqlalchemy.orm import relationship
-from .base import db
 import enum
+from datetime import datetime
+
+from sqlalchemy import (
+    Boolean,
+    Column,
+    DateTime,
+    Enum,
+    Float,
+    ForeignKey,
+    Integer,
+    String,
+    Text,
+)
+from sqlalchemy.orm import relationship
+
+from .base import db
 
 
 class OrderStatus(enum.Enum):
@@ -25,6 +37,7 @@ class Order(db.Model):
     
     id = Column(Integer, primary_key=True)
     user_id = Column(Integer, ForeignKey('users.id'), nullable=False)
+    checkout_session_id = Column(String(36), ForeignKey('checkout_sessions.id'))
     order_number = Column(String(20), unique=True, nullable=False)
     status = Column(Enum(OrderStatus), default=OrderStatus.PENDING)
     

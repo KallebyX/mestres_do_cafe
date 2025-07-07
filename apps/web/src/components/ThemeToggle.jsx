@@ -28,9 +28,15 @@ const ThemeToggle = ({ size = 'md', className = '' }) => {
 
   const sizeClasses = sizes[size] || sizes.md;
 
+  const handleToggle = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    toggleTheme();
+  };
+
   return (
     <button
-      onClick={toggleTheme}
+      onClick={handleToggle}
       className={`
         ${sizeClasses.button}
         relative
@@ -45,14 +51,15 @@ const ThemeToggle = ({ size = 'md', className = '' }) => {
         focus:ring-2
         focus:ring-offset-2
         group
-        ${isDark 
-          ? 'bg-gradient-to-br from-indigo-900 to-purple-900 hover:from-indigo-800 hover:to-purple-800 focus:ring-purple-500 shadow-lg shadow-purple-500/25' 
+        ${isDark
+          ? 'bg-gradient-to-br from-indigo-900 to-purple-900 hover:from-indigo-800 hover:to-purple-800 focus:ring-purple-500 shadow-lg shadow-purple-500/25'
           : 'bg-gradient-to-br from-amber-400 to-orange-500 hover:from-amber-300 hover:to-orange-400 focus:ring-amber-500 shadow-lg shadow-amber-500/25'
         }
         ${className}
       `}
       title={isDark ? 'Ativar tema claro' : 'Ativar tema escuro'}
       aria-label={`Alternar para tema ${isDark ? 'claro' : 'escuro'}`}
+      type="button"
     >
       {/* Background com efeito de transição */}
       <div 
@@ -135,9 +142,15 @@ const ThemeToggle = ({ size = 'md', className = '' }) => {
 export const ThemeToggleCompact = ({ className = '' }) => {
   const { isDark, toggleTheme } = useTheme();
 
+  const handleToggle = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    toggleTheme();
+  };
+
   return (
     <button
-      onClick={toggleTheme}
+      onClick={handleToggle}
       className={`
         inline-flex items-center gap-2 px-3 py-2
         text-sm font-medium
@@ -145,13 +158,14 @@ export const ThemeToggleCompact = ({ className = '' }) => {
         transition-all duration-200
         hover:bg-opacity-80
         focus:outline-none focus:ring-2
-        ${isDark 
-          ? 'text-gray-200 hover:bg-gray-700 focus:ring-purple-500' 
+        ${isDark
+          ? 'text-gray-200 hover:bg-gray-700 focus:ring-purple-500'
           : 'text-gray-700 hover:bg-gray-100 focus:ring-amber-500'
         }
         ${className}
       `}
       title={isDark ? 'Ativar tema claro' : 'Ativar tema escuro'}
+      type="button"
     >
       {isDark ? (
         <>
@@ -178,9 +192,15 @@ export const ThemeToggleIcon = ({ size = 'md', className = '' }) => {
     lg: 'w-12 h-12'
   };
 
+  const handleToggle = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    toggleTheme();
+  };
+
   return (
     <button
-      onClick={toggleTheme}
+      onClick={handleToggle}
       className={`
         ${sizeClasses[size]}
         inline-flex items-center justify-center
@@ -188,13 +208,14 @@ export const ThemeToggleIcon = ({ size = 'md', className = '' }) => {
         transition-all duration-200
         hover:bg-opacity-10
         focus:outline-none focus:ring-2 focus:ring-offset-2
-        ${isDark 
-          ? 'text-gray-300 hover:bg-white focus:ring-purple-500' 
+        ${isDark
+          ? 'text-gray-300 hover:bg-white focus:ring-purple-500'
           : 'text-gray-600 hover:bg-black focus:ring-amber-500'
         }
         ${className}
       `}
       title={isDark ? 'Ativar tema claro' : 'Ativar tema escuro'}
+      type="button"
     >
       {isDark ? (
         <Sun className="w-5 h-5 transition-transform duration-300 hover:rotate-180" />

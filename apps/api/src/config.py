@@ -45,7 +45,10 @@ class Config:
 class DevelopmentConfig(Config):
     """Development configuration"""
     DEBUG = True
-    SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL') or 'sqlite:///dev.db'
+    # Usar o banco mestres_cafe.db no diretório api com caminho absoluto
+    import pathlib
+    db_path = pathlib.Path(__file__).parent.parent / 'mestres_cafe.db'
+    SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL') or f'sqlite:///{db_path.absolute()}'
     SQLALCHEMY_ECHO = True
     
     # More permissive CORS for development

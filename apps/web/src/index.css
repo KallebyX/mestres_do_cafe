@@ -1,5 +1,11 @@
-/* Importação das Fontes do Manual de Marca */
-@import url('https://fonts.googleapis.com/css2?family=Crimson+Text:wght@400;600;700&family=Open+Sans:wght@300;400;500;600;700;800&display=swap');
+/* Importação das Fontes do Manual de Marca - Sistema Premium */
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700;800;900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+
+/* Importação do Sistema de Design Premium */
+@import '../../../packages/ui/src/styles/design-system.css';
+/* Importação das Animações Premium */
+@import './styles/premium-animations.css';
 
 @tailwind base;
 @tailwind components;
