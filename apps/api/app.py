@@ -1,16 +1,26 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 """
-Arquivo de entrada alternativo para o Render
+Mestres do Café - Aplicação Principal
+Ponto de entrada para produção no Render
 """
+
 import os
 import sys
+from pathlib import Path
 
-# Adiciona o diretório src ao Python path
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), "src"))
+# Adicionar src ao path para imports
+current_dir = Path(__file__).parent
+src_dir = current_dir / 'src'
+sys.path.insert(0, str(src_dir))
 
-# Importa e executa a aplicação
-from src.app import app
+from src.app import create_app
 
-if __name__ == "__main__":
-    port = int(os.environ.get("PORT", 5000))
-    app.run(host="0.0.0.0", port=port)
+# Criar aplicação
+app = create_app()
+
+if __name__ == '__main__':
+    port = int(os.environ.get('PORT', 10000))
+    host = os.environ.get('HOST', '0.0.0.0')
+    
+    print(f"🚀 Iniciando Mestres do Café API em {host}:{port}")
+    app.run(host=host, port=port, debug=False)

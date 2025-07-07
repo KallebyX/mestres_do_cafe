@@ -7,6 +7,7 @@ services:
     plan: free
     buildCommand: |
       cd apps/api
+      pip install --upgrade pip
       pip install -r requirements.txt
     startCommand: |
       cd apps/api
@@ -14,6 +15,8 @@ services:
     envVars:
       - key: FLASK_ENV
         value: production
+      - key: FLASK_APP
+        value: app.py
       - key: SECRET_KEY
         generateValue: true
       - key: JWT_SECRET_KEY
@@ -24,18 +27,8 @@ services:
           property: connectionString
       - key: PORT
         value: 10000
-      - key: API_PORT
-        value: 10000
-      - key: PYTHONPATH
-        value: /opt/render/project/src/apps/api
-      - key: CORS_ORIGINS
-        value: https://mestres-cafe-web.onrender.com,https://mestres-cafe-web-*.onrender.com
-      - key: MAIL_SERVER
-        value: smtp.gmail.com
-      - key: MAIL_PORT
-        value: 587
-      - key: MAIL_USE_TLS
-        value: "true"
+      - key: HOST
+        value: 0.0.0.0
     healthCheckPath: /api/health
     autoDeploy: true
 
@@ -45,10 +38,14 @@ services:
     runtime: node
     region: oregon
     plan: free
-    buildCommand: ./scripts/render-build.sh
+    buildCommand: |
+      npm install
+      cd apps/web
+      npm install
+      npm run build
     startCommand: |
       cd apps/web
-      npx serve -c serve.json -p $PORT
+      npx serve dist -p $PORT -s
     envVars:
       - key: NODE_ENV
         value: production
