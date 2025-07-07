@@ -626,6 +626,12 @@
   gap: var(--review-spacing);
 }
 
+.review-items {
+  display: flex;
+  flex-direction: column;
+  gap: var(--review-spacing);
+}
+
 .review-item {
   background: var(--review-background);
   padding: var(--review-spacing-lg);

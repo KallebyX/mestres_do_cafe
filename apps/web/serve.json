@@ -9,7 +9,7 @@
   "rewrites": [
     {
       "source": "/api/**",
-      "destination": "https://api.mestresdocafe.com.br/api/$1"
+      "destination": "https://mestres-cafe-api.onrender.com/api/**"
     },
     {
       "source": "/sitemap.xml",
@@ -127,7 +127,7 @@
         },
         {
           "key": "Content-Security-Policy",
-          "value": "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.googletagmanager.com https://www.google-analytics.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https: blob:; connect-src 'self' https://api.mestresdocafe.com.br https://www.google-analytics.com; frame-src 'none'; object-src 'none'"
+          "value": "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.googletagmanager.com https://www.google-analytics.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https: blob:; connect-src 'self' https://mestres-cafe-api.onrender.com https://www.google-analytics.com; frame-src 'none'; object-src 'none'"
         }
       ]
     }

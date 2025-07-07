@@ -46,13 +46,42 @@ class ReviewsAPI {
   // ===== AVALIAÇÕES BÁSICAS =====
 
   // Buscar todas as avaliações de um produto
-  async getReviews(productId, page = 1, limit = 10) {
-    const params = new URLSearchParams({
-      page: page.toString(),
-      limit: limit.toString()
-    });
+  async getReviews(productId, options = {}) {
+    // Se options for um número, é a forma antiga (page)
+    if (typeof options === 'number') {
+      options = { page: options, limit: arguments[2] || 10 };
+    }
     
-    return this.makeRequest(`/api/reviews/product/${productId}?${params}`);
+    const {
+      page = 1,
+      limit = 10,
+      rating = '',
+      sort_by = '',
+      search = ''
+    } = options;
+    
+    const params = new URLSearchParams();
+    params.append('page', page.toString());
+    params.append('limit', limit.toString());
+    
+    if (rating) params.append('rating', rating);
+    if (sort_by) params.append('sort_by', sort_by);
+    if (search) params.append('search', search);
+    
+    console.log('🔍 ReviewsAPI.getReviews - params:', params.toString());
+    
+    const response = await this.makeRequest(`/api/reviews/product/${productId}?${params}`);
+    
+    // Garantir que a resposta tenha a estrutura esperada
+    if (response.success && response.data) {
+      return {
+        success: true,
+        reviews: response.data.reviews || [],
+        pagination: response.data.pagination || {}
+      };
+    }
+    
+    return response;
   }
 
   // Buscar avaliação específica por ID
@@ -225,7 +254,7 @@ class ReviewsAPI {
       }
     });
     
-    return this.makeRequest(`/api/reviews/product/${productId}/filtered?${params}`);
+    return this.makeRequest(`/api/reviews/product/${productId}?${params}`);
   }
 
   // Buscar avaliações por texto

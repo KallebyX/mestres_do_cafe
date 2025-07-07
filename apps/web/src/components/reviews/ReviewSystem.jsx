@@ -55,21 +55,32 @@ const ReviewSystem = ({
 
     try {
       const [reviewsRes, statsRes, featuredRes] = await Promise.all([
-        reviewsAPI.getReviews(productId, 1, 10),
+        reviewsAPI.getReviews(productId, { page: 1, limit: 10 }),
         reviewsAPI.getProductStats(productId),
         reviewsAPI.getFeaturedReviews(productId, 3)
       ]);
 
+      // Log completo das respostas
+      console.log('🔍 Reviews Response:', reviewsRes);
+      console.log('📊 Stats Response:', statsRes);
+      console.log('⭐ Featured Response:', featuredRes);
+
       if (reviewsRes.success) {
-        setReviews(reviewsRes.data.reviews || []);
+        console.log('🔍 Reviews array:', reviewsRes.reviews);
+        console.log('🔍 Reviews length:', reviewsRes.reviews?.length);
+        const reviewsToSet = reviewsRes.reviews || [];
+        console.log('🔍 Setting reviews state with:', reviewsToSet);
+        setReviews(reviewsToSet);
       }
 
       if (statsRes.success) {
-        setStats(statsRes.data || {});
+        console.log('📊 Stats object:', statsRes.stats);
+        setStats(statsRes.stats || {});
       }
 
       if (featuredRes.success) {
-        setFeaturedReviews(featuredRes.data || []);
+        console.log('⭐ Featured array:', featuredRes.data);
+        setFeaturedReviews(featuredRes.data?.reviews || featuredRes.data || []);
       }
 
     } catch (err) {
@@ -126,6 +137,7 @@ const ReviewSystem = ({
         );
 
       case 'reviews':
+        console.log('🎯 Renderizando ReviewList com reviews:', reviews);
         return (
           <ReviewList
             productId={productId}
@@ -186,9 +198,12 @@ const ReviewSystem = ({
               ))}
             </div>
             <span className="review-rating-text">
-              {stats.average_rating ? stats.average_rating.toFixed(1) : '0.0'} 
+              {stats.average_rating ? stats.average_rating.toFixed(1) : '0.0'}
               {' '}({stats.total_reviews || 0} avaliações)
             </span>
+            <div style={{fontSize: '10px', color: '#999'}}>
+              Reviews carregadas: {reviews.length}
+            </div>
           </div>
         </div>
       </div>

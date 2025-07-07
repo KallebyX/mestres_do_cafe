@@ -28,9 +28,15 @@ const ReviewList = ({
 
   // Usar reviews das props ou carregar do backend
   useEffect(() => {
-    if (propReviews.length > 0) {
+    console.log('📝 ReviewList recebeu propReviews:', propReviews);
+    console.log('📝 ReviewList propReviews length:', propReviews?.length);
+    console.log('📝 ReviewList productId:', productId);
+    
+    if (propReviews && propReviews.length > 0) {
+      console.log('✅ Usando reviews das props, setando no state local');
       setReviews(propReviews);
-    } else {
+    } else if (productId && (!propReviews || propReviews.length === 0)) {
+      console.log('🔄 Carregando reviews do backend');
       loadReviews();
     }
   }, [propReviews, productId]);
@@ -42,13 +48,15 @@ const ReviewList = ({
     }
   }, [reviews]);
 
-  const loadReviews = async (resetPage = false) => {
+  const loadReviews = async (resetPage = false, pageOverride = null) => {
     setLoading(true);
     setError('');
 
     try {
-      const currentPage = resetPage ? 1 : page;
-      const result = await reviewsAPI.getFilteredReviews(productId, {
+      const currentPage = resetPage ? 1 : (pageOverride || page);
+      console.log('🔍 Carregando reviews - página:', currentPage);
+      
+      const result = await reviewsAPI.getReviews(productId, {
         page: currentPage,
         limit: 10,
         rating: filters.rating,
@@ -57,7 +65,8 @@ const ReviewList = ({
       });
 
       if (result.success) {
-        const newReviews = result.data.reviews || [];
+        const newReviews = result.reviews || [];
+        console.log('✅ Reviews carregados:', newReviews.length);
         
         if (resetPage) {
           setReviews(newReviews);
@@ -118,8 +127,9 @@ const ReviewList = ({
   };
 
   const handleLoadMore = () => {
-    setPage(prev => prev + 1);
-    loadReviews();
+    const nextPage = page + 1;
+    setPage(nextPage);
+    loadReviews(false, nextPage);
   };
 
   const handleHelpfulVote = async (reviewId) => {
@@ -202,14 +212,14 @@ const ReviewList = ({
         <div className="review-header">
           <div className="review-user">
             <div className="review-avatar">
-              {review.user_avatar ? (
-                <img src={review.user_avatar} alt={review.user_name} />
+              {review.user?.avatar ? (
+                <img src={review.user.avatar} alt={review.user?.name} />
               ) : (
-                getInitials(review.user_name || 'Usuário')
+                getInitials(review.user?.name || 'Usuário')
               )}
             </div>
             <div className="review-user-info">
-              <div className="review-user-name">{review.user_name || 'Usuário Anônimo'}</div>
+              <div className="review-user-name">{review.user?.name || 'Usuário Anônimo'}</div>
               <div className="review-date">{formatDate(review.created_at)}</div>
             </div>
           </div>
@@ -401,6 +411,7 @@ const ReviewList = ({
         </div>
       ) : (
         <div className="review-items">
+          {console.log('🎯 Renderizando reviews:', reviews)}
           {reviews.map(renderReviewItem)}
         </div>
       )}

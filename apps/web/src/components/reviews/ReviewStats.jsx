@@ -30,15 +30,15 @@ const ReviewStats = ({ productId, stats: propStats = {}, loading: propLoading = 
       ]);
 
       if (statsRes.success) {
-        setStats(statsRes.data || {});
+        setStats(statsRes.stats || statsRes.data || {});
       }
 
       if (distributionRes.success) {
-        setRatingDistribution(distributionRes.data || []);
+        setRatingDistribution(distributionRes.distribution || distributionRes.data || []);
       }
 
       if (engagementRes.success) {
-        setEngagementMetrics(engagementRes.data || {});
+        setEngagementMetrics(engagementRes.metrics || engagementRes.data || {});
       }
 
     } catch (err) {

@@ -71,8 +71,10 @@ const ProductDetailPage = () => {
     try {
       const result = await getAllProducts();
       if (result.success) {
-        const related = result.data
-          .filter(p => p.id !== id && p.category === category)
+        // result.data tem estrutura paginada, precisamos acessar o array de produtos
+        const products = result.data.items || result.data.products || [];
+        const related = products
+          .filter(p => p.id !== parseInt(id) && p.category === category)
           .slice(0, 4);
         setRelatedProducts(related);
       }
