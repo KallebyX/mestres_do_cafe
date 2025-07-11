@@ -86,7 +86,7 @@
     "jspdf": "^3.0.1",
     "jspdf-autotable": "^5.0.2",
     "leaflet": "^1.9.4",
-    "lucide-react": "^0.453.0",
+    "lucide-react": "^0.518.0",
     "postcss": "^8.5.6",
     "qrcode-terminal": "^0.12.0",
     "react": "^18.3.1",
