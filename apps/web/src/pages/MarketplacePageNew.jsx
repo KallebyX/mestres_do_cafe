@@ -43,8 +43,7 @@ const MarketplacePageNew = () => {
       
       if (response.success && response.data) {
         setProducts(response.data);
-        console.log('✅ Produtos carregados do Supabase:', response.data.length);
-      } else {
+        } else {
         console.error('❌ Erro ao carregar produtos do Supabase:', response.error);
         setProducts([]);
       }
@@ -55,8 +54,6 @@ const MarketplacePageNew = () => {
       setLoading(false);
     }
   }, []);
-
-
 
   const filterProducts = useCallback(() => {
     let filtered = [...products];

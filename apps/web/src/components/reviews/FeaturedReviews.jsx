@@ -28,7 +28,8 @@ const FeaturedReviews = ({
       const result = await reviewsAPI.getFeaturedReviews(productId, 5);
       
       if (result.success) {
-        setFeaturedReviews(result.data || []);
+        const reviews = result.data?.reviews || result.data || [];
+        setFeaturedReviews(Array.isArray(reviews) ? reviews : []);
       } else {
         throw new Error(result.error || 'Erro ao carregar avaliações em destaque');
       }
@@ -243,7 +244,21 @@ const FeaturedReviews = ({
       </div>
 
       <div className="featured-reviews-grid">
-        {featuredReviews.map(renderFeaturedReview)}
+        {Array.isArray(featuredReviews) && featuredReviews.length > 0 ? (
+          featuredReviews.map(renderFeaturedReview)
+        ) : (
+          <div className="featured-reviews-empty">
+            <div className="text-center py-8">
+              <Award className="w-12 h-12 text-slate-300 mx-auto mb-3" />
+              <h4 className="text-lg font-medium text-slate-600 mb-2">
+                Nenhuma avaliação em destaque
+              </h4>
+              <p className="text-slate-500">
+                As melhores avaliações aparecerão aqui quando disponíveis.
+              </p>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Call to Action */}

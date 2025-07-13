@@ -41,8 +41,6 @@ const ForgotPasswordPage = () => {
 
     try {
       setLoading(true);
-      console.log('📧 Enviando email de redefinição para:', email);
-      
       // Usar diretamente a API do Supabase
       const { error } = await supabase.auth.resetPasswordForEmail(email, {
         redirectTo: `${window.location.origin}/redefinir-senha`
@@ -54,7 +52,6 @@ const ForgotPasswordPage = () => {
         return;
       }
 
-      console.log('✅ Email enviado com sucesso');
       setSuccess('Email de redefinição enviado com sucesso! Verifique sua caixa de entrada.');
       setIsSubmitted(true);
       

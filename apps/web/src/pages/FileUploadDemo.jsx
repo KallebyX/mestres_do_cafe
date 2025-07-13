@@ -224,11 +224,9 @@ const FileUploadDemo = () => {
   allowMultiple={true}       // Permitir múltiplos arquivos
   maxFileSize={10485760}     // 10MB em bytes
   onUploadComplete={(file) => {
-    console.log('Arquivo enviado:', file);
-  }}
+    }}
   onFileRemove={(file) => {
-    console.log('Arquivo removido:', file);
-  }}
+    }}
 />
 
 // Apenas imagens

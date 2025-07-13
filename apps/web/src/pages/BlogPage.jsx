@@ -1,11 +1,11 @@
-import React, { useState, useEffect } from 'react'
-import { Badge } from '../components/ui/badge'
-import { Card, CardContent, CardFooter, CardHeader, CardTitle, CardDescription } from '../components/ui/card'
-import { Button } from '../components/ui/button'
-import { Calendar, User, ArrowRight, Tag, Edit3, Clock, Heart, MessageCircle, Eye } from 'lucide-react'
+import { getAllBlogPosts, getBlogCategories } from "@/lib/api"
+import { ArrowRight, Calendar, Clock, Edit3, Eye, Heart, MessageCircle, Tag, User } from 'lucide-react'
+import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { LoadingSpinner } from '../components/LoadingStates'
-import { getAllBlogPosts, getBlogCategories } from "@/lib/api"
+import { Badge } from '../components/ui/badge'
+import { Button } from '../components/ui/button'
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '../components/ui/card'
 
 const BlogPage = () => {
   const [articles, setArticles] = useState([]);
@@ -29,14 +29,14 @@ const BlogPage = () => {
       ]);
 
       if (postsResult.success) {
-        setArticles(postsResult.data);
+        setArticles(postsResult.data.posts || []);
       } else {
         setError('Erro ao carregar artigos');
         console.error('Erro ao carregar posts:', postsResult.error);
       }
 
       if (categoriesResult.success) {
-        setCategories(categoriesResult.data);
+        setCategories(categoriesResult.data.categories || []);
       } else {
         console.error('Erro ao carregar categorias:', categoriesResult.error);
       }

@@ -57,8 +57,7 @@ const InventoryCountModal = ({
         setInventarios([]);
       } else {
         setInventarios(data || []);
-        console.log(`✅ ${data?.length || 0} inventários carregados do Supabase`);
-      }
+        }
 
       // Carregar contagens reais
       const { data: countsData, error: countsError } = await supabase
@@ -76,8 +75,7 @@ const InventoryCountModal = ({
         setContagens([]);
       } else {
         setContagens(countsData || []);
-        console.log(`✅ ${countsData?.length || 0} contagens carregadas`);
-      }
+        }
 
     } catch (error) {
       console.error('❌ Erro ao carregar dados de inventário:', error);

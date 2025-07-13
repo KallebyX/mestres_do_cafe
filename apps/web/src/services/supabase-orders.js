@@ -23,7 +23,6 @@ export const createOrder = async (orderData) => {
     const orderItemsExists = await tableExists('order_items');
 
     if (!ordersExists) {
-      console.log('⚠️ Tabela orders não existe, simulando criação');
       return { success: true, message: 'Pedido criado (simulado)' };
     }
 
@@ -77,8 +76,7 @@ export const createOrder = async (orderData) => {
         return { success: false, error: itemsError.message };
       }
     } else {
-      console.log('⚠️ Tabela order_items não existe, itens não foram salvos');
-    }
+      }
 
     // Atualizar estoque dos produtos (se função existir)
     for (const item of items) {
@@ -89,11 +87,9 @@ export const createOrder = async (orderData) => {
         });
 
         if (stockError) {
-          console.log('⚠️ Função update_product_stock não existe ou erro:', stockError.message);
-        }
+          }
       } catch (error) {
-        console.log('⚠️ Função update_product_stock não disponível');
-      }
+        }
     }
 
     return { success: true, data: order, message: 'Pedido criado com sucesso!' };
@@ -110,7 +106,6 @@ export const getUserOrders = async (userId) => {
     const orderItemsExists = await tableExists('order_items');
 
     if (!ordersExists) {
-      console.log('⚠️ Tabela orders não existe, retornando array vazio');
       return { success: true, data: [] };
     }
 
@@ -130,7 +125,6 @@ export const getUserOrders = async (userId) => {
       return { success: true, data: [] }; // Retorna vazio em caso de erro
     }
 
-    console.log(`✅ ${data?.length || 0} pedidos carregados do Supabase`);
     return { success: true, data: data || [] };
   } catch (error) {
     console.error('Erro ao buscar pedidos do usuário:', error);
@@ -145,7 +139,6 @@ export const getOrderById = async (orderId, userId) => {
     const orderItemsExists = await tableExists('order_items');
 
     if (!ordersExists) {
-      console.log('⚠️ Tabela orders não existe');
       return { success: true, data: null };
     }
 
@@ -181,7 +174,6 @@ export const getAllOrders = async () => {
     const usersExists = await tableExists('users');
 
     if (!ordersExists) {
-      console.log('⚠️ Tabela orders não existe, retornando array vazio');
       return { success: true, data: [] };
     }
 
@@ -206,7 +198,6 @@ export const getAllOrders = async () => {
       return { success: true, data: [] }; // Retorna vazio em caso de erro
     }
 
-    console.log(`✅ ${data?.length || 0} pedidos admin carregados do Supabase`);
     return { success: true, data: data || [] };
   } catch (error) {
     console.error('Erro ao buscar todos os pedidos:', error);
@@ -340,11 +331,9 @@ export const cancelOrder = async (orderId, userId) => {
           });
 
           if (stockError) {
-            console.log('⚠️ Função restore_product_stock não existe ou erro:', stockError.message);
-          }
+            }
         } catch (error) {
-          console.log('⚠️ Função restore_product_stock não disponível');
-        }
+          }
       }
     }
 
@@ -361,7 +350,6 @@ export const getOrderStats = async () => {
     const ordersExists = await tableExists('orders');
 
     if (!ordersExists) {
-      console.log('⚠️ Tabela orders não existe para estatísticas');
       return { success: true, data: {
         total: 0, pending: 0, confirmed: 0, processing: 0,
         shipped: 0, delivered: 0, cancelled: 0,
@@ -402,7 +390,6 @@ export const getOrderStats = async () => {
         .reduce((sum, o) => sum + parseFloat(o.total_amount), 0)
     };
 
-    console.log('✅ Estatísticas de pedidos calculadas');
     return { success: true, data: stats };
   } catch (error) {
     console.error('Erro ao buscar estatísticas:', error);
@@ -422,7 +409,6 @@ export const getOrdersByStatus = async (status) => {
     const usersExists = await tableExists('users');
 
     if (!ordersExists) {
-      console.log('⚠️ Tabela orders não existe, retornando array vazio');
       return { success: true, data: [] };
     }
 
@@ -448,7 +434,6 @@ export const getOrdersByStatus = async (status) => {
       return { success: true, data: [] }; // Retorna vazio em caso de erro
     }
 
-    console.log(`✅ ${data?.length || 0} pedidos com status '${status}' carregados`);
     return { success: true, data: data || [] };
   } catch (error) {
     console.error('Erro ao buscar pedidos por status:', error);

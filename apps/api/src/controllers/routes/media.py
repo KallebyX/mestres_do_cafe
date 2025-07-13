@@ -1,402 +1,442 @@
-from flask import Blueprint, request, jsonify, send_from_directory, current_app
-from src.models.database import db, MediaFile, Product, BlogPost
-from werkzeug.utils import secure_filename
 import os
-import uuid
-from PIL import Image
-import mimetypes
+from datetime import datetime
+from uuid import uuid4
 
-media_bp = Blueprint('media', __name__)
+from flask import Blueprint, jsonify, request, send_file
+from sqlalchemy import desc
+from werkzeug.utils import secure_filename
+
+from ...database import db
+from ...models.media import MediaFile
+
+media_bp = Blueprint("media", __name__, url_prefix="/api/media")
 
 # Configurações de upload
-UPLOAD_FOLDER = 'uploads'
-ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif', 'webp'}
-MAX_FILE_SIZE = 16 * 1024 * 1024  # 16MB
+UPLOAD_FOLDER = "uploads"
+ALLOWED_EXTENSIONS = {
+    "images": {"jpg", "jpeg", "png", "gif", "webp", "svg"},
+    "documents": {"pdf", "doc", "docx", "txt", "rtf"},
+    "videos": {"mp4", "avi", "mov", "mkv", "wmv"},
+    "audio": {"mp3", "wav", "flac", "ogg"}
+}
+MAX_FILE_SIZE = 10 * 1024 * 1024  # 10MB
 
-def allowed_file(filename):
-    return '.' in filename and \
-           filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
-def create_upload_folders():
-    """Criar pastas de upload se não existirem"""
-    base_path = os.path.join(current_app.root_path, UPLOAD_FOLDER)
-    folders = ['products', 'blog', 'general', 'thumbnails']
-    
-    for folder in folders:
-        folder_path = os.path.join(base_path, folder)
-        os.makedirs(folder_path, exist_ok=True)
-
-def generate_filename(original_filename):
-    """Gerar nome único para arquivo"""
-    ext = original_filename.rsplit('.', 1)[1].lower()
-    return f"{uuid.uuid4().hex}.{ext}"
-
-def create_thumbnail(image_path, thumbnail_path, size=(300, 300)):
-    """Criar thumbnail da imagem"""
-    try:
-        with Image.open(image_path) as img:
-            img.thumbnail(size, Image.Resampling.LANCZOS)
-            img.save(thumbnail_path, optimize=True, quality=85)
-            return True
-    except Exception as e:
-        print(f"Erro ao criar thumbnail: {e}")
+def allowed_file(filename, file_type=None):
+    """Verificar se arquivo é permitido"""
+    if "." not in filename:
         return False
+    
+    extension = filename.rsplit(".", 1)[1].lower()
+    
+    if file_type and file_type in ALLOWED_EXTENSIONS:
+        return extension in ALLOWED_EXTENSIONS[file_type]
+    
+    # Verificar em todos os tipos se não especificado
+    all_extensions = set()
+    for exts in ALLOWED_EXTENSIONS.values():
+        all_extensions.update(exts)
+    
+    return extension in all_extensions
 
-# ===========================================
-# ENDPOINTS DE UPLOAD
-# ===========================================
 
-@media_bp.route('/upload', methods=['POST'])
+def get_file_type(filename):
+    """Determinar tipo do arquivo"""
+    if "." not in filename:
+        return "unknown"
+    
+    extension = filename.rsplit(".", 1)[1].lower()
+    
+    for file_type, extensions in ALLOWED_EXTENSIONS.items():
+        if extension in extensions:
+            return file_type
+    
+    return "unknown"
+
+
+@media_bp.route("/upload", methods=["POST"])
 def upload_file():
+    """Upload de arquivo"""
     try:
-        if 'file' not in request.files:
-            return jsonify({'error': 'Nenhum arquivo enviado'}), 400
+        if "file" not in request.files:
+            return jsonify({"error": "Nenhum arquivo enviado"}), 400
         
-        file = request.files['file']
-        if file.filename == '':
-            return jsonify({'error': 'Nenhum arquivo selecionado'}), 400
+        file = request.files["file"]
         
-        if not allowed_file(file.filename):
-            return jsonify({'error': 'Tipo de arquivo não permitido'}), 400
+        if file.filename == "":
+            return jsonify({"error": "Nenhum arquivo selecionado"}), 400
         
         # Verificar tamanho do arquivo
-        file.seek(0, os.SEEK_END)
+        file.seek(0, 2)  # Mover para o final do arquivo
         file_size = file.tell()
-        file.seek(0)
+        file.seek(0)  # Voltar ao início
         
         if file_size > MAX_FILE_SIZE:
-            return jsonify({'error': 'Arquivo muito grande. Máximo 16MB'}), 400
+            return jsonify({"error": "Arquivo muito grande"}), 400
         
-        # Parâmetros opcionais
-        category = request.form.get('category', 'general')  # products, blog, general
-        product_id = request.form.get('product_id')
-        blog_post_id = request.form.get('blog_post_id')
+        # Verificar tipo do arquivo
+        file_type = request.form.get("type")
+        if not allowed_file(file.filename, file_type):
+            return jsonify({"error": "Tipo de arquivo não permitido"}), 400
         
-        # Criar pastas se não existirem
-        create_upload_folders()
+        # Gerar nome único para o arquivo
+        original_filename = secure_filename(file.filename or "")
+        file_extension = original_filename.rsplit(".", 1)[1].lower()
+        unique_filename = f"{uuid4()}.{file_extension}"
         
-        # Gerar nome único
-        original_filename = secure_filename(file.filename)
-        filename = generate_filename(original_filename)
+        # Determinar tipo automaticamente se não fornecido
+        if not file_type:
+            file_type = get_file_type(original_filename)
         
-        # Definir caminhos
-        category_folder = os.path.join(UPLOAD_FOLDER, category)
-        file_path = os.path.join(category_folder, filename)
-        full_path = os.path.join(current_app.root_path, file_path)
+        # Criar diretório se não existir
+        upload_dir = os.path.join(UPLOAD_FOLDER, file_type)
+        os.makedirs(upload_dir, exist_ok=True)
         
         # Salvar arquivo
-        file.save(full_path)
+        file_path = os.path.join(upload_dir, unique_filename)
+        file.save(file_path)
         
-        # Criar thumbnail se for imagem
-        thumbnail_path = None
-        if category in ['products', 'blog'] and file.content_type.startswith('image/'):
-            thumbnail_filename = f"thumb_{filename}"
-            thumbnail_path = os.path.join(UPLOAD_FOLDER, 'thumbnails', thumbnail_filename)
-            thumbnail_full_path = os.path.join(current_app.root_path, thumbnail_path)
-            
-            if create_thumbnail(full_path, thumbnail_full_path):
-                thumbnail_path = f"/api/media/thumbnails/{thumbnail_filename}"
-        
-        # Salvar no banco de dados
+        # Salvar informações no banco
         media_file = MediaFile(
-            filename=filename,
+            filename=unique_filename,
             original_filename=original_filename,
             file_path=file_path,
-            file_url=f"/api/media/{category}/{filename}",
+            file_type=file_type,
             file_size=file_size,
-            file_type=category,
-            mime_type=file.content_type,
-            product_id=product_id,
-            blog_post_id=blog_post_id
+            mime_type=file.content_type or "application/octet-stream",
+            uploaded_by=request.form.get("uploaded_by"),
+            alt_text=request.form.get("alt_text"),
+            caption=request.form.get("caption"),
+            is_public=request.form.get("is_public", "true").lower() == "true"
         )
         
         db.session.add(media_file)
         db.session.commit()
         
         return jsonify({
-            'message': 'Arquivo enviado com sucesso',
-            'file': {
-                'id': media_file.id,
-                'filename': media_file.filename,
-                'original_filename': media_file.original_filename,
-                'file_url': media_file.file_url,
-                'thumbnail_url': thumbnail_path,
-                'file_size': media_file.file_size,
-                'mime_type': media_file.mime_type,
-                'created_at': media_file.created_at.isoformat()
-            }
+            "message": "Arquivo enviado com sucesso",
+            "file": media_file.to_dict()
         }), 201
         
     except Exception as e:
         db.session.rollback()
-        return jsonify({'error': str(e)}), 500
+        return jsonify({"error": str(e)}), 500
 
-@media_bp.route('/upload/multiple', methods=['POST'])
-def upload_multiple_files():
-    try:
-        if 'files' not in request.files:
-            return jsonify({'error': 'Nenhum arquivo enviado'}), 400
-        
-        files = request.files.getlist('files')
-        if not files:
-            return jsonify({'error': 'Nenhum arquivo selecionado'}), 400
-        
-        category = request.form.get('category', 'general')
-        product_id = request.form.get('product_id')
-        blog_post_id = request.form.get('blog_post_id')
-        
-        uploaded_files = []
-        errors = []
-        
-        for file in files:
-            try:
-                if file.filename == '' or not allowed_file(file.filename):
-                    errors.append(f"Arquivo {file.filename}: tipo não permitido")
-                    continue
-                
-                # Verificar tamanho
-                file.seek(0, os.SEEK_END)
-                file_size = file.tell()
-                file.seek(0)
-                
-                if file_size > MAX_FILE_SIZE:
-                    errors.append(f"Arquivo {file.filename}: muito grande")
-                    continue
-                
-                # Processar upload
-                create_upload_folders()
-                original_filename = secure_filename(file.filename)
-                filename = generate_filename(original_filename)
-                
-                category_folder = os.path.join(UPLOAD_FOLDER, category)
-                file_path = os.path.join(category_folder, filename)
-                full_path = os.path.join(current_app.root_path, file_path)
-                
-                file.save(full_path)
-                
-                # Criar thumbnail
-                thumbnail_path = None
-                if category in ['products', 'blog'] and file.content_type.startswith('image/'):
-                    thumbnail_filename = f"thumb_{filename}"
-                    thumbnail_path = os.path.join(UPLOAD_FOLDER, 'thumbnails', thumbnail_filename)
-                    thumbnail_full_path = os.path.join(current_app.root_path, thumbnail_path)
-                    
-                    if create_thumbnail(full_path, thumbnail_full_path):
-                        thumbnail_path = f"/api/media/thumbnails/{thumbnail_filename}"
-                
-                # Salvar no banco
-                media_file = MediaFile(
-                    filename=filename,
-                    original_filename=original_filename,
-                    file_path=file_path,
-                    file_url=f"/api/media/{category}/{filename}",
-                    file_size=file_size,
-                    file_type=category,
-                    mime_type=file.content_type,
-                    product_id=product_id,
-                    blog_post_id=blog_post_id
-                )
-                
-                db.session.add(media_file)
-                db.session.flush()
-                
-                uploaded_files.append({
-                    'id': media_file.id,
-                    'filename': media_file.filename,
-                    'original_filename': media_file.original_filename,
-                    'file_url': media_file.file_url,
-                    'thumbnail_url': thumbnail_path,
-                    'file_size': media_file.file_size,
-                    'mime_type': media_file.mime_type
-                })
-                
-            except Exception as e:
-                errors.append(f"Arquivo {file.filename}: {str(e)}")
-        
-        db.session.commit()
-        
-        return jsonify({
-            'message': f'{len(uploaded_files)} arquivos enviados com sucesso',
-            'uploaded_files': uploaded_files,
-            'errors': errors
-        }), 201
-        
-    except Exception as e:
-        db.session.rollback()
-        return jsonify({'error': str(e)}), 500
 
-# ===========================================
-# ENDPOINTS DE VISUALIZAÇÃO
-# ===========================================
-
-@media_bp.route('/<category>/<filename>')
-def serve_file(category, filename):
-    try:
-        file_path = os.path.join(current_app.root_path, UPLOAD_FOLDER, category)
-        return send_from_directory(file_path, filename)
-    except Exception as e:
-        return jsonify({'error': 'Arquivo não encontrado'}), 404
-
-@media_bp.route('/thumbnails/<filename>')
-def serve_thumbnail(filename):
-    try:
-        thumbnail_path = os.path.join(current_app.root_path, UPLOAD_FOLDER, 'thumbnails')
-        return send_from_directory(thumbnail_path, filename)
-    except Exception as e:
-        return jsonify({'error': 'Thumbnail não encontrado'}), 404
-
-# ===========================================
-# ENDPOINTS DE GESTÃO
-# ===========================================
-
-@media_bp.route('/files', methods=['GET'])
+@media_bp.route("/", methods=["GET"])
 def get_files():
+    """Listar arquivos de mídia"""
     try:
-        page = request.args.get('page', 1, type=int)
-        per_page = request.args.get('per_page', 20, type=int)
-        file_type = request.args.get('type')
-        product_id = request.args.get('product_id')
-        blog_post_id = request.args.get('blog_post_id')
+        page = request.args.get("page", 1, type=int)
+        per_page = request.args.get("per_page", 20, type=int)
+        file_type = request.args.get("type")
+        search = request.args.get("search")
         
         query = MediaFile.query
         
+        # Filtros
         if file_type:
             query = query.filter(MediaFile.file_type == file_type)
-        if product_id:
-            query = query.filter(MediaFile.product_id == product_id)
-        if blog_post_id:
-            query = query.filter(MediaFile.blog_post_id == blog_post_id)
         
-        files = query.order_by(MediaFile.created_at.desc())\
-                    .paginate(page=page, per_page=per_page, error_out=False)
+        if search:
+            query = query.filter(
+                MediaFile.original_filename.ilike(f"%{search}%") |
+                MediaFile.alt_text.ilike(f"%{search}%") |
+                MediaFile.caption.ilike(f"%{search}%")
+            )
+        
+        files = query.order_by(desc(MediaFile.created_at)).paginate(
+            page=page,
+            per_page=per_page,
+            error_out=False
+        )
         
         return jsonify({
-            'files': [{
-                'id': file.id,
-                'filename': file.filename,
-                'original_filename': file.original_filename,
-                'file_url': file.file_url,
-                'file_size': file.file_size,
-                'file_type': file.file_type,
-                'mime_type': file.mime_type,
-                'product_id': file.product_id,
-                'blog_post_id': file.blog_post_id,
-                'created_at': file.created_at.isoformat()
-            } for file in files.items],
-            'pagination': {
-                'page': files.page,
-                'pages': files.pages,
-                'total': files.total
+            "files": [file.to_dict() for file in files.items],
+            "pagination": {
+                "page": page,
+                "per_page": per_page,
+                "total": files.total,
+                "pages": files.pages
             }
         })
         
     except Exception as e:
-        return jsonify({'error': str(e)}), 500
+        return jsonify({"error": str(e)}), 500
 
-@media_bp.route('/files/<file_id>', methods=['DELETE'])
-def delete_file(file_id):
+
+@media_bp.route("/<file_id>", methods=["GET"])
+def get_file(file_id):
+    """Obter arquivo específico"""
     try:
-        media_file = MediaFile.query.get(file_id)
-        if not media_file:
-            return jsonify({'error': 'Arquivo não encontrado'}), 404
+        media_file = MediaFile.query.get_or_404(file_id)
+        return jsonify({"file": media_file.to_dict()})
         
-        # Remover arquivo físico
-        file_full_path = os.path.join(current_app.root_path, media_file.file_path)
-        if os.path.exists(file_full_path):
-            os.remove(file_full_path)
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+@media_bp.route("/<file_id>", methods=["PUT"])
+def update_file(file_id):
+    """Atualizar metadados do arquivo"""
+    try:
+        media_file = MediaFile.query.get_or_404(file_id)
+        data = request.get_json()
         
-        # Remover thumbnail se existir
-        if media_file.file_type in ['products', 'blog']:
-            thumbnail_filename = f"thumb_{media_file.filename}"
-            thumbnail_path = os.path.join(current_app.root_path, UPLOAD_FOLDER, 'thumbnails', thumbnail_filename)
-            if os.path.exists(thumbnail_path):
-                os.remove(thumbnail_path)
+        # Campos permitidos para atualização
+        allowed_fields = [
+            "original_filename", "alt_text", "caption", "is_public"
+        ]
         
-        # Remover do banco
+        for field in allowed_fields:
+            if field in data:
+                setattr(media_file, field, data[field])
+        
+        media_file.updated_at = datetime.utcnow()
+        db.session.commit()
+        
+        return jsonify({
+            "message": "Arquivo atualizado com sucesso",
+            "file": media_file.to_dict()
+        })
+        
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({"error": str(e)}), 500
+
+
+@media_bp.route("/<file_id>", methods=["DELETE"])
+def delete_file(file_id):
+    """Deletar arquivo"""
+    try:
+        media_file = MediaFile.query.get_or_404(file_id)
+        
+        # Deletar arquivo físico
+        if os.path.exists(media_file.file_path):
+            os.remove(media_file.file_path)
+        
+        # Deletar do banco
         db.session.delete(media_file)
         db.session.commit()
         
-        return jsonify({'message': 'Arquivo deletado com sucesso'})
+        return jsonify({"message": "Arquivo deletado com sucesso"})
         
     except Exception as e:
         db.session.rollback()
-        return jsonify({'error': str(e)}), 500
+        return jsonify({"error": str(e)}), 500
 
-@media_bp.route('/files/<file_id>/update', methods=['PUT'])
-def update_file_metadata(file_id):
+
+@media_bp.route("/<file_id>/download", methods=["GET"])
+def download_file(file_id):
+    """Download do arquivo"""
     try:
-        media_file = MediaFile.query.get(file_id)
-        if not media_file:
-            return jsonify({'error': 'Arquivo não encontrado'}), 404
+        media_file = MediaFile.query.get_or_404(file_id)
         
+        if not os.path.exists(media_file.file_path):
+            return jsonify({"error": "Arquivo não encontrado"}), 404
+        
+        return send_file(
+            media_file.file_path,
+            as_attachment=True,
+            download_name=media_file.original_filename
+        )
+        
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+@media_bp.route("/<file_id>/view", methods=["GET"])
+def view_file(file_id):
+    """Visualizar arquivo no navegador"""
+    try:
+        media_file = MediaFile.query.get_or_404(file_id)
+        
+        if not media_file.is_public:
+            return jsonify({"error": "Arquivo não é público"}), 403
+        
+        if not os.path.exists(media_file.file_path):
+            return jsonify({"error": "Arquivo não encontrado"}), 404
+        
+        return send_file(
+            media_file.file_path,
+            mimetype=media_file.mime_type
+        )
+        
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+@media_bp.route("/types", methods=["GET"])
+def get_file_types():
+    """Listar tipos de arquivo permitidos"""
+    try:
+        return jsonify({
+            "allowed_types": ALLOWED_EXTENSIONS,
+            "max_file_size": MAX_FILE_SIZE
+        })
+        
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+@media_bp.route("/stats", methods=["GET"])
+def get_media_stats():
+    """Estatísticas de mídia"""
+    try:
+        total_files = MediaFile.query.count()
+        
+        # Estatísticas por tipo
+        type_stats = {}
+        for file_type in ALLOWED_EXTENSIONS.keys():
+            count = MediaFile.query.filter_by(file_type=file_type).count()
+            type_stats[file_type] = count
+        
+        # Tamanho total dos arquivos
+        total_size = db.session.query(
+            db.func.sum(MediaFile.file_size)
+        ).scalar() or 0
+        
+        # Arquivos públicos vs privados
+        public_files = MediaFile.query.filter_by(is_public=True).count()
+        private_files = total_files - public_files
+        
+        return jsonify({
+            "stats": {
+                "total_files": total_files,
+                "by_type": type_stats,
+                "total_size": total_size,
+                "public_files": public_files,
+                "private_files": private_files
+            }
+        })
+        
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+@media_bp.route("/cleanup", methods=["POST"])
+def cleanup_orphaned_files():
+    """Limpar arquivos órfãos (sem referência no banco)"""
+    try:
+        orphaned_count = 0
+        
+        # Verificar cada tipo de arquivo
+        for file_type in ALLOWED_EXTENSIONS.keys():
+            type_dir = os.path.join(UPLOAD_FOLDER, file_type)
+            
+            if not os.path.exists(type_dir):
+                continue
+            
+            # Listar arquivos no diretório
+            for filename in os.listdir(type_dir):
+                file_path = os.path.join(type_dir, filename)
+                
+                # Verificar se arquivo existe no banco
+                media_file = MediaFile.query.filter_by(
+                    filename=filename,
+                    file_type=file_type
+                ).first()
+                
+                if not media_file:
+                    # Arquivo órfão, deletar
+                    os.remove(file_path)
+                    orphaned_count += 1
+        
+        return jsonify({
+            "message": f"{orphaned_count} arquivos órfãos removidos"
+        })
+        
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+@media_bp.route("/bulk-delete", methods=["POST"])
+def bulk_delete():
+    """Deletar múltiplos arquivos"""
+    try:
         data = request.get_json()
+        file_ids = data.get("file_ids", [])
         
-        # Atualizar metadados
-        if 'product_id' in data:
-            media_file.product_id = data['product_id']
-        if 'blog_post_id' in data:
-            media_file.blog_post_id = data['blog_post_id']
-        if 'file_type' in data:
-            media_file.file_type = data['file_type']
+        if not file_ids:
+            return jsonify({"error": "Nenhum arquivo especificado"}), 400
+        
+        deleted_count = 0
+        errors = []
+        
+        for file_id in file_ids:
+            try:
+                media_file = MediaFile.query.get(file_id)
+                if not media_file:
+                    errors.append(f"Arquivo {file_id} não encontrado")
+                    continue
+                
+                # Deletar arquivo físico
+                if os.path.exists(media_file.file_path):
+                    os.remove(media_file.file_path)
+                
+                # Deletar do banco
+                db.session.delete(media_file)
+                deleted_count += 1
+                
+            except Exception as e:
+                errors.append(f"Erro ao deletar {file_id}: {str(e)}")
         
         db.session.commit()
         
-        return jsonify({
-            'message': 'Metadados atualizados com sucesso',
-            'file': {
-                'id': media_file.id,
-                'filename': media_file.filename,
-                'file_url': media_file.file_url,
-                'file_type': media_file.file_type,
-                'product_id': media_file.product_id,
-                'blog_post_id': media_file.blog_post_id
-            }
-        })
+        result = {
+            "message": f"{deleted_count} arquivos deletados com sucesso"
+        }
+        
+        if errors:
+            result["errors"] = errors
+        
+        return jsonify(result)
         
     except Exception as e:
         db.session.rollback()
-        return jsonify({'error': str(e)}), 500
+        return jsonify({"error": str(e)}), 500
 
-# ===========================================
-# ENDPOINTS DE ESTATÍSTICAS
-# ===========================================
 
-@media_bp.route('/stats', methods=['GET'])
-def get_media_stats():
+@media_bp.route("/search", methods=["GET"])
+def search_files():
+    """Buscar arquivos por nome ou metadados"""
     try:
-        # Estatísticas gerais
-        total_files = MediaFile.query.count()
-        total_size = db.session.query(db.func.sum(MediaFile.file_size)).scalar() or 0
+        query = request.args.get("q", "")
+        file_type = request.args.get("type")
+        page = request.args.get("page", 1, type=int)
+        per_page = request.args.get("per_page", 20, type=int)
         
-        # Arquivos por tipo
-        files_by_type = db.session.query(
-            MediaFile.file_type,
-            db.func.count(MediaFile.id),
-            db.func.sum(MediaFile.file_size)
-        ).group_by(MediaFile.file_type).all()
+        if not query:
+            return jsonify({"error": "Termo de busca obrigatório"}), 400
         
-        # Arquivos por tipo MIME
-        files_by_mime = db.session.query(
-            MediaFile.mime_type,
-            db.func.count(MediaFile.id)
-        ).group_by(MediaFile.mime_type).all()
+        search_query = MediaFile.query.filter(
+            MediaFile.original_filename.ilike(f"%{query}%") |
+            MediaFile.alt_text.ilike(f"%{query}%") |
+            MediaFile.caption.ilike(f"%{query}%")
+        )
+        
+        if file_type:
+            search_query = search_query.filter(
+                MediaFile.file_type == file_type
+            )
+        
+        results = search_query.order_by(
+            desc(MediaFile.created_at)
+        ).paginate(
+            page=page,
+            per_page=per_page,
+            error_out=False
+        )
         
         return jsonify({
-            'stats': {
-                'total_files': total_files,
-                'total_size_bytes': int(total_size),
-                'total_size_mb': round(total_size / (1024 * 1024), 2),
-                'files_by_type': {
-                    file_type: {
-                        'count': count,
-                        'size_mb': round(size / (1024 * 1024), 2) if size else 0
-                    } for file_type, count, size in files_by_type
-                },
-                'files_by_mime': {
-                    mime_type: count for mime_type, count in files_by_mime
-                }
+            "results": [file.to_dict() for file in results.items],
+            "pagination": {
+                "page": page,
+                "per_page": per_page,
+                "total": results.total,
+                "pages": results.pages
             }
         })
         
     except Exception as e:
-        return jsonify({'error': str(e)}), 500 
+        return jsonify({"error": str(e)}), 500

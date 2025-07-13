@@ -1,4 +1,4 @@
-import { getAllProducts, getProductById } from "@/lib/api";
+import { getAllProducts, getProductById } from "../lib/api";
 import {
   Award,
   Coffee,
@@ -53,7 +53,6 @@ const ProductDetailPage = () => {
       const result = await getProductById(id);
       
       if (result.success) {
-        console.log('✅ Produto carregado:', result.data);
         setProduct(result.data);
         await loadRelatedProducts(result.data.category);
       } else {
@@ -113,7 +112,8 @@ const ProductDetailPage = () => {
     ];
 
   const currentWeightOption = weightOptions.find(w => w.value === selectedWeight) || weightOptions[0];
-  const currentPrice = product && currentWeightOption ? product.price * currentWeightOption.priceMultiplier : 0;
+  const currentPrice = product && currentWeightOption && product.price ? 
+    (parseFloat(product.price) || 0) * (currentWeightOption.priceMultiplier || 1) : 0;
 
   const productImages = product?.images || [product?.image || '/default-coffee.jpg'];
 
@@ -130,8 +130,10 @@ const ProductDetailPage = () => {
   };
 
   const getDiscountPercentage = (originalPrice, currentPrice) => {
-    if (!originalPrice || originalPrice <= currentPrice) return 0;
-    return Math.round(((originalPrice - currentPrice) / originalPrice) * 100);
+    const orig = parseFloat(originalPrice) || 0;
+    const curr = parseFloat(currentPrice) || 0;
+    if (!orig || orig <= curr) return 0;
+    return Math.round(((orig - curr) / orig) * 100);
   };
 
   if (loading) {
@@ -171,7 +173,7 @@ const ProductDetailPage = () => {
   }
 
   const discount = getDiscountPercentage(product.original_price, product.price);
-  const isInStock = product.stock > 0;
+  const isInStock = (product.stock_quantity || product.stock || 0) > 0;
 
   return (
     <div className="min-h-screen bg-slate-50 font-inter">
@@ -299,7 +301,7 @@ const ProductDetailPage = () => {
                 </span>
                 {currentWeightOption && currentWeightOption.priceMultiplier !== 1 && (
                   <span className="text-lg text-slate-500 line-through">
-                    R$ {(product.price * currentWeightOption.priceMultiplier * 1.2).toFixed(2)}
+                    R$ {((parseFloat(product.price) || 0) * (currentWeightOption.priceMultiplier || 1) * 1.2).toFixed(2)}
                   </span>
                 )}
               </div>
@@ -322,7 +324,7 @@ const ProductDetailPage = () => {
                     >
                       <div className="text-sm font-medium">{option.label}</div>
                       <div className="text-xs text-slate-600">
-                        R$ {(product.price * option.priceMultiplier).toFixed(2)}
+                        R$ {((parseFloat(product.price) || 0) * (option.priceMultiplier || 1)).toFixed(2)}
                       </div>
                     </button>
                   ))}
@@ -385,7 +387,7 @@ const ProductDetailPage = () => {
               <div className="bg-white rounded-xl p-4 text-center">
                 <Coffee className="mx-auto text-amber-600 mb-2" size={24} />
                 <div className="text-sm font-medium text-slate-900">Intensidade</div>
-                <div className="text-xs text-slate-600">{product.intensity || 4}/5</div>
+                <div className="text-xs text-slate-600">{product.intensity || product.sca_score ? Math.round((product.sca_score || 80) / 20) : 4}/5</div>
               </div>
               <div className="bg-white rounded-xl p-4 text-center">
                 <Truck className="mx-auto text-amber-600 mb-2" size={24} />

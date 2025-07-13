@@ -1,186 +1,88 @@
 """
-Modelos do Sistema Mestres do Café Enterprise
-Centraliza todas as importações dos modelos para garantir que o SQLAlchemy
-encontre todos os relacionamentos corretamente.
+Modelos SQLAlchemy para o sistema Mestres do Café
 """
 
-# Importa a base do SQLAlchemy
-from .base import db
-
-# Importa modelos de checkout
-from .checkout import (
-    CheckoutEvent,
-    CheckoutSession,
-    CheckoutStatus,
-    CouponCode,
-    PaymentMethod,
-    ShippingAddress,
-    ShippingMethod,
-    ShippingOption,
-)
-
-# Importa modelos do ERP (database.py)
-from .database import (  # Blog; Gamificação; CRM; Financeiro; Mídia; Newsletter; RH; Fornecedores; Clientes expandido; Cursos; Enums
-    Benefit,
-    BlogPost,
-    Campaign,
-    Contact,
-    Course,
-    CoursePurchase,
-    Customer,
-    CustomerAddress,
-    CustomerContact,
-    CustomerDocument,
-    CustomerHistory,
-    CustomerSegment,
-    CustomerSegmentMembership,
-    CustomerType,
-    CustomerTypeEnum,
-    Department,
-    Employee,
-    EmployeeBenefit,
-    FinancialAccount,
-    FinancialTransaction,
-    GamificationLevel,
-    Lead,
-    MediaFile,
-    NewsletterCampaign,
-    NewsletterSubscriber,
-    NewsletterTemplate,
-    OrderStatusEnum,
-    PaymentMethodEnum,
-    PaymentStatusEnum,
-    Payroll,
-    Position,
-    PurchaseOrder,
-    PurchaseOrderItem,
-    Supplier,
-    SupplierContact,
-    SupplierProduct,
-    TimeCard,
-    UserPoints,
-    UserRole,
-)
-
-# Importa modelos do Melhor Envio
-from .melhor_envio import (
-    EnvioMelhorEnvio,
-    FreteCalculado,
-    MelhorEnvioConfig,
-    RastreamentoEnvio,
-)
-from .orders import Cart, CartItem, Order, OrderItem, OrderStatus, Payment
+from .auth import User, UserSession
+from .customers import Customer, CustomerAddress, Lead, Contact, CustomerSegment, CustomerSegmentMembership
 from .products import (
-    Category,
-    Product,
-    ProductImage,
-    Review,
-    ReviewHelpful,
-    ReviewResponse,
+    Product, ProductCategory, ProductVariant, ProductAttribute, ProductAttributeValue,
+    StockBatch, StockMovement, StockAlert, InventoryCount, InventoryCountItem
 )
-
-# Importa modelos de estoque
-from .stock import (
-    InventoryCount,
-    MovementType,
-    ProductBatch,
-    StockAlert,
-    StockLocation,
-    StockMovement,
+from .orders import Order, OrderItem, Cart, CartItem, AbandonedCart
+from .payments import Payment, Refund, PaymentWebhook
+from .coupons import Coupon, CouponUsage
+from .gamification import (
+    GamificationLevel, UserPoint, Reward, RewardRedemption,
+    Badge, Achievement, UserBadge, UserAchievement, Challenge,
+    ChallengeParticipant, UserReward
 )
+from .blog import (
+    BlogPost, BlogComment, BlogCategory, BlogTag, BlogPostTag,
+    BlogPostView, BlogPostLike
+)
+from .newsletter import (
+    NewsletterSubscriber, NewsletterTemplate, NewsletterCampaign, Campaign,
+    Newsletter
+)
+from .notifications import (
+    Notification, NotificationTemplate, NotificationPreference,
+    NotificationQueue
+)
+from .wishlist import Wishlist, WishlistItem, WishlistShare
+from .media import MediaFile
+from .financial import FinancialAccount, FinancialTransaction
+from .hr import Employee, Department, Position, Payroll, TimeCard, Benefit, EmployeeBenefit
+from .system import SystemSetting, SystemLog, AuditLog
+from .suppliers import Supplier, PurchaseOrder, PurchaseOrderItem
+from .vendors import Vendor, VendorProduct, VendorOrder, VendorCommission, VendorReview
 
-# Importa modelos principais
-from .user import User
-
-# Importa modelos de wishlist
-from .wishlist import Wishlist, WishlistItem
-
-# Lista de todos os modelos para facilitar importação
 __all__ = [
-    'db',
-    # Modelos principais
-    'User',
-    'Category',
-    'Product', 
-    'ProductImage',
-    'Review',
-    'ReviewHelpful',
-    'ReviewResponse',
-    'Order',
-    'OrderItem',
-    'Cart',
-    'CartItem',
-    'Payment',
-    'OrderStatus',
+    # Auth
+    'User', 'UserSession',
     
-    # Modelos de checkout
-    'CheckoutSession',
-    'ShippingAddress',
-    'ShippingOption',
-    'CouponCode',
-    'CheckoutEvent',
-    'CheckoutStatus',
-    'PaymentMethod',
-    'ShippingMethod',
+    # Customers & CRM
+    'Customer', 'CustomerAddress', 'Lead', 'Contact', 'CustomerSegment', 'CustomerSegmentMembership',
     
-    # Modelos de estoque
-    'StockMovement',
-    'StockAlert',
-    'ProductBatch',
-    'InventoryCount',
-    'StockLocation',
-    'MovementType',
+    # Products & Stock
+    'Product', 'ProductCategory', 'ProductVariant', 'ProductAttribute', 'ProductAttributeValue',
+    'StockBatch', 'StockMovement', 'StockAlert', 'InventoryCount', 'InventoryCountItem',
     
-    # Modelos de wishlist
-    'Wishlist',
-    'WishlistItem',
+    # Orders & Cart
+    'Order', 'OrderItem', 'CartItem', 'AbandonedCart',
     
-    # Modelos do Melhor Envio
-    'MelhorEnvioConfig',
-    'FreteCalculado',
-    'EnvioMelhorEnvio',
-    'RastreamentoEnvio',
+    # Payments
+    'Payment', 'Refund', 'PaymentWebhook',
     
-    # Modelos ERP
-    'BlogPost',
-    'GamificationLevel',
-    'UserPoints',
-    'Customer',
-    'Lead',
-    'Campaign',
-    'Contact',
-    'CustomerSegment',
-    'CustomerSegmentMembership',
-    'FinancialAccount',
-    'FinancialTransaction',
+    # Coupons
+    'Coupon', 'CouponUsage',
+    
+    # Gamification
+    'GamificationLevel', 'UserPoint', 'Reward', 'RewardRedemption',
+    
+    # Blog
+    'BlogPost', 'BlogComment',
+    
+    # Newsletter & Marketing
+    'NewsletterSubscriber', 'NewsletterTemplate', 'NewsletterCampaign', 'Campaign',
+    
+    # Notifications
+    'Notification', 'NotificationTemplate',
+    
+    # Media
     'MediaFile',
-    'NewsletterSubscriber',
-    'NewsletterTemplate',
-    'NewsletterCampaign',
-    'Employee',
-    'Department',
-    'Position',
-    'Payroll',
-    'TimeCard',
-    'Benefit',
-    'EmployeeBenefit',
-    'Supplier',
-    'SupplierContact',
-    'SupplierProduct',
-    'PurchaseOrder',
-    'PurchaseOrderItem',
-    'CustomerType',
-    'CustomerDocument',
-    'CustomerAddress',
-    'CustomerContact',
-    'CustomerHistory',
-    'Course',
-    'CoursePurchase',
     
-    # Enums
-    'UserRole',
-    'CustomerTypeEnum',
-    'OrderStatusEnum',
-    'PaymentStatusEnum',
-    'PaymentMethodEnum'
+    # Financial
+    'FinancialAccount', 'FinancialTransaction',
+    
+    # HR
+    'Employee', 'Department', 'Position', 'Payroll', 'TimeCard', 'Benefit', 'EmployeeBenefit',
+    
+    # Suppliers
+    'Supplier', 'PurchaseOrder', 'PurchaseOrderItem',
+    
+    # Vendors & Marketplace
+    'Vendor', 'VendorProduct', 'VendorOrder', 'VendorCommission', 'VendorReview',
+    
+    # System
+    'SystemSetting', 'SystemLog', 'AuditLog'
 ]

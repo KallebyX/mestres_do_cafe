@@ -73,8 +73,7 @@ const MapPage = () => {
           });
         },
         (error) => {
-          console.log('Erro ao obter localização:', error);
-        }
+          }
       );
     }
   };

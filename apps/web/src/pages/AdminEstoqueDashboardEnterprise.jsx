@@ -85,9 +85,7 @@ const AdminEstoqueDashboardEnterprise = () => {
           lotes: product.batches || [],
           ultima_movimentacao: product.updated_at || product.created_at
         })) || []);
-        console.log(`✅ ${productsResult.data?.length || 0} produtos enterprise carregados do Supabase`);
-      } else {
-        console.log('⚠️ Tabela products não encontrada ou vazia');
+        } else {
         setProdutos([]);
       }
 
@@ -103,9 +101,7 @@ const AdminEstoqueDashboardEnterprise = () => {
           responsavel: warehouse.manager || 'A definir',
           status: warehouse.is_active ? 'ativo' : 'inativo'
         })) || []);
-        console.log(`✅ ${warehousesResult.data?.length || 0} depósitos enterprise carregados do Supabase`);
-      } else {
-        console.log('⚠️ Tabela warehouses não encontrada ou vazia');
+        } else {
         setDepositos([]);
       }
 

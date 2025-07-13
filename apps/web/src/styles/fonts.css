@@ -1,0 +1,107 @@
+/* ===================================
+   FONTES PERSONALIZADAS - MESTRES DO CAFÉ
+   =================================== */
+
+/* Importação das fontes principais */
+@import url('https://fonts.googleapis.com/css2?family=Carena:wght@300;400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=All+Round+Gothic:wght@100;200;300;400;500;600;700;800;900&display=swap');
+
+/* Definições de font-family */
+:root {
+  --font-primary: 'Carena Regular', 'Carena', Georgia, 'Times New Roman', serif;
+  --font-secondary: 'All Round Gothic Family', 'All Round Gothic', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+/* Classes utilitárias para as fontes */
+.font-primary {
+  font-family: var(--font-primary);
+}
+
+.font-secondary {
+  font-family: var(--font-secondary);
+}
+
+/* Override das classes do Tailwind */
+.font-serif {
+  font-family: var(--font-primary) !important;
+}
+
+.font-sans {
+  font-family: var(--font-secondary) !important;
+}
+
+/* Aplicação das fontes nos elementos base */
+body {
+  font-family: var(--font-secondary);
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-primary);
+}
+
+/* Peso das fontes otimizado */
+h1 {
+  font-weight: 700;
+}
+
+h2 {
+  font-weight: 600;
+}
+
+h3 {
+  font-weight: 500;
+}
+
+h4, h5, h6 {
+  font-weight: 500;
+}
+
+/* Configurações específicas para melhor renderização */
+.font-primary,
+.font-serif {
+  font-feature-settings: 'liga' 1, 'kern' 1;
+  font-optical-sizing: auto;
+  text-rendering: optimizeLegibility;
+}
+
+.font-secondary,
+.font-sans {
+  font-feature-settings: 'liga' 1, 'kern' 1;
+  text-rendering: optimizeLegibility;
+}
+
+/* Responsividade das fontes */
+@media (max-width: 768px) {
+  h1 {
+    font-size: 2rem;
+    line-height: 1.2;
+  }
+  
+  h2 {
+    font-size: 1.5rem;
+    line-height: 1.3;
+  }
+  
+  h3 {
+    font-size: 1.25rem;
+    line-height: 1.4;
+  }
+}
+
+/* Fallback para fontes não carregadas */
+.font-loading {
+  font-family: Georgia, 'Times New Roman', serif;
+}
+
+.font-loading-sans {
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+/* Otimização para telas de alta resolução */
+@media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+  .font-primary,
+  .font-secondary {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+}

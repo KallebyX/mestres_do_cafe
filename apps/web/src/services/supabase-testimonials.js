@@ -16,8 +16,6 @@ import { supabase } from "../lib/api.js"
  */
 export const getFeaturedTestimonials = async (limit = 3) => {
   try {
-    console.log('🌟 Buscando testimonials em destaque...');
-
     const { data, error } = await supabase
       .from('testimonials')
       .select('*')
@@ -31,7 +29,6 @@ export const getFeaturedTestimonials = async (limit = 3) => {
       return { success: false, error: error.message, data: [] };
     }
 
-    console.log(`✅ ${data?.length || 0} testimonials em destaque carregados`);
     return { success: true, data: data || [] };
 
   } catch (error) {
@@ -47,8 +44,6 @@ export const getFeaturedTestimonials = async (limit = 3) => {
  */
 export const getAllTestimonials = async (limit = 10) => {
   try {
-    console.log('🌟 Buscando todos os testimonials...');
-
     const { data, error } = await supabase
       .from('testimonials')
       .select('*')
@@ -62,7 +57,6 @@ export const getAllTestimonials = async (limit = 10) => {
       return { success: false, error: error.message, data: [] };
     }
 
-    console.log(`✅ ${data?.length || 0} testimonials carregados`);
     return { success: true, data: data || [] };
 
   } catch (error) {
@@ -79,8 +73,6 @@ export const getAllTestimonials = async (limit = 10) => {
  */
 export const getTestimonialsByRating = async (minRating = 4, limit = 5) => {
   try {
-    console.log(`🌟 Buscando testimonials com rating >= ${minRating}...`);
-
     const { data, error } = await supabase
       .from('testimonials')
       .select('*')
@@ -95,7 +87,6 @@ export const getTestimonialsByRating = async (minRating = 4, limit = 5) => {
       return { success: false, error: error.message, data: [] };
     }
 
-    console.log(`✅ ${data?.length || 0} testimonials com rating >= ${minRating} carregados`);
     return { success: true, data: data || [] };
 
   } catch (error) {
@@ -114,8 +105,6 @@ export const getTestimonialsByRating = async (minRating = 4, limit = 5) => {
  */
 export const getTestimonialsStats = async () => {
   try {
-    console.log('📊 Calculando estatísticas de testimonials...');
-
     const { data, error } = await supabase
       .from('testimonials')
       .select('rating, is_featured, is_active')
@@ -140,7 +129,6 @@ export const getTestimonialsStats = async () => {
       }
     };
 
-    console.log('✅ Estatísticas de testimonials calculadas:', stats);
     return { success: true, data: stats };
 
   } catch (error) {
@@ -160,8 +148,6 @@ export const getTestimonialsStats = async () => {
  */
 export const createTestimonial = async (testimonialData) => {
   try {
-    console.log('✍️ Criando novo testimonial...');
-
     const { data, error } = await supabase
       .from('testimonials')
       .insert([testimonialData])
@@ -173,7 +159,6 @@ export const createTestimonial = async (testimonialData) => {
       return { success: false, error: error.message };
     }
 
-    console.log('✅ Testimonial criado com sucesso:', data);
     return { success: true, data };
 
   } catch (error) {
@@ -190,8 +175,6 @@ export const createTestimonial = async (testimonialData) => {
  */
 export const updateTestimonial = async (id, updates) => {
   try {
-    console.log(`✍️ Atualizando testimonial ${id}...`);
-
     const { data, error } = await supabase
       .from('testimonials')
       .update(updates)
@@ -204,7 +187,6 @@ export const updateTestimonial = async (id, updates) => {
       return { success: false, error: error.message };
     }
 
-    console.log('✅ Testimonial atualizado com sucesso:', data);
     return { success: true, data };
 
   } catch (error) {
@@ -220,8 +202,6 @@ export const updateTestimonial = async (id, updates) => {
  */
 export const deleteTestimonial = async (id) => {
   try {
-    console.log(`🗑️ Deletando testimonial ${id}...`);
-
     const { error } = await supabase
       .from('testimonials')
       .delete()
@@ -232,7 +212,6 @@ export const deleteTestimonial = async (id) => {
       return { success: false, error: error.message };
     }
 
-    console.log('✅ Testimonial deletado com sucesso');
     return { success: true };
 
   } catch (error) {
@@ -248,8 +227,6 @@ export const deleteTestimonial = async (id) => {
  */
 export const toggleFeaturedTestimonial = async (id) => {
   try {
-    console.log(`⭐ Alternando status de destaque do testimonial ${id}...`);
-
     // Primeiro buscar o status atual
     const { data: current, error: fetchError } = await supabase
       .from('testimonials')
@@ -275,7 +252,6 @@ export const toggleFeaturedTestimonial = async (id) => {
       return { success: false, error: error.message };
     }
 
-    console.log('✅ Status de destaque atualizado:', data);
     return { success: true, data };
 
   } catch (error) {
@@ -301,7 +277,6 @@ export const testimonialsTableExists = async () => {
 
     return !error;
   } catch (error) {
-    console.log('⚠️ Tabela testimonials não encontrada');
     return false;
   }
 };

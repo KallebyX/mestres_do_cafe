@@ -7,7 +7,7 @@ import os
 import sys
 
 from dotenv import load_dotenv
-from flask import Flask, jsonify, send_from_directory
+from flask import Flask, jsonify, send_from_directory, request
 from flask_cors import CORS
 
 # Carrega variáveis de ambiente
@@ -16,29 +16,37 @@ load_dotenv()
 # Adiciona o diretório src ao path
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
+# Importações locais após configuração do path
 from .config import config
-from .controllers.reviews import reviews_bp
-
-# Importações dos controladores
+from .database import init_db, health_check as db_health_check
+from .controllers.reviews_simple import reviews_bp
 from .controllers.routes.auth import auth_bp
 from .controllers.routes.cart import cart_bp
 from .controllers.routes.checkout import checkout_bp
 from .controllers.routes.health import health_bp
-
-# from .controllers.routes.products import products_bp as products_route_bp
-# from .controllers.routes.blog import blog_bp
-# from .controllers.routes.newsletter import newsletter_bp
 from .controllers.routes.products import products_bp
+from .controllers.routes.customers import customers_bp
+from .controllers.routes.orders import orders_bp
+from .controllers.routes.payments import payments_bp
+from .controllers.routes.leads import leads_bp
+from .controllers.routes.coupons import coupons_bp
+from .controllers.routes.gamification import gamification_bp
+from .controllers.routes.blog import blog_bp
+from .controllers.routes.newsletter import newsletter_bp
+from .controllers.routes.notifications import notifications_bp
+from .controllers.routes.media import media_bp
+from .controllers.routes.financial import financial_bp
+from .controllers.routes.hr import hr_bp
+from .controllers.routes.admin import admin_bp
+from .controllers.routes.suppliers import suppliers_bp
+from .controllers.routes.vendors import vendors_bp
+from .controllers.routes.stock import stock_bp
 from .controllers.shipping import shipping_bp
 from .controllers.wishlist import wishlist_bp
 from .middleware.error_handler import register_error_handlers
-
-# Importações locais
-from .models.database import db
-from .models.products import Category, Product
-from .models.user import User
 from .utils.logger import setup_logger
 
+# Supabase client
 # from controllers.orders import orders_bp
 
 
@@ -56,20 +64,11 @@ def create_app(config_name=None):
 
     app.config.from_object(config[config_name])
 
-    # Forçar o uso do banco de dados correto
-    import pathlib
-
-    db_path = pathlib.Path(__file__).parent.parent / "mestres_cafe.db"
-    app.config["SQLALCHEMY_DATABASE_URI"] = f"sqlite:///{db_path.absolute()}"
-
     # Inicializar configurações específicas do ambiente
     config[config_name].init_app(app)
 
     # Desabilita redirects automáticos para resolver problema de CORS
     app.url_map.strict_slashes = False
-
-    # Inicializa extensões
-    db.init_app(app)
 
     # Configuração de CORS usando as configurações do ambiente
     CORS(
@@ -86,20 +85,11 @@ def create_app(config_name=None):
     # Configura logging
     logger = setup_logger(__name__)
 
-    # Cria as tabelas do banco de dados automaticamente
-    with app.app_context():
-        try:
-            # Debug da DATABASE_URI
-            logger.info(f"🔧 DATABASE_URI: {app.config['SQLALCHEMY_DATABASE_URI']}")
-            logger.info(f"📍 Working Directory: {os.getcwd()}")
+    # Inicializa SQLAlchemy
+    init_db(app)
+    logger.info("✅ SQLAlchemy inicializado com sucesso")
 
-            # TEMPORARIAMENTE COMENTADO - estava apagando dados existentes
-            # db.create_all()
-            logger.info("✅ Usando banco de dados existente")
-        except Exception as e:
-            logger.error(f"❌ Erro ao criar tabelas do banco: {e}")
-
-    # Registra blueprints
+    # Registra blueprints principais
     app.register_blueprint(auth_bp, url_prefix="/api/auth")
     app.register_blueprint(products_bp, url_prefix="/api/products")
     app.register_blueprint(cart_bp, url_prefix="/api/cart")
@@ -108,9 +98,26 @@ def create_app(config_name=None):
     app.register_blueprint(shipping_bp, url_prefix="/api/shipping")
     app.register_blueprint(checkout_bp)  # Já tem o prefixo /api/checkout
     app.register_blueprint(health_bp, url_prefix="/api")
-    # app.register_blueprint(blog_bp, url_prefix='/api/blog')
-    # app.register_blueprint(newsletter_bp, url_prefix='/api/newsletter')
-    # app.register_blueprint(orders_bp, url_prefix='/api/orders')
+    
+    # Registra blueprints do sistema principal
+    app.register_blueprint(customers_bp, url_prefix="/api/customers")
+    app.register_blueprint(orders_bp, url_prefix="/api/orders")
+    app.register_blueprint(payments_bp, url_prefix="/api/payments")
+    
+    # Registra blueprints de funcionalidades avançadas
+    app.register_blueprint(leads_bp, url_prefix="/api/leads")
+    app.register_blueprint(coupons_bp, url_prefix="/api/coupons")
+    app.register_blueprint(gamification_bp, url_prefix="/api/gamification")
+    app.register_blueprint(blog_bp, url_prefix="/api/blog")
+    app.register_blueprint(newsletter_bp, url_prefix="/api/newsletter")
+    app.register_blueprint(notifications_bp, url_prefix="/api/notifications")
+    app.register_blueprint(media_bp, url_prefix="/api/media")
+    app.register_blueprint(financial_bp, url_prefix="/api/financial")
+    app.register_blueprint(hr_bp, url_prefix="/api/hr")
+    app.register_blueprint(admin_bp, url_prefix="/api/admin")
+    app.register_blueprint(suppliers_bp, url_prefix="/api/suppliers")
+    app.register_blueprint(vendors_bp, url_prefix="/api/vendors")
+    app.register_blueprint(stock_bp, url_prefix="/api/stock")
 
     # Rota principal removida - será tratada pelo catch-all para servir React
 
@@ -123,6 +130,7 @@ def create_app(config_name=None):
                 "service": "Mestres do Café API",
                 "version": "1.0.0",
                 "environment": os.environ.get("FLASK_ENV", "development"),
+                "database": "PostgreSQL + SQLAlchemy",
             }
         )
 
@@ -141,10 +149,19 @@ def create_app(config_name=None):
                     "wishlist": "/api/wishlist",
                     "reviews": "/api/reviews",
                     "shipping": "/api/shipping",
+                    "customers": "/api/customers",
+                    "orders": "/api/orders",
+                    "payments": "/api/payments",
+                    "leads": "/api/leads",
+                    "coupons": "/api/coupons",
+                    "gamification": "/api/gamification",
                     "blog": "/api/blog",
                     "newsletter": "/api/newsletter",
+                    "notifications": "/api/notifications",
+                    "media": "/api/media",
+                    "financial": "/api/financial",
+                    "hr": "/api/hr",
                     "testimonials": "/api/testimonials",
-                    "orders": "/api/orders",
                     "health": "/api/health",
                 },
             }
@@ -182,6 +199,52 @@ def create_app(config_name=None):
             ]
         )
 
+    # Endpoint de courses (mock data)
+    @app.route("/api/courses")
+    def get_courses():
+        active = request.args.get("active", "true").lower() == "true"
+        
+        courses = [
+            {
+                "id": 1,
+                "title": "Introdução ao Café Especial",
+                "description": "Aprenda os fundamentos do café especial",
+                "instructor": "João Especialista",
+                "duration": "2 horas",
+                "price": 99.90,
+                "image_url": None,
+                "is_active": True,
+                "created_at": "2024-01-01T10:00:00Z",
+            },
+            {
+                "id": 2,
+                "title": "Técnicas de Torra Avançadas",
+                "description": "Domine as técnicas de torra profissionais",
+                "instructor": "Maria Torra",
+                "duration": "3 horas",
+                "price": 149.90,
+                "image_url": None,
+                "is_active": True,
+                "created_at": "2024-01-05T14:00:00Z",
+            },
+            {
+                "id": 3,
+                "title": "Cupping e Degustação",
+                "description": "Desenvolva seu paladar para café especial",
+                "instructor": "Carlos Degustador",
+                "duration": "1.5 horas",
+                "price": 79.90,
+                "image_url": None,
+                "is_active": False,
+                "created_at": "2024-01-10T16:00:00Z",
+            },
+        ]
+        
+        if active:
+            courses = [course for course in courses if course["is_active"]]
+        
+        return jsonify(courses)
+
     # Rota catch-all para servir o React SPA
     @app.route("/", defaults={"path": ""})
     @app.route("/<path:path>")
@@ -213,9 +276,9 @@ def seed_initial_data():
     """Popula o banco com dados iniciais"""
     try:
         # Verifica se já existem dados
-        if Product.query.first():
-            print("✅ Dados iniciais já existem")
-            return
+        # if Product.query.first(): # This line is removed as Product model is no longer imported
+        #     print("✅ Dados iniciais já existem")
+        #     return
 
         print(
             "✅ Seed data temporariamente desabilitado - aguardando correção do modelo"
@@ -231,12 +294,12 @@ app = create_app()
 if __name__ == "__main__":
     with app.app_context():
         # Cria as tabelas
-        db.create_all()
+        # db.create_all() # This line is removed as Supabase is used
         # Popula dados iniciais
         seed_initial_data()
 
     # Configurações do servidor
-    port = int(os.environ.get("PORT", os.environ.get("API_PORT", 5000)))
+    port = int(os.environ.get("PORT", os.environ.get("API_PORT", 5001)))
     debug = os.environ.get("FLASK_ENV") == "development"
 
     print(

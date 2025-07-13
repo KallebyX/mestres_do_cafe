@@ -42,17 +42,21 @@
     <meta name="theme-color" content="#101820" />
     <meta name="msapplication-navbutton-color" content="#101820" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-title" content="Mestres do Café" />
     
     <!-- Preload fonts importantes -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <!-- Fontes personalizadas do projeto -->
+    <link href="https://fonts.googleapis.com/css2?family=Carena:wght@300;400;500;600;700&family=All+Round+Gothic:wght@100;200;300;400;500;600;700;800;900&display=swap" rel="stylesheet" />
+    <!-- Fallback para fontes similares caso as principais não carreguem -->
     <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400;1,500;1,600;1,700&family=Montserrat:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap" rel="stylesheet" />
     
     <!-- Preload recursos críticos -->
     <link rel="modulepreload" href="/src/main.jsx" />
-    <link rel="preload" href="/src/index.css" as="style" />
+    <link rel="preload" href="/src/index.css" as="style" onload="this.onload=null;this.rel='stylesheet'" />
     
     <!-- DNS Prefetch para domínios externos -->
     <link rel="dns-prefetch" href="//fonts.googleapis.com" />
@@ -109,7 +113,7 @@
       
       body {
         margin: 0;
-        font-family: 'Montserrat', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        font-family: 'All Round Gothic Family', 'Montserrat', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
         font-size: 16px;
         line-height: 1.6;
         color: #101820;
@@ -169,7 +173,7 @@
     <!-- Fallback para usuários com JavaScript desabilitado -->
     <noscript>
       <div style="padding: 20px; text-align: center; background: #f7fcff; min-height: 100vh; display: flex; align-items: center; justify-content: center; flex-direction: column;">
-        <h1 style="color: #101820; font-family: 'Cormorant Garamond', serif; margin-bottom: 20px;">Mestres do Café</h1>
+        <h1 style="color: #101820; font-family: 'Carena Regular', 'Cormorant Garamond', serif; margin-bottom: 20px;">Mestres do Café</h1>
         <p style="color: #666; max-width: 600px; line-height: 1.6;">
           Para ter a melhor experiência em nosso site, é necessário habilitar o JavaScript em seu navegador.
           Nosso e-commerce oferece uma experiência completa e interativa para você escolher os melhores cafés especiais.

@@ -25,8 +25,6 @@ export const getAllCarts = async (user) => {
       return { success: false, error: 'Acesso negado', data: [] };
     }
 
-    console.log('🔍 Admin buscando todos os carrinhos do sistema...');
-
     // Buscar todos os carrinhos com dados dos usuários e produtos
     const { data: carts, error } = await supabase
       .from('cart_items')
@@ -94,7 +92,6 @@ export const getAllCarts = async (user) => {
 
     const result = Object.values(cartsByUser);
     
-    console.log(`✅ Admin encontrou ${result.length} carrinhos ativos`);
     return { success: true, data: result };
 
   } catch (error) {
@@ -116,8 +113,6 @@ export const getUserCart = async (adminUser, targetUserId) => {
       console.error('🔒 Acesso negado: Apenas administradores podem ver carrinhos de outros usuários');
       return { success: false, error: 'Acesso negado', data: null };
     }
-
-    console.log(`🔍 Admin buscando carrinho do usuário: ${targetUserId}`);
 
     // Buscar carrinho específico do usuário
     const { data: cartItems, error } = await supabase
@@ -198,8 +193,6 @@ export const clearUserCart = async (adminUser, targetUserId) => {
       return { success: false, error: 'Acesso negado' };
     }
 
-    console.log(`🧹 Admin limpando carrinho do usuário: ${targetUserId}`);
-
     const { error } = await supabase
       .from('cart_items')
       .delete()
@@ -210,7 +203,6 @@ export const clearUserCart = async (adminUser, targetUserId) => {
       return { success: false, error: error.message };
     }
 
-    console.log('✅ Admin limpou carrinho com sucesso');
     return { success: true, message: 'Carrinho limpo com sucesso' };
 
   } catch (error) {
@@ -231,8 +223,6 @@ export const getCartStatistics = async (adminUser) => {
       console.error('🔒 Acesso negado: Apenas administradores podem ver estatísticas');
       return { success: false, error: 'Acesso negado', data: null };
     }
-
-    console.log('📊 Admin buscando estatísticas dos carrinhos...');
 
     // Contar carrinhos ativos
     const { data: activeCartsData, error: activeError } = await supabase
@@ -269,7 +259,6 @@ export const getCartStatistics = async (adminUser) => {
       averageCartValue: uniqueUsers > 0 ? totalValue / uniqueUsers : 0
     };
 
-    console.log('✅ Admin obteve estatísticas:', stats);
     return { success: true, data: stats };
 
   } catch (error) {

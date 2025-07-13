@@ -15,8 +15,6 @@ export const syncAuthUsersToPublic = async () => {
 
 export const getAllCustomers = async (filters = {}) => {
   try {
-    console.log('🔍 Buscando todos os clientes da tabela public.users...');
-    
     let query = supabase
       .from('users')
       .select('*')
@@ -43,9 +41,6 @@ export const getAllCustomers = async (filters = {}) => {
       return { success: false, error: error.message };
     }
 
-    console.log(`✅ ${customers?.length || 0} clientes encontrados na public.users`);
-    console.log('📋 Dados dos clientes:', customers);
-    
     return {
       success: true,
       customers: customers || [],
@@ -64,8 +59,6 @@ export const getAllCustomers = async (filters = {}) => {
 
 export const getAdminCustomers = async (filters = {}) => {
   try {
-    console.log('🔍 Buscando clientes criados pelo admin...');
-    
     let query = supabase
       .from('users')
       .select('*')
@@ -84,8 +77,6 @@ export const getAdminCustomers = async (filters = {}) => {
       return { success: false, error: error.message };
     }
 
-    console.log(`✅ ${customers?.length || 0} clientes admin encontrados`);
-    
     return {
       success: true,
       customers: customers || [],
@@ -108,8 +99,6 @@ export const getAdminCustomers = async (filters = {}) => {
 
 export const createManualCustomer = async (customerData) => {
   try {
-    console.log('👤 Criando cliente manual:', customerData);
-
     // Validar dados básicos
     const validation = validateCustomerData(customerData);
     if (!validation.isValid) {
@@ -152,7 +141,6 @@ export const createManualCustomer = async (customerData) => {
       return { success: false, error: error.message };
     }
 
-    console.log('✅ Cliente criado com sucesso:', customer);
     return { success: true, customer };
   } catch (error) {
     console.error('❌ Erro ao criar cliente manual:', error);
@@ -166,8 +154,6 @@ export const createManualCustomer = async (customerData) => {
 
 export const toggleAnyCustomerStatus = async (customerId, newStatus) => {
   try {
-    console.log(`🔄 Alterando status do cliente ${customerId} para: ${newStatus}`);
-
     // Como a tabela users não tem coluna 'status', vamos simular a funcionalidade
     // através de uma atualização do timestamp apenas, indicando que foi "processado"
     const { data: customer, error } = await supabase
@@ -185,7 +171,6 @@ export const toggleAnyCustomerStatus = async (customerId, newStatus) => {
       return { success: false, error: error.message };
     }
 
-    console.log('✅ Status alterado com sucesso:', customer);
     // Retornar o customer com o status simulado para o frontend
     return { 
       success: true, 
@@ -304,8 +289,6 @@ export const toggleCustomerStatus = toggleAnyCustomerStatus;
 
 export const getCustomerDetails = async (customerId) => {
   try {
-    console.log(`🔍 Buscando detalhes completos do cliente ${customerId}...`);
-
     // Buscar dados básicos do cliente
     const { data: customer, error: customerError } = await supabase
       .from('users')
@@ -402,7 +385,6 @@ export const getCustomerDetails = async (customerId) => {
       })) || []
     };
 
-    console.log('✅ Detalhes do cliente carregados com sucesso');
     return { success: true, customer: customerDetails };
 
   } catch (error) {
@@ -413,8 +395,6 @@ export const getCustomerDetails = async (customerId) => {
 
 export const updateCustomerNotes = async (customerId, noteContent) => {
   try {
-    console.log(`📝 Adicionando nota para cliente ${customerId}...`);
-
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) {
       return { success: false, error: 'Usuário não autenticado' };
@@ -436,7 +416,6 @@ export const updateCustomerNotes = async (customerId, noteContent) => {
       return { success: false, error: error.message };
     }
 
-    console.log('✅ Nota salva com sucesso');
     return { success: true, note: data };
 
   } catch (error) {
@@ -447,8 +426,6 @@ export const updateCustomerNotes = async (customerId, noteContent) => {
 
 export const addCustomerInteraction = async (customerId, interactionData) => {
   try {
-    console.log(`🤝 Registrando interação para cliente ${customerId}...`);
-
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) {
       return { success: false, error: 'Usuário não autenticado' };
@@ -471,7 +448,6 @@ export const addCustomerInteraction = async (customerId, interactionData) => {
       return { success: false, error: error.message };
     }
 
-    console.log('✅ Interação registrada com sucesso');
     return { success: true, interaction: data };
 
   } catch (error) {
@@ -482,8 +458,6 @@ export const addCustomerInteraction = async (customerId, interactionData) => {
 
 export const addCustomerTask = async (customerId, taskData) => {
   try {
-    console.log(`📋 Criando tarefa para cliente ${customerId}...`);
-
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) {
       return { success: false, error: 'Usuário não autenticado' };
@@ -509,7 +483,6 @@ export const addCustomerTask = async (customerId, taskData) => {
       return { success: false, error: error.message };
     }
 
-    console.log('✅ Tarefa criada com sucesso');
     return { success: true, task: data };
 
   } catch (error) {
@@ -520,8 +493,6 @@ export const addCustomerTask = async (customerId, taskData) => {
 
 export const updateTaskStatus = async (taskId, status) => {
   try {
-    console.log(`📋 Atualizando status da tarefa ${taskId} para ${status}...`);
-
     const { data, error } = await supabase
       .from('customer_tasks')
       .update({
@@ -538,7 +509,6 @@ export const updateTaskStatus = async (taskId, status) => {
       return { success: false, error: error.message };
     }
 
-    console.log('✅ Status da tarefa atualizado com sucesso');
     return { success: true, task: data };
 
   } catch (error) {
@@ -549,8 +519,6 @@ export const updateTaskStatus = async (taskId, status) => {
 
 export const resetCustomerPassword = async (customerId, newPassword) => {
   try {
-    console.log(`🔐 Redefinindo senha do cliente ${customerId}...`);
-
     // Primeiro, verificar se o usuário existe
     const { data: customer, error: customerError } = await supabase
       .from('users')
@@ -580,7 +548,6 @@ export const resetCustomerPassword = async (customerId, newPassword) => {
       description: `Senha redefinida pelo administrador`
     });
 
-    console.log('✅ Senha redefinida com sucesso');
     return { success: true, message: 'Senha redefinida com sucesso' };
 
   } catch (error) {
@@ -591,8 +558,6 @@ export const resetCustomerPassword = async (customerId, newPassword) => {
 
 export const getCustomerAnalytics = async (customerId, timeRange = '90d') => {
   try {
-    console.log(`📊 Buscando analytics do cliente ${customerId}...`);
-
     // Calcular data limite
     const getDateLimit = (range) => {
       const now = new Date();
@@ -611,7 +576,6 @@ export const getCustomerAnalytics = async (customerId, timeRange = '90d') => {
     const orderItemsExists = await tableExists('order_items');
     
     if (!ordersExists) {
-      console.log('⚠️ Tabela orders não existe');
       return { success: true, analytics: { summary: {}, charts: {}, insights: {} } };
     }
 
@@ -694,7 +658,6 @@ export const getCustomerAnalytics = async (customerId, timeRange = '90d') => {
       }
     };
 
-    console.log('✅ Analytics do cliente calculados com sucesso');
     return { success: true, analytics };
 
   } catch (error) {
@@ -705,8 +668,6 @@ export const getCustomerAnalytics = async (customerId, timeRange = '90d') => {
 
 export const updateCustomerProfile = async (customerId, profileData) => {
   try {
-    console.log(`👤 Atualizando perfil do cliente ${customerId}...`);
-
     const { data, error } = await supabase
       .from('users')
       .update({
@@ -728,7 +689,6 @@ export const updateCustomerProfile = async (customerId, profileData) => {
       description: `Perfil atualizado pelo administrador`
     });
 
-    console.log('✅ Perfil atualizado com sucesso');
     return { success: true, customer: data };
 
   } catch (error) {
@@ -739,8 +699,6 @@ export const updateCustomerProfile = async (customerId, profileData) => {
 
 export const addCustomerPoints = async (customerId, points, reason = 'Ajuste manual') => {
   try {
-    console.log(`⭐ Adicionando ${points} pontos para cliente ${customerId}...`);
-
     // Buscar pontos atuais
     const { data: customer, error: customerError } = await supabase
       .from('users')
@@ -789,7 +747,6 @@ export const addCustomerPoints = async (customerId, points, reason = 'Ajuste man
       description: `${points > 0 ? 'Adicionados' : 'Removidos'} ${Math.abs(points)} pontos: ${reason}`
     });
 
-    console.log('✅ Pontos atualizados com sucesso');
     return { success: true, customer: data, newPoints };
 
   } catch (error) {
@@ -804,8 +761,6 @@ export const addCustomerPoints = async (customerId, points, reason = 'Ajuste man
 
 export const getStats = async () => {
   try {
-    console.log('📊 Buscando estatísticas gerais do dashboard...');
-
     // Verificar quais tabelas existem
     const usersExists = await tableExists('users');
     const ordersExists = await tableExists('orders');
@@ -898,7 +853,6 @@ export const getStats = async () => {
       }
     };
 
-    console.log('✅ Estatísticas calculadas:', stats);
     return { success: true, stats };
   } catch (error) {
     console.error('❌ Erro ao buscar estatísticas:', error);
@@ -908,13 +862,10 @@ export const getStats = async () => {
 
 export const getUsers = async (limit = null) => {
   try {
-    console.log('👥 Buscando usuários da tabela public.users...');
-    
     // Verificar se tabela users existe
     const usersExists = await tableExists('users');
     
     if (!usersExists) {
-      console.log('⚠️ Tabela users não existe, retornando lista vazia');
       return { success: true, users: [] };
     }
 
@@ -953,13 +904,10 @@ export const getUsers = async (limit = null) => {
 
 export const getTopProductsByRevenue = async (limit = 5) => {
   try {
-    console.log('🏆 Buscando top produtos por receita real...');
-
     // Verificar se tabela order_items existe
     const orderItemsExists = await tableExists('order_items');
     
     if (!orderItemsExists) {
-      console.log('⚠️ Tabela order_items não existe, usando dados demo');
       return { success: true, data: [] };
     }
 
@@ -977,7 +925,6 @@ export const getTopProductsByRevenue = async (limit = 5) => {
     } else if (hasPrice) {
       priceColumn = 'price';
     } else {
-      console.log('⚠️ Nenhuma coluna de preço encontrada em order_items');
       return { success: true, data: [] };
     }
 
@@ -1046,7 +993,6 @@ export const getTopProductsByRevenue = async (limit = 5) => {
       .sort((a, b) => b.revenue - a.revenue)
       .slice(0, limit);
 
-    console.log(`✅ Top ${topProducts.length} produtos calculados`);
     return { success: true, data: topProducts };
   } catch (error) {
     console.error('❌ Erro ao calcular top produtos:', error);

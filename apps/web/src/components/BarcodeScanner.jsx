@@ -48,8 +48,7 @@ const BarcodeScanner = ({
         setProducts([]);
       } else {
         setProducts(data || []);
-        console.log(`✅ ${data?.length || 0} produtos com código de barras carregados do Supabase`);
-      }
+        }
     } catch (error) {
       console.error('❌ Erro ao carregar produtos:', error);
       setProducts([]);

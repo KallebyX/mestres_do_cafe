@@ -6,14 +6,16 @@ const ReviewStats = ({ productId, stats: propStats = {}, loading: propLoading = 
   const [stats, setStats] = useState({});
   const [loading, setLoading] = useState(propLoading);
   const [error, setError] = useState('');
-  const [ratingDistribution, setRatingDistribution] = useState([]);
+  const [ratingDistribution, setRatingDistribution] = useState({});
   const [engagementMetrics, setEngagementMetrics] = useState({});
 
   useEffect(() => {
+    console.log('🔍 ReviewStats - propStats:', propStats);
     if (Object.keys(propStats).length > 0) {
       setStats(propStats);
       setLoading(false);
-    } else {
+    } else if (productId) {
+      console.log('🔍 ReviewStats - No propStats, calling loadStats for productId:', productId);
       loadStats();
     }
   }, [propStats, productId]);
@@ -29,19 +31,32 @@ const ReviewStats = ({ productId, stats: propStats = {}, loading: propLoading = 
         reviewsAPI.getEngagementMetrics(productId)
       ]);
 
-      if (statsRes.success) {
-        setStats(statsRes.stats || statsRes.data || {});
+      console.log('🔍 ReviewStats API responses:', {
+        statsRes,
+        distributionRes,
+        engagementRes
+      });
+      
+      console.log('🔍 Distribution data:', distributionRes.data?.distribution);
+      console.log('🔍 Engagement data:', engagementRes.data?.engagement);
+
+      if (statsRes.success && statsRes.data) {
+        console.log('🔍 Stats response structure:', statsRes);
+        setStats(statsRes.data.stats || {});
       }
 
-      if (distributionRes.success) {
-        setRatingDistribution(distributionRes.distribution || distributionRes.data || []);
+      if (distributionRes.success && distributionRes.data) {
+        console.log('🔍 Distribution response structure:', distributionRes);
+        setRatingDistribution(distributionRes.data.distribution || {});
       }
 
-      if (engagementRes.success) {
-        setEngagementMetrics(engagementRes.metrics || engagementRes.data || {});
+      if (engagementRes.success && engagementRes.data) {
+        console.log('🔍 Engagement response structure:', engagementRes);
+        setEngagementMetrics(engagementRes.data.engagement || {});
       }
 
     } catch (err) {
+      console.error('🔍 ReviewStats loadStats error:', err);
       setError(err.message || 'Erro ao carregar estatísticas');
     } finally {
       setLoading(false);
@@ -49,13 +64,15 @@ const ReviewStats = ({ productId, stats: propStats = {}, loading: propLoading = 
   };
 
   const calculatePercentage = (value, total) => {
-    if (!total || total === 0) return 0;
+    if (!total || total === 0 || !value || isNaN(value) || isNaN(total)) return 0;
     return Math.round((value / total) * 100);
   };
 
   const getRecommendationPercentage = () => {
     if (!stats.total_reviews || stats.total_reviews === 0) return 0;
-    return Math.round((stats.recommendations_count / stats.total_reviews) * 100);
+    const recommendationsCount = stats.recommendations_count || 0;
+    if (!recommendationsCount) return 0;
+    return Math.round((recommendationsCount / stats.total_reviews) * 100);
   };
 
   const getRatingColor = (rating) => {
@@ -90,6 +107,9 @@ const ReviewStats = ({ productId, stats: propStats = {}, loading: propLoading = 
     );
   }
 
+  // Debug: Sempre renderizar componente para testar
+  console.log('🔍 Final render state:', { loading, stats, ratingDistribution, engagementMetrics });
+
   return (
     <div className="review-stats">
       {/* Resumo Geral */}
@@ -100,7 +120,7 @@ const ReviewStats = ({ productId, stats: propStats = {}, loading: propLoading = 
           </div>
           <div className="review-stats-content">
             <div className="review-stats-value">
-              {stats.average_rating ? stats.average_rating.toFixed(1) : '0.0'}
+              {(stats && stats.average_rating) ? stats.average_rating.toFixed(1) : '0.0'}
             </div>
             <div className="review-stats-label">Média Geral</div>
           </div>
@@ -112,7 +132,7 @@ const ReviewStats = ({ productId, stats: propStats = {}, loading: propLoading = 
           </div>
           <div className="review-stats-content">
             <div className="review-stats-value">
-              {stats.total_reviews || 0}
+              {(stats && stats.total_reviews) || 0}
             </div>
             <div className="review-stats-label">Total de Avaliações</div>
           </div>
@@ -124,7 +144,7 @@ const ReviewStats = ({ productId, stats: propStats = {}, loading: propLoading = 
           </div>
           <div className="review-stats-content">
             <div className="review-stats-value">
-              {getRecommendationPercentage()}%
+              {stats ? getRecommendationPercentage() : 0}%
             </div>
             <div className="review-stats-label">Recomendações</div>
           </div>
@@ -136,7 +156,7 @@ const ReviewStats = ({ productId, stats: propStats = {}, loading: propLoading = 
           </div>
           <div className="review-stats-content">
             <div className="review-stats-value">
-              {engagementMetrics.average_helpful_votes || 0}
+              {(engagementMetrics && engagementMetrics.average_helpful_votes) || 0}
             </div>
             <div className="review-stats-label">Votos Úteis (Média)</div>
           </div>
@@ -152,8 +172,10 @@ const ReviewStats = ({ productId, stats: propStats = {}, loading: propLoading = 
         
         <div className="rating-distribution">
           {[5, 4, 3, 2, 1].map(rating => {
-            const data = ratingDistribution.find(d => d.rating === rating) || { count: 0 };
-            const percentage = calculatePercentage(data.count, stats.total_reviews);
+            const data = (ratingDistribution && ratingDistribution[rating]) || { count: 0, percentage: 0 };
+            const percentage = data.percentage || calculatePercentage(data.count, (stats && stats.total_reviews) || 1);
+            
+            console.log(`Rating ${rating}:`, { data, percentage, ratingDistribution, stats });
             
             return (
               <div key={rating} className="rating-bar">
@@ -177,7 +199,7 @@ const ReviewStats = ({ productId, stats: propStats = {}, loading: propLoading = 
                 </div>
                 
                 <div className="rating-bar-count">
-                  {data.count} ({percentage}%)
+                  {data.count} ({percentage.toFixed(1)}%)
                 </div>
               </div>
             );
@@ -193,12 +215,14 @@ const ReviewStats = ({ productId, stats: propStats = {}, loading: propLoading = 
         </h3>
         
         <div className="engagement-metrics">
+          {console.log('🔍 Engagement metrics state:', engagementMetrics)}
+          {console.log('🔍 Stats state:', stats)}
           <div className="engagement-metric">
             <div className="engagement-metric-label">Avaliações com Imagens</div>
             <div className="engagement-metric-value">
-              {engagementMetrics.reviews_with_images || 0}
+              {(engagementMetrics && engagementMetrics.reviews_with_images) || 0}
               <span className="engagement-metric-percentage">
-                ({calculatePercentage(engagementMetrics.reviews_with_images, stats.total_reviews)}%)
+                ({calculatePercentage((engagementMetrics && engagementMetrics.reviews_with_images) || 0, (stats && stats.total_reviews) || 1)}%)
               </span>
             </div>
           </div>
@@ -206,9 +230,9 @@ const ReviewStats = ({ productId, stats: propStats = {}, loading: propLoading = 
           <div className="engagement-metric">
             <div className="engagement-metric-label">Avaliações Detalhadas</div>
             <div className="engagement-metric-value">
-              {engagementMetrics.detailed_reviews || 0}
+              {(engagementMetrics && engagementMetrics.detailed_reviews) || 0}
               <span className="engagement-metric-percentage">
-                ({calculatePercentage(engagementMetrics.detailed_reviews, stats.total_reviews)}%)
+                ({calculatePercentage((engagementMetrics && engagementMetrics.detailed_reviews) || 0, (stats && stats.total_reviews) || 1)}%)
               </span>
             </div>
           </div>
@@ -216,14 +240,14 @@ const ReviewStats = ({ productId, stats: propStats = {}, loading: propLoading = 
           <div className="engagement-metric">
             <div className="engagement-metric-label">Tempo Médio de Resposta</div>
             <div className="engagement-metric-value">
-              {engagementMetrics.avg_response_time || 'N/A'}
+              {(engagementMetrics && (engagementMetrics.avg_response_time || (engagementMetrics.avg_response_time_hours ? `${engagementMetrics.avg_response_time_hours}h` : null))) || 'N/A'}
             </div>
           </div>
 
           <div className="engagement-metric">
             <div className="engagement-metric-label">Taxa de Resposta da Empresa</div>
             <div className="engagement-metric-value">
-              {engagementMetrics.company_response_rate || 0}%
+              {(engagementMetrics && engagementMetrics.company_response_rate) || 0}%
             </div>
           </div>
         </div>
@@ -237,42 +261,42 @@ const ReviewStats = ({ productId, stats: propStats = {}, loading: propLoading = 
         </h3>
         
         <div className="product-insights">
-          {stats.average_rating >= 4.5 && (
+          {(stats && stats.average_rating >= 4.5) && (
             <div className="insight-item positive">
               <span className="insight-icon">⭐</span>
               <span className="insight-text">Produto altamente recomendado pelos clientes</span>
             </div>
           )}
 
-          {getRecommendationPercentage() >= 80 && (
+          {(stats && getRecommendationPercentage() >= 80) && (
             <div className="insight-item positive">
               <span className="insight-icon">👍</span>
               <span className="insight-text">Alta taxa de recomendação ({getRecommendationPercentage()}%)</span>
             </div>
           )}
 
-          {stats.total_reviews >= 50 && (
+          {(stats && stats.total_reviews >= 10) && (
             <div className="insight-item positive">
               <span className="insight-icon">📊</span>
               <span className="insight-text">Produto com muitas avaliações - dados confiáveis</span>
             </div>
           )}
 
-          {engagementMetrics.average_helpful_votes >= 3 && (
+          {(engagementMetrics && engagementMetrics.average_helpful_votes >= 3) && (
             <div className="insight-item positive">
               <span className="insight-icon">💬</span>
               <span className="insight-text">Avaliações consideradas úteis pela comunidade</span>
             </div>
           )}
 
-          {stats.average_rating < 3.0 && stats.total_reviews >= 5 && (
+          {(stats && stats.average_rating < 3.0 && stats.total_reviews >= 5) && (
             <div className="insight-item negative">
               <span className="insight-icon">⚠️</span>
               <span className="insight-text">Produto com avaliações abaixo da média</span>
             </div>
           )}
 
-          {stats.total_reviews < 5 && (
+          {(stats && stats.total_reviews < 5) && (
             <div className="insight-item neutral">
               <span className="insight-icon">📝</span>
               <span className="insight-text">Produto novo - poucas avaliações disponíveis</span>
@@ -291,7 +315,7 @@ const ReviewStats = ({ productId, stats: propStats = {}, loading: propLoading = 
         <div className="quality-score">
           <div className="quality-score-circle">
             <div className="quality-score-value">
-              {stats.quality_score || 0}
+              {(stats && stats.quality_score) || 0}
             </div>
             <div className="quality-score-label">Score</div>
           </div>
@@ -302,7 +326,7 @@ const ReviewStats = ({ productId, stats: propStats = {}, loading: propLoading = 
               <div className="quality-factor-bar">
                 <div 
                   className="quality-factor-progress" 
-                  style={{ width: `${(stats.average_rating / 5) * 100}%` }}
+                  style={{ width: `${((stats && stats.average_rating) / 5) * 100 || 0}%` }}
                 />
               </div>
             </div>
@@ -312,7 +336,7 @@ const ReviewStats = ({ productId, stats: propStats = {}, loading: propLoading = 
               <div className="quality-factor-bar">
                 <div 
                   className="quality-factor-progress" 
-                  style={{ width: `${Math.min((stats.total_reviews / 100) * 100, 100)}%` }}
+                  style={{ width: `${Math.min(((stats && stats.total_reviews) / 100) * 100 || 0, 100)}%` }}
                 />
               </div>
             </div>
@@ -322,7 +346,7 @@ const ReviewStats = ({ productId, stats: propStats = {}, loading: propLoading = 
               <div className="quality-factor-bar">
                 <div 
                   className="quality-factor-progress" 
-                  style={{ width: `${Math.min((engagementMetrics.average_helpful_votes / 10) * 100, 100)}%` }}
+                  style={{ width: `${Math.min(((engagementMetrics && engagementMetrics.average_helpful_votes) / 10) * 100 || 0, 100)}%` }}
                 />
               </div>
             </div>

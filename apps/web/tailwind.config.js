@@ -76,8 +76,11 @@ export default {
         "accordion-up": "accordion-up 0.2s ease-out",
       },
       fontFamily: {
-        serif: ['Cormorant Garamond', 'Georgia', 'Times New Roman', 'serif'],
-        sans: ['Montserrat', 'system-ui', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'sans-serif'],
+        'primary': ['Carena Regular', 'Georgia', 'Times New Roman', 'serif'],
+        'secondary': ['All Round Gothic Family', 'system-ui', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'sans-serif'],
+        // Mantendo as originais para compatibilidade
+        serif: ['Carena Regular', 'Georgia', 'Times New Roman', 'serif'],
+        sans: ['All Round Gothic Family', 'system-ui', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'sans-serif'],
       },
     },
   },

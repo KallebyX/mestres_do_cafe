@@ -57,8 +57,7 @@ const BatchControlModal = ({
         setBatches([]);
       } else {
         setBatches(data || []);
-        console.log(`✅ ${data?.length || 0} lotes carregados do Supabase`);
-      }
+        }
 
       // Carregar movimentações de lotes reais
       const { data: movementsData, error: movementsError } = await supabase
@@ -77,8 +76,7 @@ const BatchControlModal = ({
         setMovements([]);
       } else {
         setMovements(movementsData || []);
-        console.log(`✅ ${movementsData?.length || 0} movimentações de lotes carregadas`);
-      }
+        }
 
     } catch (error) {
       console.error('❌ Erro ao carregar dados de lotes:', error);

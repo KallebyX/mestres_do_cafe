@@ -1,279 +1,288 @@
-# ☕ Café - Sistema Enterprise
+# Mestres do Café - Enterprise API
 
-> Sistema completo de e-commerce e ERP para torrefação artesanal de cafés especiais
+Sistema completo de e-commerce e ERP para torrefação artesanal com funcionalidades avançadas de gestão empresarial.
 
-## 🏗️ Arquitetura Enterprise
+## 🚀 Funcionalidades
 
-Este é um monorepo enterprise que unifica frontend e backend em uma estrutura profissional e escalável.
+### 🛒 E-commerce Core
+- **Produtos**: Catálogo completo com variações, estoque e preços
+- **Pedidos**: Gestão completa do ciclo de vendas
+- **Pagamentos**: Integração com múltiplos métodos de pagamento
+- **Clientes**: CRM completo com histórico e preferências
+- **Carrinho**: Carrinho de compras com persistência
+- **Cupons**: Sistema avançado de descontos e promoções
 
-### 📁 Estrutura do Projeto
+### 🎯 Marketing & Vendas
+- **Leads**: Gestão de prospects e funil de vendas
+- **Newsletter**: Sistema de email marketing
+- **Blog**: Plataforma de conteúdo integrada
+- **Gamificação**: Sistema de pontos, badges e recompensas
+- **Notificações**: Sistema de comunicação multicanal
 
+### 💼 Gestão Empresarial
+- **Financeiro**: Controle de receitas, despesas e fluxo de caixa
+- **RH**: Gestão de funcionários, folha de pagamento e benefícios
+- **Mídia**: Gerenciamento de arquivos e assets
+- **Relatórios**: Dashboards e análises empresariais
+
+## 🏗️ Arquitetura
+
+### Stack Tecnológico
+- **Backend**: Flask + SQLAlchemy + PostgreSQL
+- **ORM**: SQLAlchemy com modelos relacionais
+- **Database**: PostgreSQL com schema otimizado
+- **API**: RESTful com Blueprint modular
+- **Autenticação**: JWT tokens
+
+### Estrutura de Diretórios
 ```
-cafe/
-├── apps/                           # Aplicações principais
-│   ├── web/                        # Frontend React (Vite)
-│   │   ├── src/
-│   │   │   ├── components/         # Componentes React
-│   │   │   ├── pages/             # Páginas da aplicação
-│   │   │   ├── hooks/             # Custom hooks
-│   │   │   ├── contexts/          # React contexts
-│   │   │   ├── services/          # Serviços de API
-│   │   │   └── utils/             # Utilitários
-│   │   ├── public/                # Assets estáticos
-│   │   ├── package.json
-│   │   └── vite.config.js
-│   │
-│   └── api/                        # Backend Flask
-│       ├── src/
-│       │   ├── controllers/        # Controladores/Routes
-│       │   ├── models/            # Modelos do banco
-│       │   ├── services/          # Lógica de negócio
-│       │   ├── middleware/        # Middlewares
-│       │   ├── config/            # Configurações
-│       │   └── utils/             # Utilitários
-│       ├── migrations/            # Migrações do banco
-│       ├── requirements.txt
-│       └── app.py
-│
-├── packages/                       # Pacotes compartilhados
-│   ├── shared/                     # Tipos, interfaces, constantes
-│   ├── ui/                        # Componentes UI reutilizáveis
-│   └── database/                  # Schemas e configurações DB
-│
-├── tools/                          # Ferramentas e scripts
-│   ├── scripts/                   # Scripts de automação
-│   └── docker/                    # Configurações Docker
-│
-├── docs/                          # Documentação
-├── tests/                         # Testes
-│   ├── unit/                      # Testes unitários
-│   ├── integration/               # Testes de integração
-│   └── e2e/                       # Testes end-to-end
-│
-├── package.json                   # Configuração do workspace
-├── docker-compose.yml             # Orquestração de containers
-├── .env.example                   # Variáveis de ambiente
-└── Makefile                       # Comandos de automação
+apps/api/src/
+├── models/           # Modelos SQLAlchemy
+├── controllers/      # Controladores e rotas
+├── database.py      # Configuração do banco
+├── app.py           # Aplicação Flask principal
+└── config.py        # Configurações
+
+scripts/
+└── migrate_database.py  # Script de migração
+
+models.psql          # Schema PostgreSQL completo
 ```
 
-## 🚀 Quick Start
+## 📦 Instalação
 
 ### Pré-requisitos
+- Python 3.8+
+- PostgreSQL 12+
+- pip
 
-- Node.js 18+
-- Python 3.9+
-- Docker (opcional)
-
-### Instalação
-
+### Configuração do Ambiente
+1. Clone o repositório
+2. Instale as dependências:
 ```bash
-# Clonar o repositório
-git clone https://github.com/KallebyX/cafe.git
-cd cafe
+pip install -r requirements.txt
+```
 
-# Instalar dependências do workspace
-npm install
-
-# Configurar ambiente
+3. Configure as variáveis de ambiente:
+```bash
 cp .env.example .env
-
-# Iniciar desenvolvimento
-make dev
+# Edite o arquivo .env com suas configurações
 ```
 
-### Comandos Principais
-
+4. Execute a migração do banco:
 ```bash
-# Desenvolvimento
-make dev              # Inicia frontend + backend
-make dev-web          # Apenas frontend
-make dev-api          # Apenas backend
-
-# Build
-make build            # Build completo
-make build-web        # Build frontend
-make build-api        # Build backend
-
-# Testes
-make test             # Todos os testes
-make test-unit        # Testes unitários
-make test-e2e         # Testes end-to-end
-
-# Deploy
-make deploy-staging   # Deploy staging
-make deploy-prod      # Deploy produção
+python scripts/migrate_database.py
 ```
 
-## 🏛️ Padrões Enterprise
+5. Inicie o servidor:
+```bash
+python -m apps.api.src.app
+```
 
-### Arquitetura
-
-- **Monorepo**: Código unificado com workspaces
-- **Microservices Ready**: Preparado para escalar
-- **Clean Architecture**: Separação clara de responsabilidades
-- **Domain Driven Design**: Organização por domínios
-
-### Qualidade
-
-- **TypeScript**: Tipagem estática
-- **ESLint + Prettier**: Padronização de código
-- **Husky**: Git hooks para qualidade
-- **Jest + Cypress**: Testes automatizados
-- **SonarQube**: Análise de qualidade
-
-### DevOps
-
-- **Docker**: Containerização
-- **CI/CD**: Pipelines automatizados
-- **Monitoring**: Logs e métricas
-- **Security**: Análise de vulnerabilidades
-
-## 📊 Stack Tecnológica
-
-### Frontend
-
-- **React 18** + **TypeScript**
-- **Vite** (Build tool)
-- **Tailwind CSS** + **Shadcn/UI**
-- **React Query** (State management)
-- **React Hook Form** (Formulários)
-
-### Backend
-
-- **Flask** + **Python 3.9+**
-- **SQLAlchemy** (ORM)
-- **Alembic** (Migrações)
-- **JWT** (Autenticação)
-- **Celery** (Tasks assíncronas)
-
-### Database
-
-- **PostgreSQL** (Produção)
-- **SQLite** (Desenvolvimento)
-- **Redis** (Cache/Sessions)
-
-### DevOps
-
-- **Docker** + **Docker Compose**
-- **GitHub Actions** (CI/CD)
-- **Nginx** (Reverse proxy)
-- **Gunicorn** (WSGI server)
-
-## 🔧 Configuração de Desenvolvimento
+## 🔧 Configuração
 
 ### Variáveis de Ambiente
-
 ```bash
-# Database
-DATABASE_URL=sqlite:///mestres_cafe.db
-REDIS_URL=redis://localhost:6379
+# Banco de Dados
+DATABASE_URL=postgresql://user:pass@localhost:5432/mestres_cafe_db
+DB_HOST=localhost
+DB_PORT=5432
+DB_NAME=mestres_cafe_db
+DB_USER=username
+DB_PASSWORD=password
 
-# API
-API_SECRET_KEY=your-secret-key
-API_DEBUG=true
-API_PORT=5000
+# Flask
+FLASK_ENV=development
+SECRET_KEY=your-secret-key
+API_PORT=5001
 
-# Frontend
-VITE_API_URL=http://localhost:5000/api
-VITE_APP_NAME=Mestres do Café
+# CORS
+CORS_ORIGINS=http://localhost:3000,http://localhost:5000
 ```
 
-## 🌐 Deploy no Render
+## 📚 API Documentation
 
-### Configuração Automática
+### Endpoints Principais
 
-O projeto está configurado para deploy automático no [Render](https://render.com) usando o arquivo `render.yaml`.
+#### 🔐 Autenticação
+- `POST /api/auth/login` - Login do usuário
+- `POST /api/auth/register` - Registro de novo usuário
+- `POST /api/auth/refresh` - Renovar token JWT
+- `POST /api/auth/logout` - Logout do usuário
 
-### URLs de Produção
+#### 🛍️ Produtos
+- `GET /api/products` - Listar produtos
+- `GET /api/products/:id` - Obter produto específico
+- `POST /api/products` - Criar produto
+- `PUT /api/products/:id` - Atualizar produto
+- `DELETE /api/products/:id` - Deletar produto
 
-- **Frontend**: https://mestres-cafe-web.onrender.com
-- **API**: https://mestres-cafe-api.onrender.com
-- **Health Check**: https://mestres-cafe-api.onrender.com/api/health
+#### 👥 Clientes
+- `GET /api/customers` - Listar clientes
+- `GET /api/customers/:id` - Obter cliente específico
+- `POST /api/customers` - Criar cliente
+- `PUT /api/customers/:id` - Atualizar cliente
+- `GET /api/customers/:id/orders` - Histórico de pedidos
 
-### Script de Deploy
+#### 📦 Pedidos
+- `GET /api/orders` - Listar pedidos
+- `GET /api/orders/:id` - Obter pedido específico
+- `POST /api/orders` - Criar pedido
+- `PUT /api/orders/:id/status` - Atualizar status
+- `GET /api/orders/:id/tracking` - Rastreamento
 
+#### 💳 Pagamentos
+- `GET /api/payments` - Listar pagamentos
+- `POST /api/payments` - Processar pagamento
+- `GET /api/payments/:id` - Status do pagamento
+- `POST /api/payments/:id/refund` - Estornar pagamento
+
+#### 🎟️ Cupons
+- `GET /api/coupons` - Listar cupons
+- `POST /api/coupons` - Criar cupom
+- `POST /api/coupons/validate` - Validar cupom
+- `GET /api/coupons/:code` - Obter cupom por código
+
+#### 📊 Leads
+- `GET /api/leads` - Listar leads
+- `POST /api/leads` - Criar lead
+- `PUT /api/leads/:id` - Atualizar lead
+- `POST /api/leads/:id/convert` - Converter em cliente
+
+#### 🎮 Gamificação
+- `GET /api/gamification/profile/:user_id` - Perfil do usuário
+- `POST /api/gamification/points` - Adicionar pontos
+- `GET /api/gamification/badges` - Listar badges
+- `POST /api/gamification/achievements` - Registrar conquista
+
+#### 📝 Blog
+- `GET /api/blog/posts` - Listar posts
+- `GET /api/blog/posts/:id` - Obter post específico
+- `POST /api/blog/posts` - Criar post
+- `PUT /api/blog/posts/:id` - Atualizar post
+
+#### 📧 Newsletter
+- `GET /api/newsletter/subscribers` - Listar inscritos
+- `POST /api/newsletter/subscribe` - Inscrever email
+- `POST /api/newsletter/campaigns` - Criar campanha
+- `POST /api/newsletter/send` - Enviar campanha
+
+#### 🔔 Notificações
+- `GET /api/notifications` - Listar notificações
+- `POST /api/notifications` - Criar notificação
+- `PUT /api/notifications/:id/read` - Marcar como lida
+- `GET /api/notifications/unread` - Não lidas
+
+#### 📁 Mídia
+- `GET /api/media/files` - Listar arquivos
+- `POST /api/media/upload` - Upload de arquivo
+- `GET /api/media/files/:id` - Obter arquivo
+- `DELETE /api/media/files/:id` - Deletar arquivo
+
+#### 💰 Financeiro
+- `GET /api/financial/accounts` - Contas financeiras
+- `GET /api/financial/transactions` - Transações
+- `POST /api/financial/transactions` - Nova transação
+- `GET /api/financial/reports` - Relatórios
+
+#### 👨‍💼 RH
+- `GET /api/hr/employees` - Listar funcionários
+- `POST /api/hr/employees` - Criar funcionário
+- `GET /api/hr/payroll` - Folha de pagamento
+- `POST /api/hr/payroll` - Processar pagamento
+
+### Parâmetros de Consulta Comuns
+- `page` - Número da página (padrão: 1)
+- `per_page` - Items por página (padrão: 10)
+- `search` - Busca por texto
+- `sort` - Campo para ordenação
+- `order` - Direção da ordenação (asc/desc)
+
+### Códigos de Status HTTP
+- `200` - Sucesso
+- `201` - Criado
+- `400` - Requisição inválida
+- `401` - Não autorizado
+- `403` - Proibido
+- `404` - Não encontrado
+- `500` - Erro interno
+
+## 🗄️ Banco de Dados
+
+### Principais Tabelas
+- `users` - Usuários do sistema
+- `customers` - Clientes
+- `products` - Produtos
+- `orders` - Pedidos
+- `payments` - Pagamentos
+- `coupons` - Cupons de desconto
+- `leads` - Leads de vendas
+- `blog_posts` - Posts do blog
+- `newsletter_subscribers` - Inscritos newsletter
+- `notifications` - Notificações
+- `media_files` - Arquivos de mídia
+- `financial_accounts` - Contas financeiras
+- `employees` - Funcionários
+
+### Relacionamentos
+- Cliente → Pedidos (1:N)
+- Pedido → Items (1:N)
+- Produto → Variações (1:N)
+- Usuário → Gamificação (1:1)
+- Funcionário → Folha de Pagamento (1:N)
+
+## 🚀 Deployment
+
+### Desenvolvimento
 ```bash
-# Preparar para deploy
-./scripts/render-deploy.sh
-
-# Commit e push
-git add .
-git commit -m "feat: ready for render deploy"
-git push origin main
+python -m apps.api.src.app
 ```
 
-### Documentação Completa
+### Produção
+```bash
+gunicorn --bind 0.0.0.0:5001 apps.api.src.app:app
+```
 
-Para instruções detalhadas de deploy, consulte: [docs/RENDER_DEPLOY.md](docs/RENDER_DEPLOY.md)
+### Docker
+```dockerfile
+FROM python:3.9
+WORKDIR /app
+COPY requirements.txt .
+RUN pip install -r requirements.txt
+COPY . .
+CMD ["gunicorn", "--bind", "0.0.0.0:5001", "apps.api.src.app:app"]
+```
 
-#### Serviços Configurados:
+## 🔍 Monitoramento
 
-- **Backend**: Flask API com PostgreSQL
-- **Frontend**: React Vite com build otimizado
-- **Database**: PostgreSQL 15 (plano gratuito)
+### Health Check
+```bash
+curl http://localhost:5001/api/health
+```
 
-#### Características:
-
-- ✅ Deploy automático via GitHub
-- ✅ HTTPS configurado
-- ✅ Variáveis de ambiente seguras
-- ✅ Health checks automatizados
-- ✅ Logs em tempo real
-
-### Estrutura de Branches
-
-- `main`: Produção
-- `develop`: Desenvolvimento
-- `feature/*`: Novas funcionalidades
-- `hotfix/*`: Correções urgentes
-- `release/*`: Preparação de releases
-
-## 📈 Roadmap
-
-### v1.0 - MVP ✅
-
-- [x] E-commerce básico
-- [x] Gestão de produtos
-- [x] Sistema de pedidos
-- [x] Autenticação
-
-### v1.1 - ERP Core
-
-- [ ] Gestão de estoque
-- [ ] Relatórios financeiros
-- [ ] CRM básico
-- [ ] Dashboard analytics
-
-### v1.2 - Advanced Features
-
-- [ ] Sistema de pontos
-- [ ] Programa de fidelidade
-- [ ] Blog integrado
-- [ ] Marketplace de produtores
-
-### v2.0 - Enterprise
-
-- [ ] Multi-tenant
-- [ ] API pública
-- [ ] Mobile app
-- [ ] IA/ML features
+### Logs
+- Logs da aplicação em `logs/app.log`
+- Logs de erro em `logs/error.log`
 
 ## 🤝 Contribuição
 
 1. Fork o projeto
-2. Crie uma branch (`git checkout -b feature/nova-funcionalidade`)
-3. Commit suas mudanças (`git commit -am 'Add nova funcionalidade'`)
-4. Push para a branch (`git push origin feature/nova-funcionalidade`)
+2. Crie uma branch para sua feature
+3. Commit suas mudanças
+4. Push para a branch
 5. Abra um Pull Request
 
 ## 📄 Licença
 
-Este projeto está sob a licença MIT. Veja o arquivo [LICENSE](LICENSE) para mais detalhes.
+Este projeto está sob a licença MIT - veja o arquivo LICENSE para detalhes.
 
-## 👥 Time
+## 🆘 Suporte
 
-- **KallebyX**: Desenvolvimento Full Stack e arquitetura
+Para dúvidas e suporte:
+- Email: suporte@mestresdocafe.com.br
+- Documentação: https://docs.mestresdocafe.com.br
+- Issues: https://github.com/mestresdocafe/enterprise/issues
 
 ---
 
-**Café Enterprise** - Sistema completo para torrefação artesanal ☕🚀
+**Mestres do Café Enterprise** - Sistema completo de e-commerce e ERP

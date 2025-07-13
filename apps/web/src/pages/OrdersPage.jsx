@@ -61,8 +61,7 @@ const OrdersPage = () => {
         })) || [];
 
         setOrders(mappedOrders);
-        console.log(`✅ ${mappedOrders.length} pedidos carregados do Supabase`);
-      }
+        }
     } catch (error) {
       console.error('❌ Erro ao carregar pedidos:', error);
       setOrders([]);

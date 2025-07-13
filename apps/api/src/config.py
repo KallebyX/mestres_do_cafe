@@ -1,132 +1,230 @@
 import os
+import secrets
 from datetime import timedelta
+from pathlib import Path
 
 
 class Config:
-    """Base configuration class"""
-    SECRET_KEY = os.environ.get('SECRET_KEY') or 'dev-secret-key-change-in-production'
-    JWT_SECRET_KEY = os.environ.get('JWT_SECRET_KEY') or 'jwt-secret-key-change-in-production'
-    JWT_ACCESS_TOKEN_EXPIRES = timedelta(hours=24)
-    SQLALCHEMY_TRACK_MODIFICATIONS = False
-    SQLALCHEMY_ENGINE_OPTIONS = {
-        'pool_pre_ping': True,
-        'pool_recycle': 300,
-    }
-    
-    # Redis Configuration
-    REDIS_URL = os.environ.get('REDIS_URL') or 'redis://localhost:6379'
-    CACHE_TYPE = 'redis'
+    """Configuração base com segurança aprimorada"""
+
+    # Secrets obrigatórios
+    SECRET_KEY = os.environ.get("SECRET_KEY")
+    JWT_SECRET_KEY = os.environ.get("JWT_SECRET_KEY")
+
+    # Configurações JWT seguras
+    JWT_ACCESS_TOKEN_EXPIRES = timedelta(hours=1)  # Reduzido de 24h
+    JWT_REFRESH_TOKEN_EXPIRES = timedelta(days=30)
+    JWT_ALGORITHM = "HS256"
+    JWT_BLACKLIST_ENABLED = True
+    JWT_BLACKLIST_TOKEN_CHECKS = ["access", "refresh"]
+
+    # Configurações de sessão seguras
+    SESSION_COOKIE_SECURE = True
+    SESSION_COOKIE_HTTPONLY = True
+    SESSION_COOKIE_SAMESITE = "Lax"
+    PERMANENT_SESSION_LIFETIME = timedelta(hours=1)
+
+    # Configurações de upload seguras
+    MAX_CONTENT_LENGTH = 16 * 1024 * 1024  # 16MB
+    UPLOAD_EXTENSIONS = [".jpg", ".jpeg", ".png", ".gif", ".webp"]
+    UPLOAD_FOLDER = "uploads"
+    ALLOWED_EXTENSIONS = {"png", "jpg", "jpeg", "gif", "webp", "pdf"}
+
+    # Supabase Configuration
+    SUPABASE_URL = os.environ.get("SUPABASE_URL")
+    SUPABASE_ANON_KEY = os.environ.get("SUPABASE_ANON_KEY")
+    SUPABASE_SERVICE_KEY = os.environ.get(
+        "SUPABASE_SERVICE_KEY"
+    )  # Para operações admin
+
+    # Configurações de cache
+    REDIS_URL = os.environ.get("REDIS_URL", "redis://localhost:6379")
+    CACHE_TYPE = "redis" if os.environ.get("REDIS_URL") else "simple"
     CACHE_DEFAULT_TIMEOUT = 300
-    
-    # Email Configuration
-    MAIL_SERVER = os.environ.get('MAIL_SERVER')
-    MAIL_PORT = int(os.environ.get('MAIL_PORT') or 587)
-    MAIL_USE_TLS = os.environ.get('MAIL_USE_TLS', 'true').lower() in ['true', 'on', '1']
-    MAIL_USERNAME = os.environ.get('MAIL_USERNAME')
-    MAIL_PASSWORD = os.environ.get('MAIL_PASSWORD')
-    
-    # Security Settings
-    CORS_ORIGINS = os.environ.get('CORS_ORIGINS', '*').split(',')
-    MAX_CONTENT_LENGTH = 16 * 1024 * 1024  # 16MB max file upload
-    
-    # Pagination
-    POSTS_PER_PAGE = 20
-    MAX_SEARCH_RESULTS = 50
-    
+
+    # API Keys e configurações externas
+    MELHOR_ENVIO_API_KEY = os.environ.get("MELHOR_ENVIO_API_KEY", "")
+    MELHOR_ENVIO_SANDBOX = (
+        os.environ.get("MELHOR_ENVIO_SANDBOX", "true").lower() == "true"
+    )
+
     @staticmethod
     def init_app(app):
-        # Validate required environment variables
-        required_vars = ['JWT_SECRET_KEY', 'SECRET_KEY']
+        """Inicializar configurações da aplicação"""
+        # Criar diretório de uploads se não existir
+        upload_path = Path(app.root_path) / app.config["UPLOAD_FOLDER"]
+        upload_path.mkdir(parents=True, exist_ok=True)
+
+        # Validar variáveis obrigatórias (Supabase não é obrigatório em desenvolvimento)
+        required_vars = [
+            "SECRET_KEY",
+            "JWT_SECRET_KEY",
+        ]
+        
+        # Adicionar Supabase apenas se não for desenvolvimento
+        if app.config.get("ENV") != "development":
+            required_vars.extend(["SUPABASE_URL", "SUPABASE_ANON_KEY"])
+        
         missing_vars = [var for var in required_vars if not os.environ.get(var)]
-        if missing_vars and not app.config.get('TESTING', False):
-            raise ValueError(f"Missing required environment variables: {', '.join(missing_vars)}")
+
+        if missing_vars and not app.config.get("TESTING", False):
+            # Em desenvolvimento, gerar secrets temporários
+            if app.config.get("ENV") == "development":
+                for var in missing_vars:
+                    secret_value = f"dev-{secrets.token_urlsafe(32)}"
+                    os.environ[var] = secret_value
+                    app.config[var] = secret_value
+                    app.logger.warning(
+                        f"⚠️  {var} não configurado. Usando valor temporário para desenvolvimento."
+                    )
+            else:
+                raise ValueError(
+                    f"ERRO DE SEGURANÇA: Secrets obrigatórios ausentes: {missing_vars}"
+                )
+
+        # Validar força dos secrets em produção
+        if app.config.get("ENV") == "production":
+            for secret_name in ["SECRET_KEY", "JWT_SECRET_KEY"]:
+                secret_value = os.environ.get(secret_name)
+                if secret_value and len(secret_value) < 32:
+                    raise ValueError(
+                        f"ERRO DE SEGURANÇA: {secret_name} muito fraco (mín. 32 chars)"
+                    )
 
 
 class DevelopmentConfig(Config):
-    """Development configuration"""
+    """Configuração de desenvolvimento"""
+
     DEBUG = True
-    # Usar o banco mestres_cafe.db no diretório api com caminho absoluto
-    import pathlib
-    db_path = pathlib.Path(__file__).parent.parent / 'mestres_cafe.db'
-    SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL') or f'sqlite:///{db_path.absolute()}'
-    SQLALCHEMY_ECHO = True
-    
-    # More permissive CORS for development
+    ENV = "development"
+
+    # CORS permissivo para desenvolvimento
     CORS_ORIGINS = [
-        'http://localhost:3000',
-        'http://127.0.0.1:3000',
-        'http://localhost:5000',
-        'http://127.0.0.1:5000',
-        'http://localhost:5001',
-        'http://127.0.0.1:5001'
+        "http://localhost:3000",
+        "http://127.0.0.1:3000",
+        "http://localhost:5173",  # Vite dev server
+        "http://127.0.0.1:5173",
+        "http://localhost:5174",  # Vite alternate port
+        "http://127.0.0.1:5174",
     ]
-    
-    # Disable JWT validation in development for easier testing
-    JWT_SECRET_KEY = os.environ.get('JWT_SECRET_KEY') or 'dev-jwt-secret-key'
-    SECRET_KEY = os.environ.get('SECRET_KEY') or 'dev-secret-key'
+
+    # Rate limiting mais permissivo em dev
+    RATELIMIT_DEFAULT = "1000 per hour"
+
+    # Configurações específicas de desenvolvimento
+    SEND_FILE_MAX_AGE_DEFAULT = 0  # Desabilitar cache de arquivos estáticos
+
+    # Segurança relaxada para desenvolvimento
+    SESSION_COOKIE_SECURE = False
 
 
 class ProductionConfig(Config):
-    """Production configuration"""
+    """Configuração de produção"""
+
     DEBUG = False
-    SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL') or \
-        'postgresql://user:pass@localhost/mestres_cafe'
-    
-    # CORS configuration for production
-    CORS_ORIGINS = [
-        'https://mestres-cafe-web.onrender.com',
-        'https://mestres-cafe-web-*.onrender.com'
-    ]
-    
-    # Strict security settings
-    SESSION_COOKIE_SECURE = True
-    SESSION_COOKIE_HTTPONLY = True
-    SESSION_COOKIE_SAMESITE = 'Lax'
-    
-    # Enhanced security headers
+    TESTING = False
+    ENV = "production"
+
+    @classmethod
+    def init_app(cls, app):
+        """Inicializar configurações da aplicação"""
+        Config.init_app(app)
+        
+        # Validar Supabase obrigatório em produção
+        if not os.environ.get("SUPABASE_URL") or not os.environ.get("SUPABASE_ANON_KEY"):
+            raise ValueError(
+                "SUPABASE_URL e SUPABASE_ANON_KEY são obrigatórios em produção"
+            )
+
+    # CORS restritivo
+    CORS_ORIGINS = (
+        os.environ.get("CORS_ORIGINS", "").split(",")
+        if os.environ.get("CORS_ORIGINS")
+        else [
+            "https://mestres-cafe-web.onrender.com",
+            "https://mestres-cafe-web-*.onrender.com",
+        ]
+    )
+
+    # Headers de segurança obrigatórios
     SECURITY_HEADERS = {
-        'X-Frame-Options': 'DENY',
-        'X-Content-Type-Options': 'nosniff',
-        'X-XSS-Protection': '1; mode=block',
-        'Strict-Transport-Security': 'max-age=31536000; includeSubDomains',
-        'Content-Security-Policy': "default-src 'self'"
+        "Strict-Transport-Security": "max-age=31536000; includeSubDomains; preload",
+        "X-Content-Type-Options": "nosniff",
+        "X-Frame-Options": "DENY",
+        "X-XSS-Protection": "1; mode=block",
+        "Referrer-Policy": "strict-origin-when-cross-origin",
+        "Content-Security-Policy": (
+            "default-src 'self'; "
+            "script-src 'self' 'unsafe-inline' https://js.stripe.com; "
+            "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; "
+            "font-src 'self' https://fonts.gstatic.com; "
+            "img-src 'self' data: https:; "
+            "connect-src 'self' https://api.stripe.com https://viacep.com.br; "
+            "frame-src https://js.stripe.com;"
+        ),
     }
-    
+
+    # Rate limiting agressivo
+    RATELIMIT_STORAGE_URL = os.environ.get("REDIS_URL", "redis://localhost:6379")
+    RATELIMIT_DEFAULT = "100 per hour"
+
     @classmethod
     def init_app(cls, app):
         Config.init_app(app)
-        
-        # Log to stderr in production
+
+        # Configurar logging seguro
         import logging
-        from logging import StreamHandler
-        file_handler = StreamHandler()
-        file_handler.setLevel(logging.WARNING)
-        app.logger.addHandler(file_handler)
+        from logging.handlers import RotatingFileHandler
+
+        if not app.debug:
+            file_handler = RotatingFileHandler(
+                "logs/mestres_cafe.log", maxBytes=10240000, backupCount=10
+            )
+            file_handler.setFormatter(
+                logging.Formatter(
+                    "%(asctime)s %(levelname)s: %(message)s [in %(pathname)s:%(lineno)d]"
+                )
+            )
+            file_handler.setLevel(logging.INFO)
+            app.logger.addHandler(file_handler)
+            app.logger.setLevel(logging.INFO)
 
 
 class TestingConfig(Config):
-    """Testing configuration"""
+    """Configuração de testes"""
+
     TESTING = True
-    SQLALCHEMY_DATABASE_URI = 'sqlite:///:memory:'
+    ENV = "testing"
     WTF_CSRF_ENABLED = False
-    JWT_SECRET_KEY = 'test-jwt-secret-key'
-    SECRET_KEY = 'test-secret-key'
-    
-    # Disable Redis for testing
-    CACHE_TYPE = 'simple'
+
+    # Secrets de teste
+    SECRET_KEY = "test-secret-key"
+    JWT_SECRET_KEY = "test-jwt-secret-key"
+
+    # Supabase de teste (usar URL de desenvolvimento ou mock)
+    SUPABASE_URL = os.environ.get("SUPABASE_URL_TEST", "https://test.supabase.co")
+    SUPABASE_ANON_KEY = os.environ.get("SUPABASE_ANON_KEY_TEST", "test-anon-key")
+
+    # Cache simples para testes
+    CACHE_TYPE = "simple"
+
+    # Desabilitar rate limiting em testes
+    RATELIMIT_ENABLED = False
+
+    # Segurança relaxada para testes
+    SESSION_COOKIE_SECURE = False
 
 
-class DockerConfig(Config):
-    """Docker configuration"""
-    SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL') or \
-        'postgresql://postgres:password@db:5432/mestres_cafe'
-    REDIS_URL = os.environ.get('REDIS_URL') or 'redis://redis:6379'
-
-
+# Mapeamento de configurações
 config = {
-    'development': DevelopmentConfig,
-    'production': ProductionConfig,
-    'testing': TestingConfig,
-    'docker': DockerConfig,
-    'default': DevelopmentConfig
+    "development": DevelopmentConfig,
+    "production": ProductionConfig,
+    "testing": TestingConfig,
+    "default": DevelopmentConfig,
 }
+
+
+def get_config():
+    """Obter configuração baseada no ambiente"""
+    env = os.environ.get("FLASK_ENV", "development")
+    return config.get(env, config["default"])

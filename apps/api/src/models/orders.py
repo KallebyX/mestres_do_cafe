@@ -1,175 +1,281 @@
 """
-Modelos de Pedidos e Carrinho - Mestres do Café Enterprise
+Modelos de pedidos e carrinho
 """
 
-import enum
-from datetime import datetime
+import uuid
+from enum import Enum
 
 from sqlalchemy import (
+    DECIMAL,
     Boolean,
     Column,
+    Date,
     DateTime,
-    Enum,
-    Float,
     ForeignKey,
     Integer,
     String,
     Text,
 )
+from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
+from sqlalchemy.sql import func
 
-from .base import db
+from ..database import db
 
 
-class OrderStatus(enum.Enum):
-    """Status do pedido"""
+class OrderStatus(Enum):
     PENDING = "pending"
-    CONFIRMED = "confirmed"
-    PREPARING = "preparing"
+    PROCESSING = "processing"
     SHIPPED = "shipped"
     DELIVERED = "delivered"
     CANCELLED = "cancelled"
+    REFUNDED = "refunded"
+
+
+class PaymentStatus(Enum):
+    PENDING = "pending"
+    PAID = "paid"
+    FAILED = "failed"
+    REFUNDED = "refunded"
+    PARTIALLY_REFUNDED = "partially_refunded"
 
 
 class Order(db.Model):
-    """Pedido"""
-    __tablename__ = 'orders'
-    
-    id = Column(Integer, primary_key=True)
-    user_id = Column(Integer, ForeignKey('users.id'), nullable=False)
-    checkout_session_id = Column(String(36), ForeignKey('checkout_sessions.id'))
-    order_number = Column(String(20), unique=True, nullable=False)
-    status = Column(Enum(OrderStatus), default=OrderStatus.PENDING)
-    
+    __tablename__ = "orders"
+
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    order_number = Column(String(50), unique=True, nullable=False)
+    user_id = Column(UUID(as_uuid=True), ForeignKey("users.id", ondelete="SET NULL"))
+    customer_id = Column(
+        UUID(as_uuid=True), ForeignKey("customers.id", ondelete="SET NULL")
+    )
+
+    # Status
+    status = Column(String(20), default="pending")
+    payment_status = Column(String(20), default="pending")
+
     # Valores
-    subtotal = Column(Float, nullable=False)
-    shipping_cost = Column(Float, default=0.0)
-    tax_amount = Column(Float, default=0.0)
-    total_amount = Column(Float, nullable=False)
-    
-    # Dados de entrega
+    subtotal = Column(DECIMAL(10, 2), nullable=False)
+    discount_amount = Column(DECIMAL(10, 2), default=0.00)
+    shipping_cost = Column(DECIMAL(10, 2), default=0.00)
+    tax_amount = Column(DECIMAL(10, 2), default=0.00)
+    total_amount = Column(DECIMAL(10, 2), nullable=False)
+
+    # Cupom
+    coupon_code = Column(String(50))
+    coupon_discount = Column(DECIMAL(10, 2), default=0.00)
+
+    # Endereço (JSON como TEXT para compatibilidade)
     shipping_address = Column(Text)
-    shipping_city = Column(String(100))
-    shipping_state = Column(String(50))
-    shipping_zipcode = Column(String(20))
-    shipping_country = Column(String(50), default="Brasil")
-    
-    # Metadados
+    billing_address = Column(Text)
+
+    # Entrega
+    shipping_method = Column(String(100))
+    tracking_code = Column(String(100))
+    estimated_delivery_date = Column(Date)
+    delivered_at = Column(DateTime)
+
+    # Observações
     notes = Column(Text)
-    created_at = Column(DateTime, default=datetime.utcnow)
-    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
-    
+    admin_notes = Column(Text)
+
+    # Controle
+    created_at = Column(DateTime, default=func.now())
+    updated_at = Column(DateTime, default=func.now(), onupdate=func.now())
+
     # Relacionamentos
     user = relationship("User", back_populates="orders")
+    customer = relationship("Customer", back_populates="orders")
     items = relationship("OrderItem", back_populates="order")
-    payment = relationship("Payment", back_populates="order", uselist=False)
-    
+    payments = relationship("Payment", back_populates="order")
+    refunds = relationship("Refund", back_populates="order")
+
     def __repr__(self):
-        return f'<Order {self.order_number}>'
+        return f"<Order(id={self.id}, order_number={self.order_number}, status={self.status})>"
 
-
-class OrderItem(db.Model):
-    """Item do pedido"""
-    __tablename__ = 'order_items'
-    
-    id = Column(Integer, primary_key=True)
-    order_id = Column(Integer, ForeignKey('orders.id'), nullable=False)
-    product_id = Column(Integer, ForeignKey('products.id'), nullable=False)
-    quantity = Column(Integer, nullable=False)
-    price = Column(Float, nullable=False)  # preço no momento do pedido
-    total = Column(Float, nullable=False)
-    
-    # Relacionamentos
-    order = relationship("Order", back_populates="items")
-    product = relationship("Product")
-    
-    def __repr__(self):
-        return f'<OrderItem {self.quantity}x {self.product.name}>'
-
-
-class Cart(db.Model):
-    """Carrinho de compras"""
-    __tablename__ = 'carts'
-    
-    id = Column(Integer, primary_key=True)
-    user_id = Column(Integer, ForeignKey('users.id'), nullable=False)
-    session_id = Column(String(100))  # para usuários não logados
-    created_at = Column(DateTime, default=datetime.utcnow)
-    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
-    
-    # Relacionamentos
-    user = relationship("User", back_populates="cart")
-    items = relationship("CartItem", back_populates="cart")
-    
-    @property
-    def total_items(self):
-        """Total de itens no carrinho"""
-        return sum(item.quantity for item in self.items)
-    
-    @property
-    def total_amount(self):
-        """Valor total do carrinho"""
-        return sum(item.total for item in self.items)
-    
-    def __repr__(self):
-        return f'<Cart {self.user.email if self.user else self.session_id}>'
-
-
-class CartItem(db.Model):
-    """Item do carrinho"""
-    __tablename__ = 'cart_items'
-    
-    id = Column(Integer, primary_key=True)
-    cart_id = Column(Integer, ForeignKey('carts.id'), nullable=False)
-    product_id = Column(Integer, ForeignKey('products.id'), nullable=False)
-    quantity = Column(Integer, nullable=False)
-    added_at = Column(DateTime, default=datetime.utcnow)
-    
-    # Relacionamentos
-    cart = relationship("Cart", back_populates="items")
-    product = relationship("Product")
-    
-    @property
-    def total(self):
-        """Total do item (preço x quantidade)"""
-        return self.product.price * self.quantity
-    
-    def __repr__(self):
-        return f'<CartItem {self.quantity}x {self.product.name}>'
-    
     def to_dict(self):
         return {
-            'id': self.id,
-            'cart_id': self.cart_id,
-            'product_id': self.product_id,
-            'quantity': self.quantity,
-            'total': self.total,
-            'product': self.product.to_dict() if self.product else None,
-            'added_at': self.added_at.isoformat() if self.added_at is not None else None
+            "id": str(self.id),
+            "order_number": self.order_number,
+            "user_id": str(self.user_id) if self.user_id else None,
+            "customer_id": str(self.customer_id) if self.customer_id else None,
+            "status": self.status,
+            "payment_status": self.payment_status,
+            "subtotal": float(self.subtotal) if self.subtotal else 0.00,
+            "discount_amount": (
+                float(self.discount_amount) if self.discount_amount else 0.00
+            ),
+            "shipping_cost": float(self.shipping_cost) if self.shipping_cost else 0.00,
+            "tax_amount": float(self.tax_amount) if self.tax_amount else 0.00,
+            "total_amount": float(self.total_amount) if self.total_amount else 0.00,
+            "coupon_code": self.coupon_code,
+            "coupon_discount": (
+                float(self.coupon_discount) if self.coupon_discount else 0.00
+            ),
+            "shipping_address": self.shipping_address,
+            "billing_address": self.billing_address,
+            "shipping_method": self.shipping_method,
+            "tracking_code": self.tracking_code,
+            "estimated_delivery_date": (
+                self.estimated_delivery_date.isoformat()
+                if self.estimated_delivery_date
+                else None
+            ),
+            "delivered_at": (
+                self.delivered_at.isoformat() if self.delivered_at else None
+            ),
+            "notes": self.notes,
+            "admin_notes": self.admin_notes,
+            "created_at": self.created_at.isoformat(),
+            "updated_at": self.updated_at.isoformat(),
         }
 
 
-class Payment(db.Model):
-    """Pagamento"""
-    __tablename__ = 'payments'
-    
-    id = Column(Integer, primary_key=True)
-    order_id = Column(Integer, ForeignKey('orders.id'), nullable=False)
-    payment_method = Column(String(50), nullable=False)  # credit_card, pix, boleto
-    status = Column(String(20), default="pending")  # pending, approved, rejected
-    amount = Column(Float, nullable=False)
-    
-    # Dados do pagamento
-    transaction_id = Column(String(100))
-    payment_date = Column(DateTime)
-    gateway_response = Column(Text)
-    
+class OrderItem(db.Model):
+    __tablename__ = "order_items"
+
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    order_id = Column(UUID(as_uuid=True), ForeignKey("orders.id", ondelete="CASCADE"))
+    product_id = Column(
+        UUID(as_uuid=True), ForeignKey("products.id", ondelete="SET NULL")
+    )
+    variant_id = Column(
+        UUID(as_uuid=True), ForeignKey("product_variants.id", ondelete="SET NULL")
+    )
+
+    # Dados do produto no momento do pedido
+    product_name = Column(String(255), nullable=False)
+    product_sku = Column(String(100))
+    product_image = Column(Text)
+
+    # Quantidade e preços
+    quantity = Column(Integer, nullable=False)
+    unit_price = Column(DECIMAL(10, 2), nullable=False)
+    total_price = Column(DECIMAL(10, 2), nullable=False)
+
     # Metadados
-    created_at = Column(DateTime, default=datetime.utcnow)
-    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
-    
+    product_data = Column(Text)  # JSON como TEXT
+
+    created_at = Column(DateTime, default=func.now())
+
     # Relacionamentos
-    order = relationship("Order", back_populates="payment")
-    
+    order = relationship("Order", back_populates="items")
+    product = relationship("Product", back_populates="order_items")
+    variant = relationship("ProductVariant", back_populates="order_items")
+
     def __repr__(self):
-        return f'<Payment {self.payment_method} - {self.status}>' 
+        return f"<OrderItem(id={self.id}, product_name={self.product_name}, quantity={self.quantity})>"
+
+    def to_dict(self):
+        return {
+            "id": str(self.id),
+            "order_id": str(self.order_id),
+            "product_id": str(self.product_id) if self.product_id else None,
+            "variant_id": str(self.variant_id) if self.variant_id else None,
+            "product_name": self.product_name,
+            "product_sku": self.product_sku,
+            "product_image": self.product_image,
+            "quantity": self.quantity,
+            "unit_price": float(self.unit_price) if self.unit_price else 0.00,
+            "total_price": float(self.total_price) if self.total_price else 0.00,
+            "product_data": self.product_data,
+            "created_at": self.created_at.isoformat(),
+        }
+
+
+class Cart(db.Model):
+    __tablename__ = "carts"
+
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    user_id = Column(UUID(as_uuid=True), ForeignKey("users.id", ondelete="CASCADE"))
+    session_id = Column(String(255))
+    created_at = Column(DateTime, default=func.now())
+    updated_at = Column(DateTime, default=func.now(), onupdate=func.now())
+
+    # Relacionamentos
+    user = relationship("User")
+    items = relationship("CartItem", back_populates="cart")
+
+    def __repr__(self):
+        return f"<Cart(id={self.id}, user_id={self.user_id})>"
+
+    def to_dict(self):
+        return {
+            "id": str(self.id),
+            "user_id": str(self.user_id) if self.user_id else None,
+            "session_id": self.session_id,
+            "created_at": self.created_at.isoformat(),
+            "updated_at": self.updated_at.isoformat(),
+        }
+
+
+class CartItem(db.Model):
+    __tablename__ = "cart_items"
+
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    cart_id = Column(
+        UUID(as_uuid=True), ForeignKey("carts.id", ondelete="CASCADE"), nullable=False
+    )
+    user_id = Column(UUID(as_uuid=True), ForeignKey("users.id", ondelete="CASCADE"))
+    session_id = Column(String(255))
+    product_id = Column(
+        UUID(as_uuid=True), ForeignKey("products.id", ondelete="CASCADE")
+    )
+    variant_id = Column(
+        UUID(as_uuid=True), ForeignKey("product_variants.id", ondelete="SET NULL")
+    )
+    quantity = Column(Integer, nullable=False)
+    added_at = Column(DateTime, default=func.now())
+    created_at = Column(DateTime, default=func.now())
+    updated_at = Column(DateTime, default=func.now(), onupdate=func.now())
+
+    # Relacionamentos
+    cart = relationship("Cart", back_populates="items")
+    user = relationship("User", back_populates="cart_items")
+    product = relationship("Product", back_populates="cart_items")
+    variant = relationship("ProductVariant", back_populates="cart_items")
+
+    def __repr__(self):
+        return f"<CartItem(id={self.id}, cart_id={self.cart_id}, product_id={self.product_id}, quantity={self.quantity})>"
+
+    def to_dict(self):
+        return {
+            "id": str(self.id),
+            "cart_id": str(self.cart_id) if self.cart_id else None,
+            "user_id": str(self.user_id) if self.user_id else None,
+            "session_id": self.session_id,
+            "product_id": str(self.product_id),
+            "variant_id": str(self.variant_id) if self.variant_id else None,
+            "quantity": self.quantity,
+            "added_at": self.added_at.isoformat() if self.added_at else None,
+            "created_at": self.created_at.isoformat(),
+            "updated_at": self.updated_at.isoformat(),
+        }
+
+
+class AbandonedCart(db.Model):
+    __tablename__ = "abandoned_carts"
+
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    user_id = Column(UUID(as_uuid=True), ForeignKey("users.id", ondelete="CASCADE"))
+    cart_data = Column(Text, nullable=False)  # JSON como TEXT
+    total_amount = Column(DECIMAL(10, 2))
+    recovery_email_sent = Column(Boolean, default=False)
+    recovered_at = Column(DateTime)
+    created_at = Column(DateTime, default=func.now())
+
+    def __repr__(self):
+        return f"<AbandonedCart(id={self.id}, user_id={self.user_id}, total_amount={self.total_amount})>"
+
+    def to_dict(self):
+        return {
+            "id": str(self.id),
+            "user_id": str(self.user_id),
+            "cart_data": self.cart_data,
+            "total_amount": float(self.total_amount) if self.total_amount else None,
+            "recovery_email_sent": self.recovery_email_sent,
+            "recovered_at": (
+                self.recovered_at.isoformat() if self.recovered_at else None
+            ),
+            "created_at": self.created_at.isoformat(),
+        }

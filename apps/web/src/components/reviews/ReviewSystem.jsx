@@ -61,26 +61,19 @@ const ReviewSystem = ({
       ]);
 
       // Log completo das respostas
-      console.log('🔍 Reviews Response:', reviewsRes);
-      console.log('📊 Stats Response:', statsRes);
-      console.log('⭐ Featured Response:', featuredRes);
-
       if (reviewsRes.success) {
-        console.log('🔍 Reviews array:', reviewsRes.reviews);
-        console.log('🔍 Reviews length:', reviewsRes.reviews?.length);
         const reviewsToSet = reviewsRes.reviews || [];
-        console.log('🔍 Setting reviews state with:', reviewsToSet);
         setReviews(reviewsToSet);
       }
 
       if (statsRes.success) {
-        console.log('📊 Stats object:', statsRes.stats);
-        setStats(statsRes.stats || {});
+        console.log('🔍 ReviewSystem - statsRes:', statsRes);
+        setStats(statsRes.data?.stats || statsRes.stats || statsRes.data || {});
       }
 
       if (featuredRes.success) {
-        console.log('⭐ Featured array:', featuredRes.data);
-        setFeaturedReviews(featuredRes.data?.reviews || featuredRes.data || []);
+        const reviews = featuredRes.data?.reviews || featuredRes.data || [];
+        setFeaturedReviews(Array.isArray(reviews) ? reviews : []);
       }
 
     } catch (err) {
@@ -137,7 +130,6 @@ const ReviewSystem = ({
         );
 
       case 'reviews':
-        console.log('🎯 Renderizando ReviewList com reviews:', reviews);
         return (
           <ReviewList
             productId={productId}

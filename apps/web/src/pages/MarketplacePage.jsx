@@ -4,6 +4,7 @@ import { useCart } from '../contexts/CartContext';
 import { useAuth } from '../contexts/AuthContext';
 import { getAllProducts } from "@/lib/api"
 import { useNavigate } from 'react-router-dom';
+import { useDebouncedValue } from '../utils/debounce';
 
 const MarketplacePage = () => {
   const [products, setProducts] = useState([]);
@@ -22,6 +23,9 @@ const MarketplacePage = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
 
+  // Debounced search term para otimizar performance
+  const debouncedSearchTerm = useDebouncedValue(searchTerm, 300);
+
   // Carregar produtos do Supabase
   useEffect(() => {
     loadProducts();
@@ -36,7 +40,6 @@ const MarketplacePage = () => {
       
       if (result.success) {
         const productsArray = result.data.products || result.data || [];
-        console.log('✅ Produtos carregados do Supabase:', productsArray.length);
         setProducts(productsArray);
         setFilteredProducts(productsArray);
       } else {
@@ -50,16 +53,16 @@ const MarketplacePage = () => {
     }
   };
 
-  // Aplicar filtros
+  // Aplicar filtros com debouncing para otimizar performance
   useEffect(() => {
     let filtered = [...products];
 
-    // Filtro por termo de busca
-    if (searchTerm) {
+    // Filtro por termo de busca (usando debounced value)
+    if (debouncedSearchTerm) {
       filtered = filtered.filter(product =>
-        product.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        product.description?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        product.origin?.toLowerCase().includes(searchTerm.toLowerCase())
+        product.name?.toLowerCase().includes(debouncedSearchTerm.toLowerCase()) ||
+        product.description?.toLowerCase().includes(debouncedSearchTerm.toLowerCase()) ||
+        product.origin?.toLowerCase().includes(debouncedSearchTerm.toLowerCase())
       );
     }
 
@@ -111,7 +114,7 @@ const MarketplacePage = () => {
     });
 
     setFilteredProducts(filtered);
-  }, [products, searchTerm, selectedCategory, selectedRoast, priceRange, sortBy]);
+  }, [products, debouncedSearchTerm, selectedCategory, selectedRoast, priceRange, sortBy]);
 
   const handleAddToCart = async (product) => {
     try {
@@ -331,6 +334,7 @@ const MarketplacePage = () => {
                 setSelectedCategory('all');
                 setSelectedRoast('all');
                 setPriceRange('all');
+                setSortBy('name');
               }}
               className="text-amber-600 hover:text-amber-700 font-medium"
             >

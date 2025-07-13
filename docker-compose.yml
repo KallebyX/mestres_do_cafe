@@ -14,7 +14,7 @@ services:
       - /app/node_modules
     environment:
       - NODE_ENV=development
-      - VITE_API_URL=http://localhost:5000/api
+      - VITE_API_URL=http://localhost:5001/api
     depends_on:
       - api
     networks:
@@ -28,7 +28,7 @@ services:
       dockerfile: Dockerfile
       target: development
     ports:
-      - "5000:5000"
+      - "5001:5001"
     volumes:
       - ./apps/api:/app
       - ./data:/app/data
@@ -38,6 +38,7 @@ services:
       - REDIS_URL=redis://redis:6379/0
       - SECRET_KEY=dev-secret-key
       - JWT_SECRET_KEY=dev-jwt-secret
+      - PORT=5001
     depends_on:
       - db
       - redis

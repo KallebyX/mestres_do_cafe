@@ -31,8 +31,6 @@ const AdminFinancialReports = () => {
   const loadFinancialData = async () => {
     setLoading(true);
     try {
-      console.log(`💰 Carregando dados financeiros reais para ${dateRange}...`);
-      
       // Buscar dados reais do Supabase através da API
       const realData = await adminAPI.getFinancialData(dateRange);
       
@@ -146,7 +144,6 @@ const AdminFinancialReports = () => {
         }
       };
 
-      console.log('✅ Dados financeiros processados:', processedData);
       setFinancialData(processedData);
       
     } catch (error) {
@@ -183,8 +180,6 @@ const AdminFinancialReports = () => {
     };
     
     const fileName = `relatorio_financeiro_${activeTab}_${new Date().toISOString().split('T')[0]}`;
-    
-    console.log(`📊 Exportando relatório financeiro:`, exportData);
     
     alert(`💰 Relatório Financeiro Exportado com Sucesso!\n\n📋 Detalhes:\n• Tipo: ${activeTab}\n• Período: ${dateRange}\n• Arquivo: ${fileName}.xlsx\n\n✅ Dados incluídos:\n• Receitas e custos reais\n• Análise de margem\n• KPIs financeiros\n• Fluxo de caixa\n• Top produtos por receita\n• Métricas de performance`);
   };

@@ -1,6 +1,8 @@
 import react from "@vitejs/plugin-react";
 import path from "path";
+// import { visualizer } from 'rollup-plugin-visualizer';
 import { defineConfig, loadEnv } from "vite";
+// import { compression } from 'vite-plugin-compression2';
 
 // https://vitejs.dev/config/
 export default defineConfig(({ command, mode }) => {
@@ -8,7 +10,34 @@ export default defineConfig(({ command, mode }) => {
   const env = loadEnv(mode, process.cwd(), '');
   
   return {
-    plugins: [react()],
+    plugins: [
+      react(),
+      
+      // Compressão Gzip e Brotli - INSTALAR: npm install --save-dev vite-plugin-compression2
+      // compression({
+      //   algorithm: 'gzip',
+      //   ext: '.gz',
+      //   threshold: 10240, // 10KB
+      //   deleteOriginFile: false
+      // }),
+      
+      // compression({
+      //   algorithm: 'brotliCompress',
+      //   ext: '.br',
+      //   threshold: 10240,
+      //   deleteOriginFile: false
+      // }),
+      
+      // Visualizador de bundle - INSTALAR: npm install --save-dev rollup-plugin-visualizer
+      // ...(mode === 'development' ? [
+      //   visualizer({
+      //     filename: './node_modules/.cache/visualizer/stats.html',
+      //     open: true,
+      //     gzipSize: true,
+      //     brotliSize: true,
+      //   })
+      // ] : [])
+    ],
     
     // Configuração de resolução de aliases
     resolve: {
@@ -22,6 +51,10 @@ export default defineConfig(({ command, mode }) => {
         "@/utils": path.resolve(__dirname, "./src/utils"),
         "@/lib": path.resolve(__dirname, "./src/lib"),
         "@/assets": path.resolve(__dirname, "./src/assets"),
+        
+        // Otimizações específicas
+        'lodash': 'lodash-es'
+        // 'date-fns': path.resolve(__dirname, './src/utils/date-fns-wrapper.js') // Temporariamente desabilitado
       },
       extensions: [".js", ".jsx", ".ts", ".tsx", ".json"],
     },
@@ -32,7 +65,7 @@ export default defineConfig(({ command, mode }) => {
       host: true,
       proxy: {
         "/api": {
-          target: env.VITE_API_URL || "http://localhost:5000",
+          target: env.VITE_API_URL || "http://localhost:5001",
           changeOrigin: true,
           secure: false,
           rewrite: (path) => path.replace(/^\/api/, '/api'),
@@ -50,78 +83,125 @@ export default defineConfig(({ command, mode }) => {
     build: {
       outDir: "dist",
       assetsDir: "assets",
-      sourcemap: mode === 'development',
-      minify: mode === 'production' ? 'terser' : false,
-      target: ['es2015', 'edge88', 'firefox78', 'chrome87', 'safari13.1'],
+      sourcemap: false, // Desabilitar em produção
+      minify: 'terser',
+      target: 'es2015',
       
       // Configurações do Rollup
       rollupOptions: {
         output: {
-          // Chunks manuais para melhor cache
-          manualChunks: {
-            // Bibliotecas principais
-            vendor: ['react', 'react-dom'],
-            router: ['react-router-dom'],
+          // Chunks manuais otimizados
+          manualChunks: (id) => {
+            // Vendor principal - React ecosystem
+            if (id.includes('node_modules/react') || 
+                id.includes('node_modules/react-dom')) {
+              return 'vendor-react';
+            }
             
-            // Bibliotecas UI
-            ui: [
-              '@radix-ui/react-slot',
-              '@radix-ui/react-dialog',
-              '@radix-ui/react-dropdown-menu',
-              '@radix-ui/react-toast',
-              '@radix-ui/react-toggle',
-              'lucide-react'
-            ],
+            // Router
+            if (id.includes('react-router')) {
+              return 'vendor-router';
+            }
             
-            // Bibliotecas de formulário
-            forms: [
-              'react-hook-form',
-              '@hookform/resolvers',
-              'zod'
-            ],
+            // UI Components
+            if (id.includes('@radix-ui') || 
+                id.includes('lucide-react') ||
+                id.includes('@headlessui')) {
+              return 'vendor-ui';
+            }
             
-            // Bibliotecas de utilidade
-            utils: [
-              'axios',
-              'clsx',
-              'class-variance-authority',
-              'tailwind-merge',
-              'date-fns'
-            ],
+            // Forms
+            if (id.includes('react-hook-form') || 
+                id.includes('@hookform') || 
+                id.includes('zod')) {
+              return 'vendor-forms';
+            }
             
-            // Bibliotecas de gráficos e PDF
-            charts: ['recharts', 'jspdf', 'jspdf-autotable'],
+            // Charts - separar para lazy load
+            if (id.includes('recharts') || 
+                id.includes('d3') ||
+                id.includes('victory')) {
+              return 'vendor-charts';
+            }
             
-            // Query e estado
-            query: ['@tanstack/react-query']
+            // PDF - separar para lazy load
+            if (id.includes('jspdf') || 
+                id.includes('html2canvas') ||
+                id.includes('pdfjs')) {
+              return 'vendor-pdf';
+            }
+            
+            // Date utilities
+            if (id.includes('date-fns') || 
+                id.includes('dayjs') ||
+                id.includes('moment')) {
+              return 'vendor-date';
+            }
+            
+            // Estado e query
+            if (id.includes('@tanstack/react-query') ||
+                id.includes('redux') ||
+                id.includes('zustand')) {
+              return 'vendor-state';
+            }
+            
+            // Utils
+            if (id.includes('axios') || 
+                id.includes('lodash') ||
+                id.includes('clsx') ||
+                id.includes('tailwind')) {
+              return 'vendor-utils';
+            }
+            
+            // Polyfills
+            if (id.includes('core-js')) {
+              return 'polyfills';
+            }
           },
           
           // Nomenclatura dos arquivos
-          chunkFileNames: 'assets/js/[name]-[hash].js',
-          entryFileNames: 'assets/js/[name]-[hash].js',
+          chunkFileNames: 'assets/js/[name]-[hash:8].js',
+          entryFileNames: 'assets/js/[name]-[hash:8].js',
           assetFileNames: (assetInfo) => {
             const info = assetInfo.name.split('.');
             const ext = info[info.length - 1];
             
             if (/png|jpe?g|svg|gif|tiff|bmp|ico/i.test(ext)) {
-              return `assets/images/[name]-[hash][extname]`;
+              return `assets/images/[name]-[hash:8][extname]`;
             }
             if (/woff2?|eot|ttf|otf/i.test(ext)) {
-              return `assets/fonts/[name]-[hash][extname]`;
+              return `assets/fonts/[name]-[hash:8][extname]`;
             }
             if (/css/i.test(ext)) {
-              return `assets/css/[name]-[hash][extname]`;
+              return `assets/css/[name]-[hash:8][extname]`;
             }
-            return `assets/[name]-[hash][extname]`;
+            return `assets/[name]-[hash:8][extname]`;
           }
+        },
+        
+        // Tree shaking agressivo
+        treeshake: {
+          preset: 'recommended',
+          moduleSideEffects: false,
+          propertyReadSideEffects: false,
+          tryCatchDeoptimization: false,
+          unknownGlobalSideEffects: false,
         }
       },
       
       // Configurações de otimização
       terserOptions: {
         compress: {
-          drop_console: mode === 'production',
-          drop_debugger: mode === 'production',
+          drop_console: true,
+          drop_debugger: true,
+          pure_funcs: ['console.log', 'console.info', 'console.debug', 'console.trace'],
+          passes: 2,
+        },
+        mangle: {
+          safari10: true,
+        },
+        format: {
+          comments: false,
         },
       },
       
@@ -131,7 +211,7 @@ export default defineConfig(({ command, mode }) => {
       
       // Configurações de report
       reportCompressedSize: false,
-      chunkSizeWarningLimit: 2000,
+      chunkSizeWarningLimit: 500, // Reduzir para 500KB
     },
     
     // Configuração de dependências
@@ -143,12 +223,18 @@ export default defineConfig(({ command, mode }) => {
         '@tanstack/react-query',
         'axios',
         'clsx',
-        'class-variance-authority',
         'tailwind-merge',
-        'lucide-react',
-        'date-fns',
-        'recharts'
       ],
+      exclude: [
+        // Excluir bibliotecas grandes que serão lazy loaded
+        'recharts',
+        'jspdf',
+        'html2canvas',
+        'date-fns',
+      ],
+      esbuildOptions: {
+        target: 'es2015',
+      }
     },
     
     // Configuração de CSS
@@ -161,6 +247,7 @@ export default defineConfig(({ command, mode }) => {
           charset: false,
         },
       },
+      // PostCSS usa o arquivo postcss.config.js
     },
     
     // Configuração de definições globais
@@ -179,7 +266,7 @@ export default defineConfig(({ command, mode }) => {
     publicDir: 'public',
     
     // Configuração de logs
-    logLevel: mode === 'production' ? 'info' : 'info',
+    logLevel: 'info',
     
     // Configuração de workers
     worker: {

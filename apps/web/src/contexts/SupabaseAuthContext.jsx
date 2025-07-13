@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useEffect, useState, useMemo, useCallback } from 'react';
 import { supabase } from "@/lib/api"
+import { authAPI } from '../services/api';
 
 const SupabaseAuthContext = createContext({});
 
@@ -17,11 +18,11 @@ export const SupabaseAuthProvider = ({ children }) => {
   const [profile, setProfile] = useState(null);
 
   useEffect(() => {
-    // Verificar sessão inicial
-    getSession();
+    // Verificar sessão inicial - desabilitado temporariamente para usar nossa API
+    // getSession();
 
-    // Listener para mudanças de autenticação
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+    // Listener para mudanças de autenticação - desabilitado temporariamente
+    /* const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
         if (session?.user) {
           setUser(session.user);
@@ -34,7 +35,16 @@ export const SupabaseAuthProvider = ({ children }) => {
       }
     );
 
-    return () => subscription?.unsubscribe();
+    return () => subscription?.unsubscribe(); */
+    
+    // Verificar se há um token salvo localmente
+    const savedToken = localStorage.getItem('auth_token');
+    if (savedToken) {
+      console.log('🔍 Found saved token:', savedToken);
+      // Poderemos verificar a validade do token aqui no futuro
+    }
+    
+    setLoading(false);
   }, []);
 
   const getSession = async () => {
@@ -114,6 +124,59 @@ export const SupabaseAuthProvider = ({ children }) => {
   const login = async (email, password) => {
     try {
       setLoading(true);
+      
+      // Tentar primeiro com nossa API simples
+      const apiResult = await authAPI.login({ email, password });
+      
+      console.log('🔍 API Result:', apiResult);
+      
+      if (apiResult.success) {
+        const userData = apiResult.data.user;
+        const isAdmin = apiResult.data.is_admin || userData.is_admin;
+        
+        console.log('🔍 User Data:', userData);
+        console.log('🔍 Is Admin Check:', {
+          'apiResult.data.is_admin': apiResult.data.is_admin,
+          'userData.is_admin': userData.is_admin,
+          'final isAdmin': isAdmin
+        });
+        
+        // Criar um perfil temporário baseado na resposta da API
+        const tempProfile = {
+          id: userData.id,
+          email: userData.email,
+          name: userData.name || 'Usuário',
+          role: isAdmin ? 'admin' : 'customer',
+          permissions: isAdmin ? ['read', 'write', 'admin'] : ['read'],
+          provider: 'email',
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString()
+        };
+        
+        console.log('🔍 Created Profile:', tempProfile);
+        
+        // Simular um usuário autenticado
+        const tempUser = {
+          id: userData.id,
+          email: userData.email,
+          user_metadata: {
+            name: userData.name || 'Usuário'
+          }
+        };
+        
+        setUser(tempUser);
+        setProfile(tempProfile);
+        
+        // Salvar token no localStorage
+        localStorage.setItem('auth_token', apiResult.data.token || apiResult.data.access_token);
+        
+        return { 
+          success: true, 
+          user: tempUser 
+        };
+      }
+      
+      // Se a API falhar, tentar Supabase
       const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password
@@ -122,7 +185,7 @@ export const SupabaseAuthProvider = ({ children }) => {
       if (error) {
         return { 
           success: false, 
-          error: error.message || 'Erro ao fazer login'
+          error: apiResult.error || error.message || 'Erro ao fazer login'
         };
       }
 
@@ -282,10 +345,13 @@ export const SupabaseAuthProvider = ({ children }) => {
 
   const logout = async () => {
     try {
+      // Limpar token local
+      localStorage.removeItem('auth_token');
+      
       const { error } = await supabase.auth.signOut();
       if (error) {
         console.error('Erro ao fazer logout:', error);
-        return { success: false, error: error.message };
+        // Mesmo com erro do Supabase, vamos limpar o estado local
       }
       
       setUser(null);
@@ -573,10 +639,6 @@ export const SupabaseAuthProvider = ({ children }) => {
         redirectURL = `${window.location.origin}/redefinir-senha`;
       }
       
-      console.log('📧 Enviando email de redefinição para:', email);
-      console.log('🔗 URL de redirecionamento configurada:', redirectURL);
-      console.log('🌐 Origin atual:', window.location.origin);
-      
       const { data, error } = await supabase.auth.resetPasswordForEmail(email, {
         redirectTo: redirectURL
       });
@@ -602,7 +664,6 @@ export const SupabaseAuthProvider = ({ children }) => {
         };
       }
 
-      console.log('✅ Email de reset enviado com sucesso:', data);
       return { 
         success: true, 
         message: 'Email de redefinição enviado! Verifique sua caixa de entrada e spam.' 
@@ -622,8 +683,6 @@ export const SupabaseAuthProvider = ({ children }) => {
   const confirmPasswordReset = async (newPassword) => {
     try {
       setLoading(true);
-      
-      console.log('⚠️ Usando função confirmPasswordReset - considere usar diretamente supabase.auth.updateUser');
       
       const { error } = await supabase.auth.updateUser({
         password: newPassword

@@ -87,18 +87,14 @@ const AdminComprasDashboard = () => {
       // Pedidos de Compra - APENAS DADOS REAIS
       if (purchasesResult.success) {
         setPedidosCompra(purchasesResult.data || []);
-        console.log(`✅ ${purchasesResult.data?.length || 0} pedidos de compra carregados do Supabase`);
-      } else {
-        console.log('⚠️ Tabela purchase_orders não encontrada ou vazia');
+        } else {
         setPedidosCompra([]);
       }
 
       // Fornecedores - APENAS DADOS REAIS
       if (suppliersResult.success) {
         setFornecedores(suppliersResult.data || []);
-        console.log(`✅ ${suppliersResult.data?.length || 0} fornecedores carregados do Supabase`);
-      } else {
-        console.log('⚠️ Tabela suppliers não encontrada ou vazia');
+        } else {
         setFornecedores([]);
       }
 

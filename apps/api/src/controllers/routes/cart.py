@@ -1,29 +1,40 @@
 from datetime import datetime
 
 from flask import Blueprint, jsonify, request
-from src.models.database import db
-from src.models.orders import CartItem
-from src.models.products import Product
-from src.models.user import User
+
+from ...database import db
+from ...models.orders import Cart, CartItem
+from ...models.products import Product
+from ...models.auth import User
 
 cart_bp = Blueprint("cart", __name__, url_prefix="/api/cart")
 
 # ========== ROTAS DO CARRINHO ========== #
 
 
-@cart_bp.route("/items", methods=["GET"])
-def get_cart_items():
-    """Listar itens do carrinho do usuário"""
+@cart_bp.route("/", methods=["GET"])
+def get_cart():
+    """Obter carrinho do usuário"""
     try:
         user_id = request.args.get("user_id")
         if not user_id:
-            return jsonify({"error": "user_id é obrigatório"}), 400
+            return jsonify({
+                "message": "Carrinho vazio - user_id é obrigatório",
+                "items": [],
+                "total": 0,
+                "items_count": 0
+            }), 200
+
+        # Buscar ou criar carrinho do usuário
+        cart = Cart.query.filter_by(user_id=user_id).first()
+        if not cart:
+            return jsonify({"items": [], "total": 0, "items_count": 0})
 
         # Buscar itens do carrinho com detalhes do produto
         cart_items = (
             db.session.query(CartItem, Product)
             .join(Product)
-            .filter(CartItem.user_id == user_id)
+            .filter(CartItem.cart_id == cart.id)
             .all()
         )
 
@@ -34,20 +45,83 @@ def get_cart_items():
             item_total = float(product.price) * cart_item.quantity
             total += item_total
 
+            # Buscar imagem principal do produto
+            primary_image = product.image_url
+
             items.append(
                 {
                     "id": cart_item.id,
                     "product_id": cart_item.product_id,
                     "quantity": cart_item.quantity,
-                    "created_at": cart_item.created_at.isoformat(),
-                    "updated_at": cart_item.updated_at.isoformat(),
+                    "added_at": (
+                        cart_item.added_at.isoformat() if cart_item.added_at else None
+                    ),
                     "product": {
                         "id": product.id,
                         "name": product.name,
                         "description": product.description,
                         "price": float(product.price),
-                        "image_url": product.image_url,
-                        "category": product.category,
+                        "image_url": primary_image,
+                        "category": product.category.name if product.category else None,
+                        "stock_quantity": product.stock_quantity,
+                        "is_active": product.is_active,
+                    },
+                    "subtotal": item_total,
+                }
+            )
+
+        return jsonify({"items": items, "total": total, "items_count": len(items)})
+
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+@cart_bp.route("/items", methods=["GET"])
+def get_cart_items():
+    """Listar itens do carrinho do usuário"""
+    try:
+        user_id = request.args.get("user_id")
+        if not user_id:
+            return jsonify({"error": "user_id é obrigatório"}), 400
+
+        # Buscar ou criar carrinho do usuário
+        cart = Cart.query.filter_by(user_id=user_id).first()
+        if not cart:
+            return jsonify({"items": [], "total": 0, "items_count": 0})
+
+        # Buscar itens do carrinho com detalhes do produto
+        cart_items = (
+            db.session.query(CartItem, Product)
+            .join(Product)
+            .filter(CartItem.cart_id == cart.id)
+            .all()
+        )
+
+        items = []
+        total = 0
+
+        for cart_item, product in cart_items:
+            item_total = float(product.price) * cart_item.quantity
+            total += item_total
+
+            # Buscar imagem principal do produto
+            primary_image = product.image_url
+
+            items.append(
+                {
+                    "id": cart_item.id,
+                    "product_id": cart_item.product_id,
+                    "quantity": cart_item.quantity,
+                    "added_at": (
+                        cart_item.added_at.isoformat() if cart_item.added_at else None
+                    ),
+                    "product": {
+                        "id": product.id,
+                        "name": product.name,
+                        "description": product.description,
+                        "price": float(product.price),
+                        "image_url": primary_image,
+                        "category": product.category.name if product.category else None,
                         "stock_quantity": product.stock_quantity,
                         "is_active": product.is_active,
                     },
@@ -78,19 +152,25 @@ def add_to_cart():
         if not product:
             return jsonify({"error": "Produto não encontrado ou inativo"}), 404
 
+        # Buscar ou criar carrinho do usuário
+        cart = Cart.query.filter_by(user_id=user_id).first()
+        if not cart:
+            cart = Cart(user_id=user_id)
+            db.session.add(cart)
+            db.session.flush()
+
         # Verificar se já existe no carrinho
         existing_item = CartItem.query.filter_by(
-            user_id=user_id, product_id=product_id
+            cart_id=cart.id, product_id=product_id
         ).first()
 
         if existing_item:
             # Atualizar quantidade
             existing_item.quantity += quantity
-            existing_item.updated_at = datetime.utcnow()
         else:
             # Criar novo item
             cart_item = CartItem(
-                user_id=user_id, product_id=product_id, quantity=quantity
+                cart_id=cart.id, product_id=product_id, quantity=quantity
             )
             db.session.add(cart_item)
 
@@ -157,8 +237,11 @@ def clear_cart():
         if not user_id:
             return jsonify({"error": "user_id é obrigatório"}), 400
 
-        CartItem.query.filter_by(user_id=user_id).delete()
-        db.session.commit()
+        # Buscar carrinho do usuário
+        cart = Cart.query.filter_by(user_id=user_id).first()
+        if cart:
+            CartItem.query.filter_by(cart_id=cart.id).delete()
+            db.session.commit()
 
         return jsonify({"message": "Carrinho limpo"})
 
@@ -175,9 +258,14 @@ def get_cart_count():
         if not user_id:
             return jsonify({"error": "user_id é obrigatório"}), 400
 
+        # Buscar carrinho do usuário
+        cart = Cart.query.filter_by(user_id=user_id).first()
+        if not cart:
+            return jsonify({"count": 0})
+
         count = (
             db.session.query(db.func.sum(CartItem.quantity))
-            .filter(CartItem.user_id == user_id)
+            .filter(CartItem.cart_id == cart.id)
             .scalar()
             or 0
         )
@@ -202,17 +290,20 @@ def get_all_carts():
         # Buscar carrinhos agrupados por usuário
         query = (
             db.session.query(
-                CartItem.user_id,
+                Cart.user_id,
                 User.name.label("user_name"),
                 User.email.label("user_email"),
                 db.func.count(CartItem.id).label("items_count"),
                 db.func.sum(CartItem.quantity).label("total_quantity"),
             )
-            .join(User)
-            .group_by(CartItem.user_id, User.name, User.email)
+            .join(CartItem, Cart.id == CartItem.cart_id)
+            .join(User, Cart.user_id == User.id)
+            .group_by(Cart.user_id, User.name, User.email)
         )
 
-        pagination = query.paginate(page=page, per_page=per_page, error_out=False)
+        # Executar consulta com paginação manual
+        total = query.count()
+        items = query.limit(per_page).offset((page - 1) * per_page).all()
 
         carts = []
         for (
@@ -221,15 +312,20 @@ def get_all_carts():
             user_email,
             items_count,
             total_quantity,
-        ) in pagination.items:
-            # Calcular total do carrinho
-            cart_total = (
-                db.session.query(db.func.sum(Product.price * CartItem.quantity))
-                .join(CartItem)
-                .filter(CartItem.user_id == user_id)
-                .scalar()
-                or 0
-            )
+        ) in items:
+            # Buscar carrinho do usuário
+            cart = Cart.query.filter_by(user_id=user_id).first()
+            if cart:
+                # Calcular total do carrinho
+                cart_total = (
+                    db.session.query(db.func.sum(Product.price * CartItem.quantity))
+                    .join(CartItem)
+                    .filter(CartItem.cart_id == cart.id)
+                    .scalar()
+                    or 0
+                )
+            else:
+                cart_total = 0
 
             carts.append(
                 {
@@ -242,13 +338,16 @@ def get_all_carts():
                 }
             )
 
+        # Calcular páginas manualmente
+        pages = (total + per_page - 1) // per_page
+
         return jsonify(
             {
                 "carts": carts,
                 "pagination": {
-                    "page": pagination.page,
-                    "pages": pagination.pages,
-                    "total": pagination.total,
+                    "page": page,
+                    "pages": pages,
+                    "total": total,
                 },
             }
         )
@@ -266,11 +365,23 @@ def get_user_cart(user_id):
         if not user:
             return jsonify({"error": "Usuário não encontrado"}), 404
 
+        # Buscar carrinho do usuário
+        cart = Cart.query.filter_by(user_id=user_id).first()
+        if not cart:
+            return jsonify(
+                {
+                    "user": {"id": user.id, "name": user.name, "email": user.email},
+                    "items": [],
+                    "total": 0,
+                    "items_count": 0,
+                }
+            )
+
         # Buscar itens do carrinho
         cart_items = (
             db.session.query(CartItem, Product)
             .join(Product)
-            .filter(CartItem.user_id == user_id)
+            .filter(CartItem.cart_id == cart.id)
             .all()
         )
 

@@ -15,8 +15,6 @@ const AuthCallbackPage = () => {
 
   const handleAuthCallback = async () => {
     try {
-      console.log('🔄 Processando callback de autenticação...');
-      
       // Obter sessão do callback
       const { data: { session }, error: sessionError } = await supabase.auth.getSession();
       
@@ -28,12 +26,9 @@ const AuthCallbackPage = () => {
       }
 
       if (!session?.user) {
-        console.log('❌ Nenhuma sessão encontrada, redirecionando para login...');
         navigate('/login');
         return;
       }
-
-      console.log('✅ Sessão obtida:', session.user.email);
 
       // Buscar ou criar perfil do usuário
       const userProfile = await getOrCreateUserProfile(session.user);
@@ -43,8 +38,6 @@ const AuthCallbackPage = () => {
         setTimeout(() => navigate('/login'), 3000);
         return;
       }
-
-      console.log('👤 Perfil do usuário:', userProfile);
 
       // Redirecionar baseado no role do usuário
       redirectUser(userProfile);
@@ -60,8 +53,6 @@ const AuthCallbackPage = () => {
 
   const getOrCreateUserProfile = async (authUser) => {
     try {
-      console.log('🔍 Buscando perfil do usuário:', authUser.id);
-      
       // Primeiro, tentar buscar o perfil existente
       const { data: existingProfile, error: fetchError } = await supabase
         .from('users')
@@ -70,11 +61,8 @@ const AuthCallbackPage = () => {
         .single();
 
       if (existingProfile && !fetchError) {
-        console.log('✅ Perfil existente encontrado:', existingProfile);
         return existingProfile;
       }
-
-      console.log('📝 Criando novo perfil para:', authUser.email);
 
       // Extrair informações do Google se disponíveis
       const isGoogleUser = authUser.app_metadata?.provider === 'google';
@@ -105,8 +93,6 @@ const AuthCallbackPage = () => {
         updated_at: new Date().toISOString()
       };
 
-      console.log('📄 Dados do perfil a ser criado:', profileData);
-
       const { data: newProfile, error: createError } = await supabase
         .from('users')
         .insert([profileData])
@@ -118,7 +104,6 @@ const AuthCallbackPage = () => {
         return null;
       }
 
-      console.log('✅ Novo perfil criado com sucesso:', newProfile);
       return newProfile;
 
     } catch (error) {
@@ -128,17 +113,13 @@ const AuthCallbackPage = () => {
   };
 
   const redirectUser = (userProfile) => {
-    console.log('🎯 Redirecionando usuário baseado no role:', userProfile.role);
-    
     // Verificar se é admin
     if (userProfile.role === 'admin' || userProfile.role === 'super_admin') {
-      console.log('👑 Usuário admin detectado, redirecionando para dashboard administrativo...');
       navigate('/admin/dashboard', { replace: true });
       return;
     }
 
     // Usuário comum
-    console.log('👤 Usuário comum, redirecionando para dashboard...');
     navigate('/dashboard', { replace: true });
   };
 

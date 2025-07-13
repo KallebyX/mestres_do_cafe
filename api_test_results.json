@@ -1,0 +1,453 @@
+{
+  "timestamp": "2025-07-08T20:43:26.144794",
+  "summary": {
+    "total": 17,
+    "passed": 10,
+    "failed": 7,
+    "success_rate": 58.82352941176471
+  },
+  "detailed_results": {
+    "Basic Endpoints": [
+      [
+        "Health Check",
+        {
+          "success": true,
+          "status_code": 200,
+          "response": {
+            "service": "mestres-cafe-api",
+            "status": "healthy",
+            "timestamp": "2025-07-08T23:43:26.069481",
+            "version": "1.0.0"
+          },
+          "error": null
+        }
+      ],
+      [
+        "API Info",
+        {
+          "success": true,
+          "status_code": 200,
+          "response": {
+            "description": "Sistema de e-commerce e ERP para torrefa\u00e7\u00e3o artesanal",
+            "endpoints": {
+              "auth": "/api/auth",
+              "blog": "/api/blog",
+              "cart": "/api/cart",
+              "health": "/api/health",
+              "newsletter": "/api/newsletter",
+              "orders": "/api/orders",
+              "products": "/api/products",
+              "reviews": "/api/reviews",
+              "shipping": "/api/shipping",
+              "testimonials": "/api/testimonials",
+              "wishlist": "/api/wishlist"
+            },
+            "name": "Mestres do Caf\u00e9 Enterprise API",
+            "version": "1.0.0"
+          },
+          "error": null
+        }
+      ],
+      [
+        "Testimonials",
+        {
+          "success": true,
+          "status_code": 200,
+          "response": [
+            {
+              "comment": "Caf\u00e9 excepcional! O melhor que j\u00e1 experimentei.",
+              "created_at": "2024-01-15T10:30:00Z",
+              "id": 1,
+              "image_url": null,
+              "name": "Maria Silva",
+              "rating": 5
+            },
+            {
+              "comment": "Qualidade impressionante e entrega r\u00e1pida. Recomendo!",
+              "created_at": "2024-01-10T14:20:00Z",
+              "id": 2,
+              "image_url": null,
+              "name": "Jo\u00e3o Santos",
+              "rating": 5
+            },
+            {
+              "comment": "Sabor \u00fanico e aroma incr\u00edvel. Voltarei a comprar!",
+              "created_at": "2024-01-05T09:15:00Z",
+              "id": 3,
+              "image_url": null,
+              "name": "Ana Costa",
+              "rating": 4
+            }
+          ],
+          "error": null
+        }
+      ]
+    ],
+    "Authentication": [
+      [
+        "Auth Register",
+        {
+          "success": false,
+          "status_code": 400,
+          "response": {
+            "error": {
+              "code": 4000,
+              "details": {
+                "confirm_password": "Confirma\u00e7\u00e3o de senha \u00e9 obrigat\u00f3ria",
+                "full_name": "Unknown field.",
+                "name": "Nome \u00e9 obrigat\u00f3rio"
+              },
+              "error_id": "ERR_20250708_234326_077208",
+              "message": "Dados de entrada inv\u00e1lidos",
+              "timestamp": "2025-07-08T23:43:26.076990+00:00"
+            }
+          },
+          "error": null
+        }
+      ],
+      [
+        "Auth Login",
+        {
+          "success": false,
+          "status_code": 401,
+          "response": {
+            "error": {
+              "code": 4100,
+              "error_id": "ERR_20250708_234326_088316",
+              "message": "Credenciais inv\u00e1lidas",
+              "timestamp": "2025-07-08T23:43:26.088204+00:00"
+            }
+          },
+          "error": null
+        }
+      ]
+    ],
+    "Products": [
+      [
+        "Products List",
+        {
+          "success": true,
+          "status_code": 200,
+          "response": {
+            "pagination": {
+              "has_next": false,
+              "has_prev": false,
+              "page": 1,
+              "pages": 1,
+              "per_page": 12,
+              "total": 5
+            },
+            "products": [
+              {
+                "category": "Caf\u00e9 em Gr\u00e3os",
+                "description": "Caf\u00e9 especial da regi\u00e3o de Santos",
+                "flavor_notes": null,
+                "id": 1,
+                "image_url": null,
+                "is_featured": true,
+                "name": "Caf\u00e9 Bourbon Santos Premium",
+                "origin": null,
+                "price": 45.9,
+                "sca_score": null,
+                "stock_quantity": 100,
+                "weight": 500
+              },
+              {
+                "category": "Caf\u00e9 Especial",
+                "description": "Caf\u00e9 da regi\u00e3o da Mogiana",
+                "flavor_notes": null,
+                "id": 2,
+                "image_url": null,
+                "is_featured": true,
+                "name": "Caf\u00e9 Mogiana Especial",
+                "origin": null,
+                "price": 52.9,
+                "sca_score": null,
+                "stock_quantity": 75,
+                "weight": 500
+              },
+              {
+                "category": "Caf\u00e9 em Gr\u00e3os",
+                "description": "Caf\u00e9 org\u00e2nico certificado",
+                "flavor_notes": null,
+                "id": 3,
+                "image_url": null,
+                "is_featured": false,
+                "name": "Caf\u00e9 Org\u00e2nico Cerrado",
+                "origin": null,
+                "price": 48.9,
+                "sca_score": null,
+                "stock_quantity": 50,
+                "weight": 500
+              },
+              {
+                "category": "Acess\u00f3rios",
+                "description": "Moedor manual com l\u00e2minas cer\u00e2micas",
+                "flavor_notes": null,
+                "id": 4,
+                "image_url": null,
+                "is_featured": true,
+                "name": "Moedor Manual Premium",
+                "origin": null,
+                "price": 89.9,
+                "sca_score": null,
+                "stock_quantity": 25,
+                "weight": 800
+              },
+              {
+                "category": "Acess\u00f3rios",
+                "description": "X\u00edcara de porcelana premium",
+                "flavor_notes": null,
+                "id": 5,
+                "image_url": null,
+                "is_featured": false,
+                "name": "X\u00edcara Porcelana",
+                "origin": null,
+                "price": 24.9,
+                "sca_score": null,
+                "stock_quantity": 40,
+                "weight": 200
+              }
+            ]
+          },
+          "error": null
+        }
+      ],
+      [
+        "Products Search",
+        {
+          "success": true,
+          "status_code": 200,
+          "response": {
+            "products": [
+              {
+                "category": "Caf\u00e9 em Gr\u00e3os",
+                "id": 1,
+                "image_url": null,
+                "name": "Caf\u00e9 Bourbon Santos Premium",
+                "price": 45.9
+              },
+              {
+                "category": "Caf\u00e9 Especial",
+                "id": 2,
+                "image_url": null,
+                "name": "Caf\u00e9 Mogiana Especial",
+                "price": 52.9
+              },
+              {
+                "category": "Caf\u00e9 em Gr\u00e3os",
+                "id": 3,
+                "image_url": null,
+                "name": "Caf\u00e9 Org\u00e2nico Cerrado",
+                "price": 48.9
+              }
+            ]
+          },
+          "error": null
+        }
+      ],
+      [
+        "Products Categories",
+        {
+          "success": true,
+          "status_code": 200,
+          "response": {
+            "categories": []
+          },
+          "error": null
+        }
+      ],
+      [
+        "Featured Products",
+        {
+          "success": true,
+          "status_code": 200,
+          "response": {
+            "products": []
+          },
+          "error": null
+        }
+      ]
+    ],
+    "Cart": [
+      [
+        "Cart Get",
+        {
+          "success": false,
+          "status_code": 404,
+          "response": {
+            "error": "API endpoint not found"
+          },
+          "error": null
+        }
+      ],
+      [
+        "Cart Add",
+        {
+          "success": false,
+          "status_code": 405,
+          "response": {
+            "error": {
+              "code": 405,
+              "error_id": "ERR_20250708_234326_118378",
+              "message": "The method is not allowed for the requested URL.",
+              "timestamp": "2025-07-08T23:43:26.122878+00:00"
+            }
+          },
+          "error": null
+        }
+      ]
+    ],
+    "Wishlist": [
+      [
+        "Wishlist Get",
+        {
+          "success": true,
+          "status_code": 200,
+          "response": {
+            "items": [
+              {
+                "added_at": "2025-07-08T23:32:40",
+                "id": 1,
+                "product": {
+                  "category": "Caf\u00e9 em Gr\u00e3os",
+                  "id": 1,
+                  "image_url": null,
+                  "name": "Caf\u00e9 Bourbon Santos Premium",
+                  "price": 45.9
+                },
+                "product_id": 1
+              },
+              {
+                "added_at": "2025-07-08T23:32:40",
+                "id": 2,
+                "product": {
+                  "category": "Caf\u00e9 Especial",
+                  "id": 2,
+                  "image_url": null,
+                  "name": "Caf\u00e9 Mogiana Especial",
+                  "price": 52.9
+                },
+                "product_id": 2
+              }
+            ],
+            "success": true
+          },
+          "error": null
+        }
+      ],
+      [
+        "Wishlist Add",
+        {
+          "success": false,
+          "status_code": 400,
+          "response": {
+            "error": "Produto j\u00e1 est\u00e1 nos favoritos",
+            "success": false
+          },
+          "error": null
+        }
+      ]
+    ],
+    "Reviews": [
+      [
+        "Reviews List",
+        {
+          "success": true,
+          "status_code": 200,
+          "response": {
+            "reviews": [
+              {
+                "comment": "Sabor incr\u00edvel, entrega r\u00e1pida. Recomendo!",
+                "created_at": "2025-07-08T20:00:00",
+                "helpful_count": 5,
+                "id": 1,
+                "is_verified": true,
+                "product_name": "Caf\u00e9 Bourbon Santos Premium",
+                "rating": 5,
+                "title": "Excelente caf\u00e9!",
+                "user_name": "Cliente Satisfeito"
+              },
+              {
+                "comment": "Qualidade excelente, pre\u00e7o justo.",
+                "created_at": "2025-07-08T19:30:00",
+                "helpful_count": 2,
+                "id": 2,
+                "is_verified": false,
+                "product_name": "Caf\u00e9 Bourbon Santos Premium",
+                "rating": 4,
+                "title": "Muito bom",
+                "user_name": "Jo\u00e3o Silva"
+              },
+              {
+                "comment": "Notas de sabor \u00fanicas, vale cada centavo.",
+                "created_at": "2025-07-08T18:45:00",
+                "helpful_count": 8,
+                "id": 3,
+                "is_verified": true,
+                "product_name": "Caf\u00e9 Mogiana Especial",
+                "rating": 5,
+                "title": "Caf\u00e9 especial maravilhoso",
+                "user_name": "Maria Santos"
+              }
+            ],
+            "success": true,
+            "total": 3
+          },
+          "error": null
+        }
+      ],
+      [
+        "Product Reviews",
+        {
+          "success": true,
+          "status_code": 200,
+          "response": {
+            "average_rating": 5.0,
+            "product_id": 1,
+            "reviews": [
+              {
+                "comment": "Review do produto 1 - muito bom!",
+                "created_at": "2025-07-08T20:00:00",
+                "helpful_count": 3,
+                "id": 1,
+                "is_verified": true,
+                "rating": 5,
+                "title": "Produto excelente!",
+                "user_name": "Usu\u00e1rio Teste"
+              }
+            ],
+            "success": true,
+            "total_reviews": 1
+          },
+          "error": null
+        }
+      ]
+    ],
+    "Shipping": [
+      [
+        "Shipping Calculate",
+        {
+          "success": false,
+          "status_code": 400,
+          "response": {
+            "error": "Campo origin_cep \u00e9 obrigat\u00f3rio",
+            "success": false
+          },
+          "error": null
+        }
+      ],
+      [
+        "Shipping Options",
+        {
+          "success": false,
+          "status_code": 404,
+          "response": {
+            "error": "API endpoint not found"
+          },
+          "error": null
+        }
+      ]
+    ]
+  }
+}

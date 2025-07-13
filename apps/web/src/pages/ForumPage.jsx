@@ -1,10 +1,14 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { MessageCircle, ThumbsUp, Eye, User, Clock, Star, Search, Filter, PlusCircle } from 'lucide-react';
+import { useDebouncedValue } from '../utils/debounce';
 
 const ForumPage = () => {
   const [activeCategory, setActiveCategory] = useState('all');
   const [searchTerm, setSearchTerm] = useState('');
+  
+  // Debounced search term para otimização
+  const debouncedSearchTerm = useDebouncedValue(searchTerm, 350);
 
   const categories = [
     { id: 'all', name: 'Todos os Tópicos', count: 247 },
@@ -90,8 +94,8 @@ const ForumPage = () => {
 
   const filteredTopics = topics.filter(topic => {
     const matchesCategory = activeCategory === 'all' || topic.category === activeCategory;
-    const matchesSearch = topic.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         topic.excerpt.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesSearch = topic.title.toLowerCase().includes(debouncedSearchTerm.toLowerCase()) ||
+                         topic.excerpt.toLowerCase().includes(debouncedSearchTerm.toLowerCase());
     return matchesCategory && matchesSearch;
   });
 

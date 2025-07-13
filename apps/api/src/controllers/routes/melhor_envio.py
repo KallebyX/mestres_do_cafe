@@ -2,9 +2,9 @@
 Rotas da API para integração com Melhor Envio
 """
 from flask import Blueprint, request, jsonify
-from src.services.melhor_envio_service import MelhorEnvioService
-from src.models.melhor_envio import MelhorEnvioConfig, EnvioMelhorEnvio
-from src.models.database import db
+from ...services.melhor_envio_service import MelhorEnvioService
+from ...models.melhor_envio import MelhorEnvioConfig, EnvioMelhorEnvio
+from ...database import db
 from datetime import datetime, timedelta
 import os
 

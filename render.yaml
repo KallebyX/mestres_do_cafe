@@ -45,7 +45,7 @@ services:
       npm run build
     startCommand: |
       cd apps/web
-      npx serve dist -p $PORT -s
+      npx serve dist -p $PORT -s -c ../serve.json
     envVars:
       - key: NODE_ENV
         value: production
@@ -53,6 +53,8 @@ services:
         value: https://mestres-cafe-api.onrender.com
       - key: PORT
         value: 10000
+      - key: NODE_VERSION
+        value: 18.19.0
     autoDeploy: true
 
 databases:

@@ -73,18 +73,14 @@ const AdminVendasDashboard = () => {
       // Vendas - APENAS DADOS REAIS
       if (salesResult.success) {
         setVendas(salesResult.data || []);
-        console.log(`✅ ${salesResult.data?.length || 0} vendas carregadas do Supabase`);
-      } else {
-        console.log('⚠️ Tabela sales não encontrada ou vazia');
+        } else {
         setVendas([]);
       }
 
       // Vendedores - APENAS DADOS REAIS
       if (sellersResult.success) {
         setVendedores(sellersResult.data || []);
-        console.log(`✅ ${sellersResult.data?.length || 0} vendedores carregados do Supabase`);
-      } else {
-        console.log('⚠️ Tabela sellers não encontrada ou vazia');
+        } else {
         setVendedores([]);
       }
 

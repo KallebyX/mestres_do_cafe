@@ -22,12 +22,8 @@ const ResetPasswordPage = () => {
   // Extrair tokens da URL - VERSÃO SIMPLIFICADA E ROBUSTA
   useEffect(() => {
     const configureSession = async () => {
-      console.log('🚀 INICIANDO CONFIGURAÇÃO DE SESSÃO');
-      
       // URL completa para debug
       const fullURL = window.location.href;
-      console.log('📍 URL COMPLETA:', fullURL);
-      
       // MÉTODO SIMPLES: Extrair diretamente dos search params
       const currentURL = new URL(window.location.href);
       const params = currentURL.searchParams;
@@ -58,8 +54,6 @@ const ResetPasswordPage = () => {
       }
 
       try {
-        console.log('🔧 CONFIGURANDO SESSÃO COM TOKEN ENCONTRADO...');
-        
         // Usar o access_token como refresh_token se não tiver um refresh_token válido
         const sessionData = {
           access_token: accessToken,
@@ -84,9 +78,6 @@ const ResetPasswordPage = () => {
           return;
         }
 
-        console.log('✅ SESSÃO CONFIGURADA COM SUCESSO!');
-        console.log('👤 Usuário:', data.session?.user?.email || 'NÃO IDENTIFICADO');
-        
         setSessionConfigured(true);
         
       } catch (err) {
@@ -163,8 +154,6 @@ const ResetPasswordPage = () => {
 
     try {
       setLoading(true);
-      console.log('🔒 Redefinindo senha...');
-      
       // Usar diretamente a API do Supabase para atualizar a senha
       const { data, error } = await supabase.auth.updateUser({
         password: formData.password
@@ -176,7 +165,6 @@ const ResetPasswordPage = () => {
         return;
       }
 
-      console.log('✅ Senha redefinida com sucesso:', data);
       setSuccess('Senha redefinida com sucesso!');
       
       setTimeout(() => {

@@ -1,294 +1,476 @@
 """
-Modelos de Produtos - Mestres do Café Enterprise
+Modelos de produtos, variações e estoque
 """
 
 from datetime import datetime
+from uuid import uuid4
 
 from sqlalchemy import (
-    JSON,
     Boolean,
     Column,
     DateTime,
-    Float,
     ForeignKey,
+    Index,
     Integer,
     String,
     Text,
 )
+from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
+from sqlalchemy.types import DECIMAL
 
-from .base import db
+from ..database import db
 
 
-class Category(db.Model):
-    """Categoria de produtos"""
-    __tablename__ = 'categories'
+class ProductCategory(db.Model):
+    __tablename__ = 'product_categories'
     
-    id = Column(Integer, primary_key=True)
-    name = Column(String(100), nullable=False)
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid4)
+    name = Column(String(255), nullable=False)
+    slug = Column(String(255), unique=True, nullable=False)
     description = Column(Text)
-    slug = Column(String(120), unique=True, nullable=False)
-    image_url = Column(String(255))
+    image_url = Column(Text)
+    parent_id = Column(UUID(as_uuid=True), ForeignKey('product_categories.id'))
+    sort_order = Column(Integer, default=0)
     is_active = Column(Boolean, default=True)
     created_at = Column(DateTime, default=datetime.utcnow)
-    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     
     # Relacionamentos
-    products = relationship("Product", back_populates="category")
+    children = relationship("ProductCategory", backref="parent", remote_side=[id])
+    products = relationship("Product", back_populates="category_rel")
     
     def __repr__(self):
-        return f'<Category {self.name}>'
+        return f"<ProductCategory(id={self.id}, name={self.name})>"
     
     def to_dict(self):
         return {
-            'id': self.id,
+            'id': str(self.id),
             'name': self.name,
-            'description': self.description,
             'slug': self.slug,
+            'description': self.description,
             'image_url': self.image_url,
+            'parent_id': str(self.parent_id) if self.parent_id else None,
+            'sort_order': self.sort_order,
             'is_active': self.is_active,
-            'created_at': self.created_at.isoformat() if self.created_at is not None else None,
-            'updated_at': self.updated_at.isoformat() if self.updated_at is not None else None
+            'created_at': self.created_at.isoformat() if self.created_at else None
         }
 
 
 class Product(db.Model):
-    """Produto"""
     __tablename__ = 'products'
     
-    id = Column(Integer, primary_key=True)
-    name = Column(String(200), nullable=False)
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid4)
+    name = Column(String(255), nullable=False)
+    slug = Column(String(255), unique=True, nullable=False)
     description = Column(Text)
-    slug = Column(String(220), unique=True, nullable=False)
-    price = Column(Float, nullable=False)
-    weight = Column(Integer)  # peso em gramas
-    origin = Column(String(100))  # origem do café
-    sca_score = Column(Integer)  # pontuação SCA
-    flavor_notes = Column(JSON)  # notas de sabor
+    short_description = Column(Text)
+    sku = Column(String(100), unique=True)
+    category_id = Column(UUID(as_uuid=True), ForeignKey('product_categories.id'))
+    category = Column(String(100))
+    supplier_id = Column(UUID(as_uuid=True), ForeignKey('suppliers.id'))
+    
+    # Preços
+    price = Column(DECIMAL(10, 2), nullable=False)
+    cost_price = Column(DECIMAL(10, 2))
+    compare_price = Column(DECIMAL(10, 2))
+    
+    # Estoque
     stock_quantity = Column(Integer, default=0)
+    min_stock_level = Column(Integer, default=0)
+    max_stock_level = Column(Integer, default=1000)
+    track_inventory = Column(Boolean, default=True)
+    
+    # Características do café
+    origin = Column(String(100))
+    process = Column(String(100))
+    roast_level = Column(String(50))
+    sca_score = Column(Integer)
+    acidity = Column(Integer)
+    sweetness = Column(Integer)
+    body = Column(Integer)
+    flavor_notes = Column(Text)  # JSON string para compatibilidade SQLite
+    
+    # Físico
+    weight = Column(DECIMAL(8, 2))
+    dimensions = Column(Text)  # JSON string para compatibilidade SQLite
+    
+    # Controle
     is_active = Column(Boolean, default=True)
     is_featured = Column(Boolean, default=False)
+    is_digital = Column(Boolean, default=False)
+    requires_shipping = Column(Boolean, default=True)
     
-    # Relacionamentos
-    category_id = Column(Integer, ForeignKey('categories.id'))
-    category = relationship("Category", back_populates="products")
-    images = relationship("ProductImage", back_populates="product")
-    reviews = relationship("Review", back_populates="product")
+    # SEO
+    meta_title = Column(String(255))
+    meta_description = Column(Text)
     
-    # Metadados
+    # Mídia
+    image_url = Column(Text)
+    gallery_images = Column(Text)  # JSON string para compatibilidade SQLite
+    
+    # Timestamps
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     
+    # Relacionamentos
+    category_rel = relationship("ProductCategory", back_populates="products")
+    supplier = relationship("Supplier", back_populates="products")
+    variants = relationship("ProductVariant", back_populates="product")
+    attributes = relationship("ProductAttributeValue", back_populates="product")
+    order_items = relationship("OrderItem", back_populates="product")
+    cart_items = relationship("CartItem", back_populates="product")
+    stock_batches = relationship("StockBatch", back_populates="product")
+    stock_movements = relationship("StockMovement", back_populates="product")
+    stock_alerts = relationship("StockAlert", back_populates="product")
+    wishlist_items = relationship("WishlistItem", back_populates="product")
+    
     def __repr__(self):
-        return f'<Product {self.name}>'
-    
-    @property
-    def average_rating(self):
-        """Calcula a avaliação média do produto"""
-        # Temporariamente retorna 0 para evitar problemas de schema
-        return 0
-    
-    @property
-    def is_in_stock(self):
-        """Verifica se o produto está em estoque"""
-        return self.stock_quantity > 0
+        return f"<Product(id={self.id}, name={self.name}, sku={self.sku})>"
     
     def to_dict(self):
         return {
-            'id': self.id,
+            'id': str(self.id),
             'name': self.name,
-            'description': self.description,
             'slug': self.slug,
-            'price': self.price,
-            'weight': self.weight,
-            'origin': self.origin,
-            'sca_score': self.sca_score,
-            'flavor_notes': self.flavor_notes,
+            'description': self.description,
+            'short_description': self.short_description,
+            'sku': self.sku,
+            'category_id': str(self.category_id) if self.category_id else None,
+            'category': self.category,
+            'supplier_id': str(self.supplier_id) if self.supplier_id else None,
+            'price': float(self.price) if self.price else 0.00,
+            'cost_price': float(self.cost_price) if self.cost_price else None,
+            'compare_price': float(self.compare_price) if self.compare_price else None,
             'stock_quantity': self.stock_quantity,
+            'min_stock_level': self.min_stock_level,
+            'max_stock_level': self.max_stock_level,
+            'track_inventory': self.track_inventory,
+            'origin': self.origin,
+            'process': self.process,
+            'roast_level': self.roast_level,
+            'sca_score': self.sca_score,
+            'acidity': self.acidity,
+            'sweetness': self.sweetness,
+            'body': self.body,
+            'flavor_notes': self.flavor_notes,
+            'weight': float(self.weight) if self.weight else None,
+            'dimensions': self.dimensions,
             'is_active': self.is_active,
             'is_featured': self.is_featured,
-            'is_in_stock': self.is_in_stock,
-            'average_rating': self.average_rating,
-            'category_id': self.category_id,
-            'category': self.category.to_dict() if self.category else None,
-            'created_at': self.created_at.isoformat() if self.created_at is not None else None,
-            'updated_at': self.updated_at.isoformat() if self.updated_at is not None else None
+            'is_digital': self.is_digital,
+            'requires_shipping': self.requires_shipping,
+            'meta_title': self.meta_title,
+            'meta_description': self.meta_description,
+            'image_url': self.image_url,
+            'gallery_images': self.gallery_images,
+            'created_at': self.created_at.isoformat() if self.created_at else None,
+            'updated_at': self.updated_at.isoformat() if self.updated_at else None
         }
 
 
-class ProductImage(db.Model):
-    """Imagem de produto"""
-    __tablename__ = 'product_images'
+class ProductVariant(db.Model):
+    __tablename__ = 'product_variants'
     
-    id = Column(Integer, primary_key=True)
-    product_id = Column(Integer, ForeignKey('products.id'), nullable=False)
-    image_url = Column(String(255), nullable=False)
-    alt_text = Column(String(255))
-    is_primary = Column(Boolean, default=False)
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid4)
+    product_id = Column(UUID(as_uuid=True), ForeignKey('products.id'))
+    name = Column(String(255), nullable=False)
+    sku = Column(String(100), unique=True, nullable=False)
+    
+    # Preços
+    price = Column(DECIMAL(10, 2), nullable=False)
+    
+    # Físico
+    weight = Column(DECIMAL(8, 2))
+    
+    # Estoque
+    stock_quantity = Column(Integer, default=0)
+    
+    # Atributos específicos (JSONB)
+    attributes = Column(Text)  # JSON string para compatibilidade SQLite
+    
+    # Mídia
+    image_url = Column(Text)
+    
+    # Controle
+    is_active = Column(Boolean, default=True)
+    sort_order = Column(Integer, default=0)
+    
+    # Timestamps
     created_at = Column(DateTime, default=datetime.utcnow)
     
     # Relacionamentos
-    product = relationship("Product", back_populates="images")
+    product = relationship("Product", back_populates="variants")
+    order_items = relationship("OrderItem", back_populates="variant")
+    cart_items = relationship("CartItem", back_populates="variant")
     
     def __repr__(self):
-        return f'<ProductImage {self.image_url}>'
-
-
-class Review(db.Model):
-    """Avaliação de produto"""
-    __tablename__ = 'reviews'
-    
-    id = Column(Integer, primary_key=True)
-    product_id = Column(Integer, ForeignKey('products.id'), nullable=False)
-    user_id = Column(Integer, ForeignKey('users.id'), nullable=False)
-    rating = Column(Integer, nullable=False)  # 1-5
-    title = Column(String(200))
-    comment = Column(Text)
-    is_verified = Column(Boolean, default=False)
-    is_approved = Column(Boolean, default=True)
-    is_featured = Column(Boolean, default=False)
-    helpful_count = Column(Integer, default=0)
-    not_helpful_count = Column(Integer, default=0)
-    images = Column(JSON)  # URLs das imagens da avaliação
-    pros = Column(JSON)  # Lista de pontos positivos
-    cons = Column(JSON)  # Lista de pontos negativos
-    recommend = Column(Boolean, default=True)  # Se recomenda o produto
-    created_at = Column(DateTime, default=datetime.utcnow)
-    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
-    
-    # Relacionamentos
-    product = relationship("Product", back_populates="reviews")
-    user = relationship("User", back_populates="reviews")
-    helpful_votes = relationship("ReviewHelpful", back_populates="review", cascade="all, delete-orphan")
-    responses = relationship("ReviewResponse", back_populates="review", cascade="all, delete-orphan")
-    
-    def __repr__(self):
-        return f'<Review {self.rating}⭐ for {self.product.name}>'
-    
-    def to_dict(self):
-        try:
-            # Dados básicos da review
-            review_data = {
-                'id': self.id,
-                'product_id': self.product_id,
-                'user_id': self.user_id,
-                'rating': self.rating,
-                'title': self.title,
-                'comment': self.comment,
-                'is_verified': self.is_verified,
-                'is_approved': self.is_approved,
-                'is_featured': self.is_featured,
-                'helpful_count': self.helpful_count,
-                'not_helpful_count': self.not_helpful_count,
-                'images': self.images or [],
-                'pros': self.pros or [],
-                'cons': self.cons or [],
-                'recommend': self.recommend,
-                'created_at': self.created_at.isoformat() if self.created_at is not None else None,
-                'updated_at': self.updated_at.isoformat() if self.updated_at is not None else None
-            }
-            
-            # Tentar adicionar dados do usuário se disponível
-            try:
-                if hasattr(self, 'user') and self.user:
-                    review_data['user'] = {
-                        'id': self.user.id,
-                        'name': self.user.name,
-                        'email': self.user.email[:3] + "***" + self.user.email[-10:] if self.user.email else None,
-                        'avatar_url': getattr(self.user, 'avatar_url', None)
-                    }
-                else:
-                    review_data['user'] = None
-            except:
-                review_data['user'] = None
-            
-            # Tentar adicionar respostas se disponível
-            try:
-                if hasattr(self, 'responses') and self.responses:
-                    review_data['responses'] = [response.to_dict() for response in self.responses]
-                else:
-                    review_data['responses'] = []
-            except:
-                review_data['responses'] = []
-                
-            return review_data
-        except Exception as e:
-            # Fallback básico se houver erro
-            return {
-                'id': self.id,
-                'product_id': self.product_id,
-                'user_id': self.user_id,
-                'rating': self.rating,
-                'title': self.title,
-                'comment': self.comment,
-                'is_verified': self.is_verified,
-                'is_approved': self.is_approved,
-                'is_featured': self.is_featured,
-                'helpful_count': self.helpful_count,
-                'not_helpful_count': self.not_helpful_count,
-                'images': self.images or [],
-                'pros': self.pros or [],
-                'cons': self.cons or [],
-                'recommend': self.recommend,
-                'created_at': self.created_at.isoformat() if self.created_at is not None else None,
-                'updated_at': self.updated_at.isoformat() if self.updated_at is not None else None,
-                'user': None,
-                'responses': []
-            }
-
-
-class ReviewHelpful(db.Model):
-    """Votos úteis para avaliações"""
-    __tablename__ = 'review_helpful'
-    
-    id = Column(Integer, primary_key=True)
-    review_id = Column(Integer, ForeignKey('reviews.id'), nullable=False)
-    user_id = Column(Integer, ForeignKey('users.id'), nullable=False)
-    is_helpful = Column(Boolean, nullable=False)  # True = útil, False = não útil
-    created_at = Column(DateTime, default=datetime.utcnow)
-    
-    # Relacionamentos
-    review = relationship("Review", back_populates="helpful_votes")
-    user = relationship("User", backref="review_votes")
-    
-    # Constraint para evitar votos duplicados
-    __table_args__ = (db.UniqueConstraint('review_id', 'user_id', name='unique_review_user_vote'),)
-    
-    def __repr__(self):
-        helpful_text = "Útil" if self.is_helpful is True else "Não útil"
-        return f'<ReviewHelpful {self.review_id} - {helpful_text}>'
-
-
-class ReviewResponse(db.Model):
-    """Resposta da empresa às avaliações"""
-    __tablename__ = 'review_responses'
-    
-    id = Column(Integer, primary_key=True)
-    review_id = Column(Integer, ForeignKey('reviews.id'), nullable=False)
-    admin_user_id = Column(Integer, ForeignKey('users.id'), nullable=False)
-    response_text = Column(Text, nullable=False)
-    is_public = Column(Boolean, default=True)
-    created_at = Column(DateTime, default=datetime.utcnow)
-    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
-    
-    # Relacionamentos
-    review = relationship("Review", back_populates="responses")
-    admin_user = relationship("User", backref="review_responses")
-    
-    def __repr__(self):
-        return f'<ReviewResponse {self.review_id}>'
+        return f"<ProductVariant(id={self.id}, name={self.name})>"
     
     def to_dict(self):
         return {
-            'id': self.id,
-            'review_id': self.review_id,
-            'admin_user_id': self.admin_user_id,
-            'response_text': self.response_text,
-            'is_public': self.is_public,
-            'created_at': self.created_at.isoformat() if self.created_at else None,
-            'updated_at': self.updated_at.isoformat() if self.updated_at is not None else None,
-            'admin_user': {
-                'name': self.admin_user.name,
-                'role': 'Mestres do Café'
-            } if self.admin_user else None
+            'id': str(self.id),
+            'product_id': str(self.product_id),
+            'name': self.name,
+            'sku': self.sku,
+            'price': float(self.price) if self.price else None,
+            'weight': float(self.weight) if self.weight else None,
+            'stock_quantity': self.stock_quantity,
+            'attributes': self.attributes,
+            'image_url': self.image_url,
+            'is_active': self.is_active,
+            'sort_order': self.sort_order,
+            'created_at': self.created_at.isoformat() if self.created_at else None
         }
+
+
+class ProductAttribute(db.Model):
+    __tablename__ = 'product_attributes'
+    
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid4)
+    name = Column(String(255), nullable=False)
+    slug = Column(String(255), unique=True, nullable=False)
+    type = Column(String(50), nullable=False)  # text, number, select, boolean
+    options = Column(Text)  # JSON como TEXT
+    is_required = Column(Boolean, default=False)
+    is_visible = Column(Boolean, default=True)
+    sort_order = Column(Integer, default=0)
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    
+    # Relacionamentos
+    values = relationship("ProductAttributeValue", back_populates="attribute")
+    
+    def __repr__(self):
+        return f"<ProductAttribute(id={self.id}, name={self.name})>"
+    
+    def to_dict(self):
+        return {
+            'id': str(self.id),
+            'name': self.name,
+            'slug': self.slug,
+            'type': self.type,
+            'options': self.options,
+            'is_required': self.is_required,
+            'is_visible': self.is_visible,
+            'sort_order': self.sort_order,
+            'created_at': self.created_at.isoformat() if self.created_at else None,
+            'updated_at': self.updated_at.isoformat() if self.updated_at else None
+        }
+
+
+class ProductAttributeValue(db.Model):
+    __tablename__ = 'product_attribute_values'
+    
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid4)
+    product_id = Column(UUID(as_uuid=True), ForeignKey('products.id'))
+    attribute_id = Column(UUID(as_uuid=True), ForeignKey('product_attributes.id'))
+    value = Column(Text, nullable=False)
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    
+    # Relacionamentos
+    product = relationship("Product", back_populates="attributes")
+    attribute = relationship("ProductAttribute", back_populates="values")
+    
+    def __repr__(self):
+        return f"<ProductAttributeValue(id={self.id}, value={self.value})>"
+    
+    def to_dict(self):
+        return {
+            'id': str(self.id),
+            'product_id': str(self.product_id),
+            'attribute_id': str(self.attribute_id),
+            'value': self.value,
+            'created_at': self.created_at.isoformat() if self.created_at else None,
+            'updated_at': self.updated_at.isoformat() if self.updated_at else None
+        }
+
+
+class StockBatch(db.Model):
+    __tablename__ = 'stock_batches'
+    
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid4)
+    product_id = Column(UUID(as_uuid=True), ForeignKey('products.id'))
+    batch_number = Column(String(100), nullable=False)
+    quantity = Column(Integer, nullable=False)
+    cost_price = Column(DECIMAL(10, 2))
+    supplier = Column(String(255))
+    manufacturing_date = Column(DateTime)
+    expiration_date = Column(DateTime)
+    location = Column(String(200))
+    notes = Column(Text)
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    
+    # Relacionamentos
+    product = relationship("Product", back_populates="stock_batches")
+    
+    def __repr__(self):
+        return f"<StockBatch(id={self.id}, batch_number={self.batch_number})>"
+    
+    def to_dict(self):
+        return {
+            'id': str(self.id),
+            'product_id': str(self.product_id),
+            'batch_number': self.batch_number,
+            'quantity': self.quantity,
+            'cost_price': float(self.cost_price) if self.cost_price else None,
+            'supplier': self.supplier,
+            'manufacturing_date': self.manufacturing_date.isoformat() if self.manufacturing_date else None,
+            'expiration_date': self.expiration_date.isoformat() if self.expiration_date else None,
+            'location': self.location,
+            'notes': self.notes,
+            'created_at': self.created_at.isoformat() if self.created_at else None,
+            'updated_at': self.updated_at.isoformat() if self.updated_at else None
+        }
+
+
+class StockMovement(db.Model):
+    __tablename__ = 'stock_movements'
+    
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid4)
+    product_id = Column(UUID(as_uuid=True), ForeignKey('products.id'))
+    type = Column(String(50), nullable=False)  # entrada, saida, ajuste
+    quantity = Column(Integer, nullable=False)
+    reference_type = Column(String(50))  # order, purchase, adjustment
+    reference_id = Column(UUID(as_uuid=True))
+    cost_price = Column(DECIMAL(10, 2))
+    reason = Column(String(255))
+    notes = Column(Text)
+    user_id = Column(UUID(as_uuid=True), ForeignKey('users.id'))
+    created_at = Column(DateTime, default=datetime.utcnow)
+    
+    # Relacionamentos
+    product = relationship("Product", back_populates="stock_movements")
+    
+    def __repr__(self):
+        return f"<StockMovement(id={self.id}, type={self.type})>"
+    
+    def to_dict(self):
+        return {
+            'id': str(self.id),
+            'product_id': str(self.product_id),
+            'type': self.type,
+            'quantity': self.quantity,
+            'reference_type': self.reference_type,
+            'reference_id': str(self.reference_id) if self.reference_id else None,
+            'cost_price': float(self.cost_price) if self.cost_price else None,
+            'reason': self.reason,
+            'notes': self.notes,
+            'user_id': str(self.user_id) if self.user_id else None,
+            'created_at': self.created_at.isoformat() if self.created_at else None
+        }
+
+
+class StockAlert(db.Model):
+    __tablename__ = 'stock_alerts'
+    
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid4)
+    product_id = Column(UUID(as_uuid=True), ForeignKey('products.id'))
+    type = Column(String(50), nullable=False)  # low_stock, out_of_stock
+    message = Column(Text, nullable=False)
+    threshold = Column(Integer)
+    is_resolved = Column(Boolean, default=False)
+    resolved_at = Column(DateTime)
+    resolved_by = Column(UUID(as_uuid=True), ForeignKey('users.id'))
+    created_at = Column(DateTime, default=datetime.utcnow)
+    
+    # Relacionamentos
+    product = relationship("Product", back_populates="stock_alerts")
+    
+    def __repr__(self):
+        return f"<StockAlert(id={self.id}, type={self.type})>"
+    
+    def to_dict(self):
+        return {
+            'id': str(self.id),
+            'product_id': str(self.product_id),
+            'type': self.type,
+            'message': self.message,
+            'threshold': self.threshold,
+            'is_resolved': self.is_resolved,
+            'resolved_at': self.resolved_at.isoformat() if self.resolved_at else None,
+            'resolved_by': str(self.resolved_by) if self.resolved_by else None,
+            'created_at': self.created_at.isoformat() if self.created_at else None
+        }
+
+
+class InventoryCount(db.Model):
+    __tablename__ = 'inventory_counts'
+    
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid4)
+    name = Column(String(255), nullable=False)
+    description = Column(Text)
+    status = Column(String(50), default='draft')
+    location = Column(String(200))
+    started_at = Column(DateTime)
+    completed_at = Column(DateTime)
+    created_by = Column(UUID(as_uuid=True), ForeignKey('users.id'))
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    
+    # Relacionamentos
+    items = relationship("InventoryCountItem", back_populates="count")
+    
+    def __repr__(self):
+        return f"<InventoryCount(id={self.id}, name={self.name})>"
+    
+    def to_dict(self):
+        return {
+            'id': str(self.id),
+            'name': self.name,
+            'description': self.description,
+            'status': self.status,
+            'location': self.location,
+            'started_at': self.started_at.isoformat() if self.started_at else None,
+            'completed_at': self.completed_at.isoformat() if self.completed_at else None,
+            'created_by': str(self.created_by),
+            'created_at': self.created_at.isoformat() if self.created_at else None,
+            'updated_at': self.updated_at.isoformat() if self.updated_at else None
+        }
+
+
+class InventoryCountItem(db.Model):
+    __tablename__ = 'inventory_count_items'
+    
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid4)
+    count_id = Column(UUID(as_uuid=True), ForeignKey('inventory_counts.id'))
+    product_id = Column(UUID(as_uuid=True), ForeignKey('products.id'))
+    expected_quantity = Column(Integer, nullable=False)
+    actual_quantity = Column(Integer)
+    difference = Column(Integer)
+    notes = Column(Text)
+    counted_by = Column(UUID(as_uuid=True), ForeignKey('users.id'))
+    counted_at = Column(DateTime)
+    created_at = Column(DateTime, default=datetime.utcnow)
+    
+    # Relacionamentos
+    count = relationship("InventoryCount", back_populates="items")
+    product = relationship("Product")
+    
+    def __repr__(self):
+        return f"<InventoryCountItem(id={self.id}, expected={self.expected_quantity})>"
+    
+    def to_dict(self):
+        return {
+            'id': str(self.id),
+            'count_id': str(self.count_id),
+            'product_id': str(self.product_id),
+            'expected_quantity': self.expected_quantity,
+            'actual_quantity': self.actual_quantity,
+            'difference': self.difference,
+            'notes': self.notes,
+            'counted_by': str(self.counted_by) if self.counted_by else None,
+            'counted_at': self.counted_at.isoformat() if self.counted_at else None,
+            'created_at': self.created_at.isoformat() if self.created_at else None
+        }
+
+
+# Índices para performance
+Index('idx_products_category_id', Product.category_id)
+Index('idx_products_sku', Product.sku)
+Index('idx_products_slug', Product.slug)
+Index('idx_products_is_active', Product.is_active)
+Index('idx_product_variants_product_id', ProductVariant.product_id)
+Index('idx_stock_movements_product_id', StockMovement.product_id)
+Index('idx_stock_movements_type', StockMovement.type)

@@ -3,29 +3,20 @@
  * Integração completa para envio de newsletters via Email e WhatsApp
  */
 
-const API_BASE_URL = process.env.NODE_ENV === 'production' 
-  ? 'https://seu-dominio.com/api' 
-  : 'http://localhost:3001/api';
+import { newsletterAPI } from './api.js';
 
 /**
  * 📤 Enviar newsletter por email
  */
 export const sendEmailNewsletter = async (recipients, subject, message) => {
   try {
-    const response = await fetch(`${API_BASE_URL}/newsletter/email`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        recipients,
-        subject,
-        message,
-        timestamp: new Date().toISOString()
-      })
+    const result = await newsletterAPI.send({
+      type: 'email',
+      recipients,
+      subject,
+      message,
+      timestamp: new Date().toISOString()
     });
-
-    const result = await response.json();
     return result;
   } catch (error) {
     console.error('Erro ao enviar newsletter por email:', error);
@@ -38,19 +29,12 @@ export const sendEmailNewsletter = async (recipients, subject, message) => {
  */
 export const sendWhatsAppNewsletter = async (recipients, message) => {
   try {
-    const response = await fetch(`${API_BASE_URL}/newsletter/whatsapp`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        recipients,
-        message,
-        timestamp: new Date().toISOString()
-      })
+    const result = await newsletterAPI.send({
+      type: 'whatsapp',
+      recipients,
+      message,
+      timestamp: new Date().toISOString()
     });
-
-    const result = await response.json();
     return result;
   } catch (error) {
     console.error('Erro ao enviar newsletter por WhatsApp:', error);
@@ -63,8 +47,7 @@ export const sendWhatsAppNewsletter = async (recipients, message) => {
  */
 export const getWhatsAppStatus = async () => {
   try {
-    const response = await fetch(`${API_BASE_URL}/newsletter/whatsapp/status`);
-    const result = await response.json();
+    const result = await newsletterAPI.getStatus();
     return result;
   } catch (error) {
     console.error('Erro ao verificar status do WhatsApp:', error);
@@ -77,8 +60,7 @@ export const getWhatsAppStatus = async () => {
  */
 export const getNewsletterStats = async () => {
   try {
-    const response = await fetch(`${API_BASE_URL}/newsletter/stats`);
-    const result = await response.json();
+    const result = await newsletterAPI.getStats();
     return result;
   } catch (error) {
     console.error('Erro ao obter estatísticas da newsletter:', error);

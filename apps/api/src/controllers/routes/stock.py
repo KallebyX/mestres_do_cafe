@@ -1,543 +1,330 @@
-from flask import Blueprint, request, jsonify
-from datetime import datetime, timedelta
-from sqlalchemy import func, and_, or_
-from src.models.stock import (
-    StockMovement, StockAlert, ProductBatch, InventoryCount, StockLocation, MovementType
-)
-from src.models.database import Product, Supplier, User, db
-import json
+"""
+Controlador para gerenciamento de estoque
+"""
 
-stock_bp = Blueprint('stock', __name__)
+from flask import Blueprint, jsonify, request
+from sqlalchemy import func
+from datetime import datetime
 
-# ===== STOCK MOVEMENTS =====
+from ...database import db
+from ...models import Product, StockMovement, ProductVariant
+from ...middleware.error_handler import ValidationAPIError, ResourceAPIError
 
-@stock_bp.route('/api/stock/movements', methods=['GET'])
-def get_stock_movements():
-    """Get all stock movements with filters"""
+stock_bp = Blueprint("stock", __name__)
+
+
+@stock_bp.route("", methods=["GET"])
+def get_stock():
+    """Listar status do estoque"""
     try:
         page = request.args.get('page', 1, type=int)
         per_page = request.args.get('per_page', 20, type=int)
-        product_id = request.args.get('product_id', type=int)
-        movement_type = request.args.get('movement_type')
-        date_from = request.args.get('date_from')
-        date_to = request.args.get('date_to')
+        search = request.args.get('search', '')
+        low_stock = request.args.get('low_stock', type=bool)
         
-        query = db.session.query(StockMovement)
+        query = Product.query
         
-        if product_id is not None:
-            query = query.filter(StockMovement.product_id == product_id)
-        if movement_type:
-            query = query.filter(StockMovement.movement_type == movement_type)
-        if date_from:
-            query = query.filter(StockMovement.created_at >= date_from)
-        if date_to:
-            query = query.filter(StockMovement.created_at <= date_to)
+        # Filtro por busca
+        if search:
+            query = query.filter(
+                Product.name.ilike(f'%{search}%') |
+                Product.sku.ilike(f'%{search}%')
+            )
         
-        total = query.count()
-        movements = query.order_by(StockMovement.created_at.desc()).offset((page-1)*per_page).limit(per_page).all()
-        pages = (total + per_page - 1) // per_page
+        # Filtro por estoque baixo
+        if low_stock:
+            query = query.filter(Product.stock_quantity <= Product.min_stock_level)
+        
+        products = query.order_by(Product.name).paginate(
+            page=page, per_page=per_page, error_out=False
+        )
+        
+        # Calcular métricas de estoque
+        total_products = Product.query.count()
+        low_stock_count = Product.query.filter(
+            Product.stock_quantity <= Product.min_stock_level
+        ).count()
+        out_of_stock_count = Product.query.filter(
+            Product.stock_quantity <= 0
+        ).count()
+        
+        # Valor total do estoque
+        total_stock_value = db.session.query(
+            func.sum(Product.price * Product.stock_quantity)
+        ).scalar() or 0
         
         return jsonify({
-            'movements': [{
-                'id': m.id,
-                'product_id': m.product_id,
-                'product_name': m.product.name if m.product else None,
-                'movement_type': m.movement_type.value,
-                'quantity': m.quantity,
-                'unit_cost': m.unit_cost,
-                'total_cost': m.total_cost,
-                'batch_number': m.batch_number,
-                'expiration_date': m.expiration_date.isoformat() if m.expiration_date else None,
-                'location_from': m.location_from,
-                'location_to': m.location_to,
-                'supplier_id': m.supplier_id,
-                'supplier_name': m.supplier.name if m.supplier else None,
-                'order_id': m.order_id,
-                'notes': m.notes,
-                'created_at': m.created_at.isoformat(),
-                'created_by': m.created_by
-            } for m in movements],
-            'total': total,
-            'pages': pages,
-            'current_page': page
-        }), 200
+            'success': True,
+            'data': {
+                'products': [
+                    {
+                        **product.to_dict(),
+                        'stock_status': get_stock_status(product),
+                        'stock_value': float(product.price * product.stock_quantity) if product.price else 0
+                    }
+                    for product in products.items
+                ],
+                'pagination': {
+                    'page': products.page,
+                    'pages': products.pages,
+                    'per_page': products.per_page,
+                    'total': products.total
+                },
+                'summary': {
+                    'total_products': total_products,
+                    'low_stock_count': low_stock_count,
+                    'out_of_stock_count': out_of_stock_count,
+                    'total_stock_value': float(total_stock_value)
+                }
+            }
+        })
         
     except Exception as e:
-        return jsonify({'error': str(e)}), 500
+        return jsonify({
+            'success': False,
+            'error': f'Erro ao listar estoque: {str(e)}'
+        }), 500
 
-@stock_bp.route('/api/stock/movements', methods=['POST'])
-def create_stock_movement():
-    """Create a new stock movement"""
+
+@stock_bp.route("/<product_id>", methods=["GET"])
+def get_product_stock(product_id):
+    """Obter detalhes do estoque de um produto"""
     try:
+        product = Product.query.get(product_id)
+        
+        if not product:
+            raise ResourceAPIError(
+                "Produto não encontrado",
+                error_code=4040,
+                status_code=404
+            )
+        
+        # Histórico de movimentações
+        movements = StockMovement.query.filter_by(
+            product_id=product_id
+        ).order_by(StockMovement.created_at.desc()).limit(20).all()
+        
+        # Variantes do produto
+        variants = ProductVariant.query.filter_by(
+            product_id=product_id
+        ).all()
+        
+        return jsonify({
+            'success': True,
+            'data': {
+                'product': {
+                    **product.to_dict(),
+                    'stock_status': get_stock_status(product),
+                    'stock_value': float(product.price * product.stock_quantity) if product.price else 0
+                },
+                'movements': [movement.to_dict() for movement in movements],
+                'variants': [variant.to_dict() for variant in variants]
+            }
+        })
+        
+    except ResourceAPIError:
+        raise
+    except Exception as e:
+        return jsonify({
+            'success': False,
+            'error': f'Erro ao obter estoque do produto: {str(e)}'
+        }), 500
+
+
+@stock_bp.route("/<product_id>/adjust", methods=["POST"])
+def adjust_stock(product_id):
+    """Ajustar estoque de um produto"""
+    try:
+        product = Product.query.get(product_id)
+        
+        if not product:
+            raise ResourceAPIError(
+                "Produto não encontrado",
+                error_code=4040,
+                status_code=404
+            )
+        
         data = request.get_json()
         
-        # Validate required fields
-        required_fields = ['product_id', 'movement_type', 'quantity']
+        if not data:
+            raise ValidationAPIError("Dados não fornecidos")
+        
+        # Validar campos obrigatórios
+        required_fields = ['quantity', 'type', 'reason']
         for field in required_fields:
             if field not in data:
-                return jsonify({'error': f'Field {field} is required'}), 400
+                raise ValidationAPIError(f"Campo '{field}' é obrigatório")
         
-        # Create movement
+        quantity = data['quantity']
+        movement_type = data['type']  # 'adjustment', 'sale', 'purchase', 'return'
+        reason = data['reason']
+        
+        if not isinstance(quantity, (int, float)) or quantity == 0:
+            raise ValidationAPIError("Quantidade deve ser um número diferente de zero")
+        
+        if movement_type not in ['adjustment', 'sale', 'purchase', 'return']:
+            raise ValidationAPIError("Tipo de movimento inválido")
+        
+        # Calcular nova quantidade
+        old_quantity = product.stock_quantity
+        
+        if movement_type in ['adjustment', 'purchase', 'return']:
+            new_quantity = old_quantity + quantity
+        else:  # sale
+            new_quantity = old_quantity - quantity
+        
+        if new_quantity < 0:
+            raise ValidationAPIError("Estoque não pode ficar negativo")
+        
+        # Atualizar produto
+        product.stock_quantity = new_quantity
+        product.updated_at = datetime.utcnow()
+        
+        # Registrar movimentação
         movement = StockMovement(
-            product_id=data['product_id'],
-            movement_type=MovementType(data['movement_type']),
-            quantity=data['quantity'],
-            unit_cost=data.get('unit_cost'),
-            total_cost=data.get('total_cost'),
-            batch_number=data.get('batch_number'),
-            expiration_date=datetime.fromisoformat(data['expiration_date']) if data.get('expiration_date') else None,
-            location_from=data.get('location_from'),
-            location_to=data.get('location_to'),
-            supplier_id=data.get('supplier_id'),
-            order_id=data.get('order_id'),
-            notes=data.get('notes'),
-            created_by=data.get('created_by')
+            product_id=product.id,
+            movement_type=movement_type,
+            quantity=quantity,
+            old_quantity=old_quantity,
+            new_quantity=new_quantity,
+            reason=reason,
+            notes=data.get('notes')
         )
-        
-        # Calculate total cost if not provided
-        if movement.unit_cost and not movement.total_cost:
-            movement.total_cost = movement.unit_cost * movement.quantity
         
         db.session.add(movement)
-        
-        # Update product stock
-        product = Product.query.get(data['product_id'])
-        if product:
-            if movement.movement_type in [MovementType.ENTRY, MovementType.RETURN]:
-                product.stock_quantity += movement.quantity
-            elif movement.movement_type in [MovementType.EXIT, MovementType.LOSS]:
-                product.stock_quantity -= movement.quantity
-            elif movement.movement_type == MovementType.ADJUSTMENT:
-                product.stock_quantity = movement.quantity
-        
         db.session.commit()
         
         return jsonify({
-            'message': 'Stock movement created successfully',
-            'movement_id': movement.id
-        }), 201
+            'success': True,
+            'message': 'Estoque ajustado com sucesso',
+            'data': {
+                'product': {
+                    **product.to_dict(),
+                    'stock_status': get_stock_status(product)
+                },
+                'movement': movement.to_dict()
+            }
+        })
+        
+    except (ValidationAPIError, ResourceAPIError):
+        raise
+    except Exception as e:
+        return jsonify({
+            'success': False,
+            'error': f'Erro ao ajustar estoque: {str(e)}'
+        }), 500
+
+
+@stock_bp.route("/movements", methods=["GET"])
+def get_stock_movements():
+    """Listar movimentações de estoque"""
+    try:
+        page = request.args.get('page', 1, type=int)
+        per_page = request.args.get('per_page', 20, type=int)
+        product_id = request.args.get('product_id')
+        movement_type = request.args.get('type')
+        
+        query = StockMovement.query
+        
+        # Filtros
+        if product_id:
+            query = query.filter(StockMovement.product_id == product_id)
+        
+        if movement_type:
+            query = query.filter(StockMovement.movement_type == movement_type)
+        
+        movements = query.order_by(
+            StockMovement.created_at.desc()
+        ).paginate(
+            page=page, per_page=per_page, error_out=False
+        )
+        
+        return jsonify({
+            'success': True,
+            'data': {
+                'movements': [movement.to_dict() for movement in movements.items],
+                'pagination': {
+                    'page': movements.page,
+                    'pages': movements.pages,
+                    'per_page': movements.per_page,
+                    'total': movements.total
+                }
+            }
+        })
         
     except Exception as e:
-        db.session.rollback()
-        return jsonify({'error': str(e)}), 500
+        return jsonify({
+            'success': False,
+            'error': f'Erro ao listar movimentações: {str(e)}'
+        }), 500
 
-# ===== STOCK ALERTS =====
 
-@stock_bp.route('/api/stock/alerts', methods=['GET'])
+@stock_bp.route("/alerts", methods=["GET"])
 def get_stock_alerts():
-    """Get all stock alerts"""
+    """Obter alertas de estoque"""
     try:
-        page = request.args.get('page', 1, type=int)
-        per_page = request.args.get('per_page', 20, type=int)
-        alert_type = request.args.get('alert_type')
-        is_active = request.args.get('is_active', type=bool)
+        # Produtos com estoque baixo
+        low_stock_products = Product.query.filter(
+            Product.stock_quantity <= Product.min_stock_level,
+            Product.stock_quantity > 0
+        ).all()
         
-        query = db.session.query(StockAlert)
+        # Produtos sem estoque
+        out_of_stock_products = Product.query.filter(
+            Product.stock_quantity <= 0
+        ).all()
         
-        if alert_type:
-            query = query.filter(StockAlert.alert_type == alert_type)
-        if is_active is not None:
-            query = query.filter(StockAlert.is_active == is_active)
-        
-        total = query.count()
-        alerts = query.order_by(StockAlert.created_at.desc()).offset((page-1)*per_page).limit(per_page).all()
-        pages = (total + per_page - 1) // per_page
-        
-        return jsonify({
-            'alerts': [{
-                'id': a.id,
-                'product_id': a.product_id,
-                'product_name': a.product.name if a.product else None,
-                'alert_type': a.alert_type,
-                'threshold': a.threshold,
-                'current_value': a.current_value,
-                'is_active': a.is_active,
-                'message': a.message,
-                'created_at': a.created_at.isoformat(),
-                'resolved_at': a.resolved_at.isoformat() if a.resolved_at else None
-            } for a in alerts],
-            'total': total,
-            'pages': pages,
-            'current_page': page
-        }), 200
-        
-    except Exception as e:
-        return jsonify({'error': str(e)}), 500
-
-@stock_bp.route('/api/stock/alerts', methods=['POST'])
-def create_stock_alert():
-    """Create a new stock alert"""
-    try:
-        data = request.get_json()
-        
-        alert = StockAlert(
-            product_id=data['product_id'],
-            alert_type=data['alert_type'],
-            threshold=data['threshold'],
-            current_value=data['current_value'],
-            message=data.get('message')
-        )
-        
-        db.session.add(alert)
-        db.session.commit()
-        
-        return jsonify({
-            'message': 'Stock alert created successfully',
-            'alert_id': alert.id
-        }), 201
-        
-    except Exception as e:
-        db.session.rollback()
-        return jsonify({'error': str(e)}), 500
-
-@stock_bp.route('/api/stock/alerts/<int:alert_id>/resolve', methods=['PUT'])
-def resolve_stock_alert(alert_id):
-    """Resolve a stock alert"""
-    try:
-        alert = StockAlert.query.get_or_404(alert_id)
-        alert.is_active = False
-        alert.resolved_at = datetime.utcnow()
-        
-        db.session.commit()
-        
-        return jsonify({'message': 'Alert resolved successfully'}), 200
-        
-    except Exception as e:
-        db.session.rollback()
-        return jsonify({'error': str(e)}), 500
-
-# ===== PRODUCT BATCHES =====
-
-@stock_bp.route('/api/stock/batches', methods=['GET'])
-def get_product_batches():
-    """Get all product batches"""
-    try:
-        page = request.args.get('page', 1, type=int)
-        per_page = request.args.get('per_page', 20, type=int)
-        product_id = request.args.get('product_id', type=int)
-        status = request.args.get('status')
-        
-        query = db.session.query(ProductBatch)
-        
-        if product_id is not None:
-            query = query.filter(ProductBatch.product_id == product_id)
-        if status:
-            query = query.filter(ProductBatch.status == status)
-        
-        total = query.count()
-        batches = query.order_by(ProductBatch.created_at.desc()).offset((page-1)*per_page).limit(per_page).all()
-        pages = (total + per_page - 1) // per_page
-        
-        return jsonify({
-            'batches': [{
-                'id': b.id,
-                'product_id': b.product_id,
-                'product_name': b.product.name if b.product else None,
-                'batch_number': b.batch_number,
-                'quantity': b.quantity,
-                'remaining_quantity': b.remaining_quantity,
-                'unit_cost': b.unit_cost,
-                'supplier_id': b.supplier_id,
-                'supplier_name': b.supplier.name if b.supplier else None,
-                'production_date': b.production_date.isoformat() if b.production_date else None,
-                'expiration_date': b.expiration_date.isoformat() if b.expiration_date else None,
-                'location': b.location,
-                'status': b.status,
-                'created_at': b.created_at.isoformat()
-            } for b in batches],
-            'total': total,
-            'pages': pages,
-            'current_page': page
-        }), 200
-        
-    except Exception as e:
-        return jsonify({'error': str(e)}), 500
-
-@stock_bp.route('/api/stock/batches', methods=['POST'])
-def create_product_batch():
-    """Create a new product batch"""
-    try:
-        data = request.get_json()
-        
-        batch = ProductBatch(
-            product_id=data['product_id'],
-            batch_number=data['batch_number'],
-            quantity=data['quantity'],
-            remaining_quantity=data['quantity'],
-            unit_cost=data['unit_cost'],
-            supplier_id=data.get('supplier_id'),
-            production_date=datetime.fromisoformat(data['production_date']) if data.get('production_date') else None,
-            expiration_date=datetime.fromisoformat(data['expiration_date']) if data.get('expiration_date') else None,
-            location=data.get('location')
-        )
-        
-        db.session.add(batch)
-        db.session.commit()
-        
-        return jsonify({
-            'message': 'Product batch created successfully',
-            'batch_id': batch.id
-        }), 201
-        
-    except Exception as e:
-        db.session.rollback()
-        return jsonify({'error': str(e)}), 500
-
-# ===== INVENTORY COUNTS =====
-
-@stock_bp.route('/api/stock/inventory-counts', methods=['GET'])
-def get_inventory_counts():
-    """Get all inventory counts"""
-    try:
-        page = request.args.get('page', 1, type=int)
-        per_page = request.args.get('per_page', 20, type=int)
-        product_id = request.args.get('product_id', type=int)
-        
-        query = db.session.query(InventoryCount)
-        
-        if product_id is not None:
-            query = query.filter(InventoryCount.product_id == product_id)
-        
-        total = query.count()
-        counts = query.order_by(InventoryCount.count_date.desc()).offset((page-1)*per_page).limit(per_page).all()
-        pages = (total + per_page - 1) // per_page
-        
-        return jsonify({
-            'counts': [{
-                'id': c.id,
-                'product_id': c.product_id,
-                'product_name': c.product.name if c.product else None,
-                'expected_quantity': c.expected_quantity,
-                'actual_quantity': c.actual_quantity,
-                'difference': c.difference,
-                'unit_cost': c.unit_cost,
-                'total_difference_value': c.total_difference_value,
-                'count_date': c.count_date.isoformat(),
-                'notes': c.notes,
-                'created_by': c.created_by
-            } for c in counts],
-            'total': total,
-            'pages': pages,
-            'current_page': page
-        }), 200
-        
-    except Exception as e:
-        return jsonify({'error': str(e)}), 500
-
-@stock_bp.route('/api/stock/inventory-counts', methods=['POST'])
-def create_inventory_count():
-    """Create a new inventory count"""
-    try:
-        data = request.get_json()
-        
-        difference = data['actual_quantity'] - data['expected_quantity']
-        total_difference_value = difference * data.get('unit_cost', 0) if data.get('unit_cost') else None
-        
-        count = InventoryCount(
-            product_id=data['product_id'],
-            expected_quantity=data['expected_quantity'],
-            actual_quantity=data['actual_quantity'],
-            difference=difference,
-            unit_cost=data.get('unit_cost'),
-            total_difference_value=total_difference_value,
-            notes=data.get('notes'),
-            created_by=data.get('created_by')
-        )
-        
-        db.session.add(count)
-        
-        # Update product stock
-        product = Product.query.get(data['product_id'])
-        if product:
-            product.stock_quantity = data['actual_quantity']
-        
-        db.session.commit()
-        
-        return jsonify({
-            'message': 'Inventory count created successfully',
-            'count_id': count.id
-        }), 201
-        
-    except Exception as e:
-        db.session.rollback()
-        return jsonify({'error': str(e)}), 500
-
-# ===== STOCK LOCATIONS =====
-
-@stock_bp.route('/api/stock/locations', methods=['GET'])
-def get_stock_locations():
-    """Get all stock locations"""
-    try:
-        locations = StockLocation.query.filter_by(is_active=True).all()
-        
-        return jsonify({
-            'locations': [{
-                'id': l.id,
-                'name': l.name,
-                'code': l.code,
-                'address': l.address,
-                'contact_person': l.contact_person,
-                'phone': l.phone,
-                'email': l.email,
-                'is_active': l.is_active,
-                'created_at': l.created_at.isoformat()
-            } for l in locations]
-        }), 200
-        
-    except Exception as e:
-        return jsonify({'error': str(e)}), 500
-
-@stock_bp.route('/api/stock/locations', methods=['POST'])
-def create_stock_location():
-    """Create a new stock location"""
-    try:
-        data = request.get_json()
-        
-        location = StockLocation(
-            name=data['name'],
-            code=data['code'],
-            address=data.get('address'),
-            contact_person=data.get('contact_person'),
-            phone=data.get('phone'),
-            email=data.get('email')
-        )
-        
-        db.session.add(location)
-        db.session.commit()
-        
-        return jsonify({
-            'message': 'Stock location created successfully',
-            'location_id': location.id
-        }), 201
-        
-    except Exception as e:
-        db.session.rollback()
-        return jsonify({'error': str(e)}), 500
-
-# ===== STOCK REPORTS =====
-
-@stock_bp.route('/api/stock/reports/low-stock', methods=['GET'])
-def get_low_stock_report():
-    """Get products with low stock"""
-    try:
-        products = Product.query.filter(
-            Product.stock_quantity <= 10  # Assuming reorder point is 10
+        # Produtos com estoque alto (acima do máximo)
+        high_stock_products = Product.query.filter(
+            Product.stock_quantity >= Product.max_stock_level
         ).all()
         
         return jsonify({
-            'low_stock_products': [{
-                'id': p.id,
-                'name': p.name,
-                'current_stock': p.stock_quantity,
-                'reorder_point': 10,
-                'min_stock': 0,
-                'supplier_id': None,
-                'supplier_name': None
-            } for p in products]
-        }), 200
+            'success': True,
+            'data': {
+                'low_stock': [
+                    {
+                        **product.to_dict(),
+                        'stock_status': get_stock_status(product)
+                    }
+                    for product in low_stock_products
+                ],
+                'out_of_stock': [
+                    {
+                        **product.to_dict(),
+                        'stock_status': get_stock_status(product)
+                    }
+                    for product in out_of_stock_products
+                ],
+                'high_stock': [
+                    {
+                        **product.to_dict(),
+                        'stock_status': get_stock_status(product)
+                    }
+                    for product in high_stock_products
+                ],
+                'summary': {
+                    'low_stock_count': len(low_stock_products),
+                    'out_of_stock_count': len(out_of_stock_products),
+                    'high_stock_count': len(high_stock_products)
+                }
+            }
+        })
         
     except Exception as e:
-        return jsonify({'error': str(e)}), 500
-
-@stock_bp.route('/api/stock/reports/expiring', methods=['GET'])
-def get_expiring_products():
-    """Get products expiring soon"""
-    try:
-        days = request.args.get('days', 30, type=int)
-        cutoff_date = datetime.utcnow() + timedelta(days=days)
-        
-        batches = ProductBatch.query.filter(
-            and_(
-                ProductBatch.expiration_date <= cutoff_date,
-                ProductBatch.expiration_date >= datetime.utcnow(),
-                ProductBatch.status == 'active'
-            )
-        ).all()
-        
         return jsonify({
-            'expiring_products': [{
-                'id': b.id,
-                'product_id': b.product_id,
-                'product_name': b.product.name if b.product else None,
-                'batch_number': b.batch_number,
-                'remaining_quantity': b.remaining_quantity,
-                'expiration_date': b.expiration_date.isoformat() if b.expiration_date else None,
-                'days_until_expiry': (b.expiration_date - datetime.utcnow()).days if b.expiration_date else None
-            } for b in batches]
-        }), 200
-        
-    except Exception as e:
-        return jsonify({'error': str(e)}), 500
+            'success': False,
+            'error': f'Erro ao obter alertas: {str(e)}'
+        }), 500
 
-@stock_bp.route('/api/stock/reports/movements', methods=['GET'])
-def get_movements_report():
-    """Get stock movements report"""
-    try:
-        date_from = request.args.get('date_from')
-        date_to = request.args.get('date_to')
-        
-        query = db.session.query(
-            StockMovement.movement_type,
-            func.sum(StockMovement.quantity).label('total_quantity'),
-            func.sum(StockMovement.total_cost).label('total_cost'),
-            func.count(StockMovement.id).label('movement_count')
-        ).group_by(StockMovement.movement_type)
-        
-        if date_from:
-            query = query.filter(StockMovement.created_at >= date_from)
-        if date_to:
-            query = query.filter(StockMovement.created_at <= date_to)
-            
-        results = query.all()
-        
-        return jsonify({
-            'movements_summary': [{
-                'movement_type': r.movement_type.value,
-                'total_quantity': float(r.total_quantity) if r.total_quantity else 0,
-                'total_cost': float(r.total_cost) if r.total_cost else 0,
-                'movement_count': r.movement_count
-            } for r in results]
-        }), 200
-        
-    except Exception as e:
-        return jsonify({'error': str(e)}), 500
 
-@stock_bp.route('/api/stock/reports/stock-value', methods=['GET'])
-def get_stock_value_report():
-    """Get total stock value report"""
-    try:
-        products = Product.query.filter(Product.stock_quantity > 0).all()
-        
-        total_value = 0
-        products_value = []
-        
-        for product in products:
-            # Get average cost from recent movements
-            recent_movements = StockMovement.query.filter(
-                and_(
-                    StockMovement.product_id == product.id,
-                    StockMovement.movement_type == MovementType.ENTRY,
-                    StockMovement.unit_cost.isnot(None)
-                )
-            ).order_by(StockMovement.created_at.desc()).limit(10).all()
-            
-            if recent_movements:
-                avg_cost = sum(m.unit_cost for m in recent_movements) / len(recent_movements)
-                product_value = product.stock_quantity * avg_cost
-                total_value += product_value
-                
-                products_value.append({
-                    'product_id': product.id,
-                    'product_name': product.name,
-                    'current_stock': product.stock_quantity,
-                    'average_cost': avg_cost,
-                    'total_value': product_value
-                })
-        
-        return jsonify({
-            'total_stock_value': total_value,
-            'products_value': products_value
-        }), 200
-        
-    except Exception as e:
-        return jsonify({'error': str(e)}), 500 
+def get_stock_status(product):
+    """Determinar status do estoque do produto"""
+    if product.stock_quantity <= 0:
+        return 'out_of_stock'
+    elif product.stock_quantity <= product.min_stock_level:
+        return 'low_stock'
+    elif product.stock_quantity >= product.max_stock_level:
+        return 'high_stock'
+    else:
+        return 'normal'

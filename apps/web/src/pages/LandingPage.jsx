@@ -60,10 +60,6 @@ const LandingPage = () => {
           images: product.images || [], // Incluir as imagens dos produtos
         }));
 
-        console.log(
-          "✅ Produtos em destaque carregados:",
-          formattedProducts.length,
-        );
         return formattedProducts;
       } else {
         throw new Error(
@@ -113,9 +109,7 @@ const LandingPage = () => {
       const result = await getFeaturedTestimonials(3);
       if (result.success) {
         setTestimonials(result.data);
-        console.log(`✅ ${result.data.length} testimonials carregados`);
-      } else {
-        console.log("⚠️ Erro ao carregar testimonials:", result.error);
+        } else {
         setTestimonials([]);
       }
     } catch (error) {

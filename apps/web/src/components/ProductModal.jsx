@@ -4,12 +4,12 @@ import {
   Plus, Minus, Image as ImageIcon 
 } from 'lucide-react';
 import { 
-  createProduct, 
-  updateProduct, 
+  createProductAdmin, 
+  updateProductAdmin, 
   getProductCategories, 
   getRoastLevels,
   validateProductData 
-} from "@/lib/api"
+} from "../lib/api"
 
 const ProductModal = ({ 
   isOpen, 
@@ -142,10 +142,10 @@ const ProductModal = ({
       
       if (product?.id) {
         // Atualizar produto existente
-        result = await updateProduct(product.id, formData);
+        result = await updateProductAdmin(product.id, formData);
       } else {
         // Criar novo produto
-        result = await createProduct(formData);
+        result = await createProductAdmin(formData);
       }
 
       if (result.success) {

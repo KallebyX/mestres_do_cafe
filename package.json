@@ -4,8 +4,7 @@
   "description": "Sistema enterprise de e-commerce e ERP para torrefação artesanal",
   "private": true,
   "workspaces": [
-    "apps/*",
-    "packages/*"
+    "apps/*"
   ],
   "scripts": {
     "dev": "concurrently \"npm run dev:api\" \"npm run dev:web\"",

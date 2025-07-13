@@ -30,8 +30,7 @@ const AdminAnalytics = () => {
     try {
       const data = await adminAPI.getAnalytics(timeRange);
       setAnalyticsData(data);
-      console.log('📊 Dados de analytics carregados:', data);
-    } catch (error) {
+      } catch (error) {
       console.error('Erro ao carregar dados de analytics:', error);
     } finally {
       setLoading(false);
@@ -46,7 +45,6 @@ const AdminAnalytics = () => {
       generated: new Date().toISOString()
     };
     
-    console.log(`Exportando dados de ${type}:`, exportData);
     alert(`📊 Relatório de ${type} exportado com sucesso!\n\n✅ Dados incluídos:\n• Métricas detalhadas\n• Gráficos e tendências\n• Insights automáticos\n\nArquivo: analytics_${type}_${new Date().toISOString().split('T')[0]}.xlsx`);
   };
 

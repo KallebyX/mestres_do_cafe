@@ -1,12 +1,28 @@
 from flask import Blueprint, request, jsonify
 from flask_jwt_extended import jwt_required, get_jwt_identity
-from ..models.base import db
+from ..database import db
 from ..models.products import Product
 from datetime import datetime
 import requests
 import re
 
 shipping_bp = Blueprint('shipping', __name__)
+
+
+@shipping_bp.route('/', methods=['GET'])
+def shipping_home():
+    """Informações sobre o serviço de frete"""
+    return jsonify({
+        'success': True,
+        'message': 'Serviço de Frete - Mestres do Café',
+        'services': [
+            'Cálculo de frete',
+            'Consulta de CEP',
+            'Cotação de pedidos',
+            'Serviços disponíveis'
+        ]
+    })
+
 
 # Configurações do Melhor Envio (deve ser movido para variáveis de ambiente)
 MELHOR_ENVIO_API_URL = "https://sandbox.melhorenvio.com.br/api/v2/me"

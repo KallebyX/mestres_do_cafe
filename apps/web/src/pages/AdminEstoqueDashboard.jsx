@@ -1,18 +1,30 @@
-import React, { useState, useEffect } from 'react';
-import { 
-  Package, Truck, Warehouse, BarChart3, ArrowUpCircle, ArrowDownCircle, 
-  AlertTriangle, CheckCircle, Clock, Edit, Trash2, Plus, Search, Eye,
-  MapPin, Calendar, Filter, Download, ShoppingCart, Box, Activity,
-  TrendingUp, Target, AlertCircle, Zap, Users, DollarSign, Phone
+import { stockAPI } from "@/lib/api";
+import {
+  Activity,
+  AlertCircle,
+  AlertTriangle,
+  BarChart3,
+  CheckCircle,
+  DollarSign,
+  Download,
+  Edit,
+  Eye,
+  MapPin,
+  Package,
+  Phone,
+  Plus, Search,
+  Trash2,
+  Truck
 } from 'lucide-react';
-import { useAuth } from '../contexts/AuthContext';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { stockAPI } from "@/lib/api"
-import { useNotifications } from '../contexts/NotificationContext';
+import { BarChartComponent, PieChartComponent } from '../components/AdvancedCharts';
+import { StockReport } from '../components/PDFReports';
 import ProductStockModal from '../components/ProductStockModal';
 import SupplierModal from '../components/SupplierModal';
-import { LineChartComponent, BarChartComponent, PieChartComponent } from '../components/AdvancedCharts';
-import { StockReport } from '../components/PDFReports';
+import { useAuth } from '../contexts/AuthContext';
+import { useNotifications } from '../contexts/NotificationContext';
+import { useDebouncedValue } from '../utils/debounce';
 
 const AdminEstoqueDashboard = () => {
   const [activeTab, setActiveTab] = useState('overview');
@@ -21,6 +33,9 @@ const AdminEstoqueDashboard = () => {
   const [dateFilter, setDateFilter] = useState('30d');
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
+
+  // Debounced search term para otimizar performance
+  const debouncedSearchTerm = useDebouncedValue(searchTerm, 450);
 
   // Estados para diferentes módulos
   const [produtos, setProdutos] = useState([]);
@@ -55,35 +70,28 @@ const AdminEstoqueDashboard = () => {
     setLoading(true);
     setError('');
     
-    console.log('🔄 Carregando dados de estoque...');
-    
     try {
       // Carregar dados com fallbacks individuais para cada API
-      console.log('📦 Buscando produtos...');
       const productsResult = await stockAPI.getProducts().catch(error => {
         console.error('❌ Erro ao buscar produtos:', error);
         return { success: true, data: [] };
       });
 
-      console.log('🏭 Buscando fornecedores...');
       const suppliersResult = await stockAPI.getSuppliers().catch(error => {
         console.error('❌ Erro ao buscar fornecedores:', error);
         return { success: true, data: [] };
       });
 
-      console.log('📂 Buscando categorias...');
       const categoriesResult = await stockAPI.getProductCategories().catch(error => {
         console.error('❌ Erro ao buscar categorias:', error);
         return { success: true, data: [] };
       });
 
-      console.log('🏬 Buscando depósitos...');
       const warehousesResult = await stockAPI.getWarehouses().catch(error => {
         console.error('❌ Erro ao buscar depósitos:', error);
         return { success: true, data: [] };
       });
 
-      console.log('📊 Buscando movimentações...');
       const movementsResult = await stockAPI.getStockMovements().catch(error => {
         console.error('❌ Erro ao buscar movimentações:', error);
         return { success: true, data: [] };
@@ -91,7 +99,6 @@ const AdminEstoqueDashboard = () => {
 
       // ===== PRODUTOS =====
       if (productsResult.success && productsResult.data && productsResult.data.length > 0) {
-        console.log(`✅ ${productsResult.data.length} produtos carregados do Supabase`);
         setProdutos(productsResult.data.map(product => ({
           id: product.id,
           nome: product.name,
@@ -108,40 +115,32 @@ const AdminEstoqueDashboard = () => {
           ultima_movimentacao: product.updated_at || product.created_at || new Date().toISOString()
         })));
       } else {
-        console.log('⚠️ Tabela products não encontrada ou vazia');
         setProdutos([]);
       }
 
       // ===== FORNECEDORES =====
       if (suppliersResult.success && suppliersResult.data && suppliersResult.data.length > 0) {
-        console.log(`✅ ${suppliersResult.data.length} fornecedores carregados do Supabase`);
         setFornecedores(suppliersResult.data);
       } else {
-        console.log('⚠️ Tabela suppliers não encontrada ou vazia');
         setFornecedores([]);
       }
 
       // ===== CATEGORIAS =====
       if (categoriesResult.success && categoriesResult.data && categoriesResult.data.length > 0) {
-        console.log(`✅ ${categoriesResult.data.length} categorias carregadas do Supabase`);
         setCategorias(categoriesResult.data);
       } else {
-        console.log('⚠️ Tabela product_categories não encontrada ou vazia');
         setCategorias([]);
       }
 
       // ===== DEPÓSITOS =====
       if (warehousesResult.success && warehousesResult.data && warehousesResult.data.length > 0) {
-        console.log(`✅ ${warehousesResult.data.length} depósitos carregados do Supabase`);
         setDepositos(warehousesResult.data);
       } else {
-        console.log('⚠️ Tabela warehouses não encontrada ou vazia');
         setDepositos([]);
       }
 
       // ===== MOVIMENTAÇÕES =====
       if (movementsResult.success && movementsResult.data && movementsResult.data.length > 0) {
-        console.log(`✅ ${movementsResult.data.length} movimentações carregadas do Supabase`);
         setMovimentacoes(movementsResult.data.map(movement => ({
           id: movement.id,
           produto: movement.product?.name || 'Produto não encontrado',
@@ -154,11 +153,9 @@ const AdminEstoqueDashboard = () => {
           custo_total: movement.total_cost || 0
         })));
       } else {
-        console.log('⚠️ Tabela stock_movements não encontrada ou vazia');
         setMovimentacoes([]);
       }
 
-      console.log('✅ Dados de estoque carregados com sucesso!');
       setSuccess('Dados carregados com sucesso');
 
     } catch (error) {
@@ -512,9 +509,9 @@ const AdminEstoqueDashboard = () => {
             </thead>
             <tbody className="divide-y divide-gray-200">
               {produtos
-                .filter(produto => 
-                  produto.nome.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                  produto.sku.toLowerCase().includes(searchTerm.toLowerCase())
+                .filter(produto =>
+                  produto.nome.toLowerCase().includes(debouncedSearchTerm.toLowerCase()) ||
+                  produto.sku.toLowerCase().includes(debouncedSearchTerm.toLowerCase())
                 )
                 .map((produto) => (
                 <tr key={produto.id} className="hover:bg-gray-50">
@@ -628,10 +625,10 @@ const AdminEstoqueDashboard = () => {
             </thead>
             <tbody className="divide-y divide-gray-200">
               {movimentacoes
-                .filter(mov => 
-                  mov.produto.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                  mov.motivo.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                  mov.documento.toLowerCase().includes(searchTerm.toLowerCase())
+                .filter(mov =>
+                  mov.produto.toLowerCase().includes(debouncedSearchTerm.toLowerCase()) ||
+                  mov.motivo.toLowerCase().includes(debouncedSearchTerm.toLowerCase()) ||
+                  mov.documento.toLowerCase().includes(debouncedSearchTerm.toLowerCase())
                 )
                 .map((movimentacao) => (
                 <tr key={movimentacao.id} className="hover:bg-gray-50">
@@ -720,9 +717,9 @@ const AdminEstoqueDashboard = () => {
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {fornecedores
-          .filter(fornecedor => 
-            fornecedor.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            (fornecedor.email && fornecedor.email.toLowerCase().includes(searchTerm.toLowerCase()))
+          .filter(fornecedor =>
+            fornecedor.name.toLowerCase().includes(debouncedSearchTerm.toLowerCase()) ||
+            (fornecedor.email && fornecedor.email.toLowerCase().includes(debouncedSearchTerm.toLowerCase()))
           )
           .map((fornecedor) => (
           <div key={fornecedor.id} className="bg-white rounded-2xl shadow-lg border border-gray-200 p-6 hover:shadow-xl transition-all duration-300">

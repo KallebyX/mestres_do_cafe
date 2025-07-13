@@ -101,21 +101,29 @@ class TestAuthRegister:
     
     def test_register_success(self, client, sample_user_data):
         """Testa registro com dados válidos"""
-        response = client.post('/api/auth/register', json=sample_user_data)
+        # Adicionar confirm_password aos dados de teste
+        test_data = sample_user_data.copy()
+        test_data['confirm_password'] = test_data['password']
+        
+        response = client.post('/api/auth/register', json=test_data)
         
         assert response.status_code == 201
         assert response.json['success'] is True
         assert 'user' in response.json
-        assert response.json['user']['email'] == sample_user_data['email']
+        assert response.json['user']['email'] == test_data['email']
         assert response.json['user']['is_admin'] is False
     
     def test_register_duplicate_email(self, client, sample_user_data):
         """Testa registro com email já existente"""
+        # Adicionar confirm_password aos dados de teste
+        test_data = sample_user_data.copy()
+        test_data['confirm_password'] = test_data['password']
+        
         # Primeiro registro
-        client.post('/api/auth/register', json=sample_user_data)
+        client.post('/api/auth/register', json=test_data)
         
         # Segundo registro com mesmo email
-        response = client.post('/api/auth/register', json=sample_user_data)
+        response = client.post('/api/auth/register', json=test_data)
         
         assert response.status_code == 409
         assert 'error' in response.json
@@ -337,9 +345,11 @@ class TestAuthIntegration:
         # Use a unique email for this test to avoid conflicts
         unique_user_data = sample_user_data.copy()
         unique_user_data['email'] = f"integration-{unique_user_data['email']}"
+        unique_user_data['confirm_password'] = unique_user_data['password']
         
         # Registrar usuário
-        register_response = client.post('/api/auth/register', json=unique_user_data)
+        register_response = client.post('/api/auth/register',
+                                      json=unique_user_data)
         assert register_response.status_code == 201
         
         # Fazer login

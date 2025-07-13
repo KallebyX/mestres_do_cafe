@@ -81,34 +81,27 @@ const AdminEstoqueDashboard = () => {
           ultima_movimentacao: product.updated_at
         })));
       } else {
-        console.log('⚠️ Tabela products não encontrada ou vazia');
         setProdutos([]);
       }
 
       // Fornecedores - APENAS DADOS REAIS
       if (suppliersResult.success) {
         setFornecedores(suppliersResult.data || []);
-        console.log(`✅ ${suppliersResult.data?.length || 0} fornecedores carregados do Supabase`);
-      } else {
-        console.log('⚠️ Tabela suppliers não encontrada ou vazia');
+        } else {
         setFornecedores([]);
       }
 
       // Categorias - APENAS DADOS REAIS
       if (categoriesResult.success) {
         setCategorias(categoriesResult.data || []);
-        console.log(`✅ ${categoriesResult.data?.length || 0} categorias carregadas do Supabase`);
-      } else {
-        console.log('⚠️ Tabela product_categories não encontrada ou vazia');
+        } else {
         setCategorias([]);
       }
 
       // Depósitos - APENAS DADOS REAIS
       if (warehousesResult.success) {
         setDepositos(warehousesResult.data || []);
-        console.log(`✅ ${warehousesResult.data?.length || 0} depósitos carregados do Supabase`);
-      } else {
-        console.log('⚠️ Tabela warehouses não encontrada ou vazia');
+        } else {
         setDepositos([]);
       }
 
@@ -125,9 +118,7 @@ const AdminEstoqueDashboard = () => {
           usuario: movement.user?.name || 'Sistema',
           custo_total: movement.total_cost || 0
         })));
-        console.log(`✅ ${movementsResult.data.length} movimentações carregadas do Supabase`);
-      } else {
-        console.log('⚠️ Tabela stock_movements não encontrada ou vazia');
+        } else {
         setMovimentacoes([]);
       }
 

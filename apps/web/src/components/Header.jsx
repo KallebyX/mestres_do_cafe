@@ -4,7 +4,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { useCart } from '../contexts/CartContext';
 import { useTheme } from '../contexts/ThemeContext';
 import { Button } from './ui/button';
-import { Menu, X, ShoppingCart, User, LogOut, Settings, Shield } from 'lucide-react';
+import { Menu, X, ShoppingCart, User, LogOut, Shield } from 'lucide-react';
 import Logo from './Logo';
 import CartDropdown from './CartDropdown';
 import { ThemeToggleIcon } from './ThemeToggle';
@@ -162,8 +162,8 @@ export const Header = () => {
                   </button>
                 </Link>
                 <span className="hidden md:inline" style={{ color: 'var(--color-text-muted)' }}>|</span>
-                <Link to="/registro">
-                  <button 
+                <Link to="/register">
+                  <button
                     className="px-3 py-2 text-sm shadow-md hover:shadow-lg transition-all rounded-md"
                     style={{
                       backgroundColor: 'var(--color-accent-primary)',
@@ -273,7 +273,7 @@ export const Header = () => {
                     Entrar
                   </button>
                 </Link>
-                <Link to="/registro" className="flex-1">
+                <Link to="/register" className="flex-1">
                   <button
                     className="bg-brand-brown hover:bg-brand-brown/90 text-brand-light justify-center w-full py-2 px-4 rounded-md transition-colors"
                     onClick={() => setIsMenuOpen(false)}

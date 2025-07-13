@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { 
+import {
   Users, UserCheck, Calendar, Clock, DollarSign, TrendingUp, Award,
   FileText, CheckCircle, AlertTriangle, Plus, Search, Edit, Eye, Trash2,
   Target, Activity, Star, BookOpen, Coffee, MapPin, Phone, Mail,
@@ -14,6 +14,7 @@ import { useNotifications } from '../contexts/NotificationContext';
 import { PieChartComponent, BarChartComponent } from '../components/AdvancedCharts';
 import { StockReport } from '../components/PDFReports';
 import { hrAPI } from "@/lib/api"
+import { useDebouncedValue } from '../utils/debounce';
 
 const AdminRHDashboard = () => {
   const [activeTab, setActiveTab] = useState('overview');
@@ -22,6 +23,9 @@ const AdminRHDashboard = () => {
   const [dateFilter, setDateFilter] = useState('30d');
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
+
+  // Debounced search term para otimizar performance
+  const debouncedSearchTerm = useDebouncedValue(searchTerm, 600);
 
   // Estados para diferentes módulos
   const [funcionarios, setFuncionarios] = useState([]);
@@ -72,27 +76,21 @@ const AdminRHDashboard = () => {
       // Funcionários - APENAS DADOS REAIS
       if (employeesResult.success) {
         setFuncionarios(employeesResult.data || []);
-        console.log(`✅ ${employeesResult.data?.length || 0} funcionários carregados do Supabase`);
-      } else {
-        console.log('⚠️ Tabela employees não encontrada ou vazia');
+        } else {
         setFuncionarios([]);
       }
 
       // Departamentos - APENAS DADOS REAIS
       if (departmentsResult.success) {
         setDepartamentos(departmentsResult.data || []);
-        console.log(`✅ ${departmentsResult.data?.length || 0} departamentos carregados do Supabase`);
-      } else {
-        console.log('⚠️ Tabela departments não encontrada ou vazia');
+        } else {
         setDepartamentos([]);
       }
 
       // Cargos - APENAS DADOS REAIS
       if (positionsResult.success) {
         setCargos(positionsResult.data || []);
-        console.log(`✅ ${positionsResult.data?.length || 0} cargos carregados do Supabase`);
-      } else {
-        console.log('⚠️ Tabela positions não encontrada ou vazia');
+        } else {
         setCargos([]);
       }
 
@@ -404,8 +402,8 @@ const AdminRHDashboard = () => {
                     return false;
                   }
                   
-                  const matchSearch = func.nome.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                                   func.email.toLowerCase().includes(searchTerm.toLowerCase());
+                  const matchSearch = func.nome.toLowerCase().includes(debouncedSearchTerm.toLowerCase()) ||
+                                   func.email.toLowerCase().includes(debouncedSearchTerm.toLowerCase());
                   const matchStatus = statusFilter === 'todos' || func.status === statusFilter;
                   const matchDept = departmentFilter === 'todos' || func.departamento === departmentFilter;
                   return matchSearch && matchStatus && matchDept;

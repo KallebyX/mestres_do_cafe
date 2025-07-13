@@ -33,12 +33,9 @@ const columnExists = async (tableName, columnName) => {
 // Buscar todos os cursos (para admin)
 export const getAllCourses = async () => {
   try {
-    console.log('📚 Buscando todos os cursos do Supabase...');
-
     // Verificar se tabela existe primeiro
     const coursesTableExists = await tableExists('courses');
     if (!coursesTableExists) {
-      console.log('⚠️ Tabela courses não existe, retornando array vazio');
       return { 
         success: true, 
         data: [],
@@ -64,8 +61,6 @@ export const getAllCourses = async () => {
       };
     }
 
-    console.log(`✅ ${courses?.length || 0} cursos carregados do Supabase`);
-    
     return {
       success: true,
       data: courses || []
@@ -83,12 +78,9 @@ export const getAllCourses = async () => {
 // Buscar apenas cursos ativos (para página pública)
 export const getActiveCourses = async () => {
   try {
-    console.log('📚 Buscando cursos ativos do Supabase...');
-
     // Verificar se tabela existe primeiro
     const coursesTableExists = await tableExists('courses');
     if (!coursesTableExists) {
-      console.log('⚠️ Tabela courses não existe, retornando array vazio');
       return { 
         success: true, 
         data: [],
@@ -115,8 +107,6 @@ export const getActiveCourses = async () => {
       };
     }
 
-    console.log(`✅ ${courses?.length || 0} cursos ativos carregados do Supabase`);
-    
     return {
       success: true,
       data: courses || []
@@ -133,8 +123,6 @@ export const getActiveCourses = async () => {
 
 export const getCourseById = async (courseId) => {
   try {
-    console.log(`🎓 Buscando curso ${courseId}...`);
-    
     const { data, error } = await supabase
       .from('courses')
       .select('*')
@@ -146,7 +134,6 @@ export const getCourseById = async (courseId) => {
       return { success: false, error: error.message, data: null };
     }
 
-    console.log('✅ Curso encontrado:', data.title);
     return { success: true, data: data };
   } catch (error) {
     console.error('❌ Erro ao buscar curso:', error);
@@ -160,8 +147,6 @@ export const getCourseById = async (courseId) => {
 
 export const createCourse = async (courseData) => {
   try {
-    console.log('📝 Criando novo curso...');
-    
     const { data, error } = await supabase
       .from('courses')
       .insert({
@@ -191,7 +176,6 @@ export const createCourse = async (courseData) => {
       return { success: false, error: error.message, data: null };
     }
 
-    console.log('✅ Curso criado com sucesso:', data.title);
     return { success: true, data: data };
   } catch (error) {
     console.error('❌ Erro ao criar curso:', error);
@@ -201,8 +185,6 @@ export const createCourse = async (courseData) => {
 
 export const updateCourse = async (courseId, courseData) => {
   try {
-    console.log(`📝 Atualizando curso ${courseId}...`);
-    
     const { data, error } = await supabase
       .from('courses')
       .update({
@@ -232,7 +214,6 @@ export const updateCourse = async (courseId, courseData) => {
       return { success: false, error: error.message, data: null };
     }
 
-    console.log('✅ Curso atualizado com sucesso:', data.title);
     return { success: true, data: data };
   } catch (error) {
     console.error('❌ Erro ao atualizar curso:', error);
@@ -246,8 +227,6 @@ export const updateCourse = async (courseId, courseData) => {
 
 export const deleteCourse = async (courseId) => {
   try {
-    console.log(`🗑️ Removendo curso ${courseId}...`);
-    
     const { error } = await supabase
       .from('courses')
       .delete()
@@ -258,7 +237,6 @@ export const deleteCourse = async (courseId) => {
       return { success: false, error: error.message };
     }
 
-    console.log('✅ Curso removido com sucesso');
     return { success: true, message: 'Curso removido com sucesso' };
   } catch (error) {
     console.error('❌ Erro ao remover curso:', error);
@@ -268,8 +246,6 @@ export const deleteCourse = async (courseId) => {
 
 export const toggleCourseStatus = async (courseId, isActive) => {
   try {
-    console.log(`🔄 Alterando status do curso ${courseId} para ${isActive ? 'ativo' : 'inativo'}...`);
-    
     const { data, error } = await supabase
       .from('courses')
       .update({
@@ -285,7 +261,6 @@ export const toggleCourseStatus = async (courseId, isActive) => {
       return { success: false, error: error.message };
     }
 
-    console.log('✅ Status do curso alterado com sucesso');
     return { success: true, data: data, message: `Curso ${isActive ? 'ativado' : 'desativado'} com sucesso` };
   } catch (error) {
     console.error('❌ Erro ao alterar status do curso:', error);
@@ -295,8 +270,6 @@ export const toggleCourseStatus = async (courseId, isActive) => {
 
 export const toggleCourseFeatured = async (courseId, isFeatured) => {
   try {
-    console.log(`⭐ Alterando destaque do curso ${courseId} para ${isFeatured ? 'destacado' : 'normal'}...`);
-    
     const { data, error } = await supabase
       .from('courses')
       .update({
@@ -312,7 +285,6 @@ export const toggleCourseFeatured = async (courseId, isFeatured) => {
       return { success: false, error: error.message };
     }
 
-    console.log('✅ Destaque do curso alterado com sucesso');
     return { success: true, data: data, message: `Curso ${isFeatured ? 'destacado' : 'removido do destaque'} com sucesso` };
   } catch (error) {
     console.error('❌ Erro ao alterar destaque do curso:', error);
@@ -326,8 +298,6 @@ export const toggleCourseFeatured = async (courseId, isFeatured) => {
 
 export const enrollStudent = async (courseId) => {
   try {
-    console.log(`📝 Matriculando aluno no curso ${courseId}...`);
-    
     // Primeiro, buscar dados atuais do curso
     const { data: course, error: fetchError } = await supabase
       .from('courses')
@@ -361,7 +331,6 @@ export const enrollStudent = async (courseId) => {
       return { success: false, error: error.message };
     }
 
-    console.log('✅ Aluno matriculado com sucesso');
     return { success: true, data: data, message: 'Matrícula realizada com sucesso' };
   } catch (error) {
     console.error('❌ Erro ao matricular aluno:', error);
@@ -371,8 +340,6 @@ export const enrollStudent = async (courseId) => {
 
 export const updateCourseRating = async (courseId, newRating) => {
   try {
-    console.log(`⭐ Atualizando avaliação do curso ${courseId} para ${newRating}...`);
-    
     const { data, error } = await supabase
       .from('courses')
       .update({
@@ -388,7 +355,6 @@ export const updateCourseRating = async (courseId, newRating) => {
       return { success: false, error: error.message };
     }
 
-    console.log('✅ Avaliação atualizada com sucesso');
     return { success: true, data: data, message: 'Avaliação atualizada com sucesso' };
   } catch (error) {
     console.error('❌ Erro ao atualizar avaliação:', error);
@@ -402,8 +368,6 @@ export const updateCourseRating = async (courseId, newRating) => {
 
 export const getCoursesStats = async () => {
   try {
-    console.log('📊 Calculando estatísticas dos cursos...');
-    
     const { data: courses, error } = await supabase
       .from('courses')
       .select('*');
@@ -428,7 +392,6 @@ export const getCoursesStats = async () => {
         : 0
     };
 
-    console.log('✅ Estatísticas calculadas:', stats);
     return { success: true, stats: stats };
   } catch (error) {
     console.error('❌ Erro ao calcular estatísticas:', error);

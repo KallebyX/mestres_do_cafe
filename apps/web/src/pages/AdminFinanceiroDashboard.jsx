@@ -74,9 +74,7 @@ const AdminFinanceiroDashboard = () => {
           parcela: item.installment || '1/1',
           tipo: 'venda'
         })) || []);
-        console.log(`✅ ${receivablesResult.data?.length || 0} contas a receber carregadas do Supabase`);
-      } else {
-        console.log('⚠️ Tabela accounts_receivable não encontrada ou vazia');
+        } else {
         setContasReceber([]);
       }
 
@@ -91,9 +89,7 @@ const AdminFinanceiroDashboard = () => {
           categoria: item.category?.name || 'Geral',
           tipo: 'compra'
         })) || []);
-        console.log(`✅ ${payablesResult.data?.length || 0} contas a pagar carregadas do Supabase`);
-      } else {
-        console.log('⚠️ Tabela accounts_payable não encontrada ou vazia');
+        } else {
         setContasPagar([]);
       }
 
@@ -107,9 +103,7 @@ const AdminFinanceiroDashboard = () => {
           saldo: parseFloat(account.current_balance || 0),
           tipo: account.account_type
         })) || []);
-        console.log(`✅ ${accountsResult.data?.length || 0} contas bancárias carregadas do Supabase`);
-      } else {
-        console.log('⚠️ Tabela bank_accounts não encontrada ou vazia');
+        } else {
         setBancos([]);
       }
 
@@ -159,8 +153,6 @@ const AdminFinanceiroDashboard = () => {
   const handleDelete = async (id, type) => {
     if (window.confirm('Tem certeza que deseja excluir este item?')) {
       try {
-        console.log(`Excluindo ${type} com ID:`, id);
-        
         let result;
         if (type === 'receivable') {
           // Deletar conta a receber (soft delete - marcar como inativa)
@@ -197,8 +189,6 @@ const AdminFinanceiroDashboard = () => {
 
   const handleSave = async (formData) => {
     try {
-      console.log('Salvando dados no Supabase:', formData);
-      
       if (modalMode === 'create') {
         // Criar novo item no Supabase
         if (modalType === 'receivable') {

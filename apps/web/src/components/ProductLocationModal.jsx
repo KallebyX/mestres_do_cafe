@@ -53,8 +53,7 @@ const ProductLocationModal = ({
         setWarehouses([]);
       } else {
         setWarehouses(data || []);
-        console.log(`✅ ${data?.length || 0} depósitos carregados do Supabase`);
-      }
+        }
     } catch (error) {
       console.error('❌ Erro ao carregar depósitos:', error);
       setWarehouses([]);
@@ -91,8 +90,7 @@ const ProductLocationModal = ({
         })) || [];
 
         setLocations(mappedLocations);
-        console.log(`✅ ${mappedLocations.length} localizações carregadas do Supabase`);
-      }
+        }
     } catch (error) {
       console.error('❌ Erro ao carregar localizações:', error);
       setLocations([]);

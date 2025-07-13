@@ -45,7 +45,6 @@ const ProductPage = () => {
       const response = await getById('products', id);
       
       if (response.success && response.data) {
-        console.log('✅ Produto carregado:', response.data.name);
         return response.data;
       } else {
         throw new Error(response.error || 'Produto não encontrado');
@@ -78,7 +77,6 @@ const ProductPage = () => {
             .filter(p => p.id !== parseInt(id))
             .slice(0, 4);
           
-          console.log('✅ Produtos relacionados carregados:', related.length);
           return related;
         }
       }
@@ -99,8 +97,6 @@ const ProductPage = () => {
       return [];
     });
   };
-
-
 
   const handleAddToCart = () => {
     if (!product) return;
@@ -547,5 +543,4 @@ const ProductPage = () => {
 };
 
 export default ProductPage;
-
 

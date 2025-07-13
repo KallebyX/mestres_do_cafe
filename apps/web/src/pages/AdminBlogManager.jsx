@@ -1,17 +1,25 @@
-import React, { useState, useEffect } from 'react';
-import { 
-  FileText, Plus, Search, Filter, Edit, Trash2, Eye, EyeOff, 
-  Calendar, User, Tag, BarChart3, Save, X, Image, Globe, ArrowLeft
+import {
+  createBlogPost,
+  deleteBlogPost,
+  getAllBlogPostsAdmin,
+  getBlogCategories,
+  updateBlogPost
+} from "@/lib/api";
+import {
+  ArrowLeft,
+  Edit,
+  Eye, EyeOff,
+  FileText, Plus,
+  Save,
+  Search,
+  Tag,
+  Trash2,
+  X
 } from 'lucide-react';
-import { useAuth } from '../contexts/AuthContext';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { 
-  getAllBlogPostsAdmin, 
-  getBlogCategories, 
-  createBlogPost, 
-  updateBlogPost, 
-  deleteBlogPost 
-} from "@/lib/api"
+import { useAuth } from '../contexts/AuthContext';
+import { useDebouncedValue } from '../utils/debounce';
 
 const AdminBlogManager = () => {
   const [posts, setPosts] = useState([]);
@@ -24,6 +32,9 @@ const AdminBlogManager = () => {
   const [selectedPost, setSelectedPost] = useState(null);
   const [isEditing, setIsEditing] = useState(false);
   const [saving, setSaving] = useState(false);
+  
+  // Debounced search term para otimização
+  const debouncedSearchTerm = useDebouncedValue(searchTerm, 400);
   
   const { user, hasPermission } = useAuth();
   const navigate = useNavigate();
@@ -57,7 +68,6 @@ const AdminBlogManager = () => {
       ]);
 
       if (postsResult.success) {
-        console.log('✅ Posts carregados:', postsResult.data.length);
         setPosts(postsResult.data);
       } else {
         console.error('Erro ao carregar posts:', postsResult.error);
@@ -180,8 +190,8 @@ const AdminBlogManager = () => {
   };
 
   const filteredPosts = posts.filter(post => {
-    const matchesSearch = post.title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         post.excerpt?.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesSearch = post.title?.toLowerCase().includes(debouncedSearchTerm.toLowerCase()) ||
+                         post.excerpt?.toLowerCase().includes(debouncedSearchTerm.toLowerCase());
     const matchesStatus = filterStatus === 'all' || post.status === filterStatus;
     const matchesCategory = filterCategory === 'all' || post.category === filterCategory;
     

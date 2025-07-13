@@ -1,11 +1,15 @@
 /* Importação das Fontes do Manual de Marca - Sistema Premium */
+@import url('https://fonts.googleapis.com/css2?family=Carena:wght@300;400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=All+Round+Gothic:wght@100;200;300;400;500;600;700;800;900&display=swap');
+/* Fallback fonts caso as principais não carreguem */
 @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700;800;900&display=swap');
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
 
-/* Importação do Sistema de Design Premium */
-@import '../../../packages/ui/src/styles/design-system.css';
 /* Importação das Animações Premium */
 @import './styles/premium-animations.css';
+
+/* Importação das Fontes Personalizadas */
+@import './styles/fonts.css';
 
 @tailwind base;
 @tailwind components;
@@ -78,8 +82,8 @@
   }
   body {
     @apply bg-background text-foreground;
-    /* Tipografia de apoio - All Round Gothic Family (usando Open Sans como fallback) */
-    font-family: 'Open Sans', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    /* Tipografia de apoio - All Round Gothic Family */
+    font-family: 'All Round Gothic Family', 'Open Sans', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   }
   
   /* Tema claro */
@@ -95,8 +99,8 @@
   }
   
   .font-serif {
-    /* Tipografia principal - Carena Regular (usando Crimson Text como fallback) */
-    font-family: 'Crimson Text', Georgia, Times, serif;
+    /* Tipografia principal - Carena Regular */
+    font-family: 'Carena Regular', 'Crimson Text', Georgia, Times, serif;
   }
 }
 

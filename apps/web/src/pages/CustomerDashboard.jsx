@@ -14,7 +14,6 @@ const CustomerDashboard = () => {
   useEffect(() => {
     // Verificar se o usuário é admin e redirecionar
     if (profile && (profile.role === 'admin' || profile.role === 'super_admin' || isAdmin)) {
-      console.log('👑 Admin detectado no CustomerDashboard, redirecionando para área administrativa...');
       navigate('/admin/crm');
       return;
     }
@@ -32,7 +31,6 @@ const CustomerDashboard = () => {
     }
 
     try {
-      console.log('🔍 Buscando pedidos para o usuário:', user.id);
       const data = await ordersAPI.getUserOrders(user.id);
       setOrders(data || []);
     } catch (error) {

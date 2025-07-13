@@ -28,15 +28,9 @@ const ReviewList = ({
 
   // Usar reviews das props ou carregar do backend
   useEffect(() => {
-    console.log('📝 ReviewList recebeu propReviews:', propReviews);
-    console.log('📝 ReviewList propReviews length:', propReviews?.length);
-    console.log('📝 ReviewList productId:', productId);
-    
     if (propReviews && propReviews.length > 0) {
-      console.log('✅ Usando reviews das props, setando no state local');
       setReviews(propReviews);
     } else if (productId && (!propReviews || propReviews.length === 0)) {
-      console.log('🔄 Carregando reviews do backend');
       loadReviews();
     }
   }, [propReviews, productId]);
@@ -54,8 +48,6 @@ const ReviewList = ({
 
     try {
       const currentPage = resetPage ? 1 : (pageOverride || page);
-      console.log('🔍 Carregando reviews - página:', currentPage);
-      
       const result = await reviewsAPI.getReviews(productId, {
         page: currentPage,
         limit: 10,
@@ -66,8 +58,6 @@ const ReviewList = ({
 
       if (result.success) {
         const newReviews = result.reviews || [];
-        console.log('✅ Reviews carregados:', newReviews.length);
-        
         if (resetPage) {
           setReviews(newReviews);
           setPage(1);
@@ -412,7 +402,7 @@ const ReviewList = ({
       ) : (
         <div className="review-items">
           {console.log('🎯 Renderizando reviews:', reviews)}
-          {reviews.map(renderReviewItem)}
+          {Array.isArray(reviews) ? reviews.map(renderReviewItem) : null}
         </div>
       )}
 

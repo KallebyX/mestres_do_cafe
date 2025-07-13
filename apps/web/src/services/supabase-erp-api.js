@@ -77,7 +77,6 @@ export const financialAPI = {
       // Verificar se tabela existe
       const tableExists = await this.tableExists('accounts_receivable');
       if (!tableExists) {
-        console.log('⚠️ Tabela accounts_receivable não existe - retornando dados vazios');
         return { success: true, data: [] };
       }
 
@@ -144,7 +143,6 @@ export const financialAPI = {
       // Verificar se tabela existe
       const tableExists = await this.tableExists('accounts_payable');
       if (!tableExists) {
-        console.log('⚠️ Tabela accounts_payable não existe - retornando dados vazios');
         return { success: true, data: [] };
       }
 
@@ -235,8 +233,7 @@ export const financialAPI = {
             totalReceivables = receivables.reduce((sum, item) => sum + parseFloat(item.amount || 0), 0);
           }
         } catch (error) {
-          console.log('⚠️ Erro ao buscar contas a receber, usando valor padrão');
-        }
+          }
       }
 
       // Contas a pagar em aberto - apenas se tabela existir
@@ -251,8 +248,7 @@ export const financialAPI = {
             totalPayables = payables.reduce((sum, item) => sum + parseFloat(item.amount || 0), 0);
           }
         } catch (error) {
-          console.log('⚠️ Erro ao buscar contas a pagar, usando valor padrão');
-        }
+          }
       }
 
       // Saldo das contas bancárias - apenas se tabela existir
@@ -267,11 +263,8 @@ export const financialAPI = {
             totalBalance = accounts.reduce((sum, item) => sum + parseFloat(item.current_balance || 0), 0);
           }
         } catch (error) {
-          console.log('⚠️ Erro ao buscar contas bancárias, usando valor padrão');
-        }
+          }
       }
-
-      console.log(`💰 Resumo financeiro: Receber R$ ${totalReceivables}, Pagar R$ ${totalPayables}, Saldo R$ ${totalBalance}`);
 
       return {
         success: true,
@@ -652,7 +645,6 @@ export const hrAPI = {
       // Verificar se tabela existe
       const tableExists = await this.tableExists('employees');
       if (!tableExists) {
-        console.log('⚠️ Tabela employees não existe, retornando array vazio');
         return { success: true, data: [] };
       }
 
@@ -667,7 +659,6 @@ export const hrAPI = {
         return { success: true, data: [] }; // Retorna vazio em caso de erro
       }
       
-      console.log(`✅ ${data?.length || 0} funcionários carregados do Supabase`);
       return { success: true, data: data || [] };
     } catch (error) {
       console.error('Erro ao buscar funcionários:', error);
@@ -683,7 +674,6 @@ export const hrAPI = {
       const employeesExists = await this.tableExists('employees');
       
       if (!departmentsExists) {
-        console.log('⚠️ Tabela departments não existe, retornando array vazio');
         return { success: true, data: [] };
       }
 
@@ -726,7 +716,6 @@ export const hrAPI = {
         };
       });
       
-      console.log(`✅ ${departments.length} departamentos carregados com contagem de funcionários`);
       return { success: true, data: departmentsWithCount };
 
     } catch (error) {
@@ -742,7 +731,6 @@ export const hrAPI = {
       // Verificar se tabela existe
       const tableExists = await this.tableExists('positions');
       if (!tableExists) {
-        console.log('⚠️ Tabela positions não existe, retornando array vazio');
         return { success: true, data: [] };
       }
 
@@ -756,7 +744,6 @@ export const hrAPI = {
         return { success: true, data: [] }; // Retorna vazio em caso de erro
       }
       
-      console.log(`✅ ${data?.length || 0} cargos carregados do Supabase`);
       return { success: true, data: data || [] };
     } catch (error) {
       console.error('Erro ao buscar cargos:', error);
@@ -820,7 +807,6 @@ export const hrAPI = {
     try {
       const tableExists = await this.tableExists('attendances');
       if (!tableExists) {
-        console.log('⚠️ Tabela attendances não existe, retornando array vazio');
         return { success: true, data: [] };
       }
 
@@ -882,7 +868,6 @@ export const hrAPI = {
       const attendancesExists = await this.tableExists('attendances');
 
       if (!employeesExists) {
-        console.log('⚠️ Tabela employees não existe para HR summary');
         return { success: true, data: {
           activeEmployees: 0,
           todayAttendances: 0,
@@ -958,7 +943,6 @@ export const salesAPI = {
     try {
       const tableExists = await this.tableExists('quotations');
       if (!tableExists) {
-        console.log('⚠️ Tabela quotations não existe, retornando array vazio');
         return { success: true, data: [] };
       }
 
@@ -972,7 +956,6 @@ export const salesAPI = {
         return { success: true, data: [] };
       }
       
-      console.log(`✅ ${data?.length || 0} orçamentos carregados do Supabase`);
       return { success: true, data: data || [] }
     } catch (error) {
       console.error('Erro ao buscar orçamentos:', error);
@@ -1010,7 +993,6 @@ export const salesAPI = {
     try {
       const tableExists = await this.tableExists('sales_reps');
       if (!tableExists) {
-        console.log('⚠️ Tabela sales_reps não existe, retornando array vazio');
         return { success: true, data: [] };
       }
 
@@ -1024,7 +1006,6 @@ export const salesAPI = {
         return { success: true, data: [] };
       }
       
-      console.log(`✅ ${data?.length || 0} vendedores carregados do Supabase`);
       return { success: true, data: data || [] }
     } catch (error) {
       console.error('Erro ao buscar vendedores:', error);
@@ -1055,7 +1036,6 @@ export const purchaseAPI = {
     try {
       const tableExists = await this.tableExists('purchase_orders');
       if (!tableExists) {
-        console.log('⚠️ Tabela purchase_orders não existe, retornando array vazio');
         return { success: true, data: [] };
       }
 
@@ -1069,7 +1049,6 @@ export const purchaseAPI = {
         return { success: true, data: [] };
       }
       
-      console.log(`✅ ${data?.length || 0} ordens de compra carregadas do Supabase`);
       return { success: true, data: data || [] }
     } catch (error) {
       console.error('Erro ao buscar ordens de compra:', error);
@@ -1107,7 +1086,6 @@ export const purchaseAPI = {
     try {
       const tableExists = await this.tableExists('suppliers');
       if (!tableExists) {
-        console.log('⚠️ Tabela suppliers não existe, retornando array vazio');
         return { success: true, data: [] };
       }
 
@@ -1121,7 +1099,6 @@ export const purchaseAPI = {
         return { success: true, data: [] };
       }
       
-      console.log(`✅ ${data?.length || 0} fornecedores carregados do Supabase`);
       return { success: true, data: data || [] }
     } catch (error) {
       console.error('Erro ao buscar fornecedores:', error);
@@ -1134,7 +1111,6 @@ export const purchaseAPI = {
     try {
       const tableExists = await this.tableExists('purchase_receipts');
       if (!tableExists) {
-        console.log('⚠️ Tabela purchase_receipts não existe, retornando array vazio');
         return { success: true, data: [] };
       }
 
@@ -1148,7 +1124,6 @@ export const purchaseAPI = {
         return { success: true, data: [] };
       }
       
-      console.log(`✅ ${data?.length || 0} recebimentos carregados do Supabase`);
       return { success: true, data: data || [] }
     } catch (error) {
       console.error('Erro ao buscar recebimentos:', error);
@@ -1212,7 +1187,6 @@ export const notificationAPI = {
       return !selectError;
     } catch (error) {
       // Qualquer exceção = tabela não existe
-      console.log(`⚠️ Tabela ${tableName} não existe ou não acessível:`, error.message);
       return false;
     }
   },
@@ -1221,12 +1195,9 @@ export const notificationAPI = {
   async getNotifications(userId = null) {
     // SEMPRE retorna array vazio - nunca falha
     try {
-      console.log('🔔 Tentando buscar notificações...');
-      
       // Verificação super robusta
       const tableExists = await this.tableExists('notifications');
       if (!tableExists) {
-        console.log('⚠️ Tabela notifications não existe, retornando array vazio');
         return { success: true, data: [] };
       }
 
@@ -1244,14 +1215,11 @@ export const notificationAPI = {
       const { data, error } = await query;
 
       if (error) {
-        console.log('⚠️ Erro na query de notifications, retornando array vazio:', error.message);
         return { success: true, data: [] };
       }
       
-      console.log(`✅ ${data?.length || 0} notificações carregadas`);
       return { success: true, data: data || [] };
     } catch (error) {
-      console.log('⚠️ Erro genérico ao buscar notificações, retornando array vazio:', error.message);
       return { success: true, data: [] };
     }
   },

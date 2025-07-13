@@ -1,11 +1,14 @@
-import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
-import { supabase } from "@/lib/api"
-import { notificationAPI } from "@/lib/api"
-import { useAuth } from './AuthContext';
-import { 
-  Bell, AlertTriangle, CheckCircle, Info, DollarSign, 
-  Package, Users, Calendar, Clock, TrendingDown, TrendingUp 
+import {
+  AlertTriangle,
+  Calendar,
+  CheckCircle,
+  DollarSign,
+  Info,
+  Package, Users
 } from 'lucide-react';
+import { createContext, useCallback, useContext, useEffect, useState } from 'react';
+import { notificationAPI, supabase } from "../lib/api.js";
+import { useAuth } from './AuthContext';
 
 const NotificationContext = createContext();
 
@@ -117,10 +120,13 @@ export const NotificationProvider = ({ children }) => {
       const result = await notificationAPI.getNotifications(user.id);
       
       // A API sempre retorna success: true
-      setNotifications(result.data || []);
-      setUnreadCount(result.data?.filter(n => !n.read).length || 0);
-      console.log(`✅ ${result.data?.length || 0} notificações carregadas via API robusta`);
-    } catch (error) {
+      const notifications = Array.isArray(result.data) ? result.data : [];
+      setNotifications(notifications);
+      
+      // Validação segura para contagem de não lidas
+      const unreadNotifications = notifications.filter(n => n && !n.read);
+      setUnreadCount(unreadNotifications.length || 0);
+      } catch (error) {
       console.error('❌ Erro inesperado ao carregar notificações:', error);
       // Garantir que sempre temos arrays vazios 
       setNotifications([]);
@@ -212,10 +218,9 @@ export const NotificationProvider = ({ children }) => {
       // Tentar atualizar no backend (sem falhar se der erro)
       try {
         await notificationAPI.markAsRead('all');
-        console.log('✅ Notificações marcadas como lidas no servidor');
-      } catch (error) {
-        console.log('⚠️ Erro ao marcar no servidor, mantendo mudança local');
-      }
+        } catch (error) {
+        console.warn('Erro ao marcar todas como lidas no backend:', error);
+        }
 
       return { success: true };
     } catch (error) {
@@ -232,11 +237,10 @@ export const NotificationProvider = ({ children }) => {
       
       // Tentar deletar no backend (sem falhar se der erro)
       try {
-        console.log(`🗑️ Removendo notificação ${notificationId} do servidor...`);
         // Futuro: implementar delete na API robusta se necessário
       } catch (error) {
-        console.log('⚠️ Erro ao deletar no servidor, mantendo remoção local');
-      }
+        console.warn('Erro ao deletar notificação no backend:', error);
+        }
 
       return { success: true };
     } catch (error) {
@@ -375,8 +379,6 @@ export const NotificationProvider = ({ children }) => {
 
     // TEMPORARIAMENTE DESABILITADO para evitar erros 404
     // As notificações funcionam via estado local
-    console.log('🔔 Sistema de notificações ativo via estado local');
-
     // Futuro: reativar quando tabela notifications estiver 100% funcional
     // const setupSubscriptions = async () => {
     //   try {
@@ -384,19 +386,22 @@ export const NotificationProvider = ({ children }) => {
     //     if (!result) return;
     //     // ... subscription code
     //   } catch (error) {
-    //     console.log('⚠️ Subscriptions desabilitadas por segurança');
-    //   }
+    //     //   }
     // };
     
   }, [user, hasNotificationPermission]);
 
   // Verificar alertas periodicamente (apenas para admins)
   useEffect(() => {
-    if (!user || !hasPermission('admin')) return;
+    let isMounted = true;
+    
+    if (!user || !hasPermission('admin') || !isMounted) return;
 
     const checkAlerts = () => {
-      checkFinancialAlerts();
-      checkStockAlerts();
+      if (isMounted) {
+        checkFinancialAlerts();
+        checkStockAlerts();
+      }
     };
 
     // Verificar após 5 segundos da inicialização
@@ -406,6 +411,7 @@ export const NotificationProvider = ({ children }) => {
     const interval = setInterval(checkAlerts, 10 * 60 * 1000);
 
     return () => {
+      isMounted = false;
       clearTimeout(initialTimeout);
       clearInterval(interval);
     };
@@ -413,14 +419,28 @@ export const NotificationProvider = ({ children }) => {
 
   // Carregar notificações na inicialização
   useEffect(() => {
-    loadNotifications();
+    let isMounted = true;
+    
+    if (isMounted) {
+      loadNotifications();
+    }
+    
+    return () => {
+      isMounted = false;
+    };
   }, [loadNotifications]);
 
   // Verificar permissão existente para notificações
   useEffect(() => {
-    if ('Notification' in window) {
+    let isMounted = true;
+    
+    if ('Notification' in window && isMounted) {
       setHasNotificationPermission(Notification.permission === 'granted');
     }
+    
+    return () => {
+      isMounted = false;
+    };
   }, []);
 
   // Funções de notificação rápida para módulos
@@ -489,4 +509,4 @@ export const NotificationProvider = ({ children }) => {
   );
 };
 
-export default NotificationContext; 
+export default NotificationProvider;

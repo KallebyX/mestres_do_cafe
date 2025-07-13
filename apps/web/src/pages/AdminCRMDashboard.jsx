@@ -1,29 +1,47 @@
-import React, { useState, useEffect } from 'react';
-import { 
-  Users, Search, Download, UserPlus, Mail, Phone, 
-  TrendingUp, DollarSign, Edit, Eye, UserCheck, 
-  BarChart3, PieChart, Activity, Target, Award,
-  AlertCircle, CheckCircle, User, Building, Clock,
-  MoreVertical, Filter, ChevronLeft, ChevronRight, 
-  Shield, Globe, ArrowLeft, Send, MessageSquare,
-  FileText, Image, Zap, Calendar, Copy, Trash2
+import {
+  getAdminCustomers,
+  getAllCustomers,
+  syncAuthUsersToPublic,
+  toggleAnyCustomerStatus,
+  toggleCustomerStatus
+} from "@/lib/api";
+import {
+  sendCompleteNewsletter,
+  validateNewsletterData
+} from "@/lib/newsletter-api";
+import {
+  Activity,
+  AlertCircle,
+  ArrowLeft,
+  Building,
+  CheckCircle,
+  ChevronLeft, ChevronRight,
+  Clock,
+  DollarSign,
+  Download,
+  Edit, Eye,
+  FileText,
+  Globe,
+  Mail,
+  MessageSquare,
+  Phone,
+  Search,
+  Send,
+  Shield,
+  Target,
+  TrendingUp,
+  User,
+  UserCheck,
+  UserPlus,
+  Users,
+  Zap
 } from 'lucide-react';
-import { Toggle } from '../components/ui/toggle';
-import { useAuth } from '../contexts/AuthContext';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import CustomerCreateModal from '../components/CustomerCreateModal';
-import { 
-  getAdminCustomers, 
-  toggleCustomerStatus,
-  getAllCustomers,
-  toggleAnyCustomerStatus,
-  syncAuthUsersToPublic
-} from "@/lib/api"
-import { 
-  sendCompleteNewsletter, 
-  validateNewsletterData,
-  getNewsletterTemplates
-} from "@/lib/newsletter-api";
+import { Toggle } from '../components/ui/toggle';
+import { useAuth } from '../contexts/AuthContext';
+import { useDebouncedValue } from '../utils/debounce';
 
 const AdminCRMDashboard = () => {
   const [activeTab, setActiveTab] = useState('admin-only'); // 'admin-only', 'all-customers', 'newsletter'
@@ -37,6 +55,9 @@ const AdminCRMDashboard = () => {
   const [pagination, setPagination] = useState({ page: 1, limit: 20, total: 0, pages: 0 });
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
+
+  // Debounced search term para otimização
+  const debouncedSearchTerm = useDebouncedValue(searchTerm, 500);
 
   // Estados da Newsletter
   const [newsletterData, setNewsletterData] = useState({
@@ -265,12 +286,9 @@ Olá, [NOME]! 🎭☕
     if (activeTab !== 'newsletter') {
       loadCustomersData();
     }
-  }, [user, hasPermission, navigate, pagination.page, searchTerm, filterSource, activeTab]);
+  }, [user, hasPermission, navigate, pagination.page, debouncedSearchTerm, filterSource, activeTab]);
 
   const loadCustomersData = async () => {
-    console.log('🔄 Iniciando carregamento de clientes...');
-    console.log('📊 Parâmetros:', { activeTab, pagination, searchTerm, filterSource });
-    
     setLoading(true);
     setError('');
     
@@ -278,29 +296,24 @@ Olá, [NOME]! 🎭☕
       let result;
       
       if (activeTab === 'admin-only') {
-        console.log('👤 Buscando clientes criados pelo admin...');
         // Buscar apenas clientes criados pelo admin
         result = await getAdminCustomers({
           page: pagination.page,
           limit: pagination.limit,
-          search: searchTerm
+          search: debouncedSearchTerm
         });
-        console.log('👤 Resultado admin clients:', result);
-      } else {
-        console.log('📋 Buscando todos os clientes...');
+        } else {
         // Buscar todos os clientes
         result = await getAllCustomers({
           page: pagination.page,
           limit: pagination.limit,
-          search: searchTerm,
+          search: debouncedSearchTerm,
           origin: filterSource === 'admin' ? 'admin' : filterSource === 'self' ? 'auto' : undefined
         });
-        console.log('📋 Resultado all clients:', result);
-      }
+        }
       
       if (result && result.success) {
-        console.log(`✅ ${result.customers.length} clientes carregados com sucesso`);
-        setCustomers(result.customers);
+        setCustomers(result.customers || []);
         if (result.pagination) {
           setPagination(prev => ({ ...prev, ...result.pagination }));
         }
@@ -313,8 +326,7 @@ Olá, [NOME]! 🎭☕
       setError('Erro ao carregar clientes: ' + error.message);
     } finally {
       setLoading(false);
-      console.log('🏁 Carregamento finalizado');
-    }
+      }
   };
 
   const handleCreateCustomer = () => {
@@ -392,7 +404,7 @@ Olá, [NOME]! 🎭☕
       });
       
       if (result && result.success) {
-        setCustomers(result.customers);
+        setCustomers(result.customers || []);
       }
     } catch (error) {
       console.error('Erro ao carregar clientes para newsletter:', error);
@@ -421,24 +433,27 @@ Olá, [NOME]! 🎭☕
     }
   };
 
+  // Variável segura para customers - movida para o topo
+  const safeCustomers = Array.isArray(customers) ? customers : [];
+
   const handleAudienceChange = (audience) => {
-    let filteredCustomers = [...customers];
+    let filteredCustomers = [...safeCustomers];
     
     switch (audience) {
       case 'admin-created':
-        filteredCustomers = customers.filter(c => c.criado_por_admin);
+        filteredCustomers = safeCustomers.filter(c => c && c.criado_por_admin);
         break;
       case 'self-registered':
-        filteredCustomers = customers.filter(c => !c.criado_por_admin);
+        filteredCustomers = safeCustomers.filter(c => c && !c.criado_por_admin);
         break;
       case 'active':
-        filteredCustomers = customers.filter(c => c.is_active);
+        filteredCustomers = safeCustomers.filter(c => c && c.is_active);
         break;
       case 'inactive':
-        filteredCustomers = customers.filter(c => !c.is_active);
+        filteredCustomers = safeCustomers.filter(c => c && !c.is_active);
         break;
       default:
-        filteredCustomers = customers;
+        filteredCustomers = safeCustomers;
     }
     
     setSelectedCustomers(filteredCustomers);
@@ -462,12 +477,6 @@ Olá, [NOME]! 🎭☕
     setNewsletterLoading(true);
 
     try {
-      console.log('📧📱 Enviando newsletter...', {
-        method: newsletterData.sendMethod,
-        customers: selectedCustomers.length,
-        title: newsletterData.title
-      });
-
       const result = await sendCompleteNewsletter(newsletterData, selectedCustomers);
       
       if (result.success) {
@@ -484,8 +493,7 @@ Olá, [NOME]! 🎭☕
         });
         setSelectedCustomers([]);
         
-        console.log('✅ Newsletter enviada com sucesso:', result.results);
-      } else {
+        } else {
         setError(result.error || 'Erro ao enviar newsletter');
         console.error('❌ Erro no envio da newsletter:', result);
       }
@@ -502,13 +510,14 @@ Olá, [NOME]! 🎭☕
     }
   };
 
-  // Cálculos para KPIs
-  const totalCustomers = customers.length;
-  const pendingCustomers = customers.filter(c => c.pendente_ativacao).length;
-  const activeCustomers = customers.filter(c => c.is_active).length;
-  const adminCreatedCustomers = customers.filter(c => c.criado_por_admin).length;
-  const selfRegisteredCustomers = customers.filter(c => !c.criado_por_admin).length;
-  const totalRevenue = customers.reduce((sum, c) => sum + (c.total_spent || 0), 0);
+  // Cálculos para KPIs - com verificação de segurança robusta
+  
+  const totalCustomers = safeCustomers.length;
+  const pendingCustomers = safeCustomers.filter(c => c && c.pendente_ativacao).length;
+  const activeCustomers = safeCustomers.filter(c => c && c.is_active).length;
+  const adminCreatedCustomers = safeCustomers.filter(c => c && c.criado_por_admin).length;
+  const selfRegisteredCustomers = safeCustomers.filter(c => c && !c.criado_por_admin).length;
+  const totalRevenue = safeCustomers.reduce((sum, c) => sum + (c && c.total_spent || 0), 0);
   const avgLifetimeValue = totalCustomers > 0 ? totalRevenue / totalCustomers : 0;
 
   return (
@@ -550,7 +559,6 @@ Olá, [NOME]! 🎭☕
                   setSuccess('');
                   
                   try {
-                    console.log('🔄 Forçando sincronização manual de usuários...');
                     const result = await syncAuthUsersToPublic();
                     
                     if (result.success) {
@@ -998,7 +1006,7 @@ Olá, [NOME]! 🎭☕
                 <div className="w-12 h-12 border-4 border-amber-200 border-t-amber-600 rounded-full animate-spin mx-auto mb-4"></div>
                 <p className="text-slate-600">Carregando clientes...</p>
               </div>
-            ) : customers.length === 0 ? (
+            ) : safeCustomers.length === 0 ? (
               <div className="text-center py-12">
                 <Users className="w-16 h-16 text-slate-300 mx-auto mb-4" />
                 <h3 className="text-xl font-semibold text-slate-700 mb-2">Nenhum cliente encontrado</h3>
@@ -1021,7 +1029,7 @@ Olá, [NOME]! 🎭☕
               </div>
             ) : (
               <div className="space-y-4">
-                {customers.map(customer => (
+                {safeCustomers.map(customer => (
                   <div key={customer.id} className="bg-slate-50 rounded-2xl p-6 border border-slate-100 hover:shadow-md transition-shadow">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-4">

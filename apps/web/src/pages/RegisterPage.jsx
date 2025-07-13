@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
+import { validateAndCleanEmail, validatePassword, validateName } from '../utils/validators';
 import { 
   User, 
   Mail, 
@@ -242,8 +243,7 @@ const RegisterPage = () => {
       
       if (result.success) {
         // O redirecionamento será feito automaticamente pelo Google OAuth
-        console.log('Redirecionando para o Google...');
-      } else {
+        } else {
         setErrors({ submit: result.error || 'Erro ao criar conta com Google. Tente novamente.' });
       }
     } catch (_err) {

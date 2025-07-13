@@ -1,6 +1,6 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import { createContext, useContext, useEffect, useState } from 'react';
+import { cartAPI } from "../lib/api.js";
 import { useAuth } from './AuthContext';
-import { cartAPI } from "@/lib/api";
 
 // =============================================
 // CART UTILITIES - FUNÇÕES LOCAIS E SUPABASE
@@ -166,32 +166,43 @@ export const CartProvider = ({ children }) => {
 
   // Inicialização segura: carrinho APENAS para usuários logados
   useEffect(() => {
-    if (user && user.id) {
-      console.log('✅ Usuário logado detectado, carregando carrinho do Supabase...');
+    let isMounted = true;
+    
+    if (user && user.id && isMounted) {
       setRequiresLogin(false);
       loadCart();
-    } else {
-      console.log('🔒 Usuário não logado, carrinho requer autenticação');
+    } else if (isMounted) {
       setRequiresLogin(true);
       setCartItems([]);
       setCartTotal(0);
     }
+    
+    return () => {
+      isMounted = false;
+    };
   }, [user]);
 
   // Calcular total do carrinho sempre que os itens mudarem
   useEffect(() => {
-    const total = cartItems.reduce((sum, item) => {
-      const price = parseFloat(item.price) || 0;
-      const quantity = parseInt(item.quantity) || 0;
-      return sum + (price * quantity);
-    }, 0);
-    setCartTotal(total);
+    let isMounted = true;
+    
+    if (isMounted) {
+      const total = cartItems.reduce((sum, item) => {
+        const price = parseFloat(item.price) || 0;
+        const quantity = parseInt(item.quantity) || 0;
+        return sum + (price * quantity);
+      }, 0);
+      setCartTotal(total);
+    }
+    
+    return () => {
+      isMounted = false;
+    };
   }, [cartItems]);
 
   const loadCart = async () => {
     // 🔒 SEGURANÇA: Carrinho APENAS para usuários autenticados
     if (!user || !user.id) {
-      console.log('🔒 Acesso negado: Carrinho requer autenticação');
       setCartItems([]);
       setCartTotal(0);
       setRequiresLogin(true);
@@ -202,8 +213,6 @@ export const CartProvider = ({ children }) => {
     setRequiresLogin(false);
     
     try {
-      console.log('🛒 Carregando carrinho seguro para usuário:', user.id);
-      
       // 🔒 BUSCAR carrinho do usuário logado via API Flask
       const response = await cartAPI.getCart();
       
@@ -216,15 +225,12 @@ export const CartProvider = ({ children }) => {
       const cartItems = response.data.items || [];
       
       if (cartItems.length === 0) {
-        console.log('📭 Carrinho vazio para usuário:', user.id);
         setCartItems([]);
         return;
       }
 
       setCartItems(cartItems);
-      console.log('✅ Carrinho carregado com segurança:', cartItems.length, 'itens para usuário', user.id);
-
-    } catch (error) {
+      } catch (error) {
       console.error('❌ Erro ao carregar carrinho:', error);
       setCartItems([]);
     } finally {
@@ -235,7 +241,6 @@ export const CartProvider = ({ children }) => {
   const addToCart = async (product, quantity = 1) => {
     // 🔒 SEGURANÇA: Verificações rigorosas antes de qualquer operação
     if (!user || !user.id) {
-      console.log('🔒 Acesso negado: Login necessário para adicionar ao carrinho');
       setRequiresLogin(true);
       return { success: false, message: 'Login necessário para adicionar produtos ao carrinho' };
     }
@@ -250,15 +255,13 @@ export const CartProvider = ({ children }) => {
       console.log('🛒 Adicionando ao carrinho (usuário:', user.id, '- produto:', product.name, '- ID:', product.id, ')');
       
       // Adicionar via API Flask
-      const response = await cartAPI.addToCart(product.id, quantity);
+      const response = await cartAPI.add(product.id, quantity);
       
       if (!response.success) {
         console.error('❌ Erro ao adicionar ao carrinho:', response.message);
         return { success: false, message: response.message || 'Erro ao adicionar produto' };
       }
 
-      console.log('✅ Item adicionado com sucesso');
-      
       // Recarregar carrinho
       await loadCart();
       return { success: true, message: 'Produto adicionado ao carrinho!' };
@@ -272,7 +275,6 @@ export const CartProvider = ({ children }) => {
   const removeFromCart = async (productId) => {
     // 🔒 SEGURANÇA: Verificações rigorosas antes de qualquer operação
     if (!user || !user.id) {
-      console.log('🔒 Acesso negado: Login necessário para remover do carrinho');
       return { success: false, message: 'Login necessário' };
     }
 
@@ -286,15 +288,13 @@ export const CartProvider = ({ children }) => {
       console.log('🗑️ Removendo do carrinho (usuário:', user.id, '- produto:', productId, ')');
       
       // Remover via API Flask
-      const response = await cartAPI.removeFromCart(productId);
+      const response = await cartAPI.remove(productId);
       
       if (!response.success) {
         console.error('❌ Erro ao remover do carrinho:', response.message);
         return { success: false, message: response.message || 'Erro ao remover produto' };
       }
 
-      console.log('✅ Item removido com sucesso');
-      
       // Recarregar carrinho
       await loadCart();
       return { success: true, message: 'Produto removido do carrinho!' };
@@ -308,7 +308,6 @@ export const CartProvider = ({ children }) => {
   const updateQuantity = async (productId, newQuantity) => {
     // 🔒 SEGURANÇA: Verificações rigorosas antes de qualquer operação
     if (!user || !user.id) {
-      console.log('🔒 Acesso negado: Login necessário para atualizar carrinho');
       return { success: false, message: 'Login necessário' };
     }
 
@@ -326,15 +325,13 @@ export const CartProvider = ({ children }) => {
       console.log('📝 Atualizando quantidade (usuário:', user.id, '- produto:', productId, '- qtd:', newQuantity, ')');
       
       // Atualizar via API Flask
-      const response = await cartAPI.updateQuantity(productId, newQuantity);
+      const response = await cartAPI.update(productId, newQuantity);
       
       if (!response.success) {
         console.error('❌ Erro ao atualizar quantidade:', response.message);
         return { success: false, message: response.message || 'Erro ao atualizar quantidade' };
       }
 
-      console.log('✅ Quantidade atualizada com sucesso');
-      
       // Recarregar carrinho
       await loadCart();
       return { success: true };
@@ -348,7 +345,6 @@ export const CartProvider = ({ children }) => {
   const clearCart = async () => {
     // 🔒 SEGURANÇA: Apenas usuários autenticados podem limpar carrinho
     if (!user || !user.id) {
-      console.log('🔒 Acesso negado: Login necessário para limpar carrinho');
       return { success: false, message: 'Login necessário' };
     }
 
@@ -356,7 +352,7 @@ export const CartProvider = ({ children }) => {
       console.log('🧹 Limpando carrinho (usuário:', user.id, ')');
       
       // Limpar via API Flask
-      const response = await cartAPI.clearCart();
+      const response = await cartAPI.clear();
       
       if (!response.success) {
         console.error('❌ Erro ao limpar carrinho:', response.message);
@@ -417,5 +413,5 @@ export const CartProvider = ({ children }) => {
   );
 };
 
-export default CartContext;
+export default CartProvider;
 

@@ -15,21 +15,16 @@ const CoursesPage = () => {
   const loadCourses = async () => {
     setLoading(true);
     try {
-      console.log('📚 Carregando cursos da página pública...');
-      
       // Tentar carregar cursos ativos primeiro, depois todos se não houver ativos
       let result = await getActiveCourses();
       
       if (!result.success || (result.data && result.data.length === 0)) {
-        console.log('⚠️ Nenhum curso ativo encontrado, buscando todos os cursos...');
         result = await getAllCourses();
       }
 
       if (result.success && result.data && result.data.length > 0) {
         setCourses(result.data);
-        console.log(`✅ ${result.data.length} cursos carregados do Supabase`);
-      } else {
-        console.log('⚠️ Nenhum curso encontrado no Supabase');
+        } else {
         setCourses([]);
       }
     } catch (error) {

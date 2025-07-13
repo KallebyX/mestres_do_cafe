@@ -8,7 +8,7 @@ import {
 } from 'lucide-react';
 import { useCart } from '../contexts/CartContext';
 import { useAuth } from '../contexts/AuthContext';
-import { products as productsAPI } from '../services/api';
+import { productsAPI } from '../lib/api';
 
 const PremiumProductDetailPage = () => {
   const { id } = useParams();

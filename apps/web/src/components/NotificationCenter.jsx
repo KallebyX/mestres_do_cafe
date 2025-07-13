@@ -1,12 +1,19 @@
-import React, { useState } from 'react';
-import { useNotifications } from '../contexts/NotificationContext';
-import { useNavigate } from 'react-router-dom';
-import { 
-  Bell, X, Check, CheckCheck, Trash2, Clock, 
-  AlertCircle, ChevronRight, Settings, Filter 
-} from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
-import { ptBR } from 'date-fns/locale';
+import { ptBR } from 'date-fns/locale/pt-BR';
+import {
+  AlertCircle,
+  Bell,
+  Check, CheckCheck,
+  ChevronRight,
+  Clock,
+  Filter,
+  Settings,
+  Trash2,
+  X
+} from 'lucide-react';
+import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useNotifications } from '../contexts/NotificationContext';
 
 export const NotificationBell = () => {
   const { unreadCount, isVisible, setIsVisible } = useNotifications();

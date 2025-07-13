@@ -1,0 +1,153 @@
+# Flask Framework
+Flask==2.3.3
+Flask-SQLAlchemy==3.0.5
+Flask-CORS==4.0.0
+Flask-JWT-Extended==4.5.2
+Flask-Mail==0.9.1
+Flask-Login==0.6.3
+
+# Database
+SQLAlchemy==2.0.21
+psycopg2-binary==2.9.7
+alembic==1.12.0
+
+# Environment & Configuration
+python-dotenv==1.0.0
+python-decouple==3.8
+
+# Validation & Serialization
+marshmallow==3.20.1
+marshmallow-sqlalchemy==0.29.0
+WTForms==3.0.1
+
+# HTTP & Requests
+requests==2.31.0
+urllib3==2.0.4
+
+# Date & Time
+python-dateutil==2.8.2
+pytz==2023.3
+
+# File Processing
+Pillow==10.0.0
+python-magic==0.4.27
+
+# Email
+sendgrid==6.10.0
+premailer==3.10.0
+
+# Encryption & Security
+bcrypt==4.0.1
+PyJWT==2.8.0
+cryptography==41.0.4
+
+# Utilities
+click==8.1.7
+itsdangerous==2.1.2
+Werkzeug==2.3.7
+
+# Development & Testing
+pytest==7.4.2
+pytest-flask==1.2.0
+pytest-cov==4.1.0
+black==23.7.0
+flake8==6.0.0
+mypy==1.5.1
+
+# Production Server
+gunicorn==21.2.0
+eventlet==0.33.3
+
+# Async & Background Tasks
+celery==5.3.1
+redis==4.6.0
+
+# Monitoring & Logging
+sentry-sdk==1.32.0
+structlog==23.1.0
+
+# API Documentation
+flask-restx==1.1.0
+apispec==6.3.0
+
+# Payment Processing
+stripe==6.5.0
+
+# Excel/CSV Processing
+pandas==2.0.3
+openpyxl==3.1.2
+
+# Image Processing
+opencv-python==4.8.0.76
+
+# Markdown Processing
+markdown==3.4.4
+bleach==6.0.0
+
+# UUID Generation
+uuid==1.30
+
+# JSON Processing
+jsonschema==4.19.0
+
+# Caching
+Flask-Caching==2.1.0
+
+# Rate Limiting
+Flask-Limiter==3.5.0
+
+# Pagination
+Flask-SQLAlchemy-Session==1.1
+
+# Timezone Support
+babel==2.12.1
+
+# Background Jobs
+rq==1.15.1
+
+# Health Checks
+healthcheck==1.3.3
+
+# CORS Headers
+flask-cors==4.0.0
+
+# Session Management
+Flask-Session==0.5.0
+
+# Form Handling
+Flask-WTF==1.1.1
+
+# File Uploads
+Flask-Uploads==0.2.1
+
+# API Testing
+httpx==0.24.1
+
+# Environment Variables
+environs==9.5.0
+
+# String Processing
+Unidecode==1.3.6
+
+# Validation
+cerberus==1.3.4
+
+# Serialization
+dill==0.3.7
+
+# Configuration Management
+dynaconf==3.2.2
+
+# Logging
+loguru==0.7.0
+
+# Performance Monitoring
+py-spy==0.3.14
+
+# Memory Profiling
+memory-profiler==0.61.0
+
+# Code Quality
+pre-commit==3.4.0
+isort==5.12.0
+bandit==1.7.5

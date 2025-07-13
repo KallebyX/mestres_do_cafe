@@ -1,35 +1,27 @@
 // API para gerenciamento de clientes criados pelo admin
-import { supabase } from "../lib/api.js"
+import api from './api.js';
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5001';
 
-// Função auxiliar para fazer requests com auth
+// Função auxiliar para fazer requests com auth usando o api.js
 const apiRequest = async (endpoint, options = {}) => {
-  // Usar token JWT próprio em vez do Supabase
-  const token = localStorage.getItem('access_token');
-  
-  const defaultOptions = {
-    headers: {
-      'Content-Type': 'application/json',
-      ...(token && { Authorization: `Bearer ${token}` })
-    }
-  };
+  try {
+    const method = options.method || 'GET';
+    const config = {
+      ...options,
+      url: endpoint,
+      method: method.toLowerCase(),
+    };
 
-  const response = await fetch(`${API_BASE_URL}${endpoint}`, {
-    ...defaultOptions,
-    ...options,
-    headers: {
-      ...defaultOptions.headers,
-      ...options.headers
+    if (options.body) {
+      config.data = JSON.parse(options.body);
     }
-  });
 
-  if (!response.ok) {
-    const error = await response.json().catch(() => ({ error: 'Erro desconhecido' }));
-    throw new Error(error.error || `HTTP ${response.status}`);
+    const response = await api(config);
+    return response.data;
+  } catch (error) {
+    throw new Error(error.response?.data?.error || error.message || 'Erro desconhecido');
   }
-
-  return response.json();
 };
 
 // Criar cliente manual

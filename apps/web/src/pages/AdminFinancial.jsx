@@ -31,8 +31,7 @@ const AdminFinancial = () => {
     try {
       const data = await adminAPI.getFinancialData(timeRange);
       setFinancialData(data);
-      console.log('💰 Dados financeiros carregados:', data);
-    } catch (error) {
+      } catch (error) {
       console.error('Erro ao carregar dados financeiros:', error);
     } finally {
       setLoading(false);
@@ -47,8 +46,6 @@ const AdminFinancial = () => {
       generated: new Date().toISOString()
     };
 
-    console.log(`Exportando relatório ${type}:`, reportData);
-    
     const fileName = `relatorio_financeiro_${type}_${new Date().toISOString().split('T')[0]}`;
     
     alert(`💰 Relatório Financeiro Exportado!\n\n📊 Tipo: ${type}\n📅 Período: ${timeRange}\n📄 Arquivo: ${fileName}.xlsx\n\n✅ Incluído:\n• Métricas financeiras\n• Fluxo de caixa\n• Análise de custos\n• Projeções\n• Compliance fiscal`);
