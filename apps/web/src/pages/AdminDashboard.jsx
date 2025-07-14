@@ -1,39 +1,45 @@
-import React, { useState, useEffect } from 'react';
-import { 
-  DollarSign, Users, Coffee, ShoppingCart, Package, BarChart3, 
-  Target, Search, Plus, Edit, Trash2, BookOpen, Activity, Eye, Check
+import {
+  Activity,
+  BarChart3,
+  BookOpen,
+  Check,
+  DollarSign,
+  Edit,
+  Package,
+  Plus,
+  ShoppingCart,
+  Trash2,
+  Users
 } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import ProductModal from '../components/ProductModal';
+import UserModal from '../components/UserModal';
 import AdminDashboardBase from '../components/admin/AdminDashboardBase';
-import { 
-  StatCard, 
-  QuickActions, 
-  RecentActivity, 
-  DataTable, 
+import {
+  CommonStatCards,
+  DataTable,
+  QuickActions,
+  RecentActivity,
   SearchAndFilter,
-  CommonStatCards
+  StatCard
 } from '../components/admin/DashboardWidgets';
+import { BarChart, LineChart } from '../components/ui/charts';
 import { useAdminDashboard } from '../hooks/useAdminDashboard';
-import { 
-  getAllProductsAdmin, 
-  deleteProductAdmin, 
-  toggleProductStatusAdmin,
-  getStats, 
-  getUsers, 
-  getTopProductsByRevenue,
-  ordersAPI,
-  getAllBlogPostsAdmin,
-  hrAPI,
-  deleteUserAdmin,
-  toggleUserStatusAdmin,
-  getAllOrdersAdmin,
+import {
   deleteOrderAdmin,
+  deleteProductAdmin,
+  deleteUserAdmin,
+  getAllBlogPostsAdmin,
+  getAllOrdersAdmin,
+  getAllProductsAdmin,
+  getStats,
+  getTopProductsByRevenue,
+  getUsers,
+  hrAPI,
+  toggleProductStatusAdmin,
+  toggleUserStatusAdmin,
   updateOrderStatusAdmin
 } from '../lib/api';
-import ProductModal from '../components/ProductModal';
-import BlogModal from '../components/BlogModal';
-import CustomerModal from '../components/CustomerModal';
-import UserModal from '../components/UserModal';
-import { LineChart, BarChart, MetricCard, AreaChart, ProgressRing, PieChartComponent } from '../components/ui/charts';
 
 const AdminDashboard = () => {
   const {
@@ -206,16 +212,23 @@ const AdminDashboard = () => {
 
   const loadBlogPosts = async () => {
     try {
+      console.log('🔄 Carregando posts do blog...');
       const result = await getAllBlogPostsAdmin();
+      console.log('📝 Resultado blog posts:', result);
+      console.log('🔍 result.data.posts:', result.data?.posts);
+      console.log('🔍 result.data.data?.posts:', result.data?.data?.posts);
       if (result.success) {
-        // A API de blog posts retorna data.posts
-        const postsData = Array.isArray(result.data?.posts) ? result.data.posts : [];
+        // A API de blog posts retorna data.data.posts (duplo encapsulamento)
+        const postsData = result.data?.data?.posts || result.data?.posts || [];
+        console.log('📋 Dados dos posts extraídos:', postsData);
+        console.log('📊 Quantidade de posts:', postsData.length);
         setBlogPosts(postsData);
       } else {
+        console.error('❌ Erro ao carregar posts:', result.error);
         setBlogPosts([]); // Garantir que blogPosts seja sempre um array
       }
     } catch (error) {
-      console.error('Erro ao carregar posts:', error);
+      console.error('💥 Erro ao carregar posts:', error);
       setBlogPosts([]); // Garantir que blogPosts seja sempre um array
     }
   };
@@ -707,16 +720,53 @@ const AdminDashboard = () => {
   // Render blog tab content
   const renderBlogTab = () => (
     <div className="space-y-6">
+      {/* Header com botão para gerenciador completo */}
+      <div className="flex flex-col sm:flex-row gap-4 justify-between items-start sm:items-center">
+        <div>
+          <h3 className="text-lg font-semibold text-gray-900">Posts do Blog</h3>
+          <p className="text-sm text-gray-500">Visualização rápida dos posts - Use o gerenciador completo para editar</p>
+        </div>
+        <button
+          onClick={() => window.location.href = '/admin/blog'}
+          className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-amber-500 to-orange-600 text-white font-medium rounded-lg hover:from-amber-600 hover:to-orange-700 transition-all shadow-sm"
+        >
+          <BookOpen className="w-4 h-4" />
+          Gerenciar Blog
+        </button>
+      </div>
+      
       <DataTable
         title="Posts do Blog"
         headers={[
           { key: 'title', label: 'Título' },
-          { key: 'author', label: 'Autor' },
-          { key: 'status', label: 'Status' },
-          { key: 'views', label: 'Visualizações' },
+          { key: 'category', label: 'Categoria' },
+          {
+            key: 'status',
+            label: 'Status',
+            render: (status) => (
+              <span className={`px-2 py-1 text-xs font-medium rounded-full ${
+                status === 'published' ? 'bg-green-100 text-green-800' :
+                status === 'draft' ? 'bg-yellow-100 text-yellow-800' :
+                'bg-gray-100 text-gray-800'
+              }`}>
+                {status === 'published' ? 'Publicado' :
+                 status === 'draft' ? 'Rascunho' :
+                 'Arquivado'}
+              </span>
+            )
+          },
+          { key: 'views_count', label: 'Visualizações', render: (views) => views || 0 },
           { key: 'created_at', label: 'Data', render: (date) => new Date(date).toLocaleDateString() }
         ]}
         data={blogPosts}
+        actions={[
+          {
+            label: 'Gerenciar',
+            icon: BookOpen,
+            onClick: () => window.location.href = '/admin/blog',
+            className: 'text-amber-600 bg-amber-100 hover:bg-amber-200'
+          }
+        ]}
         loading={loading}
         emptyMessage="Nenhum post encontrado"
       />

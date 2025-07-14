@@ -39,7 +39,8 @@ const MarketplacePage = () => {
       const result = await getAllProducts();
       
       if (result.success) {
-        const productsArray = result.data.products || result.data || [];
+        // API de produtos públicos retorna diretamente os dados
+        const productsArray = result.data?.products || [];
         setProducts(productsArray);
         setFilteredProducts(productsArray);
       } else {

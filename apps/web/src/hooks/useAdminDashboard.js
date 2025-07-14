@@ -11,7 +11,7 @@ export const useAdminDashboard = (options = {}) => {
   } = options;
 
   const { user, hasPermission, profile, loading: authLoading } = useAuth();
-  const { addNotification } = useNotifications();
+  const { createNotification } = useNotifications();
   
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState(initialTab);
@@ -36,8 +36,13 @@ export const useAdminDashboard = (options = {}) => {
       setError('');
     }
     
-    addNotification(message, type);
-  }, [addNotification]);
+    createNotification({
+      userId: user?.id,
+      title: message,
+      message: message,
+      type: type
+    });
+  }, [createNotification, user]);
 
   const clearMessages = useCallback(() => {
     setError('');

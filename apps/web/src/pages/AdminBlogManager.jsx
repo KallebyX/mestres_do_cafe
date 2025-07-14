@@ -68,7 +68,10 @@ const AdminBlogManager = () => {
       ]);
 
       if (postsResult.success) {
-        setPosts(postsResult.data);
+        // Extrair posts da estrutura dupla da API
+        const posts = postsResult.data?.data?.posts || postsResult.data?.posts || [];
+        console.log('📋 Dados dos posts extraídos:', posts);
+        setPosts(posts);
       } else {
         console.error('Erro ao carregar posts:', postsResult.error);
       }

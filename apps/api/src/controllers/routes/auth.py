@@ -40,9 +40,17 @@ def login():
         if not request_data:
             raise ValidationAPIError("Dados JSON não fornecidos")
 
+        # Log para debug - adicionar logs detalhados
+        current_app.logger.info(f"🔍 Login request_data: {request_data}")
+        
         # Validação básica
         email = request_data.get("email")
         password = request_data.get("password")
+        
+        # Log para debug - verificar valores extraídos
+        current_app.logger.info(f"🔍 Extracted email: {email}")
+        current_app.logger.info(f"🔍 Extracted password length: {len(password) if password else 'None'}")
+        current_app.logger.info(f"🔍 Extracted password: {password[:10] if password else 'None'}...")
 
         if not email or not password:
             raise ValidationAPIError("Email e senha são obrigatórios")

@@ -121,7 +121,7 @@ def get_products():
                         "price": float(product.price),
                         "image_url": product.image_url,
                         "category": (
-                            product.category.name if product.category else None
+                            product.category.name if hasattr(product.category, 'name') else product.category
                         ),
                         "origin": product.origin,
                         "flavor_notes": (
@@ -411,7 +411,7 @@ def get_featured_products():
                         "price": float(product.price),
                         "image_url": product.image_url,
                         "category": (
-                            product.category.name if product.category else None
+                            product.category.name if hasattr(product.category, 'name') else product.category
                         ),
                         "origin": product.origin,
                         "sca_score": product.sca_score,
@@ -474,7 +474,7 @@ def search_products():
                         "price": float(product.price),
                         "image_url": product.image_url,
                         "category": (
-                            product.category.name if product.category else None
+                            product.category.name if hasattr(product.category, 'name') else product.category
                         ),
                     }
                     for product in products
