@@ -1,3 +1,5 @@
+import axios from 'axios';
+
 // Configuração da API baseada no ambiente
 const API_CONFIG = {
   development: {
@@ -47,4 +49,54 @@ export const axiosConfig = {
 
 // Log da configuração em desenvolvimento
 if (environment === 'development') {
+  console.log('🔧 API Config:', {
+    environment,
+    baseURL: API_BASE_URL,
+    timeout: apiConfig.timeout
+  });
+}
+
+// Função helper para validar resposta da API
+export const validateApiResponse = (response) => {
+  if (response.status >= 200 && response.status < 300) {
+    return response;
   }
+  throw new Error(`API Error: ${response.status} ${response.statusText}`);
+};
+
+// Função para criar instância do Axios configurada
+export const createApiClient = () => {
+  const instance = axios.create(axiosConfig);
+  
+  // Interceptor para adicionar token de autorização
+  instance.interceptors.request.use(
+    (config) => {
+      const token = localStorage.getItem('auth_token');
+      if (token) {
+        config.headers.Authorization = `Bearer ${token}`;
+      }
+      return config;
+    },
+    (error) => {
+      return Promise.reject(error);
+    }
+  );
+  
+  // Interceptor para tratar respostas
+  instance.interceptors.response.use(
+    (response) => response,
+    (error) => {
+      if (error.response?.status === 401) {
+        // Token expirado, redirecionar para login
+        localStorage.removeItem('auth_token');
+        window.location.href = '/login';
+      }
+      return Promise.reject(error);
+    }
+  );
+  
+  return instance;
+};
+
+// Cliente API padrão
+export const apiClient = createApiClient();

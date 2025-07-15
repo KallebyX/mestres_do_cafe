@@ -9,12 +9,14 @@ import {
   Plus,
   ShoppingCart,
   Trash2,
+  Truck,
   Users
 } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import ProductModal from '../components/ProductModal';
 import UserModal from '../components/UserModal';
 import AdminDashboardBase from '../components/admin/AdminDashboardBase';
+import ShippingAdmin from '../components/ShippingAdmin';
 import {
   CommonStatCards,
   DataTable,
@@ -94,6 +96,7 @@ const AdminDashboard = () => {
     { id: 'products', label: 'Produtos', icon: Package, badge: products.length },
     { id: 'users', label: 'Usuários', icon: Users, badge: users.length },
     { id: 'orders', label: 'Pedidos', icon: ShoppingCart, badge: orders.length },
+    { id: 'shipping', label: 'Envios', icon: Truck },
     { id: 'blog', label: 'Blog', icon: BookOpen, badge: blogPosts.length },
     { id: 'analytics', label: 'Analytics', icon: Activity }
   ];
@@ -943,6 +946,11 @@ const AdminDashboard = () => {
     );
   };
 
+  // Render shipping tab
+  const renderShippingTab = () => {
+    return <ShippingAdmin />;
+  };
+
   // Render tab content based on active tab
   const renderTabContent = () => {
     switch (activeTab) {
@@ -954,6 +962,8 @@ const AdminDashboard = () => {
         return renderUsersTab();
       case 'orders':
         return renderOrdersTab();
+      case 'shipping':
+        return renderShippingTab();
       case 'blog':
         return renderBlogTab();
       case 'analytics':

@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { Search, Filter, Star, ShoppingCart, Heart, ChevronDown, Coffee, TrendingUp } from 'lucide-react';
+import { Search, Filter, Star, ShoppingCart, Heart, ChevronDown, Coffee, TrendingUp, Package } from 'lucide-react';
 import { useCart } from '../contexts/CartContext';
 import { useAuth } from '../contexts/AuthContext';
 import { getAllProducts } from "@/lib/api"
 import { useNavigate } from 'react-router-dom';
 import { useDebouncedValue } from '../utils/debounce';
+import ShippingTracker from '../components/ShippingTracker';
 
 const MarketplacePage = () => {
   const [products, setProducts] = useState([]);
@@ -18,6 +19,8 @@ const MarketplacePage = () => {
   const [sortBy, setSortBy] = useState('name');
   const [showFilters, setShowFilters] = useState(false);
   const [favoriteProducts, setFavoriteProducts] = useState(new Set());
+  const [showTracking, setShowTracking] = useState(false);
+  const [trackingCode, setTrackingCode] = useState('');
   
   const { addToCart } = useCart();
   const { user } = useAuth();
@@ -220,6 +223,56 @@ const MarketplacePage = () => {
               <div className="text-3xl font-bold text-slate-900 mb-1">100%</div>
               <div className="text-slate-600">Cafés Especiais</div>
             </div>
+          </div>
+
+          {/* Rastreamento Rápido */}
+          <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-2xl border border-blue-200 p-6 mb-8">
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center">
+                <Package className="w-6 h-6 text-blue-600 mr-3" />
+                <h3 className="text-lg font-semibold text-blue-900">Rastrear Pedido</h3>
+              </div>
+              <button
+                onClick={() => setShowTracking(!showTracking)}
+                className="text-blue-600 hover:text-blue-800 text-sm font-medium"
+              >
+                {showTracking ? 'Fechar' : 'Rastrear'}
+              </button>
+            </div>
+            
+            {showTracking && (
+              <div className="space-y-4">
+                <div className="flex gap-3">
+                  <input
+                    type="text"
+                    placeholder="Digite o código de rastreamento..."
+                    value={trackingCode}
+                    onChange={(e) => setTrackingCode(e.target.value)}
+                    className="flex-1 px-4 py-2 border border-blue-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  />
+                  <button
+                    onClick={() => {
+                      if (trackingCode.trim()) {
+                        // Validar se o código existe antes de mostrar
+                        setShowTracking(true);
+                      }
+                    }}
+                    className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                  >
+                    Buscar
+                  </button>
+                </div>
+                
+                {trackingCode && trackingCode.length > 3 && (
+                  <div className="mt-4">
+                    <ShippingTracker 
+                      trackingCode={trackingCode}
+                      autoRefresh={false}
+                    />
+                  </div>
+                )}
+              </div>
+            )}
           </div>
 
           {/* Search and Filters */}

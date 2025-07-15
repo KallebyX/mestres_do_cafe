@@ -176,6 +176,10 @@ function App() {
                         path="/admin/analytics"
                         element={<AdminAnalytics />}
                       />
+                      <Route
+                        path="/admin/envios"
+                        element={<AdminDashboard />}
+                      />
                       
                       {/* Content Routes */}
                       <Route path="/gamificacao" element={<GamificationPage />} />

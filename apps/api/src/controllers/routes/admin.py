@@ -9,6 +9,7 @@ from sqlalchemy import func
 
 from ...database import db
 from ...models import CartItem, Customer, Lead, Order, OrderItem, Product, User
+from ...utils.logger import logger
 
 admin_bp = Blueprint("admin", __name__)
 
@@ -2512,3 +2513,48 @@ def get_customers_analytics():
 
     except Exception as e:
         return jsonify({"success": False, "error": f"Erro ao carregar analytics de clientes: {str(e)}"}), 500
+
+
+@admin_bp.route("/orders/<order_id>/documents", methods=["GET"])
+def get_order_documents(order_id):
+    """Obtém documentos de um pedido"""
+    try:
+        # Buscar o pedido
+        order = db.session.query(Order).filter(Order.id == order_id).first()
+        
+        if not order:
+            return jsonify({"error": "Order not found"}), 404
+        
+        # Simular documentos para demonstração
+        documents = {
+            "order_id": order_id,
+            "documents": [
+                {
+                    "type": "invoice",
+                    "name": "Nota Fiscal",
+                    "url": f"https://documents.mestrescafe.com/invoices/{order_id}.pdf",
+                    "status": "generated",
+                    "created_at": order.created_at.isoformat() if order.created_at else None
+                },
+                {
+                    "type": "shipping_label",
+                    "name": "Etiqueta de Envio",
+                    "url": f"https://documents.mestrescafe.com/labels/{order_id}.pdf",
+                    "status": "pending",
+                    "created_at": None
+                },
+                {
+                    "type": "receipt",
+                    "name": "Comprovante de Pagamento",
+                    "url": f"https://documents.mestrescafe.com/receipts/{order_id}.pdf",
+                    "status": "pending",
+                    "created_at": None
+                }
+            ]
+        }
+        
+        return jsonify(documents), 200
+        
+    except Exception as e:
+        logger.error(f"Error getting order documents: {str(e)}")
+        return jsonify({"error": "Internal server error"}), 500

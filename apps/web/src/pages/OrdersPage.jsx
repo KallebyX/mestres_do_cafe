@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
-import { supabase } from "@/lib/api"
+import { supabase } from "@/lib/api";
+import ShippingTracker from '../components/ShippingTracker';
+import { Package, Truck, Eye, X } from 'lucide-react';
 
 const OrdersPage = () => {
   const { user } = useAuth();
@@ -11,6 +13,7 @@ const OrdersPage = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [selectedOrder, setSelectedOrder] = useState(null);
   const [filter, setFilter] = useState('all'); // all, pending, completed, cancelled
+  const [trackingModal, setTrackingModal] = useState(null);
 
   useEffect(() => {
     if (!user) {
@@ -248,13 +251,24 @@ const OrdersPage = () => {
 
                 {/* Ações */}
                 <div className="border-t border-coffee-cream pt-4 mt-4">
-                  <div className="flex space-x-4">
+                  <div className="flex flex-wrap gap-3">
                     <button
                       onClick={() => setSelectedOrder(selectedOrder === order.id ? null : order.id)}
-                      className="btn-secondary px-4 py-2 text-sm"
+                      className="btn-secondary px-4 py-2 text-sm inline-flex items-center"
                     >
+                      <Eye className="w-4 h-4 mr-2" />
                       {selectedOrder === order.id ? 'Ocultar Detalhes' : 'Ver Detalhes'}
                     </button>
+                    
+                    {order.shipping.tracking && (
+                      <button
+                        onClick={() => setTrackingModal(order)}
+                        className="btn-secondary px-4 py-2 text-sm inline-flex items-center bg-blue-50 text-blue-700 hover:bg-blue-100"
+                      >
+                        <Truck className="w-4 h-4 mr-2" />
+                        Rastrear Entrega
+                      </button>
+                    )}
                     
                     {order.status === 'completed' && (
                       <button
@@ -326,6 +340,54 @@ const OrdersPage = () => {
             );
           })}
         </div>
+
+        {/* Modal de Rastreamento */}
+        {trackingModal && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+            <div className="bg-white rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+              <div className="p-6 border-b border-gray-200">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center">
+                    <Package className="w-6 h-6 text-coffee-gold mr-3" />
+                    <div>
+                      <h3 className="text-lg font-bold text-coffee-intense">
+                        Rastreamento - Pedido #{trackingModal.id}
+                      </h3>
+                      <p className="text-sm text-coffee-gray">
+                        Código: {trackingModal.shipping.tracking}
+                      </p>
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => setTrackingModal(null)}
+                    className="text-gray-400 hover:text-gray-600 p-2"
+                  >
+                    <X className="w-5 h-5" />
+                  </button>
+                </div>
+              </div>
+
+              <div className="p-6">
+                <ShippingTracker 
+                  trackingCode={trackingModal.shipping.tracking}
+                  onStatusChange={(newStatus, oldStatus) => {
+                    console.log(`Status changed from ${oldStatus} to ${newStatus}`);
+                    // Atualizar o status local do pedido se necessário
+                    if (newStatus === 'delivered') {
+                      setOrders(prevOrders => 
+                        prevOrders.map(order => 
+                          order.id === trackingModal.id 
+                            ? { ...order, status: 'completed' }
+                            : order
+                        )
+                      );
+                    }
+                  }}
+                />
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

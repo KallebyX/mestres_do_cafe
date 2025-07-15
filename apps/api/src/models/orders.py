@@ -89,6 +89,7 @@ class Order(db.Model):
     items = relationship("OrderItem", back_populates="order")
     payments = relationship("Payment", back_populates="order")
     refunds = relationship("Refund", back_populates="order")
+    disputes = relationship("PaymentDispute", back_populates="order")
 
     def __repr__(self):
         return f"<Order(id={self.id}, order_number={self.order_number}, status={self.status})>"

@@ -139,25 +139,44 @@ const CheckoutPage = () => {
     }
   };
 
-  // Calcular frete
+  // Calcular frete usando Melhor Envio
   const calculateShipping = async (cep) => {
     try {
       setLoading(true);
       
       const products = cartItems.map(item => ({
-        product_id: item.id,
+        name: item.name || 'Produto',
         quantity: item.quantity,
-        weight: item.weight || 0.5
+        weight: item.weight || 0.5,
+        width: item.width || 10,
+        height: item.height || 10,
+        length: item.length || 15,
+        price: item.price || 0
       }));
 
-      const response = await checkoutAPI.calculateShipping({
-        session_token: sessionToken,
-        user_id: 1,
-        destination_cep: cep,
-        products
+      const response = await fetch('/api/shipping/melhor-envio/calculate', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          origin_cep: '97010-000', // CEP da empresa
+          destination_cep: cep,
+          products
+        })
       });
 
-      return response.shipping_options;
+      if (!response.ok) {
+        throw new Error('Erro ao calcular frete');
+      }
+
+      const data = await response.json();
+      
+      if (data.success) {
+        return data.quotes || [];
+      } else {
+        throw new Error(data.error || 'Erro ao calcular frete');
+      }
     } catch (err) {
       console.error('Erro ao calcular frete:', err);
       throw err;

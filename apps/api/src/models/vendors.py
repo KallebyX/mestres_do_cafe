@@ -78,6 +78,8 @@ class Vendor(db.Model):
     products = relationship("VendorProduct", back_populates="vendor")
     orders = relationship("VendorOrder", back_populates="vendor")
     commissions = relationship("VendorCommission", back_populates="vendor")
+    payments = relationship("Payment", back_populates="vendor")
+    disputes = relationship("PaymentDispute", back_populates="vendor")
 
     def __repr__(self):
         return f"<Vendor(id={self.id}, business_name={self.business_name})>"

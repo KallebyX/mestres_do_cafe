@@ -16,6 +16,7 @@ import { ReviewSystem } from '../components/reviews';
 import '../components/reviews/ReviewSystem.css';
 import { useAuth } from '../contexts/AuthContext';
 import { useCart } from '../contexts/CartContext';
+import ShippingCalculator from '../components/ShippingCalculator';
 
 const ProductDetailPage = () => {
   const { id } = useParams();
@@ -447,6 +448,26 @@ const ProductDetailPage = () => {
                 </div>
               </div>
             </div>
+          </div>
+        </div>
+
+        {/* Calculadora de Frete */}
+        <div className="mb-16">
+          <div className="max-w-2xl mx-auto">
+            <ShippingCalculator 
+              products={[{
+                name: product.name,
+                weight: selectedWeight === '250g' ? 0.25 : selectedWeight === '500g' ? 0.5 : selectedWeight === '1kg' ? 1.0 : 0.5,
+                width: 10,
+                height: 15,
+                length: 10,
+                quantity: quantity,
+                price: currentPrice
+              }]}
+              onQuoteSelect={(quote) => {
+                console.log('Opção de frete selecionada:', quote);
+              }}
+            />
           </div>
         </div>
 

@@ -318,21 +318,59 @@ class CacheWarmup:
     @staticmethod
     def warm_categories_cache():
         """Pré-aquece cache de categorias"""
-        from ..models.products import Category
+        from ..models.products import ProductCategory
         
         try:
-            categories = Category.query.filter_by(is_active=True).all()
+            categories = ProductCategory.query.filter_by(is_active=True).all()
             
             cache_key = "categories:all"
             cache_set(cache_key, [cat.to_dict() for cat in categories], timeout=7200)  # 2 horas
             
-            current_app.logger.info(f"Cached {len(categories)} categories")
+            try:
+                from flask import current_app
+                if current_app:
+                    current_app.logger.info(f"Cached {len(categories)} categories")
+            except RuntimeError:
+                pass
             
         except Exception as e:
-            current_app.logger.error(f"Error warming up categories cache: {e}")
+            try:
+                from flask import current_app
+                if current_app:
+                    current_app.logger.error(f"Error warming up categories cache: {e}")
+            except RuntimeError:
+                pass
+    
+    @staticmethod
+    def warm_escrow_stats():
+        """Pré-aquece cache de estatísticas do escrow"""
+        try:
+            from ..services.escrow_service import EscrowService
+            
+            escrow_service = EscrowService()
+            stats = escrow_service.get_escrow_stats()
+            
+            cache_key = "escrow:global_stats"
+            cache_set(cache_key, stats, timeout=300)  # 5 minutos
+            
+            try:
+                from flask import current_app
+                if current_app:
+                    current_app.logger.info("Cached escrow global stats")
+            except RuntimeError:
+                pass
+                
+        except Exception as e:
+            try:
+                from flask import current_app
+                if current_app:
+                    current_app.logger.error(f"Error warming up escrow stats cache: {e}")
+            except RuntimeError:
+                pass
 
 def init_cache_warmup():
     """Inicializa pré-aquecimento do cache"""
     warmup = CacheWarmup()
     warmup.warm_products_cache()
     warmup.warm_categories_cache()
+    warmup.warm_escrow_stats()

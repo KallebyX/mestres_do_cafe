@@ -9,7 +9,7 @@ from .products import (
     StockBatch, StockMovement, StockAlert, InventoryCount, InventoryCountItem
 )
 from .orders import Order, OrderItem, Cart, CartItem, AbandonedCart
-from .payments import Payment, Refund, PaymentWebhook
+from .payments import Payment, Refund, PaymentDispute, EscrowTransaction, PaymentWebhook
 from .coupons import Coupon, CouponUsage
 from .gamification import (
     GamificationLevel, UserPoint, Reward, RewardRedemption,
@@ -35,6 +35,7 @@ from .hr import Employee, Department, Position, Payroll, TimeCard, Benefit, Empl
 from .system import SystemSetting, SystemLog, AuditLog
 from .suppliers import Supplier, PurchaseOrder, PurchaseOrderItem
 from .vendors import Vendor, VendorProduct, VendorOrder, VendorCommission, VendorReview
+from .tenants import Tenant, TenantSubscription, TenantSettings
 
 __all__ = [
     # Auth
@@ -48,10 +49,10 @@ __all__ = [
     'StockBatch', 'StockMovement', 'StockAlert', 'InventoryCount', 'InventoryCountItem',
     
     # Orders & Cart
-    'Order', 'OrderItem', 'CartItem', 'AbandonedCart',
+    'Order', 'OrderItem', 'Cart', 'CartItem', 'AbandonedCart',
     
     # Payments
-    'Payment', 'Refund', 'PaymentWebhook',
+    'Payment', 'Refund', 'PaymentDispute', 'EscrowTransaction', 'PaymentWebhook',
     
     # Coupons
     'Coupon', 'CouponUsage',
@@ -82,6 +83,9 @@ __all__ = [
     
     # Vendors & Marketplace
     'Vendor', 'VendorProduct', 'VendorOrder', 'VendorCommission', 'VendorReview',
+    
+    # Multi-tenancy
+    'Tenant', 'TenantSubscription', 'TenantSettings',
     
     # System
     'SystemSetting', 'SystemLog', 'AuditLog'
