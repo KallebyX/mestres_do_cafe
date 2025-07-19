@@ -294,3 +294,34 @@ secrets/
 # Generated files
 mermaid_diagram_*.png
 temp_image_*.webp
+
+# Test files and reports (should not be committed)
+test_*.py
+test_*.html
+teste_*.py
+*_test.py
+*_tests.py
+api_test_report*.json
+system_validation_report.json
+dead_code_report.json
+duplication_report.json
+crud_status_summary.py
+
+# Database files
+*.db-shm
+*.db-wal
+mestres_cafe*.db
+
+# Development scripts (one-off usage)
+setup_inicial.py
+create_admin*.py
+fix_*.py
+seed_*.py
+migrate_*.py
+add_*.py
+analise_*.py
+validate_*.py
+verify_*.py
+promote_*.py
+check_*.py
+unify_*.py
