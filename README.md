@@ -1,6 +1,6 @@
 # ☕ Mestres do Café Enterprise
 
-**Sistema completo de e-commerce para café especial com Analytics, ML, Multi-tenancy e muito mais!**
+**Plataforma completa de e-commerce e ERP para o mercado de café artesanal brasileiro**
 
 [![Status](https://img.shields.io/badge/Status-Production%20Ready-brightgreen)](https://github.com)
 [![Python](https://img.shields.io/badge/Python-3.11+-blue)](https://python.org)
@@ -10,246 +10,283 @@
 
 ---
 
-## 🎉 **SISTEMA COMPLETO E VALIDADO**
+## 🎯 **VISÃO GERAL**
 
-✅ **12/12 testes passaram** - Sistema 100% funcional  
-✅ **47+ endpoints** de APIs enterprise  
-✅ **Multi-tenancy** para franquias independentes  
-✅ **Machine Learning** para recomendações personalizadas  
-✅ **Analytics em tempo real** com Business Intelligence  
-✅ **Segurança enterprise** com auditoria completa  
+O Mestres do Café Enterprise é uma solução completa que combina e-commerce moderno com funcionalidades ERP avançadas, desenvolvida especificamente para torrefações e cafeterias artesanais que buscam escalar seus negócios.
+
+### **✨ Principais Diferenciadores**
+- 🏪 **Multi-tenancy** para franquias independentes
+- 🤖 **Gamificação** avançada ("Clube dos Mestres")
+- 🛒 **Marketplace** com gestão de vendedores
+- 💳 **Sistema de escrow** para transações seguras
+- 📊 **Analytics** em tempo real
+- ☕ **Especialização** em produtos de café
 
 ---
 
-## 🚀 **INÍCIO RÁPIDO (2 MINUTOS)**
+## 🚀 **INÍCIO RÁPIDO**
 
-### **Opção 1: Setup Automático (Recomendado)**
+### **Opção 1: Docker (Recomendado)**
 ```bash
 # 1. Clone o repositório
-git clone <seu-repositorio>
+git clone https://github.com/KallebyX/mestres_cafe_enterprise.git
 cd mestres_cafe_enterprise
 
-# 2. Execute o setup interativo
-python setup_inicial.py
+# 2. Configure o ambiente
+cp .env.docker.example .env
+# Edite o .env conforme necessário
 
-# 3. Pronto! Sistema funcionando em http://localhost:3000
+# 3. Execute com Docker
+docker-compose up -d
+
+# 4. Acesse a aplicação
+# Frontend: http://localhost:3000
+# API: http://localhost:5001
 ```
 
-### **Opção 2: Setup Manual**
+### **Opção 2: Desenvolvimento Local**
 ```bash
-# 1. Configure variáveis
-cp .env.production .env
-# Edite o .env com suas credenciais
+# Backend
+cd apps/api
+pip install -r requirements.txt
+python src/app.py
 
-# 2. Execute com Docker
-docker-compose up
-
-# 3. Acesse http://localhost:3000
+# Frontend (em outro terminal)
+cd apps/web
+npm install
+npm run dev
 ```
 
 ---
 
-## 📊 **FUNCIONALIDADES ENTERPRISE**
+## 🏗️ **ARQUITETURA DO SISTEMA**
 
-### 🏪 **Multi-Tenancy (Franquias)**
-- **4 planos comerciais**: Trial, Básico, Premium, Enterprise
-- **Isolamento completo** de dados por loja
-- **Configurações personalizadas**: cores, logos, domínios
-- **Analytics independentes** por franquia
+### **Stack Tecnológico**
+- **Frontend**: React 18 + TypeScript + Vite + Tailwind CSS
+- **Backend**: Flask 3.0 + SQLAlchemy 2.0 + Python 3.11
+- **Database**: PostgreSQL (produção) / SQLite (desenvolvimento)
+- **Cache**: Redis
+- **Infraestrutura**: Docker + Nginx + GitHub Actions
 
-### 🤖 **Machine Learning & Analytics**
-- **Dashboard BI** em tempo real
-- **Recomendações personalizadas** com IA
-- **Previsões de vendas** baseadas em ML
-- **Segmentação RFM** automática de clientes
-
-### 💳 **Pagamentos & Escrow**
-- **Mercado Pago** integração completa
-- **Sistema de escrow** para marketplace
-- **Split payments** para vendedores
-- **Webhooks** para atualizações automáticas
-
-### 📦 **Logística Inteligente**
-- **Melhor Envio** integração total
-- **Cálculo de frete** em tempo real
-- **Rastreamento automático**
-- **Notificações de entrega**
-
-### 🛡️ **Segurança Enterprise**
-- **Rate limiting** dinâmico
-- **Proteção CSRF** automática
-- **Validação de entrada** (SQL injection, XSS)
-- **Logs estruturados** para auditoria
+### **Arquitetura Monorepo**
+```
+mestres_cafe_enterprise/
+├── apps/
+│   ├── api/          # Backend Flask
+│   └── web/          # Frontend React
+├── docs/             # Documentação
+├── tools/            # Ferramentas e scripts
+└── docker-compose.yml
+```
 
 ---
 
-## 📈 **ENDPOINTS IMPLEMENTADOS**
+## 📊 **FUNCIONALIDADES PRINCIPAIS**
 
-| Categoria | Endpoints | Funcionalidades |
-|-----------|-----------|-----------------|
-| **Analytics** | 8 | Dashboard, relatórios, previsões, KPIs |
-| **ML/Recomendações** | 7 | IA personalizada, cross-sell, trending |
-| **Multi-tenancy** | 8 | Franquias, planos, configurações |
-| **Monitoramento** | 6 | Health checks, métricas, alertas |
-| **Segurança** | 5 | Rate limiting, CSRF, auditoria |
-| **Escrow** | 6 | Marketplace, split payments, disputas |
-| **Pagamentos** | 5 | Mercado Pago, webhooks, reembolsos |
-| **Envios** | 4 | Melhor Envio, rastreamento, cálculos |
+### 🛒 **E-commerce Completo**
+- Catálogo de produtos com filtros avançados
+- Carrinho de compras e checkout otimizado
+- Sistema de reviews e avaliações
+- Gestão de favoritos (wishlist)
+- Cálculo de frete em tempo real
 
-**Total: 47+ endpoints** de funcionalidades avançadas
+### 🏢 **ERP Enterprise**
+- **Estoque**: Controle avançado com códigos de barras
+- **Financeiro**: Contabilidade e relatórios completos
+- **RH**: Gestão de funcionários e folha de pagamento
+- **CRM**: Gestão completa de clientes e leads
+- **Fornecedores**: Controle de compras e relacionamento
 
----
+### 🏪 **Multi-tenancy (Franquias)**
+- Isolamento completo de dados por tenant
+- Configurações personalizadas por franquia
+- Billing e gestão de assinaturas
+- Dashboard independente por loja
 
-## 🏗️ **ARQUITETURA ENTERPRISE**
+### 🎮 **Gamificação "Clube dos Mestres"**
+- Sistema de pontos baseado em compras
+- 5 níveis de progressão (Aprendiz → Lenda)
+- Descontos progressivos por nível
+- Sistema de conquistas e badges
+- Ranking e competições
 
-### **Backend (Python)**
-- **Flask 3.0** + SQLAlchemy 2.0
-- **PostgreSQL** + Redis cache
-- **Machine Learning** com Scikit-learn
-- **Monitoramento** com métricas automáticas
+### 🛒 **Marketplace Multi-vendor**
+- Registro e gestão de vendedores
+- Sistema de comissões automático
+- Escrow para pagamentos seguros
+- Dashboard dedicado para vendedores
 
-### **Frontend (React)**
-- **React 18** + Vite + Tailwind CSS
-- **Dashboard analytics** interativo
-- **Componentes reutilizáveis**
-- **UI/UX responsiva**
-
-### **Infraestrutura**
-- **Docker** + Docker Compose
-- **Nginx** reverse proxy
-- **CI/CD** com GitHub Actions
-- **Backup automático**
-
----
-
-## 💼 **PLANOS DE FRANQUIA**
-
-| Plano | Preço | Produtos | Pedidos/mês | Armazenamento |
-|-------|-------|----------|-------------|---------------|
-| **Trial** | Grátis | 50 | 100 | 500MB |
-| **Básico** | R$ 29/mês | 100 | 500 | 1GB |
-| **Premium** | R$ 49/mês | 500 | 2.000 | 5GB |
-| **Enterprise** | R$ 99/mês | Ilimitado | Ilimitado | 20GB |
+### 💳 **Integrações Nativas**
+- **Mercado Pago**: Pagamentos via PIX, cartão e boleto
+- **Melhor Envio**: Cálculo e tracking de frete
+- **ViaCEP**: Validação de endereços
 
 ---
 
-## ⚙️ **CONFIGURAÇÃO NECESSÁRIA**
+## 🔧 **CONFIGURAÇÃO**
 
-### **APIs Obrigatórias**
-- 🏦 **Mercado Pago**: Credenciais de pagamento
-- 📦 **Melhor Envio**: Token de API para fretes
-
-### **Opcionais**
-- 📧 **SMTP**: Para envio de emails
-- ☁️ **PostgreSQL Cloud**: Banco em nuvem
-- 🔴 **Redis**: Cache (tem fallback local)
-
-### **Exemplo de .env**
+### **Variáveis de Ambiente Essenciais**
 ```bash
+# Database
 DATABASE_URL=postgresql://user:pass@localhost:5432/mestres_cafe
-MERCADO_PAGO_ACCESS_TOKEN=APP_USR-seu-token
-MELHOR_ENVIO_TOKEN=Bearer-seu-token
-SECRET_KEY=chave-super-secreta
+
+# Segurança (ALTERE EM PRODUÇÃO!)
+SECRET_KEY=sua-chave-super-secreta-de-32-chars-ou-mais
+JWT_SECRET_KEY=sua-chave-jwt-super-secreta-de-32-chars
+
+# APIs Externas
+MERCADO_PAGO_ACCESS_TOKEN=seu-token-mp
+MELHOR_ENVIO_API_KEY=seu-token-melhor-envio
+
+# Cache (opcional)
+REDIS_URL=redis://localhost:6379/0
 ```
+
+### **APIs Necessárias**
+- 🏦 **Mercado Pago**: Para processamento de pagamentos
+- 📦 **Melhor Envio**: Para cálculo e rastreamento de fretes
 
 ---
 
-## 🔍 **VALIDAÇÃO DO SISTEMA**
+## 🐳 **DOCKER**
 
+### **Desenvolvimento Completo**
 ```bash
-# Validação completa (12 testes)
-python validate_complete_system.py
+# Serviços principais
+docker-compose up -d
 
-# Health check em produção
-python scripts/health_check.py --url https://seudominio.com
+# Com ferramentas de desenvolvimento
+docker-compose --profile tools up -d
 
-# Resultado esperado: ✅ 12/12 testes passaram
+# Com monitoramento
+docker-compose --profile monitoring up -d
 ```
 
----
-
-## 📚 **DOCUMENTAÇÃO COMPLETA**
-
-- 📋 **[Checklist Completo](CHECKLIST_COMPLETO_FUNCIONALIDADES.md)** - Todas as funcionalidades
-- 🚀 **[Guia de Configuração](GUIA_CONFIGURACAO_COMPLETO.md)** - Setup detalhado  
-- 🎯 **[Fase 4 Enterprise](FASE_4_EVOLUCAO_ENTERPRISE.md)** - Funcionalidades avançadas
-- 📊 **[Sistema Completo](SISTEMA_COMPLETO_DOCUMENTACAO.md)** - Visão geral
-
----
-
-## 🎯 **URLS DE ACESSO**
-
+### **Serviços Disponíveis**
 | Serviço | URL | Descrição |
 |---------|-----|-----------|
-| **Frontend** | http://localhost:3000 | Interface principal |
-| **API** | http://localhost:5001/api | REST API |
-| **Health** | http://localhost:5001/api/health | Status do sistema |
-| **Analytics** | http://localhost:5001/api/analytics/dashboard | BI em tempo real |
-| **Monitoring** | http://localhost:5001/api/monitoring/health | Métricas detalhadas |
+| **Frontend** | http://localhost:3000 | Interface React |
+| **API** | http://localhost:5001 | Backend Flask |
+| **Adminer** | http://localhost:8080 | Admin PostgreSQL |
+| **Redis Commander** | http://localhost:8081 | Admin Redis |
+| **Grafana** | http://localhost:3001 | Dashboards |
 
 ---
 
-## 🚀 **COMANDOS ÚTEIS**
+## 📚 **DOCUMENTAÇÃO**
+
+### **Essencial para Desenvolvedores**
+- 📋 **[Instalação](docs/installation.md)** - Setup detalhado
+- 🏗️ **[Arquitetura](docs/architecture.md)** - Visão técnica
+- 📡 **[API Reference](docs/api-reference.md)** - Endpoints completos
+- 🎨 **[Frontend](docs/frontend.md)** - Guia React
+- 🗄️ **[Database](docs/database.md)** - Modelos e relacionamentos
+- 🐳 **[Docker](docs/docker.md)** - Containerização
+- 🤝 **[Contributing](docs/contributing.md)** - Como contribuir
+
+### **Guias Específicos**
+- 🐳 **[DOCKER_GUIDE.md](DOCKER_GUIDE.md)** - Guia completo Docker
+- 📦 **[MELHOR_ENVIO_SETUP.md](MELHOR_ENVIO_SETUP.md)** - Integração frete
+- 💳 **[MERCADO_PAGO_SETUP.md](MERCADO_PAGO_SETUP.md)** - Integração pagamentos
+- ⚙️ **[GUIA_CONFIGURACAO_COMPLETO.md](GUIA_CONFIGURACAO_COMPLETO.md)** - Setup completo
+
+---
+
+## 🧪 **TESTES E QUALIDADE**
 
 ```bash
-# Desenvolvimento
-docker-compose up
+# Testes do backend
+cd apps/api && python -m pytest
 
-# Produção
-docker-compose -f docker-compose.prod.yml up -d
+# Testes do frontend
+cd apps/web && npm run test
 
-# Deploy com script
-./scripts/deploy.sh
-
-# Health check
-python scripts/health_check.py
-
-# Backup
-docker-compose --profile backup up backup
-
-# Ver logs
-docker-compose logs -f api
-
-# Limpar cache
-curl -X POST http://localhost:5001/api/monitoring/cache/clear
+# Linting e formatação
+npm run lint
+npm run format
 ```
 
 ---
 
-## 📊 **MÉTRICAS DE QUALIDADE**
+## 🚀 **DEPLOY**
 
-- ✅ **Cobertura de testes**: 100% dos endpoints validados
-- ✅ **Performance**: Cache otimizado com Redis
-- ✅ **Segurança**: Rate limiting + CSRF + validação
-- ✅ **Escalabilidade**: Multi-tenancy para milhares de lojas
-- ✅ **Monitoramento**: Alertas automáticos + logs estruturados
-- ✅ **Compliance**: Auditoria completa + backup automático
+### **Desenvolvimento**
+```bash
+docker-compose up -d
+```
+
+### **Produção**
+```bash
+# Build otimizado
+docker-compose -f docker-compose.prod.yml build
+
+# Deploy
+docker-compose -f docker-compose.prod.yml up -d
+```
+
+### **Plataformas Suportadas**
+- 🚀 **Render.com** (configuração incluída)
+- 🐳 **Docker** (qualquer provedor)
+- ☁️ **AWS, GCP, Azure** (via Docker)
 
 ---
 
-## 🎉 **PRÓXIMOS PASSOS**
+## 📊 **MONITORAMENTO**
 
-1. ✅ **Execute**: `python setup_inicial.py`
-2. ✅ **Configure**: Suas credenciais de APIs
-3. ✅ **Acesse**: http://localhost:3000
-4. ✅ **Explore**: Dashboard analytics e recomendações ML
-5. ✅ **Crie**: Sua primeira franquia
-6. ✅ **Deploy**: Para produção quando estiver pronto
+### **Health Checks**
+- **API**: http://localhost:5001/api/health
+- **Frontend**: http://localhost:3000
+- **Database**: Verificação automática via health checks
+
+### **Métricas (com profile monitoring)**
+- **Prometheus**: http://localhost:9090
+- **Grafana**: http://localhost:3001
 
 ---
 
-## 🏆 **SISTEMA ENTERPRISE COMPLETO**
+## 🏆 **DIFERENCIAÇÃO NO MERCADO**
 
-**O Mestres do Café Enterprise é uma plataforma completa que pode competir com os maiores players do mercado de e-commerce, oferecendo:**
+### **Para o Mercado de Café**
+- ☕ **Atributos específicos**: Origem, torra, SCA score, notas sensoriais
+- 📦 **Gestão de lotes**: Rastreabilidade completa do grão
+- 🏅 **Sistema de cupping**: Avaliação sensorial integrada
+- 📊 **Analytics específicos**: Métricas do mercado de café especial
 
-- 🎯 **Funcionalidades enterprise** de última geração
-- 🚀 **Performance otimizada** para milhares de usuários
-- 🛡️ **Segurança robusta** com auditoria completa
-- 📊 **Business Intelligence** com ML integrado
-- 🏪 **Multi-tenancy** para franquias independentes
-- 🤖 **Inteligência artificial** para recomendações
+### **Tecnologia Enterprise**
+- 🏗️ **Arquitetura escalável**: Multi-tenant preparada para crescimento
+- 🔒 **Segurança**: Práticas enterprise com auditoria completa
+- 📈 **Performance**: Cache otimizado e queries eficientes
+- 🔄 **CI/CD**: Deploy automatizado e testes contínuos
 
-**🚀 Seu sistema está pronto para conquistar o mercado de café especial!** ☕
+---
+
+## 🤝 **CONTRIBUINDO**
+
+1. Fork o repositório
+2. Crie uma branch: `git checkout -b feature/nova-funcionalidade`
+3. Commit suas mudanças: `git commit -m 'Adiciona nova funcionalidade'`
+4. Push para a branch: `git push origin feature/nova-funcionalidade`
+5. Abra um Pull Request
+
+Veja [CONTRIBUTING.md](docs/contributing.md) para mais detalhes.
+
+---
+
+## 📄 **LICENÇA**
+
+Este projeto está licenciado sob a Licença MIT - veja o arquivo [LICENSE](LICENSE) para detalhes.
+
+---
+
+## 🎯 **STATUS DO PROJETO**
+
+- ✅ **MVP Completo**: Todas as funcionalidades core implementadas
+- ✅ **Testes**: Cobertura abrangente de testes
+- ✅ **Documentação**: Guias completos para desenvolvedores
+- ✅ **Deploy**: Pronto para produção
+- ✅ **Performance**: Otimizado para alta demanda
+
+**🚀 O sistema está pronto para o mercado!** ☕
 
 ---
 
