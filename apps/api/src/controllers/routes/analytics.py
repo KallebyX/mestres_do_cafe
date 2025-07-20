@@ -5,9 +5,9 @@ Endpoints para dashboards, relatórios e insights de negócio
 
 from flask import Blueprint, jsonify, request
 from datetime import datetime, timedelta
-from ...services.analytics_service import analytics_service, bi_service
-from ...middleware.security import rate_limit, validate_input
-from ...utils.monitoring import monitor_performance
+from services.analytics_service import analytics_service, bi_service
+from middleware.security import rate_limit, validate_input
+from utils.monitoring import monitor_performance
 
 analytics_bp = Blueprint('analytics', __name__)
 
@@ -88,8 +88,8 @@ def get_cohort_analysis():
 def get_order_analytics(order_id):
     """Analytics e métricas de um pedido específico"""
     try:
-        from ...database import db
-        from ...models.orders import Order
+        from database import db
+        from models.orders import Order
         
         # Buscar o pedido
         order = db.session.query(Order).filter(Order.id == order_id).first()

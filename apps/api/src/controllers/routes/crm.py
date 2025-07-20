@@ -1,5 +1,5 @@
 from flask import Blueprint, request, jsonify
-from ...models.database import (
+from models.database import (
     db, Customer, Lead, Campaign, Contact, CustomerSegment, 
     CustomerSegmentMembership, User, Order
 )

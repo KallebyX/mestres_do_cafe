@@ -2,9 +2,9 @@
 Products controller using base controller to eliminate duplication
 """
 from flask import Blueprint, request
-from .base import BaseController, require_auth, require_admin, handle_exceptions
-from ..models.products import Product
-from ..database import db
+from controllers.base import BaseController, require_auth, require_admin, handle_exceptions
+from models.products import Product
+from database import db
 import logging
 
 logger = logging.getLogger(__name__)

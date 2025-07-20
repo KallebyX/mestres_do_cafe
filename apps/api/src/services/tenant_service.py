@@ -8,9 +8,9 @@ from typing import Dict, List, Any, Optional
 from flask import g, request, current_app
 from sqlalchemy import and_, or_
 
-from ..database import db
-from ..models.tenants import Tenant, TenantSubscription, TenantSettings
-from ..utils.cache import cache_manager, cached
+from database import db
+from models.tenants import Tenant, TenantSubscription, TenantSettings
+from utils.cache import cache_manager, cached
 
 class TenantService:
     """Serviço principal de gerenciamento de tenants"""
@@ -120,7 +120,7 @@ class TenantService:
         """Cria usuário administrador inicial"""
         
         try:
-            from ..models.auth import User
+            from models.auth import User
             from werkzeug.security import generate_password_hash
             
             admin_user = User(
@@ -314,9 +314,9 @@ class TenantService:
         
         try:
             from datetime import datetime, timedelta
-            from ..models.orders import Order
-            from ..models.products import Product
-            from ..models.customers import Customer
+            from models.orders import Order
+            from models.products import Product
+            from models.customers import Customer
             
             end_date = datetime.utcnow()
             start_date = end_date - timedelta(days=days)

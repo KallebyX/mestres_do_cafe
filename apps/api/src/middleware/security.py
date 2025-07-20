@@ -11,7 +11,7 @@ from datetime import datetime, timedelta
 from functools import wraps
 from typing import Dict, Any, Optional
 from flask import request, jsonify, g, current_app
-from ..utils.cache import cache_manager
+from utils.cache import cache_manager
 
 class RateLimiter:
     """Rate limiter baseado em IP e usuário"""

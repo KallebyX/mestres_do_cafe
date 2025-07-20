@@ -4,12 +4,12 @@ Expõe métricas, health checks e logs
 """
 
 from flask import Blueprint, jsonify, request
-from ...utils.monitoring import (
+from utils.monitoring import (
     metrics_collector, 
     alert_manager,
     get_health_status
 )
-from ...utils.cache import cache_manager
+from utils.cache import cache_manager
 
 monitoring_bp = Blueprint('monitoring', __name__)
 

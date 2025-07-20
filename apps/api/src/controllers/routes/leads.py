@@ -2,8 +2,8 @@ from datetime import datetime
 
 from flask import Blueprint, jsonify, request
 
-from ...database import db
-from ...models.customers import Contact, Lead
+from database import db
+from models.customers import Contact, Lead
 
 leads_bp = Blueprint("leads", __name__, url_prefix="/api/leads")
 

@@ -24,11 +24,11 @@ except ImportError:
     np = None
     pd = None
 
-from ..database import db
-from ..models.orders import Order
-from ..models.products import Product, ProductCategory
-from ..models.customers import Customer
-from ..utils.cache import cache_manager, cached
+from database import db
+from models.orders import Order
+from models.products import Product, ProductCategory
+from models.customers import Customer
+from utils.cache import cache_manager, cached
 
 class RecommendationEngine:
     """Motor de recomendações com múltiplos algoritmos"""

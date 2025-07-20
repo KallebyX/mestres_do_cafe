@@ -2,10 +2,10 @@ from flask import Blueprint, jsonify, request
 from sqlalchemy import func
 from sqlalchemy.orm import joinedload, selectinload
 
-from ...database import db
-from ...models.auth import User
-from ...models.orders import Order, OrderItem
-from ...models.products import Product
+from database import db
+from models.auth import User
+from models.orders import Order, OrderItem
+from models.products import Product
 
 orders_bp = Blueprint("orders", __name__)
 
@@ -114,19 +114,33 @@ def create_order():
             return jsonify({"error": "Usuário não encontrado"}), 404
 
         # Buscar todos os produtos de uma vez
-        product_ids = [item["product_id"] for item in items]
+        import uuid
+        product_ids = []
+        for item in items:
+            try:
+                product_ids.append(uuid.UUID(item["product_id"]))
+            except ValueError:
+                return jsonify({"error": f"ID de produto inválido: {item['product_id']}"}), 400
+        
         products = Product.query.filter(Product.id.in_(product_ids)).all()
         products_dict = {p.id: p for p in products}
 
         # Validar produtos e calcular total
-        total_amount = 0
+        from decimal import Decimal
+        total_amount = Decimal('0')
         order_items = []
 
         for item_data in items:
             product_id = item_data.get("product_id")
             quantity = item_data.get("quantity", 1)
 
-            product = products_dict.get(product_id)
+            # Convert to UUID for lookup
+            try:
+                product_uuid = uuid.UUID(product_id)
+            except ValueError:
+                return jsonify({"error": f"ID de produto inválido: {product_id}"}), 400
+                
+            product = products_dict.get(product_uuid)
             if not product:
                 return jsonify({"error": f"Produto {product_id} não encontrado"}), 404
 
@@ -136,7 +150,7 @@ def create_order():
                     400,
                 )
 
-            item_total = float(product.price) * quantity
+            item_total = product.price * Decimal(str(quantity))
             total_amount += item_total
 
             order_items.append(
@@ -144,14 +158,19 @@ def create_order():
                     "product": product,
                     "quantity": quantity,
                     "unit_price": product.price,
-                    "total_price": item_total,
+                    "total_price": float(item_total),
                 }
             )
 
+        # Gerar número do pedido
+        order_number = f"MC{str(int(db.session.query(func.count(Order.id)).scalar() or 0) + 1).zfill(6)}"
+        
         # Criar pedido
         order = Order(
+            order_number=order_number,
             user_id=user_id,
             total_amount=total_amount,
+            subtotal=total_amount,
             shipping_address=shipping_address,
         )
 
@@ -163,6 +182,7 @@ def create_order():
             order_item = OrderItem(
                 order_id=order.id,
                 product_id=item_data["product"].id,
+                product_name=item_data["product"].name,
                 quantity=item_data["quantity"],
                 unit_price=item_data["unit_price"],
                 total_price=item_data["total_price"],
@@ -173,7 +193,11 @@ def create_order():
             item_data["product"].stock_quantity -= item_data["quantity"]
 
         # Adicionar pontos ao usuário
-        points_earned = int(total_amount)
+        points_earned = int(float(total_amount))
+        if user.points is None:
+            user.points = 0
+        if user.total_spent is None:
+            user.total_spent = Decimal('0')
         user.points += points_earned
         user.total_spent += total_amount
 

@@ -4,8 +4,8 @@ from datetime import datetime
 from flask import Blueprint, current_app, jsonify, request
 from sqlalchemy.exc import IntegrityError
 
-from ...database import db
-from ...models import Course, CoursePurchase, User
+from database import db
+from models import Course, CoursePurchase, User
 
 courses_bp = Blueprint("courses", __name__, url_prefix="/api/courses")
 

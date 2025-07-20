@@ -12,11 +12,11 @@ from datetime import datetime, timedelta
 
 from flask import Blueprint, jsonify, request
 
-from ...database import db
-from ...models.auth import User
-from ...models.customers import Customer
-from ...models.orders import Cart, CartItem, Order, OrderItem, OrderStatus
-from ...models.products import Product
+from database import db
+from models.auth import User
+from models.customers import Customer
+from models.orders import Cart, CartItem, Order, OrderItem, OrderStatus
+from models.products import Product
 
 logger = logging.getLogger(__name__)
 

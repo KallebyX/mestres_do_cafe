@@ -1,8 +1,8 @@
 from flask import Blueprint, jsonify, request
 from sqlalchemy import func
 
-from ...database import db
-from ...models import Order, User, UserPoints
+from database import db
+from models import Order, User, UserPoints
 
 dashboard_bp = Blueprint("dashboard", __name__)
 

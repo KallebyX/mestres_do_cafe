@@ -4,8 +4,8 @@ import uuid
 
 from flask import Blueprint, jsonify, request
 
-from ...database import db
-from ...models import Product, ProductCategory
+from database import db
+from models import Product, ProductCategory
 from .products_create import add_product_crud_routes
 
 products_bp = Blueprint("products", __name__)

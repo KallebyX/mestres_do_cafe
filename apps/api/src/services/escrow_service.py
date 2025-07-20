@@ -10,12 +10,12 @@ from typing import Optional, List, Dict, Any
 from sqlalchemy.orm import Session
 from sqlalchemy import and_, or_
 
-from ..database import db
-from ..models.payments import Payment, PaymentDispute, EscrowTransaction
-from ..models.orders import Order
-from ..models.vendors import Vendor
-from ..models.customers import Customer
-from ..utils.logger import logger
+from database import db
+from models.payments import Payment, PaymentDispute, EscrowTransaction
+from models.orders import Order
+from models.vendors import Vendor
+from models.customers import Customer
+from utils.logger import logger
 
 
 class EscrowService:

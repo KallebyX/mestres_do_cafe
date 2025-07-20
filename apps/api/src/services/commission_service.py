@@ -6,10 +6,10 @@ from decimal import Decimal
 from datetime import datetime
 from typing import List, Dict, Any
 
-from ..database import db
-from ..models.vendors import Vendor, VendorCommission, VendorOrder
-from ..models.orders import Order, OrderItem
-from ..models.payments import Payment
+from database import db
+from models.vendors import Vendor, VendorCommission, VendorOrder
+from models.orders import Order, OrderItem
+from models.payments import Payment
 
 
 class CommissionService:
@@ -281,4 +281,4 @@ class CommissionService:
 
 
 # Importar modelos necessários (evita importação circular)
-from ..models.vendors import VendorProduct
+from models.vendors import VendorProduct

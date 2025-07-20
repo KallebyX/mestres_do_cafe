@@ -6,7 +6,7 @@ Suporte a múltiplas lojas/franquias independentes
 from datetime import datetime
 from sqlalchemy import Column, Integer, String, DateTime, Boolean, Text, JSON, ForeignKey
 from sqlalchemy.orm import relationship
-from ..database import db
+from database import db
 
 class Tenant(db.Model):
     """Modelo de Tenant (Franquia/Loja)"""

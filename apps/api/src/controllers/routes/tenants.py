@@ -4,10 +4,10 @@ Endpoints para criação e gestão de franquias/lojas
 """
 
 from flask import Blueprint, jsonify, request, g
-from ...services.tenant_service import tenant_service, TenantMiddleware
-from ...models.tenants import Tenant, TenantSettings
-from ...middleware.security import rate_limit, validate_input
-from ...utils.monitoring import monitor_performance
+from services.tenant_service import tenant_service, TenantMiddleware
+from models.tenants import Tenant, TenantSettings
+from middleware.security import rate_limit, validate_input
+from utils.monitoring import monitor_performance
 
 tenants_bp = Blueprint('tenants', __name__)
 

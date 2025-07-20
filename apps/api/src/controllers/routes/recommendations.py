@@ -4,12 +4,12 @@ Endpoints para recomendações personalizadas e analytics
 """
 
 from flask import Blueprint, jsonify, request, g
-from ...services.recommendation_service import (
+from services.recommendation_service import (
     recommendation_engine, 
     recommendation_analytics
 )
-from ...middleware.security import rate_limit, validate_input
-from ...utils.monitoring import monitor_performance
+from middleware.security import rate_limit, validate_input
+from utils.monitoring import monitor_performance
 
 recommendations_bp = Blueprint('recommendations', __name__)
 
@@ -63,7 +63,7 @@ def get_similar_products(product_id):
         
         # Implementação simplificada de produtos similares
         # Em produção, usar algoritmo de similaridade por conteúdo
-        from ...models.products import Product
+        from models.products import Product
         
         target_product = Product.query.get(product_id)
         if not target_product:
@@ -218,8 +218,8 @@ def get_personalized_homepage(user_id):
         category_recs = []
         try:
             # Obtém categorias favoritas do usuário
-            from ...models.orders import Order
-            from ...models.products import ProductCategory
+            from models.orders import Order
+            from models.products import ProductCategory
             
             user_orders = Order.query.filter_by(customer_id=user_id).all()
             if user_orders:
@@ -238,7 +238,7 @@ def get_personalized_homepage(user_id):
                     category = ProductCategory.query.filter_by(name=top_category).first()
                     
                     if category:
-                        from ...models.products import Product
+                        from models.products import Product
                         category_products = Product.query.filter(
                             Product.category_id == category.id,
                             Product.is_active == True
@@ -307,7 +307,7 @@ def get_cross_sell_recommendations(product_id):
         # Implementação simplificada de cross-sell
         # Em produção, usar análise de market basket
         
-        from ...models.products import Product
+        from models.products import Product
         
         target_product = Product.query.get(product_id)
         if not target_product:

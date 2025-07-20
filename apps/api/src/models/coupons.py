@@ -19,7 +19,7 @@ from sqlalchemy import Text
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 
-from ..database import db
+from database import db
 
 
 class Coupon(db.Model):

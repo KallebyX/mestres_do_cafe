@@ -8,10 +8,10 @@ import threading
 from datetime import datetime, timedelta
 from typing import Dict, Any
 
-from ..database import db
-from .escrow_service import EscrowService
-from ..models.payments import Payment, PaymentStatus
-from ..utils.logger import logger
+from database import db
+from services.escrow_service import EscrowService
+from models.payments import Payment, PaymentStatus
+from utils.logger import logger
 
 
 class EscrowScheduler:
@@ -149,7 +149,7 @@ class EscrowScheduler:
             logger.info("Starting escrow data cleanup")
             
             # Limpar webhooks antigos (mais de 90 dias)
-            from ..models.payments import PaymentWebhook
+            from models.payments import PaymentWebhook
             cutoff_date = datetime.utcnow() - timedelta(days=90)
             
             old_webhooks = db.session.query(PaymentWebhook).filter(

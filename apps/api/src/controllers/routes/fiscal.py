@@ -3,10 +3,10 @@ import uuid
 from datetime import datetime
 
 from flask import Blueprint, jsonify, request
-from ...models.base import db
-from ...models.orders import Order, OrderItem
-from ...models.products import Product
-from ...models.user import User
+from models.base import db
+from models.orders import Order, OrderItem
+from models.products import Product
+from models.user import User
 
 fiscal_bp = Blueprint("fiscal", __name__)
 

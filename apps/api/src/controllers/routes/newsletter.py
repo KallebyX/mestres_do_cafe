@@ -5,8 +5,8 @@ import json
 from flask import Blueprint, jsonify, request
 from sqlalchemy import desc
 
-from ...database import db
-from ...models.newsletter import (
+from database import db
+from models.newsletter import (
     Newsletter,
     NewsletterSubscriber,
     NewsletterCampaign,

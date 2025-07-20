@@ -300,7 +300,7 @@ class CacheWarmup:
     @staticmethod
     def warm_products_cache():
         """Pré-aquece cache de produtos"""
-        from ..models.products import Product
+        from models.products import Product
         
         try:
             # Cachear produtos mais populares
@@ -318,7 +318,7 @@ class CacheWarmup:
     @staticmethod
     def warm_categories_cache():
         """Pré-aquece cache de categorias"""
-        from ..models.products import ProductCategory
+        from models.products import ProductCategory
         
         try:
             categories = ProductCategory.query.filter_by(is_active=True).all()
@@ -345,7 +345,7 @@ class CacheWarmup:
     def warm_escrow_stats():
         """Pré-aquece cache de estatísticas do escrow"""
         try:
-            from ..services.escrow_service import EscrowService
+            from services.escrow_service import EscrowService
             
             escrow_service = EscrowService()
             stats = escrow_service.get_escrow_stats()

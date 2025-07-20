@@ -10,10 +10,10 @@ import json
 from flask import Blueprint, jsonify, request
 from sqlalchemy import desc, func
 
-from ...database import db
-from ...models.vendors import Vendor, VendorProduct, VendorOrder, VendorCommission, VendorReview
-from ...models import User, Product, Order, Customer
-from ...middleware.error_handler import ValidationAPIError, ResourceAPIError
+from database import db
+from models.vendors import Vendor, VendorProduct, VendorOrder, VendorCommission, VendorReview
+from models import User, Product, Order, Customer
+from middleware.error_handler import ValidationAPIError, ResourceAPIError
 
 vendors_bp = Blueprint("vendors", __name__)
 

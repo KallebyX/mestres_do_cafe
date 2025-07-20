@@ -2,8 +2,8 @@ from datetime import datetime
 
 from flask import Blueprint, jsonify, request
 
-from ...database import db
-from ...models.coupons import Coupon, CouponUsage
+from database import db
+from models.coupons import Coupon, CouponUsage
 
 coupons_bp = Blueprint("coupons", __name__, url_prefix="/api/coupons")
 

@@ -6,7 +6,9 @@
   "main": "mestres-cafe-business-server.js",
   "scripts": {
     "start": "node mestres-cafe-business-server.js",
+    "start:docker": "node docker-server.js",
     "dev": "node --inspect mestres-cafe-business-server.js",
+    "dev:docker": "node --inspect docker-server.js",
     "test": "node --test",
     "build": "echo 'No build step required for this server'"
   },
@@ -29,7 +31,8 @@
   "author": "Mestres do Café Enterprise",
   "license": "MIT",
   "bin": {
-    "mestres-cafe-business": "./mestres-cafe-business-server.js"
+    "mestres-cafe-business": "./mestres-cafe-business-server.js",
+    "mestres-cafe-docker": "./docker-server.js"
   },
   "repository": {
     "type": "git",

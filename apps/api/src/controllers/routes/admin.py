@@ -7,9 +7,9 @@ from datetime import datetime, timedelta
 from flask import Blueprint, jsonify, request
 from sqlalchemy import func
 
-from ...database import db
-from ...models import CartItem, Customer, Lead, Order, OrderItem, Product, User
-from ...utils.logger import logger
+from database import db
+from models import CartItem, Customer, Lead, Order, OrderItem, Product, User
+from utils.logger import logger
 
 admin_bp = Blueprint("admin", __name__)
 
@@ -1271,7 +1271,7 @@ def toggle_product_status(product_id):
 def get_admin_blog_posts():
     """Listar posts do blog para administração"""
     try:
-        from ...models.blog import BlogPost
+        from models.blog import BlogPost
 
         page = request.args.get("page", 1, type=int)
         per_page = request.args.get("per_page", 20, type=int)
@@ -1338,7 +1338,7 @@ def create_admin_blog_post():
     try:
         import re
 
-        from ...models.blog import BlogPost
+        from models.blog import BlogPost
 
         data = request.get_json()
 
@@ -1430,7 +1430,7 @@ def create_admin_blog_post():
 def update_admin_blog_post(post_id):
     """Atualizar post do blog via admin"""
     try:
-        from ...models.blog import BlogPost
+        from models.blog import BlogPost
         import re
 
         data = request.get_json()
@@ -1521,7 +1521,7 @@ def update_admin_blog_post(post_id):
 def delete_admin_blog_post(post_id):
     """Deletar post do blog via admin"""
     try:
-        from ...models.blog import BlogPost
+        from models.blog import BlogPost
 
         # Buscar post
         post = BlogPost.query.filter_by(id=post_id).first()
@@ -1772,7 +1772,7 @@ def get_leads():
 def get_blog_categories():
     """Obter todas as categorias do blog para admin"""
     try:
-        from ...models.blog import BlogCategory, BlogPost
+        from models.blog import BlogCategory, BlogPost
 
         # Buscar todas as categorias
         categories = BlogCategory.query.order_by(BlogCategory.name).all()
@@ -1799,7 +1799,7 @@ def get_blog_categories():
 def create_blog_category():
     """Criar nova categoria do blog"""
     try:
-        from ...models.blog import BlogCategory
+        from models.blog import BlogCategory
         
         data = request.get_json()
 
@@ -1853,7 +1853,7 @@ def create_blog_category():
 def update_blog_category(category_id):
     """Atualizar categoria do blog"""
     try:
-        from ...models.blog import BlogCategory
+        from models.blog import BlogCategory
         
         data = request.get_json()
 
@@ -1914,7 +1914,7 @@ def update_blog_category(category_id):
 def delete_blog_category(category_id):
     """Deletar categoria do blog"""
     try:
-        from ...models.blog import BlogCategory, BlogPost
+        from models.blog import BlogCategory, BlogPost
         
         # Buscar categoria
         category = BlogCategory.query.filter_by(id=category_id).first()
@@ -2216,7 +2216,7 @@ def get_admin_analytics():
 def get_blog_analytics():
     """Analytics do blog"""
     try:
-        from ...models.blog import BlogPost, BlogCategory
+        from models.blog import BlogPost, BlogCategory
         
         # Estatísticas básicas do blog
         total_posts = BlogPost.query.count()

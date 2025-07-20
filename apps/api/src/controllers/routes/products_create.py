@@ -3,8 +3,8 @@ Endpoints para criação, atualização e remoção de produtos
 """
 
 from flask import Blueprint, jsonify, request
-from ...database import db
-from ...models import Product
+from database import db
+from models import Product
 
 
 def add_product_crud_routes(products_bp):

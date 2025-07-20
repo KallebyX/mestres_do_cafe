@@ -10,8 +10,8 @@ from typing import Optional, Dict, Any
 from sqlalchemy import desc, func
 from sqlalchemy.orm import sessionmaker
 
-from ..database import db
-from ..models.gamification import (
+from database import db
+from models.gamification import (
     PointAction, 
     MasterLevel, 
     UserPointsBalance, 
@@ -20,7 +20,7 @@ from ..models.gamification import (
     Reward,
     RewardRedemption
 )
-from ..models.auth import User
+from models.auth import User
 
 
 class ClubeMestresService:
@@ -639,7 +639,7 @@ class ClubeMestresService:
         actions = []
         for transaction in transactions:
             # Buscar informações do usuário
-            from ..models.auth import User
+            from models.auth import User
             user = User.query.get(transaction.user_id)
             
             action = {
@@ -662,7 +662,7 @@ class ClubeMestresService:
     @staticmethod
     def search_users_for_admin(query: str, limit: int = 20) -> list:
         """Busca usuários por email ou nome para interface administrativa"""
-        from ..models.auth import User
+        from models.auth import User
         
         users = User.query.filter(
             db.or_(
@@ -718,7 +718,7 @@ class ClubeMestresService:
             ).order_by(desc(UserPointsBalance.total_points)).limit(10).all()
             
             # Buscar dados dos usuários
-            from ..models.auth import User
+            from models.auth import User
             top_users_data = []
             for user_balance in top_users:
                 user = User.query.get(user_balance.user_id)

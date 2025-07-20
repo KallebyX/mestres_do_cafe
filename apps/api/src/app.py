@@ -17,45 +17,45 @@ load_dotenv()
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 # Importações locais após configuração do path
-from .config import config
-from .database import init_db, health_check as db_health_check
-from .controllers.reviews_simple import reviews_bp
-from .controllers.routes.auth import auth_bp
-from .controllers.routes.cart import cart_bp
-from .controllers.routes.checkout import checkout_bp
-from .controllers.routes.health import health_bp
-from .controllers.routes.products import products_bp
-from .controllers.routes.customers import customers_bp
-from .controllers.routes.orders import orders_bp
-from .controllers.routes.payments import payments_bp
-from .controllers.routes.leads import leads_bp
-from .controllers.routes.coupons import coupons_bp
-from .controllers.routes.gamification import gamification_bp
-from .controllers.routes.blog import blog_bp
-from .controllers.routes.newsletter import newsletter_bp
-from .controllers.routes.notifications import notifications_bp
-from .controllers.routes.media import media_bp
-from .controllers.routes.financial import financial_bp
-from .controllers.routes.hr import hr_bp
-from .controllers.routes.admin import admin_bp
-from .controllers.routes.suppliers import suppliers_bp
-from .controllers.routes.vendors import vendors_bp
-from .controllers.routes.stock import stock_bp
-from .controllers.routes.escrow import escrow_bp
-from .controllers.routes.mercado_pago import mercado_pago_bp
-from .controllers.routes.melhor_envio import melhor_envio_bp
-from .controllers.routes.monitoring import monitoring_bp
-from .controllers.routes.security import security_bp
-from .controllers.routes.analytics import analytics_bp
-from .controllers.routes.recommendations import recommendations_bp
-from .controllers.routes.tenants import tenants_bp
-from .controllers.shipping import shipping_bp
-from .controllers.wishlist import wishlist_bp
-from .middleware.error_handler import register_error_handlers
-from .utils.logger import setup_logger
-from .utils.monitoring import init_monitoring
-from .utils.cache import init_cache_warmup
-from .middleware.security import init_security_middleware
+from config import config
+from database import init_db, health_check as db_health_check
+from controllers.reviews_simple import reviews_bp
+from controllers.routes.auth import auth_bp
+from controllers.routes.cart import cart_bp
+from controllers.routes.checkout import checkout_bp
+from controllers.routes.health import health_bp
+from controllers.routes.products import products_bp
+from controllers.routes.customers import customers_bp
+from controllers.routes.orders import orders_bp
+from controllers.routes.payments import payments_bp
+from controllers.routes.leads import leads_bp
+from controllers.routes.coupons import coupons_bp
+from controllers.routes.gamification import gamification_bp
+from controllers.routes.blog import blog_bp
+from controllers.routes.newsletter import newsletter_bp
+from controllers.routes.notifications import notifications_bp
+from controllers.routes.media import media_bp
+from controllers.routes.financial import financial_bp
+from controllers.routes.hr import hr_bp
+from controllers.routes.admin import admin_bp
+from controllers.routes.suppliers import suppliers_bp
+from controllers.routes.vendors import vendors_bp
+from controllers.routes.stock import stock_bp
+from controllers.routes.escrow import escrow_bp
+from controllers.routes.mercado_pago import mercado_pago_bp
+from controllers.routes.melhor_envio import melhor_envio_bp
+from controllers.routes.monitoring import monitoring_bp
+from controllers.routes.security import security_bp
+from controllers.routes.analytics import analytics_bp
+from controllers.routes.recommendations import recommendations_bp
+from controllers.routes.tenants import tenants_bp
+from controllers.shipping import shipping_bp
+from controllers.wishlist import wishlist_bp
+from middleware.error_handler import register_error_handlers
+from utils.logger import setup_logger
+from utils.monitoring import init_monitoring
+from utils.cache import init_cache_warmup
+from middleware.security import init_security_middleware
 
 # Supabase client
 # from controllers.orders import orders_bp

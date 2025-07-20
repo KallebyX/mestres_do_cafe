@@ -10,7 +10,7 @@ from datetime import datetime
 from uuid import uuid4
 from enum import Enum
 
-from ..database import db
+from database import db
 
 
 class PaymentStatus(Enum):

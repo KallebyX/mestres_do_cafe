@@ -4,14 +4,14 @@ import jwt
 import bcrypt
 from flask import Blueprint, current_app, jsonify, request
 
-from ...database import db
-from ...middleware.error_handler import (
+from database import db
+from middleware.error_handler import (
     AuthenticationAPIError,
     ResourceAPIError,
     ValidationAPIError,
 )
-from ...models import User, UserSession
-from ...schemas.auth import (
+from models import User, UserSession
+from schemas.auth import (
     LoginSchema,
     RegisterSchema,
     validate_request_data,

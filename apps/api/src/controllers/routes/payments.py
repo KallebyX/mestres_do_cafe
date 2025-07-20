@@ -4,10 +4,10 @@ from datetime import datetime
 
 from flask import Blueprint, jsonify, request
 
-from ...database import db
-from ...models.auth import User
-from ...models.orders import Order
-from ...models.payments import Payment
+from database import db
+from models.auth import User
+from models.orders import Order
+from models.payments import Payment
 
 payments_bp = Blueprint("payments", __name__)
 

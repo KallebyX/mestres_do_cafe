@@ -2,10 +2,10 @@ from datetime import datetime
 
 from flask import Blueprint, jsonify, request
 
-from ...database import db
-from ...models.orders import Cart, CartItem
-from ...models.products import Product
-from ...models.auth import User
+from database import db
+from models.orders import Cart, CartItem
+from models.products import Product
+from models.auth import User
 
 cart_bp = Blueprint("cart", __name__, url_prefix="/api/cart")
 
@@ -62,7 +62,7 @@ def get_cart():
                         "description": product.description,
                         "price": float(product.price),
                         "image_url": primary_image,
-                        "category": product.category.name if product.category else None,
+                        "category": product.category,
                         "stock_quantity": product.stock_quantity,
                         "is_active": product.is_active,
                     },
@@ -121,7 +121,7 @@ def get_cart_items():
                         "description": product.description,
                         "price": float(product.price),
                         "image_url": primary_image,
-                        "category": product.category.name if product.category else None,
+                        "category": product.category,
                         "stock_quantity": product.stock_quantity,
                         "is_active": product.is_active,
                     },

@@ -3,8 +3,8 @@ from datetime import datetime
 from flask import Blueprint, jsonify, request
 from sqlalchemy import desc, func
 
-from ...database import db
-from ...models.notifications import (
+from database import db
+from models.notifications import (
     Notification,
     NotificationPreference,
     NotificationQueue,

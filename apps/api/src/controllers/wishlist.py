@@ -1,8 +1,8 @@
 from flask import Blueprint, request, jsonify
-from ..database import db
-from ..models.wishlist import Wishlist, WishlistItem
-from ..models.products import Product
-from ..utils.validators import validate_uuid, create_error_response, create_success_response
+from database import db
+from models.wishlist import Wishlist, WishlistItem
+from models.products import Product
+from utils.validators import validate_uuid, create_error_response, create_success_response
 
 wishlist_bp = Blueprint('wishlist', __name__)
 

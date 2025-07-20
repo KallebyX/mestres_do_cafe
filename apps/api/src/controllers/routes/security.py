@@ -4,13 +4,13 @@ Endpoints para gestão de segurança, auditoria e monitoramento
 """
 
 from flask import Blueprint, jsonify, request, g
-from ...middleware.security import (
+from middleware.security import (
     rate_limiter, 
     csrf_protection,
     rate_limit,
     validate_input
 )
-from ...utils.monitoring import StructuredLogger
+from utils.monitoring import StructuredLogger
 from datetime import datetime, timedelta
 
 security_bp = Blueprint('security', __name__)

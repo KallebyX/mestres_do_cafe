@@ -4,8 +4,8 @@ import uuid
 from flask import Blueprint, jsonify, request
 from sqlalchemy import desc, func
 
-from ...database import db
-from ...models.blog import (
+from database import db
+from models.blog import (
     BlogCategory,
     BlogPost,
     BlogComment,
@@ -14,7 +14,7 @@ from ...models.blog import (
     BlogPostView,
     BlogPostLike,
 )
-from ...models.auth import User
+from models.auth import User
 
 blog_bp = Blueprint("blog", __name__)
 

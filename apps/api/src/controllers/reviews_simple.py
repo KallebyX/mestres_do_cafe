@@ -6,8 +6,8 @@ def get_product_name(product_id):
     """Helper function to get product name by ID"""
     try:
         # Import local para evitar problemas de importação circular
-        from ..database import db
-        from ..models import Product
+        from database import db
+        from models import Product
         
         products = Product.query.filter_by(is_active=True).all()
         for p in products:

@@ -4,8 +4,8 @@ from decimal import Decimal
 from flask import Blueprint, jsonify, request
 from sqlalchemy import desc
 
-from ...database import db
-from ...models.gamification import (
+from database import db
+from models.gamification import (
     Achievement,
     Badge,
     Challenge,
@@ -20,7 +20,7 @@ from ...models.gamification import (
     UserPointTransaction,
     RewardRedemption,
 )
-from ...services.gamification_service import ClubeMestresService
+from services.gamification_service import ClubeMestresService
 
 gamification_bp = Blueprint(
     "gamification", __name__, url_prefix="/api/gamification"

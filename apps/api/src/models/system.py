@@ -8,7 +8,7 @@ from sqlalchemy import Boolean, Column, DateTime, ForeignKey, String, Text
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.sql import func
 
-from ..database import db
+from database import db
 
 
 class SystemSetting(db.Model):

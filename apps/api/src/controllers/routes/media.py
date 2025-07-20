@@ -6,8 +6,8 @@ from flask import Blueprint, jsonify, request, send_file
 from sqlalchemy import desc
 from werkzeug.utils import secure_filename
 
-from ...database import db
-from ...models.media import MediaFile
+from database import db
+from models.media import MediaFile
 
 media_bp = Blueprint("media", __name__, url_prefix="/api/media")
 

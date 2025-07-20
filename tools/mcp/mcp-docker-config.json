@@ -1,0 +1,12 @@
+{
+  "mcp_servers": {
+    "mestres-cafe-docker": {
+      "command": "node",
+      "args": ["/Users/kalleby/Downloads/mestres_cafe_enterprise/tools/mcp/docker-server.js"],
+      "cwd": "/Users/kalleby/Downloads/mestres_cafe_enterprise",
+      "env": {
+        "DOCKER_HOST": "unix:///var/run/docker.sock"
+      }
+    }
+  }
+}

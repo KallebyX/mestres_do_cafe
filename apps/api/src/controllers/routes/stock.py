@@ -6,9 +6,9 @@ from flask import Blueprint, jsonify, request
 from sqlalchemy import func
 from datetime import datetime
 
-from ...database import db
-from ...models import Product, StockMovement, ProductVariant
-from ...middleware.error_handler import ValidationAPIError, ResourceAPIError
+from database import db
+from models import Product, StockMovement, ProductVariant
+from middleware.error_handler import ValidationAPIError, ResourceAPIError
 
 stock_bp = Blueprint("stock", __name__)
 

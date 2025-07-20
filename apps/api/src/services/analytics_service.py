@@ -17,12 +17,12 @@ except ImportError:
 from typing import Dict, List, Any, Optional
 from collections import defaultdict
 from sqlalchemy import func, text, and_, or_
-from ..database import db
-from ..models.orders import Order
-from ..models.products import Product, ProductCategory
-from ..models.customers import Customer
-from ..models.payments import Payment
-from ..utils.cache import cache_manager, cached
+from database import db
+from models.orders import Order
+from models.products import Product, ProductCategory
+from models.customers import Customer
+from models.payments import Payment
+from utils.cache import cache_manager, cached
 
 class AnalyticsService:
     """Serviço de analytics com métricas avançadas de negócio"""

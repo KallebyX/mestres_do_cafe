@@ -13,10 +13,10 @@ from decimal import Decimal
 import requests
 from flask import current_app
 
-from ..database import db
-from ..models.orders import Order
-from ..models.vendors import Vendor
-from ..utils.logger import logger
+from database import db
+from models.orders import Order
+from models.vendors import Vendor
+from utils.logger import logger
 
 
 class MelhorEnvioService:
@@ -504,7 +504,7 @@ class MelhorEnvioService:
     def _trigger_escrow_release(self, order: Order) -> None:
         """Dispara liberação do escrow quando pedido é entregue"""
         try:
-            from .escrow_service import EscrowService
+            from services.escrow_service import EscrowService
             
             # Buscar pagamentos do pedido que estão em escrow
             payments = [p for p in order.payments if p.status == 'held']

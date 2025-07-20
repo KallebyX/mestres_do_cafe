@@ -19,7 +19,7 @@ from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
 from sqlalchemy.types import DECIMAL
 
-from ..database import db
+from database import db
 
 
 class ProductCategory(db.Model):

@@ -26,9 +26,7 @@ services:
       - VITE_APP_NAME=Mestres do Café
       - PORT=3000
       - CHOKIDAR_USEPOLLING=true
-    depends_on:
-      api:
-        condition: service_healthy
+    depends_on: []
     networks:
       - mestres-network
     restart: unless-stopped
@@ -142,8 +140,6 @@ services:
     depends_on:
       web:
         condition: service_healthy
-      api:
-        condition: service_healthy
     networks:
       - mestres-network
     restart: unless-stopped
@@ -199,7 +195,7 @@ services:
     profiles:
       - tools
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8081/"]
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://127.0.0.1:8081/"]
       interval: 30s
       timeout: 10s
       retries: 3

@@ -4,8 +4,8 @@ from decimal import Decimal
 from flask import Blueprint, jsonify, request
 from sqlalchemy import desc, func, and_
 
-from ...database import db
-from ...models.financial import FinancialAccount, FinancialTransaction
+from database import db
+from models.financial import FinancialAccount, FinancialTransaction
 
 financial_bp = Blueprint("financial", __name__, url_prefix="/api/financial")
 

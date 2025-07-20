@@ -1,6 +1,6 @@
 from flask import Blueprint, request, jsonify
-from ...models.customers import Customer, CustomerAddress
-from ...database import db
+from models.customers import Customer, CustomerAddress
+from database import db
 from datetime import datetime
 import json
 import uuid

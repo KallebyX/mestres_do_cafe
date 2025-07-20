@@ -6,9 +6,9 @@ from flask import Blueprint, jsonify, request
 from datetime import datetime
 import uuid
 
-from ...database import db
-from ...models import Supplier
-from ...middleware.error_handler import ValidationAPIError, ResourceAPIError
+from database import db
+from models import Supplier
+from middleware.error_handler import ValidationAPIError, ResourceAPIError
 
 suppliers_bp = Blueprint("suppliers", __name__)
 

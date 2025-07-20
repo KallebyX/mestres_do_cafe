@@ -6,14 +6,14 @@ from flask import Blueprint, request, jsonify
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from marshmallow import Schema, fields, ValidationError
 
-from ...services.escrow_service import EscrowService
-from ...services.escrow_scheduler import escrow_scheduler
-from ...models.auth import User
-from ...models.vendors import Vendor
-from ...models.customers import Customer
-from ...database import db
-from ...utils.validators import validate_uuid
-from ...utils.logger import logger
+from services.escrow_service import EscrowService
+from services.escrow_scheduler import escrow_scheduler
+from models.auth import User
+from models.vendors import Vendor
+from models.customers import Customer
+from database import db
+from utils.validators import validate_uuid
+from utils.logger import logger
 
 escrow_bp = Blueprint('escrow', __name__)
 

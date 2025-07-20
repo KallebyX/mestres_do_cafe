@@ -5,8 +5,8 @@ import uuid
 from flask import Blueprint, jsonify, request
 from sqlalchemy import desc, func
 
-from ...database import db
-from ...models.hr import (
+from database import db
+from models.hr import (
     Employee,
     Department,
     Position,
