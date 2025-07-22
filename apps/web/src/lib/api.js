@@ -163,3 +163,10 @@ export const updateOrderStatusAdmin = async (id, status) => mockResponse(null);
 export const updateUserStatusAdmin = async (id, status) => mockResponse(null);
 export const updateBlogPostStatusAdmin = async (id, status) => mockResponse(null);
 export const updateProductStatusAdmin = async (id, status) => mockResponse(null);
+
+// Blog admin functions
+export const updateBlogPost = async (id, postData) => mockResponse(postData);
+export const createBlogPost = async (postData) => mockResponse(postData);
+export const deleteBlogPost = async (id) => mockResponse(null);
+export const publishBlogPost = async (id) => mockResponse(null);
+export const unpublishBlogPost = async (id) => mockResponse(null);
