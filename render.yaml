@@ -1,5 +1,5 @@
 services:
-  # Backend API - Flask Python
+  # Backend API - Python Minimal Server
   - type: web
     name: mestres-cafe-api
     runtime: python
@@ -7,24 +7,20 @@ services:
     plan: free
     buildCommand: |
       cd apps/api
-      pip install --upgrade pip
-      pip install -r requirements.txt
+      python -m pip install --upgrade pip
+      # Use minimal requirements for production
+      echo "# Minimal production requirements" > production-requirements.txt
+      echo "# No external dependencies needed for minimal_server.py" >> production-requirements.txt
     startCommand: |
       cd apps/api
-      python app.py
+      python3 minimal_server.py
     envVars:
       - key: FLASK_ENV
         value: production
-      - key: FLASK_APP
-        value: app.py
       - key: SECRET_KEY
         generateValue: true
       - key: JWT_SECRET_KEY
         generateValue: true
-      - key: DATABASE_URL
-        fromDatabase:
-          name: mestres-cafe-db
-          property: connectionString
       - key: PORT
         value: 10000
       - key: HOST
@@ -39,13 +35,12 @@ services:
     region: oregon
     plan: free
     buildCommand: |
-      npm install
       cd apps/web
       npm install
       npm run build
     startCommand: |
       cd apps/web
-      npx serve dist -p $PORT -s -c ../serve.json
+      npx serve dist -p $PORT -s -c serve.json
     envVars:
       - key: NODE_ENV
         value: production
@@ -56,11 +51,3 @@ services:
       - key: NODE_VERSION
         value: 18.19.0
     autoDeploy: true
-
-databases:
-  - name: mestres-cafe-db
-    databaseName: mestres_cafe_production
-    user: mestres_cafe_user
-    plan: free
-    region: oregon
-    postgresMajorVersion: "15"
