@@ -1,4 +1,4 @@
-import { getAllProducts, getProductById } from "../lib/api";
+import { productsAPI } from "../services/api";
 import {
   Award,
   Coffee,
@@ -51,7 +51,7 @@ const ProductDetailPage = () => {
     setError(null);
     
     try {
-      const result = await getProductById(id);
+      const result = await productsAPI.getById(id);
       
       if (result.success) {
         setProduct(result.data);
@@ -69,7 +69,7 @@ const ProductDetailPage = () => {
 
   const loadRelatedProducts = async (category) => {
     try {
-      const result = await getAllProducts();
+      const result = await productsAPI.getAll();
       if (result.success) {
         // result.data tem estrutura paginada, precisamos acessar o array de produtos
         const products = result.data.items || result.data.products || [];

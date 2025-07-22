@@ -1,5 +1,5 @@
 import { createContext, useContext, useEffect, useState } from 'react';
-import { cartAPI } from "../lib/api.js";
+import { cartAPI } from "../services/api.js";
 import { useAuth } from './AuthContext';
 
 // =============================================
@@ -67,7 +67,7 @@ const cartUtils = {
 
       // Adicionar itens do localStorage à API
       for (const item of localCart.items) {
-        await cartAPI.addToCart(item.id, item.quantity);
+        await cartAPI.addItem(item.id, item.quantity);
       }
 
       // Limpar localStorage após sync
@@ -255,7 +255,7 @@ export const CartProvider = ({ children }) => {
       console.log('🛒 Adicionando ao carrinho (usuário:', user.id, '- produto:', product.name, '- ID:', product.id, ')');
       
       // Adicionar via API Flask
-      const response = await cartAPI.add(product.id, quantity);
+      const response = await cartAPI.addItem(product.id, quantity);
       
       if (!response.success) {
         console.error('❌ Erro ao adicionar ao carrinho:', response.message);
@@ -288,7 +288,7 @@ export const CartProvider = ({ children }) => {
       console.log('🗑️ Removendo do carrinho (usuário:', user.id, '- produto:', productId, ')');
       
       // Remover via API Flask
-      const response = await cartAPI.remove(productId);
+      const response = await cartAPI.removeItem(productId);
       
       if (!response.success) {
         console.error('❌ Erro ao remover do carrinho:', response.message);
@@ -325,7 +325,7 @@ export const CartProvider = ({ children }) => {
       console.log('📝 Atualizando quantidade (usuário:', user.id, '- produto:', productId, '- qtd:', newQuantity, ')');
       
       // Atualizar via API Flask
-      const response = await cartAPI.update(productId, newQuantity);
+      const response = await cartAPI.updateItem(productId, newQuantity);
       
       if (!response.success) {
         console.error('❌ Erro ao atualizar quantidade:', response.message);
@@ -352,7 +352,7 @@ export const CartProvider = ({ children }) => {
       console.log('🧹 Limpando carrinho (usuário:', user.id, ')');
       
       // Limpar via API Flask
-      const response = await cartAPI.clear();
+      const response = await cartAPI.clearCart();
       
       if (!response.success) {
         console.error('❌ Erro ao limpar carrinho:', response.message);
