@@ -63,7 +63,10 @@ class TestAuthenticationErrorIntegration:
             'user_id': 1,
             'exp': datetime.utcnow() - timedelta(hours=1)
         }
-        expired_token = jwt.encode(expired_payload, 'secret', algorithm='HS256')
+        # Use secure dynamic secret for testing
+        import secrets
+        test_secret = secrets.token_urlsafe(32)
+        expired_token = jwt.encode(expired_payload, test_secret, algorithm='HS256')
         
         headers = {'Authorization': f'Bearer {expired_token}'}
         response = client.get('/api/auth/profile', headers=headers)
@@ -642,5 +645,8 @@ def generate_test_token(user_id=1, role="customer", expired=False):
         'role': role,
         'exp': datetime.utcnow() + (timedelta(hours=-1) if expired else timedelta(hours=1))
     }
-    return jwt.encode(payload, 'test-secret', algorithm='HS256')
+    # Use a secure dynamically generated test secret
+    import secrets
+    test_jwt_secret = secrets.token_urlsafe(32)
+    return jwt.encode(payload, test_jwt_secret, algorithm='HS256')
 
