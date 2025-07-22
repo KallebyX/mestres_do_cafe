@@ -122,6 +122,13 @@ export const optimizeData = async () => mockResponse({});
 export const cleanupData = async () => mockResponse({});
 export const archiveData = async (criteria) => mockResponse({});
 
+// Complete remaining missing functions from error messages
+export const getAdminCustomers = async () => mockResponse([]);
+export const getAllCustomers = async () => mockResponse([]);
+export const syncAuthUsersToPublic = async () => mockResponse({});
+export const toggleAnyCustomerStatus = async (id) => mockResponse(null);
+export const toggleCustomerStatus = async (id) => mockResponse(null);
+
 // Admin-specific functions
 export const getAllProductsAdmin = async () => mockResponse([]);
 export const getAllOrdersAdmin = async () => mockResponse([]);

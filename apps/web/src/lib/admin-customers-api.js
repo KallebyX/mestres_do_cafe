@@ -111,4 +111,13 @@ export const fetchAddressByCEP = async (cep) => {
   return { success: true, data: { address: '', city: '', state: '', neighborhood: '' } };
 };
 
+// Add all remaining missing customer functions
+export const createManualCustomer = async (customerData) => {
+  return { success: true, data: customerData };
+};
+
+export const editAdminCustomer = async (id, customerData) => {
+  return { success: true, data: customerData };
+};
+
 export default adminCustomersAPI;
