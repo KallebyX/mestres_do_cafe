@@ -57,14 +57,15 @@ A integração do MercadoPago Checkout Transparente foi implementada com sucesso
 ### Credenciais de Teste
 
 ```bash
+# Obtenha suas credenciais em: https://www.mercadopago.com.br/developers/panel/app
 # Access Token
-MP_ACCESS_TOKEN_TEST=TEST-6470757372800949-072017-f45dc4b7ff499723f495a8525cfc9112-1211284486
+MP_ACCESS_TOKEN_TEST=TEST-YOUR_ACCESS_TOKEN_HERE
 
 # Public Key
-MP_PUBLIC_KEY_TEST=TEST-558e2a3f-a78b-4a9c-9f2f-d26b6f5e3a61
+MP_PUBLIC_KEY_TEST=TEST-YOUR_PUBLIC_KEY_HERE
 
 # Application ID
-MP_APPLICATION_ID=1211284486
+MP_APPLICATION_ID=YOUR_APPLICATION_ID_HERE
 ```
 
 ### Contas de Teste

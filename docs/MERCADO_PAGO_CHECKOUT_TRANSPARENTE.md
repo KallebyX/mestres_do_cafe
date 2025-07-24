@@ -53,9 +53,10 @@ apps/
 
 ```bash
 # apps/api/.env
-MP_ACCESS_TOKEN_TEST=TEST-6470757372800949-072017-f45dc4b7ff499723f495a8525cfc9112-1211284486
-MP_PUBLIC_KEY_TEST=TEST-6470757372800949-072017-f45dc4b7ff499723f495a8525cfc9112-1211284486
-MP_CLIENT_ID=1211284486
+# Obtenha suas credenciais em: https://www.mercadopago.com.br/developers/panel/app
+MP_ACCESS_TOKEN_TEST=TEST-YOUR_ACCESS_TOKEN_HERE
+MP_PUBLIC_KEY_TEST=TEST-YOUR_PUBLIC_KEY_HERE
+MP_CLIENT_ID=YOUR_CLIENT_ID_HERE
 MP_CLIENT_SECRET=<será fornecido separadamente>
 MP_WEBHOOK_SECRET=<configurar no painel do MercadoPago>
 MP_ENVIRONMENT=sandbox
@@ -66,8 +67,8 @@ MP_ENABLE_TOKENIZATION=true
 
 ### Informações da Aplicação
 
-- **Application ID**: 1211284486
-- **Collector ID**: 6470757372800949
+- **Application ID**: YOUR_APPLICATION_ID_HERE
+- **Collector ID**: YOUR_COLLECTOR_ID_HERE
 - **Modelo**: Marketplace
 - **Ambiente**: Sandbox (para testes)
 
