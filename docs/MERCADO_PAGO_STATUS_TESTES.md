@@ -89,7 +89,8 @@
 
 ### Token de Acesso
 ```
-TEST-6470757372800949-072017-f45dc4b7ff499723f495a8525cfc9112-1211284486
+# Obtenha suas credenciais em: https://www.mercadopago.com.br/developers/panel/app
+TEST-YOUR_ACCESS_TOKEN_HERE
 ```
 
 ### Contas de Teste

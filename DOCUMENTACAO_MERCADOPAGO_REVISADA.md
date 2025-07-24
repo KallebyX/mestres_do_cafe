@@ -94,14 +94,15 @@ mestres_cafe_enterprise/
 
 ```env
 # Credenciais MercadoPago - Ambiente de Teste
-MP_ACCESS_TOKEN_TEST=TEST-6470757372800949-072017-f45dc4b7ff499723f495a8525cfc9112-1211284486
-MP_PUBLIC_KEY_TEST=TEST-6470757372800949-072017-f45dc4b7ff499723f495a8525cfc9112-1211284486
+# Obtenha suas credenciais em: https://www.mercadopago.com.br/developers/panel/app
+MP_ACCESS_TOKEN_TEST=TEST-YOUR_ACCESS_TOKEN_HERE
+MP_PUBLIC_KEY_TEST=TEST-YOUR_PUBLIC_KEY_HERE
 MP_ENVIRONMENT=sandbox
 
 # Configurações da Aplicação
-MP_APPLICATION_ID=1211284486
-MP_APPLICATION_NUMBER=6470757372800949
-MP_USER_ID=1211284486
+MP_APPLICATION_ID=YOUR_APPLICATION_ID_HERE
+MP_APPLICATION_NUMBER=YOUR_APPLICATION_NUMBER_HERE
+MP_USER_ID=YOUR_USER_ID_HERE
 
 # Configurações Avançadas
 MP_ENABLE_3DS=true
@@ -118,8 +119,8 @@ MP_PENDING_URL=http://localhost:3000/checkout/pending
 
 ### Informações da Aplicação MercadoPago
 
-- **Application ID**: 1211284486
-- **Collector ID**: 6470757372800949
+- **Application ID**: YOUR_APPLICATION_ID_HERE
+- **Collector ID**: YOUR_COLLECTOR_ID_HERE
 - **Modelo**: Marketplace
 - **Ambiente**: Sandbox (testes)
 - **Tipo de Checkout**: Transparente (sem redirecionamento)

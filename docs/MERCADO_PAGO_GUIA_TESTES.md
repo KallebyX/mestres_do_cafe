@@ -10,8 +10,9 @@ Este guia fornece instruções passo-a-passo para testar todos os métodos de pa
 Certifique-se de que as credenciais de teste estão configuradas no arquivo `.env`:
 
 ```bash
-MP_ACCESS_TOKEN_TEST=TEST-6470757372800949-072017-f45dc4b7ff499723f495a8525cfc9112-1211284486
-MP_PUBLIC_KEY_TEST=TEST-6470757372800949-072017-f45dc4b7ff499723f495a8525cfc9112-1211284486
+# Obtenha suas credenciais em: https://www.mercadopago.com.br/developers/panel/app
+MP_ACCESS_TOKEN_TEST=TEST-YOUR_ACCESS_TOKEN_HERE
+MP_PUBLIC_KEY_TEST=TEST-YOUR_PUBLIC_KEY_HERE
 MP_ENVIRONMENT=sandbox
 ```
 
@@ -399,7 +400,7 @@ curl -X POST http://localhost:5000/api/payments/mercadopago/webhook \
     "id": 987654321,
     "live_mode": false,
     "type": "payment",
-    "user_id": 1211284486
+    "user_id": YOUR_USER_ID_HERE
   }'
 ```
 
