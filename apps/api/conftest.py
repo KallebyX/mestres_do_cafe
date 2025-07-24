@@ -19,9 +19,10 @@ def app():
     # Configurar variáveis de ambiente para testes
     os.environ['FLASK_ENV'] = 'testing'
     os.environ['DATABASE_URL'] = f'sqlite:///{db_path}'
-    os.environ['SECRET_KEY'] = 'test-secret-key'
-    os.environ['JWT_SECRET_KEY'] = 'test-jwt-secret-key'
-
+    # Gerar secrets seguros para testes
+    import secrets
+    os.environ['SECRET_KEY'] = secrets.token_urlsafe(32)
+    os.environ['JWT_SECRET_KEY'] = secrets.token_urlsafe(32)
     # Criar aplicação para testes
     app = create_app('testing')
 

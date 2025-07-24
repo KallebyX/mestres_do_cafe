@@ -1,6 +1,5 @@
 import { createContext, useContext, useEffect, useState } from 'react';
-import { cartAPI } from "../lib/api.js";
-import analytics from '../services/analytics';
+import { cartAPI } from "../services/api.js";
 import { useAuth } from './AuthContext';
 
 // =============================================
@@ -68,7 +67,7 @@ const cartUtils = {
 
       // Adicionar itens do localStorage à API
       for (const item of localCart.items) {
-        await cartAPI.addToCart(item.id, item.quantity);
+        await cartAPI.addItem(item.id, item.quantity);
       }
 
       // Limpar localStorage após sync
@@ -165,20 +164,17 @@ export const CartProvider = ({ children }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [requiresLogin, setRequiresLogin] = useState(false);
 
-  // 🔄 Inicialização híbrida: API para logados, localStorage para guests
+  // Inicialização segura: carrinho APENAS para usuários logados
   useEffect(() => {
     let isMounted = true;
     
     if (user && user.id && isMounted) {
-      // 🔒 Usuário autenticado - usar API
-      console.log('🔍 CART CONTEXT - User authenticated, loading from API');
       setRequiresLogin(false);
       loadCart();
     } else if (isMounted) {
-      // 🛒 Usuário não logado - usar localStorage
-      console.log('🔍 CART CONTEXT - Guest user, loading from localStorage');
-      setRequiresLogin(false); // ✅ MUDANÇA: permitir carrinho para guests
-      loadGuestCart();
+      setRequiresLogin(true);
+      setCartItems([]);
+      setCartTotal(0);
     }
     
     return () => {
@@ -204,103 +200,36 @@ export const CartProvider = ({ children }) => {
     };
   }, [cartItems]);
 
-  // 🛒 Função para carregar carrinho de usuários não logados (localStorage)
-  const loadGuestCart = async () => {
-    console.log('🔍 CART CONTEXT - loadGuestCart called');
-    setIsLoading(true);
-    
-    try {
-      const guestCart = cartUtils.getCart();
-      console.log('🔍 CART CONTEXT - Guest cart from localStorage:', guestCart);
-      
-      if (guestCart.items && guestCart.items.length > 0) {
-        setCartItems(guestCart.items);
-      } else {
-        setCartItems([]);
-      }
-    } catch (error) {
-      console.error('❌ Erro ao carregar carrinho guest:', error);
-      setCartItems([]);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
   const loadCart = async () => {
-    // 🔍 DIAGNÓSTICO CARRINHO - Log de acesso loadCart
-    console.log('🔍 CART CONTEXT - loadCart called');
-    console.log('🔍 CART CONTEXT - User state:', !!user, user?.id);
-    console.log('🔍 CART CONTEXT - User object:', user);
-    
-    // ✅ NOVO: Usuário não logado usa localStorage
+    // 🔒 SEGURANÇA: Carrinho APENAS para usuários autenticados
     if (!user || !user.id) {
-      console.log('🔍 CART CONTEXT - User not authenticated, loading guest cart');
-      await loadGuestCart();
+      setCartItems([]);
+      setCartTotal(0);
+      setRequiresLogin(true);
       return;
     }
 
     setIsLoading(true);
     setRequiresLogin(false);
     
-// 🔄 SINCRONIZAÇÃO: Verificar se há itens no localStorage para sync
-    const guestCart = cartUtils.getCart();
-    if (guestCart.items && guestCart.items.length > 0) {
-      console.log('🔄 CART SYNC - Found guest cart items, syncing to API:', guestCart.items.length, 'items');
-      await cartUtils.syncLocalCartToAPI(user.id, guestCart);
-    }
     try {
-      // 🔍 DIAGNÓSTICO CARRINHO - Log de chamada API
-      console.log('🔍 CART CONTEXT - Attempting API call to cartAPI.getCart()');
-      
       // 🔒 BUSCAR carrinho do usuário logado via API Flask
       const response = await cartAPI.getCart();
       
-      console.log('🔍 CART CONTEXT - API response:', response);
-      
       if (!response.success) {
-        console.error('❌ Erro ao carregar carrinho:', response.error || response.message);
-        console.log('🔍 CART CONTEXT - API call failed, clearing cart items');
+        console.error('❌ Erro ao carregar carrinho:', response.message);
         setCartItems([]);
         return;
       }
 
-      // 🔧 Novo formato unified de resposta
-      const cartData = response.data || {};
-      const cartItems = cartData.data?.items || [];
+      const cartItems = response.data.items || [];
       
-      console.log('🔍 CART CONTEXT - cartData:', cartData);
-      console.log('🔍 CART CONTEXT - cartData JSON:', JSON.stringify(cartData, null, 2));
-      console.log('🔍 CART CONTEXT - cartItems array:', cartItems);
-      console.log('🔍 CART CONTEXT - cartItems JSON:', JSON.stringify(cartItems, null, 2));
-      console.log('🔍 CART CONTEXT - cartItems length:', cartItems.length);
-      console.log('🔍 CART CONTEXT - cartItems type:', typeof cartItems);
-      console.log('🔍 CART CONTEXT - cartItems is Array:', Array.isArray(cartItems));
-      
-      if (!Array.isArray(cartItems) || cartItems.length === 0) {
-        console.log('🔍 CART CONTEXT - No valid items found, setting empty array');
+      if (cartItems.length === 0) {
         setCartItems([]);
         return;
       }
 
-      // 🔧 Mapear itens para estrutura esperada pelo frontend
-      const mappedItems = cartItems.map((item, index) => {
-        console.log(`🔍 CART CONTEXT - Processing item ${index}:`, item);
-        const mappedItem = {
-          id: item.product_id, // Usar product_id como id principal
-          product_id: item.product_id,
-          name: item.product?.name || 'Produto sem nome',
-          price: parseFloat(item.product?.price || 0),
-          image: item.product?.image_url || null,
-          quantity: parseInt(item.quantity || 0),
-          weight: item.product?.weight || null,
-          category: item.product?.category || null
-        };
-        console.log(`🔍 CART CONTEXT - Mapped item ${index}:`, mappedItem);
-        return mappedItem;
-      });
-
-      console.log('🔍 CART CONTEXT - Final mappedItems:', mappedItems);
-      setCartItems(mappedItems);
+      setCartItems(cartItems);
       } catch (error) {
       console.error('❌ Erro ao carregar carrinho:', error);
       setCartItems([]);
@@ -310,6 +239,12 @@ export const CartProvider = ({ children }) => {
   };
 
   const addToCart = async (product, quantity = 1) => {
+    // 🔒 SEGURANÇA: Verificações rigorosas antes de qualquer operação
+    if (!user || !user.id) {
+      setRequiresLogin(true);
+      return { success: false, message: 'Login necessário para adicionar produtos ao carrinho' };
+    }
+
     // ✅ VALIDAÇÃO RIGOROSA: Verificar se temos produto válido
     if (!product || !product.id) {
       console.error('❌ Produto inválido ou sem ID:', product);
@@ -317,46 +252,19 @@ export const CartProvider = ({ children }) => {
     }
 
     try {
-      if (user && user.id) {
-        // 🔒 USUÁRIO LOGADO - Usar API
-        console.log('🛒 Adicionando ao carrinho via API (usuário:', user.id, '- produto:', product.name, '- ID:', product.id, ')');
-        
-        const response = await cartAPI.add(product.id, quantity);
-        
-        if (!response.success) {
-          console.error('❌ Erro ao adicionar ao carrinho via API:', response.error || response.message);
-          return { success: false, message: response.message || response.error || 'Erro ao adicionar produto' };
-        }
-
-        console.log('✅ Produto adicionado via API:', response.data);
-        
-        // Track analytics event
-        analytics.trackAddToCart(product, quantity);
-        
-        // Recarregar carrinho da API
-        await loadCart();
-        return {
-          success: true,
-          message: response.message || 'Produto adicionado ao carrinho!'
-        };
-        
-      } else {
-        // 🛒 USUÁRIO GUEST - Usar localStorage
-        console.log('🛒 Adicionando ao carrinho localStorage (guest - produto:', product.name, '- ID:', product.id, ')');
-        
-        const updatedCart = cartUtils.addToCart(product, quantity);
-        console.log('✅ Produto adicionado ao localStorage:', updatedCart);
-        
-        // Track analytics event
-        analytics.trackAddToCart(product, quantity);
-        
-        // Recarregar carrinho do localStorage
-        await loadGuestCart();
-        return {
-          success: true,
-          message: 'Produto adicionado ao carrinho!'
-        };
+      console.log('🛒 Adicionando ao carrinho (usuário:', user.id, '- produto:', product.name, '- ID:', product.id, ')');
+      
+      // Adicionar via API Flask
+      const response = await cartAPI.addItem(product.id, quantity);
+      
+      if (!response.success) {
+        console.error('❌ Erro ao adicionar ao carrinho:', response.message);
+        return { success: false, message: response.message || 'Erro ao adicionar produto' };
       }
+
+      // Recarregar carrinho
+      await loadCart();
+      return { success: true, message: 'Produto adicionado ao carrinho!' };
       
     } catch (error) {
       console.error('❌ Erro ao adicionar ao carrinho:', error);
@@ -365,6 +273,11 @@ export const CartProvider = ({ children }) => {
   };
 
   const removeFromCart = async (productId) => {
+    // 🔒 SEGURANÇA: Verificações rigorosas antes de qualquer operação
+    if (!user || !user.id) {
+      return { success: false, message: 'Login necessário' };
+    }
+
     // ✅ VALIDAÇÃO RIGOROSA: Verificar se temos produto válido
     if (!productId) {
       console.error('❌ Product ID não fornecido');
@@ -372,52 +285,19 @@ export const CartProvider = ({ children }) => {
     }
 
     try {
-      if (user && user.id) {
-        // 🔒 USUÁRIO LOGADO - Usar API
-        console.log('🗑️ Removendo do carrinho via API (usuário:', user.id, '- produto:', productId, ')');
-        
-        const response = await cartAPI.remove(productId);
-        
-        if (!response.success) {
-          console.error('❌ Erro ao remover do carrinho via API:', response.error || response.message);
-          return { success: false, message: response.message || response.error || 'Erro ao remover produto' };
-        }
-
-        console.log('✅ Produto removido via API:', response.data);
-        
-        // Track analytics event - buscar dados do produto antes de recarregar
-        const removedProduct = cartItems.find(item => item.id === productId || item.product_id === productId);
-        if (removedProduct) {
-          analytics.trackRemoveFromCart(removedProduct, removedProduct.quantity);
-        }
-        
-        // Recarregar carrinho da API
-        await loadCart();
-        return {
-          success: true,
-          message: response.message || 'Produto removido do carrinho!'
-        };
-        
-      } else {
-        // 🛒 USUÁRIO GUEST - Usar localStorage
-        console.log('🗑️ Removendo do carrinho localStorage (guest - produto:', productId, ')');
-        
-        // Track analytics event antes de remover
-        const removedProduct = cartItems.find(item => item.id === productId);
-        if (removedProduct) {
-          analytics.trackRemoveFromCart(removedProduct, removedProduct.quantity);
-        }
-        
-        const updatedCart = cartUtils.removeFromCart(productId);
-        console.log('✅ Produto removido do localStorage:', updatedCart);
-        
-        // Recarregar carrinho do localStorage
-        await loadGuestCart();
-        return {
-          success: true,
-          message: 'Produto removido do carrinho!'
-        };
+      console.log('🗑️ Removendo do carrinho (usuário:', user.id, '- produto:', productId, ')');
+      
+      // Remover via API Flask
+      const response = await cartAPI.removeItem(productId);
+      
+      if (!response.success) {
+        console.error('❌ Erro ao remover do carrinho:', response.message);
+        return { success: false, message: response.message || 'Erro ao remover produto' };
       }
+
+      // Recarregar carrinho
+      await loadCart();
+      return { success: true, message: 'Produto removido do carrinho!' };
       
     } catch (error) {
       console.error('❌ Erro ao remover do carrinho:', error);
@@ -426,6 +306,11 @@ export const CartProvider = ({ children }) => {
   };
 
   const updateQuantity = async (productId, newQuantity) => {
+    // 🔒 SEGURANÇA: Verificações rigorosas antes de qualquer operação
+    if (!user || !user.id) {
+      return { success: false, message: 'Login necessário' };
+    }
+
     // ✅ VALIDAÇÃO RIGOROSA: Verificar se temos produto válido
     if (!productId) {
       console.error('❌ Product ID não fornecido');
@@ -437,66 +322,19 @@ export const CartProvider = ({ children }) => {
         return await removeFromCart(productId);
       }
 
-      if (user && user.id) {
-        // 🔒 USUÁRIO LOGADO - Usar API
-        console.log('📝 Atualizando quantidade via API (usuário:', user.id, '- produto:', productId, '- qtd:', newQuantity, ')');
-        
-        const response = await cartAPI.update(productId, newQuantity);
-        
-        if (!response.success) {
-          console.error('❌ Erro ao atualizar quantidade via API:', response.error || response.message);
-          return { success: false, message: response.message || response.error || 'Erro ao atualizar quantidade' };
-        }
-
-        console.log('✅ Quantidade atualizada via API:', response.data);
-        
-        // Track analytics event - buscar dados do produto antes de recarregar
-        const updatedProduct = cartItems.find(item => item.id === productId || item.product_id === productId);
-        if (updatedProduct) {
-          analytics.trackEvent('cart_quantity_update', {
-            product_id: updatedProduct.id,
-            product_name: updatedProduct.name,
-            product_price: updatedProduct.price,
-            old_quantity: updatedProduct.quantity,
-            new_quantity: newQuantity,
-            quantity_change: newQuantity - updatedProduct.quantity
-          });
-        }
-        
-        // Recarregar carrinho da API
-        await loadCart();
-        return {
-          success: true,
-          message: response.message || 'Quantidade atualizada!'
-        };
-        
-      } else {
-        // 🛒 USUÁRIO GUEST - Usar localStorage
-        console.log('📝 Atualizando quantidade localStorage (guest - produto:', productId, '- qtd:', newQuantity, ')');
-        
-        // Track analytics event antes de atualizar
-        const updatedProduct = cartItems.find(item => item.id === productId);
-        if (updatedProduct) {
-          analytics.trackEvent('cart_quantity_update', {
-            product_id: updatedProduct.id,
-            product_name: updatedProduct.name,
-            product_price: updatedProduct.price,
-            old_quantity: updatedProduct.quantity,
-            new_quantity: newQuantity,
-            quantity_change: newQuantity - updatedProduct.quantity
-          });
-        }
-        
-        const updatedCart = cartUtils.updateQuantity(productId, newQuantity);
-        console.log('✅ Quantidade atualizada no localStorage:', updatedCart);
-        
-        // Recarregar carrinho do localStorage
-        await loadGuestCart();
-        return {
-          success: true,
-          message: 'Quantidade atualizada!'
-        };
+      console.log('📝 Atualizando quantidade (usuário:', user.id, '- produto:', productId, '- qtd:', newQuantity, ')');
+      
+      // Atualizar via API Flask
+      const response = await cartAPI.updateItem(productId, newQuantity);
+      
+      if (!response.success) {
+        console.error('❌ Erro ao atualizar quantidade:', response.message);
+        return { success: false, message: response.message || 'Erro ao atualizar quantidade' };
       }
+
+      // Recarregar carrinho
+      await loadCart();
+      return { success: true };
       
     } catch (error) {
       console.error('❌ Erro ao atualizar quantidade:', error);
@@ -505,69 +343,25 @@ export const CartProvider = ({ children }) => {
   };
 
   const clearCart = async () => {
+    // 🔒 SEGURANÇA: Apenas usuários autenticados podem limpar carrinho
+    if (!user || !user.id) {
+      return { success: false, message: 'Login necessário' };
+    }
+
     try {
-      if (user && user.id) {
-        // 🔒 USUÁRIO LOGADO - Usar API
-        console.log('🧹 Limpando carrinho via API (usuário:', user.id, ')');
-        
-        const response = await cartAPI.clear();
-        
-        if (!response.success) {
-          console.error('❌ Erro ao limpar carrinho via API:', response.error || response.message);
-          return { success: false, message: response.message || response.error || 'Erro ao limpar carrinho' };
-        }
-        
-        console.log('✅ Carrinho limpo via API:', response.data);
-        
-        // Track analytics event antes de limpar estado
-        const itemsCount = cartItems.length;
-        const totalValue = cartTotal;
-        if (itemsCount > 0) {
-          analytics.trackEvent('cart_clear', {
-            items_count: itemsCount,
-            total_value: totalValue,
-            items_removed: response.data?.items_removed || itemsCount
-          });
-        }
-        
-        // Limpar estado local imediatamente
-        setCartItems([]);
-        setCartTotal(0);
-        
-        return {
-          success: true,
-          message: response.message || 'Carrinho limpo!',
-          itemsRemoved: response.data?.items_removed || 0
-        };
-        
-      } else {
-        // 🛒 USUÁRIO GUEST - Usar localStorage
-        console.log('🧹 Limpando carrinho localStorage (guest)');
-        
-        // Track analytics event antes de limpar
-        const itemsCount = cartItems.length;
-        const totalValue = cartTotal;
-        if (itemsCount > 0) {
-          analytics.trackEvent('cart_clear', {
-            items_count: itemsCount,
-            total_value: totalValue,
-            items_removed: itemsCount
-          });
-        }
-        
-        cartUtils.clearCart();
-        console.log('✅ Carrinho limpo do localStorage');
-        
-        // Limpar estado local imediatamente
-        setCartItems([]);
-        setCartTotal(0);
-        
-        return {
-          success: true,
-          message: 'Carrinho limpo!',
-          itemsRemoved: itemsCount
-        };
+      console.log('🧹 Limpando carrinho (usuário:', user.id, ')');
+      
+      // Limpar via API Flask
+      const response = await cartAPI.clearCart();
+      
+      if (!response.success) {
+        console.error('❌ Erro ao limpar carrinho:', response.message);
+        return { success: false, message: response.message || 'Erro ao limpar carrinho' };
       }
+      
+      setCartItems([]);
+      setCartTotal(0);
+      return { success: true, message: 'Carrinho limpo!' };
       
     } catch (error) {
       console.error('❌ Erro ao limpar carrinho:', error);
@@ -576,25 +370,14 @@ export const CartProvider = ({ children }) => {
   };
 
   const getCartItemsCount = () => {
-    // 🔍 DIAGNÓSTICO CARRINHO - Log de acesso getCartItemsCount
-    console.log('🔍 CART CONTEXT - getCartItemsCount called');
-    console.log('🔍 CART CONTEXT - User state:', !!user, user?.id);
-    console.log('🔍 CART CONTEXT - cartItems length:', cartItems.length);
-    
-    if (user && user.id) {
-      // 🔒 USUÁRIO LOGADO - Contar itens do estado
-      const count = cartItems.reduce((total, item) => total + item.quantity, 0);
-      console.log('🔍 CART CONTEXT - Calculated count (logged user):', count);
-      return count;
-    } else {
-      // 🛒 USUÁRIO GUEST - Contar itens do localStorage ou estado
-      const count = cartItems.reduce((total, item) => total + item.quantity, 0);
-      console.log('🔍 CART CONTEXT - Calculated count (guest user):', count);
-      return count;
-    }
+    if (!user || !user.id) return 0; // 🔒 Sem usuário = sem carrinho
+    return cartItems.reduce((total, item) => total + item.quantity, 0);
   };
 
   const getCartItemsCountSafe = () => {
+    // 🔒 Versão segura que sempre retorna 0 se não logado
+    if (!user || !user.id) return 0;
+    
     try {
       return cartItems.reduce((total, item) => total + item.quantity, 0);
     } catch (error) {
@@ -604,7 +387,8 @@ export const CartProvider = ({ children }) => {
   };
 
   const getTotalPrice = () => {
-    return cartTotal; // ✅ Retorna total para todos os usuários (logados e guest)
+    if (!user || !user.id) return 0; // 🔒 Sem usuário = sem total
+    return cartTotal;
   };
 
   const value = {

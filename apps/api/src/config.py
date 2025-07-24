@@ -220,9 +220,9 @@ class TestingConfig(Config):
     ENV = "testing"
     WTF_CSRF_ENABLED = False
 
-    # Secrets de teste
-    SECRET_KEY = "test-secret-key"
-    JWT_SECRET_KEY = "test-jwt-secret-key"
+    # Secrets de teste - usar valores dinâmicos seguros
+    SECRET_KEY = os.environ.get("TEST_SECRET_KEY", secrets.token_urlsafe(32))
+    JWT_SECRET_KEY = os.environ.get("TEST_JWT_SECRET_KEY", secrets.token_urlsafe(32))
 
     # Supabase de teste (usar URL de desenvolvimento ou mock)
     SUPABASE_URL = os.environ.get("SUPABASE_URL_TEST", "https://test.supabase.co")
