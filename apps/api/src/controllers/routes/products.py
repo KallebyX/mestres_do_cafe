@@ -5,8 +5,7 @@ import uuid
 from flask import Blueprint, jsonify, request
 
 from database import db
-from models import Product, ProductCategory
-from .products_create import add_product_crud_routes
+from models import Product, ProductCategory, ProductPrice
 
 products_bp = Blueprint("products", __name__)
 
@@ -72,44 +71,130 @@ def generate_search_variations(text):
 @products_bp.route("/", methods=["GET"])
 def get_products():
     try:
-        page = request.args.get("page", 1, type=int)
-        per_page = request.args.get("per_page", 12, type=int)
+        page = request.args.get("page", 1, type = int)
+        per_page = request.args.get("per_page", 12, type = int)
         category = request.args.get("category")
         search = request.args.get("search")
+        
+        # Novos parâmetros para suporte à página inicial
+        is_featured = request.args.get("is_featured", type=lambda x: x.lower() == 'true')
+        is_active = request.args.get("is_active", True, type=lambda x: x.lower() == 'true')
+        limit = request.args.get("limit", type=int)
+        order_by = request.args.get("order_by", "created_at")
+        ascending = request.args.get("ascending", False, type=lambda x: x.lower() == 'true')
 
-        query = Product.query.filter_by(is_active=True)
+        query = Product.query.filter_by(is_active = is_active)
+        
+        if is_featured is not None:
+            query = query.filter_by(is_featured = is_featured)
 
         if category:
-            query = query.filter_by(category=category)
+            query = query.filter_by(category = category)
 
         if search:
+            # Sanitizar parâmetro de busca para prevenir SQL injection
+            safe_search = search.replace('%', '\\%').replace('_', '\\_')
+            
             # Gerar variações do termo de busca para incluir acentos
-            search_variations = generate_search_variations(search)
-            normalized_search = normalize_search_text(search)
+            search_variations = generate_search_variations(safe_search)
+            normalized_search = normalize_search_text(safe_search)
 
             # Criar condições OR para todas as variações
             search_conditions = []
             for variation in search_variations:
+                # Sanitizar cada variação também
+                safe_variation = variation.replace('%', '\\%').replace('_', '\\_')
                 search_conditions.extend(
                     [
-                        Product.name.ilike(f"%{variation}%"),
-                        Product.description.ilike(f"%{variation}%"),
-                        Product.origin.ilike(f"%{variation}%"),
+                        Product.name.ilike(f"%{safe_variation}%"),
+                        Product.description.ilike(f"%{safe_variation}%"),
+                        Product.origin.ilike(f"%{safe_variation}%"),
                     ]
                 )
 
             # Adicionar busca com termo normalizado
+            safe_normalized = normalized_search.replace('%', '\\%').replace('_', '\\_')
             search_conditions.extend(
                 [
-                    Product.name.ilike(f"%{normalized_search}%"),
-                    Product.description.ilike(f"%{normalized_search}%"),
-                    Product.origin.ilike(f"%{normalized_search}%"),
+                    Product.name.ilike(f"%{safe_normalized}%"),
+                    Product.description.ilike(f"%{safe_normalized}%"),
+                    Product.origin.ilike(f"%{safe_normalized}%"),
                 ]
             )
 
             query = query.filter(db.or_(*search_conditions))
+        
+        # Aplicar ordenação
+        if order_by == "sca_score":
+            if ascending:
+                query = query.order_by(Product.sca_score.asc())
+            else:
+                query = query.order_by(Product.sca_score.desc())
+        elif order_by == "price":
+            if ascending:
+                query = query.order_by(Product.price.asc())
+            else:
+                query = query.order_by(Product.price.desc())
+        elif order_by == "name":
+            if ascending:
+                query = query.order_by(Product.name.asc())
+            else:
+                query = query.order_by(Product.name.desc())
+        else:  # default to created_at
+            if ascending:
+                query = query.order_by(Product.created_at.asc())
+            else:
+                query = query.order_by(Product.created_at.desc())
+        
+        # Se limit foi especificado, usar limit ao invés de paginação
+        if limit:
+            products = query.limit(limit).all()
+            return jsonify(
+                {
+                    "products": [
+                        {
+                            "id": product.id,
+                            "name": product.name,
+                            "description": product.description,
+                            "price": float(product.price),
+                            "image_url": product.image_url,
+                            "category": (
+                                product.category.name if hasattr(product.category, 'name') else product.category
+                            ),
+                            "origin": product.origin,
+                            "flavor_notes": (
+                                product.flavor_notes.split(", ")
+                                if product.flavor_notes
+                                else []
+                            ),
+                            "sca_score": product.sca_score,
+                            "weight": product.weight,
+                            "stock_quantity": product.stock_quantity,
+                            "stock": product.stock_quantity,  # Alias para compatibilidade com MarketplacePage
+                            "is_active": product.is_active,
+                            "is_available": product.is_active and (product.stock_quantity or 0) > 0,
+                            "is_featured": product.is_featured,
+                            "in_stock": product.in_stock,
+                            "promotional_price": float(product.promotional_price) if product.promotional_price else None,
+                            "average_rating": product.average_rating,
+                            "total_reviews": product.total_reviews,
+                            "product_prices": [
+                                {
+                                    "id": str(price.id),
+                                    "weight": price.weight,
+                                    "price": float(price.price),
+                                    "stock_quantity": price.stock_quantity,
+                                    "is_active": price.is_active
+                                }
+                                for price in product.prices if price.is_active
+                            ] if hasattr(product, 'prices') else []
+                        }
+                        for product in products
+                    ]
+                }
+            )
 
-        products = query.paginate(page=page, per_page=per_page, error_out=False)
+        products = query.paginate(page = page, per_page = per_page, error_out = False)
 
         return jsonify(
             {
@@ -132,7 +217,24 @@ def get_products():
                         "sca_score": product.sca_score,
                         "weight": product.weight,
                         "stock_quantity": product.stock_quantity,
+                        "stock": product.stock_quantity,  # Alias para compatibilidade com MarketplacePage
+                        "is_active": product.is_active,
+                        "is_available": product.is_active and (product.stock_quantity or 0) > 0,
                         "is_featured": product.is_featured,
+                        "in_stock": product.in_stock,
+                        "promotional_price": float(product.promotional_price) if product.promotional_price else None,
+                        "average_rating": product.average_rating,
+                        "total_reviews": product.total_reviews,
+                        "product_prices": [
+                            {
+                                "id": str(price.id),
+                                "weight": price.weight,
+                                "price": float(price.price),
+                                "stock_quantity": price.stock_quantity,
+                                "is_active": price.is_active
+                            }
+                            for price in product.prices if price.is_active
+                        ] if hasattr(product, 'prices') else []
                     }
                     for product in products.items
                 ],
@@ -190,14 +292,14 @@ def debug_products():
             "query": query,
             "variations": generate_search_variations(query),
             "normalized": normalize_search_text(query),
-            "total_products": Product.query.filter_by(is_active=True).count(),
+            "total_products": Product.query.filter_by(is_active = True).count(),
             "products_with_cafe": [],
             "simple_search": [],
         }
 
         # Buscar produtos que contenham "café" no nome
         cafe_products = (
-            Product.query.filter_by(is_active=True)
+            Product.query.filter_by(is_active = True)
             .filter(Product.name.ilike("%café%"))
             .all()
         )
@@ -208,9 +310,11 @@ def debug_products():
         ]
 
         # Busca simples usando uma das variações
+        # Sanitizar query para prevenir SQL injection
+        safe_query = query.replace('%', '\\%').replace('_', '\\_')
         simple_search = (
-            Product.query.filter_by(is_active=True)
-            .filter(Product.name.ilike(f"%{query}%"))
+            Product.query.filter_by(is_active = True)
+            .filter(Product.name.ilike(f"%{safe_query}%"))
             .all()
         )
 
@@ -232,9 +336,9 @@ def get_product_by_id(product_id):
         product_uuid = convert_to_uuid(product_id)
         if not product_uuid:
             return jsonify({"error": "ID de produto inválido"}), 400
-            
-        product = Product.query.filter_by(id=product_uuid, is_active=True).first()
-        
+
+        product = Product.query.filter_by(id = product_uuid, is_active = True).first()
+
         if not product:
             return jsonify({"error": "Produto não encontrado"}), 404
 
@@ -288,6 +392,20 @@ def get_product_by_id(product_id):
                     "updated_at": (
                         product.updated_at.isoformat() if product.updated_at else None
                     ),
+                    "in_stock": product.in_stock,
+                    "promotional_price": float(product.promotional_price) if product.promotional_price else None,
+                    "average_rating": product.average_rating,
+                    "total_reviews": product.total_reviews,
+                    "product_prices": [
+                        {
+                            "id": str(price.id),
+                            "weight": price.weight,
+                            "price": float(price.price),
+                            "stock_quantity": price.stock_quantity,
+                            "is_active": price.is_active
+                        }
+                        for price in product.prices if price.is_active
+                    ] if hasattr(product, 'prices') else []
                 }
             }
         )
@@ -302,9 +420,9 @@ def get_product(product_id):
         product_uuid = convert_to_uuid(product_id)
         if not product_uuid:
             return jsonify({"error": "ID de produto inválido"}), 400
-            
-        product = Product.query.filter_by(id=product_uuid, is_active=True).first()
-        
+
+        product = Product.query.filter_by(id = product_uuid, is_active = True).first()
+
         if not product:
             return jsonify({"error": "Produto não encontrado"}), 404
 
@@ -358,6 +476,20 @@ def get_product(product_id):
                     "updated_at": (
                         product.updated_at.isoformat() if product.updated_at else None
                     ),
+                    "in_stock": product.in_stock,
+                    "promotional_price": float(product.promotional_price) if product.promotional_price else None,
+                    "average_rating": product.average_rating,
+                    "total_reviews": product.total_reviews,
+                    "product_prices": [
+                        {
+                            "id": str(price.id),
+                            "weight": price.weight,
+                            "price": float(price.price),
+                            "stock_quantity": price.stock_quantity,
+                            "is_active": price.is_active
+                        }
+                        for price in product.prices if price.is_active
+                    ] if hasattr(product, 'prices') else []
                 }
             }
         )
@@ -369,7 +501,7 @@ def get_product(product_id):
 @products_bp.route("/categories", methods=["GET"])
 def get_categories():
     try:
-        categories = ProductCategory.query.filter_by(is_active=True).all()
+        categories = ProductCategory.query.filter_by(is_active = True).all()
 
         return jsonify(
             {
@@ -394,7 +526,7 @@ def get_featured_products():
     try:
         # Produtos em destaque (com maior pontuação SCA)
         products = (
-            Product.query.filter_by(is_active=True)
+            Product.query.filter_by(is_active = True)
             .filter(Product.sca_score >= 85)
             .order_by(Product.sca_score.desc())
             .limit(6)
@@ -416,6 +548,10 @@ def get_featured_products():
                         "origin": product.origin,
                         "sca_score": product.sca_score,
                         "weight": product.weight,
+                        "in_stock": product.in_stock,
+                        "promotional_price": float(product.promotional_price) if product.promotional_price else None,
+                        "average_rating": product.average_rating,
+                        "total_reviews": product.total_reviews
                     }
                     for product in products
                 ]
@@ -433,33 +569,39 @@ def search_products():
         if not query:
             return jsonify({"products": []})
 
+        # Sanitizar query para prevenir SQL injection
+        safe_query = query.replace('%', '\\%').replace('_', '\\_')
+        
         # Gerar variações do termo de busca para incluir acentos
-        search_variations = generate_search_variations(query)
-        normalized_query = normalize_search_text(query)
+        search_variations = generate_search_variations(safe_query)
+        normalized_query = normalize_search_text(safe_query)
 
         # Criar condições OR para todas as variações
         search_conditions = []
         for variation in search_variations:
+            # Sanitizar cada variação também
+            safe_variation = variation.replace('%', '\\%').replace('_', '\\_')
             search_conditions.extend(
                 [
-                    Product.name.ilike(f"%{variation}%"),
-                    Product.description.ilike(f"%{variation}%"),
-                    Product.origin.ilike(f"%{variation}%"),
+                    Product.name.ilike(f"%{safe_variation}%"),
+                    Product.description.ilike(f"%{safe_variation}%"),
+                    Product.origin.ilike(f"%{safe_variation}%"),
                 ]
             )
 
         # Adicionar busca com termo normalizado
+        safe_normalized = normalized_query.replace('%', '\\%').replace('_', '\\_')
         search_conditions.extend(
             [
-                Product.name.ilike(f"%{normalized_query}%"),
-                Product.description.ilike(f"%{normalized_query}%"),
-                Product.origin.ilike(f"%{normalized_query}%"),
+                Product.name.ilike(f"%{safe_normalized}%"),
+                Product.description.ilike(f"%{safe_normalized}%"),
+                Product.origin.ilike(f"%{safe_normalized}%"),
             ]
         )
 
         # Busca melhorada com normalização UTF-8
         products = (
-            Product.query.filter_by(is_active=True)
+            Product.query.filter_by(is_active = True)
             .filter(db.or_(*search_conditions))
             .limit(10)
             .all()
@@ -476,6 +618,8 @@ def search_products():
                         "category": (
                             product.category.name if hasattr(product.category, 'name') else product.category
                         ),
+                        "in_stock": product.in_stock,
+                        "promotional_price": float(product.promotional_price) if product.promotional_price else None
                     }
                     for product in products
                 ]
@@ -486,5 +630,4 @@ def search_products():
         return jsonify({"error": str(e)}), 500
 
 
-# Adicionar rotas CRUD
-products_bp = add_product_crud_routes(products_bp)
+# Rotas CRUD removidas - função add_product_crud_routes não existe mais

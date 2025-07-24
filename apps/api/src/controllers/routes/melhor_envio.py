@@ -11,7 +11,6 @@ from services.melhor_envio_service import MelhorEnvioService
 from models.auth import User
 from models.orders import Order
 from models.vendors import Vendor
-from models.customers import Customer
 from database import db
 from utils.validators import validate_uuid
 from utils.logger import logger
@@ -20,22 +19,22 @@ melhor_envio_bp = Blueprint('melhor_envio', __name__)
 
 
 class CalculateShippingSchema(Schema):
-    origin_cep = fields.Str(required=True)
-    destination_cep = fields.Str(required=True)
-    products = fields.List(fields.Dict(), required=True)
+    origin_cep = fields.Str(required = True)
+    destination_cep = fields.Str(required = True)
+    products = fields.List(fields.Dict(), required = True)
 
 
 class CreateShipmentSchema(Schema):
-    order_id = fields.Str(required=True, validate=validate_uuid)
-    service_id = fields.Int(missing=1)  # PAC por padrão
-    agency_id = fields.Int(required=False)
-    insurance = fields.Bool(missing=True)
-    receipt = fields.Bool(missing=False)
-    own_hand = fields.Bool(missing=False)
+    order_id = fields.Str(required = True, validate = validate_uuid)
+    service_id = fields.Int(missing = 1)  # PAC por padrão
+    agency_id = fields.Int(required = False)
+    insurance = fields.Bool(missing = True)
+    receipt = fields.Bool(missing = False)
+    own_hand = fields.Bool(missing = False)
 
 
 class TrackShipmentSchema(Schema):
-    tracking_code = fields.Str(required=True)
+    tracking_code = fields.Str(required = True)
 
 
 @melhor_envio_bp.route('/calculate', methods=['POST'])
@@ -47,15 +46,15 @@ def calculate_shipping():
         # Validação do schema
         schema = CalculateShippingSchema()
         data = schema.load(request.get_json())
-        
+
         # Executar cálculo
         me_service = MelhorEnvioService()
         result = me_service.calculate_shipping(
-            origin_cep=data['origin_cep'],
-            destination_cep=data['destination_cep'],
-            products=data['products']
+            origin_cep = data['origin_cep'],
+            destination_cep = data['destination_cep'],
+            products = data['products']
         )
-        
+
         if result['success']:
             return jsonify({
                 "success": True,
@@ -64,7 +63,7 @@ def calculate_shipping():
             }), 200
         else:
             return jsonify({"error": result.get('error', 'Failed to calculate shipping')}), 400
-            
+
     except ValidationError as e:
         return jsonify({"error": e.messages}), 400
     except Exception as e:
@@ -82,10 +81,10 @@ def get_order_shipping(order_id):
         order = db.session.query(Order).filter(
             Order.id == order_id
         ).first()
-        
+
         if not order:
             return jsonify({"error": "Order not found"}), 404
-        
+
         # Simular dados de frete para demonstração
         shipping_data = {
             "order_id": order_id,
@@ -98,9 +97,9 @@ def get_order_shipping(order_id):
             "shipping_label": None,
             "created_at": order.created_at.isoformat() if order.created_at else None
         }
-        
+
         return jsonify(shipping_data), 200
-        
+
     except Exception as e:
         logger.error(f"Error getting order shipping: {str(e)}")
         return jsonify({"error": "Internal server error"}), 500
@@ -117,63 +116,63 @@ def create_shipment():
         # Validação do schema
         schema = CreateShipmentSchema()
         data = schema.load(request.get_json())
-        
+
         # Verificar se o usuário existe
         current_user_id = get_jwt_identity()
         user = db.session.query(User).filter(User.id == current_user_id).first()
-        
+
         if not user:
             return jsonify({"error": "User not found"}), 404
-        
+
         # Verificar permissões (admin ou vendedor)
         if not user.is_admin and user.role not in ['admin', 'vendor']:
             return jsonify({"error": "Access denied. Admin or vendor role required"}), 403
-        
+
         # Buscar o pedido
         order = db.session.query(Order).filter(
             Order.id == data['order_id']
         ).first()
-        
+
         if not order:
             return jsonify({"error": "Order not found"}), 404
-        
+
         # Verificar se o usuário tem acesso ao pedido
         if user.role == 'vendor':
             vendor = db.session.query(Vendor).filter(Vendor.user_id == user.id).first()
             if not vendor:
                 return jsonify({"error": "Vendor profile not found"}), 404
-            
+
             # Verificar se o pedido contém produtos do vendedor
             has_vendor_products = any(
-                item.product and hasattr(item.product, 'vendor_id') and 
-                item.product.vendor_id == vendor.id 
+                item.product and hasattr(item.product, 'vendor_id') and
+                item.product.vendor_id == vendor.id
                 for item in order.items
             )
-            
+
             if not has_vendor_products:
                 return jsonify({"error": "Access denied. Order does not contain your products"}), 403
-        
+
         # Verificar se já existe tracking code
         if order.tracking_code:
             return jsonify({"error": "Shipment already created for this order"}), 400
-        
+
         # Preparar dados do pedido para envio
         order_data = _prepare_order_data_for_shipment(order, data)
-        
+
         # Criar envio
         me_service = MelhorEnvioService()
         result = me_service.create_shipment(order_data)
-        
+
         if result['success']:
             # Atualizar pedido com dados do envio
             order.tracking_code = result['tracking_code']
             order.status = 'shipped'
             order.shipping_method = result.get('service_name', 'Melhor Envio')
-            
+
             db.session.commit()
-            
+
             logger.info(f"Shipment created for order {order.id}: {result['tracking_code']}")
-            
+
             return jsonify({
                 "success": True,
                 "shipment_id": result['shipment_id'],
@@ -184,7 +183,7 @@ def create_shipment():
             }), 201
         else:
             return jsonify({"error": result['error']}), 400
-            
+
     except ValidationError as e:
         return jsonify({"error": e.messages}), 400
     except Exception as e:
@@ -200,7 +199,7 @@ def track_shipment(tracking_code):
     try:
         me_service = MelhorEnvioService()
         result = me_service.track_shipment(tracking_code)
-        
+
         if result['success']:
             return jsonify({
                 "success": True,
@@ -208,7 +207,7 @@ def track_shipment(tracking_code):
             }), 200
         else:
             return jsonify({"error": result.get('error', 'Failed to track shipment')}), 400
-            
+
     except Exception as e:
         logger.error(f"Error tracking shipment: {str(e)}")
         return jsonify({"error": "Internal server error"}), 500
@@ -224,33 +223,33 @@ def cancel_shipment(shipment_id):
     try:
         current_user_id = get_jwt_identity()
         user = db.session.query(User).filter(User.id == current_user_id).first()
-        
+
         if not user or user.role != 'admin':
             return jsonify({"error": "Admin access required"}), 403
-        
+
         me_service = MelhorEnvioService()
         result = me_service.cancel_shipment(shipment_id)
-        
+
         if result['success']:
             # Buscar e atualizar pedido
             order = db.session.query(Order).filter(
                 Order.tracking_code.like(f'%{shipment_id}%')
             ).first()
-            
+
             if order:
                 order.status = 'cancelled'
                 order.tracking_code = None
                 db.session.commit()
-            
+
             logger.info(f"Shipment {shipment_id} cancelled")
-            
+
             return jsonify({
                 "success": True,
                 "message": "Shipment cancelled successfully"
             }), 200
         else:
             return jsonify({"error": result['error']}), 400
-            
+
     except Exception as e:
         logger.error(f"Error cancelling shipment: {str(e)}")
         return jsonify({"error": "Internal server error"}), 500
@@ -264,13 +263,13 @@ def get_agencies():
     try:
         city = request.args.get('city')
         state = request.args.get('state')
-        
+
         if not city or not state:
             return jsonify({"error": "City and state parameters required"}), 400
-        
+
         me_service = MelhorEnvioService()
         result = me_service.get_agencies(city, state)
-        
+
         if result['success']:
             return jsonify({
                 "success": True,
@@ -278,7 +277,7 @@ def get_agencies():
             }), 200
         else:
             return jsonify({"error": result['error']}), 400
-            
+
     except Exception as e:
         logger.error(f"Error getting agencies: {str(e)}")
         return jsonify({"error": "Internal server error"}), 500
@@ -291,20 +290,20 @@ def webhook():
     """
     try:
         webhook_data = request.get_json()
-        
+
         if not webhook_data:
             return jsonify({"error": "No data received"}), 400
-        
+
         me_service = MelhorEnvioService()
         result = me_service.process_webhook(webhook_data)
-        
+
         if result['success']:
             logger.info(f"Webhook processed successfully: {webhook_data}")
             return jsonify({"status": "ok"}), 200
         else:
             logger.error(f"Error processing webhook: {result['error']}")
             return jsonify({"error": result['error']}), 400
-            
+
     except Exception as e:
         logger.error(f"Error in webhook: {str(e)}")
         return jsonify({"error": "Internal server error"}), 500
@@ -317,16 +316,16 @@ def oauth_callback():
     """
     try:
         code = request.args.get('code')
-        
+
         if not code:
             return jsonify({"error": "Authorization code not provided"}), 400
-        
+
         me_service = MelhorEnvioService()
         result = me_service.authenticate(code)
-        
+
         if result['success']:
             logger.info("Melhor Envio OAuth authentication successful")
-            
+
             # Em produção, você salvaria o token no banco de dados
             # Por enquanto, retornamos para o usuário configurar manualmente
             return jsonify({
@@ -337,7 +336,7 @@ def oauth_callback():
             }), 200
         else:
             return jsonify({"error": result['error']}), 400
-            
+
     except Exception as e:
         logger.error(f"Error in OAuth callback: {str(e)}")
         return jsonify({"error": "Internal server error"}), 500
@@ -352,10 +351,10 @@ def get_shipments():
     try:
         current_user_id = get_jwt_identity()
         user = db.session.query(User).filter(User.id == current_user_id).first()
-        
+
         if not user:
             return jsonify({"error": "User not found"}), 404
-        
+
         # Filtrar por role
         if user.role == 'admin':
             # Admin vê todos os pedidos com tracking
@@ -367,17 +366,17 @@ def get_shipments():
             vendor = db.session.query(Vendor).filter(Vendor.user_id == user.id).first()
             if not vendor:
                 return jsonify({"error": "Vendor profile not found"}), 404
-            
+
             # Buscar pedidos que contêm produtos do vendedor
             orders = []
             all_orders = db.session.query(Order).filter(
                 Order.tracking_code.isnot(None)
             ).all()
-            
+
             for order in all_orders:
                 has_vendor_products = any(
-                    item.product and hasattr(item.product, 'vendor_id') and 
-                    item.product.vendor_id == vendor.id 
+                    item.product and hasattr(item.product, 'vendor_id') and
+                    item.product.vendor_id == vendor.id
                     for item in order.items
                 )
                 if has_vendor_products:
@@ -388,7 +387,7 @@ def get_shipments():
                 Order.user_id == user.id,
                 Order.tracking_code.isnot(None)
             ).order_by(Order.created_at.desc()).all()
-        
+
         # Converter para dict
         shipments = []
         for order in orders:
@@ -402,13 +401,13 @@ def get_shipments():
                 'created_at': order.created_at.isoformat(),
                 'delivered_at': order.delivered_at.isoformat() if order.delivered_at else None
             })
-        
+
         return jsonify({
             "success": True,
             "shipments": shipments,
             "total": len(shipments)
         }), 200
-        
+
     except Exception as e:
         logger.error(f"Error getting shipments: {str(e)}")
         return jsonify({"error": "Internal server error"}), 500
@@ -416,7 +415,7 @@ def get_shipments():
 
 def _prepare_order_data_for_shipment(order: Order, shipment_data: dict) -> dict:
     """Prepara dados do pedido para criação de envio"""
-    
+
     # Dados do cliente
     customer_data = {}
     if order.customer:
@@ -433,7 +432,7 @@ def _prepare_order_data_for_shipment(order: Order, shipment_data: dict) -> dict:
             'customer_phone': getattr(order.user, 'phone', '') or '',
             'customer_document': getattr(order.user, 'document', '') or ''
         }
-    
+
     # Dados do endereço de entrega
     shipping_address = {}
     if order.shipping_address:
@@ -453,12 +452,12 @@ def _prepare_order_data_for_shipment(order: Order, shipment_data: dict) -> dict:
                 'state': 'RS',
                 'postal_code': '97010-000'
             }
-    
+
     # Dados dos produtos
     products = []
     total_weight = 0
     total_value = 0
-    
+
     for item in order.items:
         product_data = {
             'name': item.product_name,
@@ -469,7 +468,7 @@ def _prepare_order_data_for_shipment(order: Order, shipment_data: dict) -> dict:
             'height': 10,
             'length': 15
         }
-        
+
         # Se tiver dados do produto, usar valores reais
         if item.product:
             if hasattr(item.product, 'weight') and item.product.weight:
@@ -480,11 +479,11 @@ def _prepare_order_data_for_shipment(order: Order, shipment_data: dict) -> dict:
                 product_data['height'] = float(item.product.height)
             if hasattr(item.product, 'length') and item.product.length:
                 product_data['length'] = float(item.product.length)
-        
+
         products.append(product_data)
         total_weight += product_data['weight'] * item.quantity
         total_value += product_data['price'] * item.quantity
-    
+
     # Dados do pacote
     package_data = {
         'package_weight': max(total_weight, 0.3),
@@ -492,7 +491,7 @@ def _prepare_order_data_for_shipment(order: Order, shipment_data: dict) -> dict:
         'package_height': 10,
         'package_length': 20
     }
-    
+
     return {
         'order_id': str(order.id),
         'order_number': order.order_number,

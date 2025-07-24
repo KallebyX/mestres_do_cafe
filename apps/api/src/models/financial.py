@@ -23,16 +23,16 @@ from database import db
 class FinancialAccount(db.Model):
     __tablename__ = "financial_accounts"
 
-    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    name = Column(String(255), nullable=False)
-    type = Column(String(50), nullable=False)
-    balance = Column(DECIMAL(12, 2), default=0.00)
+    id = Column(UUID(as_uuid = True), primary_key = True, default = uuid.uuid4)
+    name = Column(String(255), nullable = False)
+    type = Column(String(50), nullable = False)
+    balance = Column(DECIMAL(12, 2), default = 0.00)
     currency = Column(String(3), default="BRL")
     bank_name = Column(String(255))
     account_number = Column(String(50))
-    is_active = Column(Boolean, default=True)
-    created_at = Column(DateTime, default=func.now())
-    updated_at = Column(DateTime, default=func.now(), onupdate=func.now())
+    is_active = Column(Boolean, default = True)
+    created_at = Column(DateTime, default = func.now())
+    updated_at = Column(DateTime, default = func.now(), onupdate = func.now())
 
     def __repr__(self):
         return f"<FinancialAccount(id={self.id}, name={self.name}, type={self.type})>"
@@ -55,23 +55,23 @@ class FinancialAccount(db.Model):
 class FinancialTransaction(db.Model):
     __tablename__ = "financial_transactions"
 
-    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    id = Column(UUID(as_uuid = True), primary_key = True, default = uuid.uuid4)
     account_id = Column(
-        UUID(as_uuid=True), ForeignKey("financial_accounts.id", ondelete="CASCADE")
+        UUID(as_uuid = True), ForeignKey("financial_accounts.id", ondelete="CASCADE")
     )
-    type = Column(String(20), nullable=False)
+    type = Column(String(20), nullable = False)
     category = Column(String(100))
-    amount = Column(DECIMAL(12, 2), nullable=False)
+    amount = Column(DECIMAL(12, 2), nullable = False)
     description = Column(Text)
 
     # Referências
     customer_id = Column(
-        UUID(as_uuid=True), ForeignKey("customers.id", ondelete="SET NULL")
+        UUID(as_uuid = True), ForeignKey("customers.id", ondelete="SET NULL")
     )
-    order_id = Column(UUID(as_uuid=True), ForeignKey("orders.id", ondelete="SET NULL"))
+    order_id = Column(UUID(as_uuid = True), ForeignKey("orders.id", ondelete="SET NULL"))
 
     # Datas
-    transaction_date = Column(Date, nullable=False)
+    transaction_date = Column(Date, nullable = False)
     due_date = Column(Date)
     paid_date = Column(Date)
 
@@ -79,8 +79,8 @@ class FinancialTransaction(db.Model):
     status = Column(String(20), default="pending")
 
     # Controle
-    created_at = Column(DateTime, default=func.now())
-    updated_at = Column(DateTime, default=func.now(), onupdate=func.now())
+    created_at = Column(DateTime, default = func.now())
+    updated_at = Column(DateTime, default = func.now(), onupdate = func.now())
 
     def __repr__(self):
         return f"<FinancialTransaction(id={self.id}, type={self.type}, amount={self.amount})>"

@@ -14,17 +14,17 @@ orders_bp = Blueprint("orders", __name__)
 def get_orders():
     try:
         user_id = request.args.get("user_id")
-        page = request.args.get("page", 1, type=int)
-        per_page = request.args.get("per_page", 10, type=int)
+        page = request.args.get("page", 1, type = int)
+        per_page = request.args.get("per_page", 10, type = int)
 
         # Query otimizada com eager loading
         query = Order.query.options(selectinload(Order.items), joinedload(Order.user))
 
         if user_id:
-            query = query.filter_by(user_id=user_id)
+            query = query.filter_by(user_id = user_id)
 
         orders = query.order_by(Order.created_at.desc()).paginate(
-            page=page, per_page=per_page, error_out=False
+            page = page, per_page = per_page, error_out = False
         )
 
         return jsonify(
@@ -121,12 +121,21 @@ def create_order():
                 product_ids.append(uuid.UUID(item["product_id"]))
             except ValueError:
                 return jsonify({"error": f"ID de produto inválido: {item['product_id']}"}), 400
-        
+
         products = Product.query.filter(Product.id.in_(product_ids)).all()
         products_dict = {p.id: p for p in products}
 
         # Validar produtos e calcular total
         from decimal import Decimal
+        import logging
+        import time
+        import threading
+        
+        # 🔍 RACE CONDITION MONITORING - Configurar logging específico
+        race_logger = logging.getLogger('race_condition_monitor')
+        thread_id = threading.get_ident()
+        timestamp = time.time()
+        
         total_amount = Decimal('0')
         order_items = []
 
@@ -139,12 +148,16 @@ def create_order():
                 product_uuid = uuid.UUID(product_id)
             except ValueError:
                 return jsonify({"error": f"ID de produto inválido: {product_id}"}), 400
-                
+
             product = products_dict.get(product_uuid)
             if not product:
                 return jsonify({"error": f"Produto {product_id} não encontrado"}), 404
 
+            # 🔍 RACE CONDITION LOG - Estado do estoque ANTES da verificação
+            race_logger.warning(f"🔍 STOCK_CHECK [Thread:{thread_id}] [Time:{timestamp:.3f}] Product:{product.name} Stock_Before:{product.stock_quantity} Requested:{quantity}")
+
             if product.stock_quantity < quantity:
+                race_logger.warning(f"❌ STOCK_INSUFFICIENT [Thread:{thread_id}] Product:{product.name} Available:{product.stock_quantity} Requested:{quantity}")
                 return (
                     jsonify({"error": f"Estoque insuficiente para {product.name}"}),
                     400,
@@ -164,33 +177,73 @@ def create_order():
 
         # Gerar número do pedido
         order_number = f"MC{str(int(db.session.query(func.count(Order.id)).scalar() or 0) + 1).zfill(6)}"
-        
+
+        # 🔍 RACE CONDITION LOG - Início da transação crítica
+        race_logger.warning(f"🔒 TRANSACTION_START [Thread:{thread_id}] [Order:{order_number}] Items:{len(order_items)}")
+
         # Criar pedido
         order = Order(
-            order_number=order_number,
-            user_id=user_id,
-            total_amount=total_amount,
-            subtotal=total_amount,
-            shipping_address=shipping_address,
+            order_number = order_number,
+            user_id = user_id,
+            total_amount = total_amount,
+            subtotal = total_amount,
+            shipping_address = shipping_address,
         )
 
         db.session.add(order)
         db.session.flush()  # Para obter o ID do pedido
 
-        # Criar itens do pedido em batch
-        for item_data in order_items:
-            order_item = OrderItem(
-                order_id=order.id,
-                product_id=item_data["product"].id,
-                product_name=item_data["product"].name,
-                quantity=item_data["quantity"],
-                unit_price=item_data["unit_price"],
-                total_price=item_data["total_price"],
-            )
-            db.session.add(order_item)
-
-            # Atualizar estoque
-            item_data["product"].stock_quantity -= item_data["quantity"]
+        # 🔒 CORREÇÃO DE RACE CONDITION - Usar transação atômica com SELECT FOR UPDATE
+        try:
+            # 🔒 TRANSAÇÃO ATÔMICA - BEGIN
+            race_logger.info(f"🔒 ATOMIC_TRANSACTION_START [Thread:{thread_id}] [Order:{order_number}] - Beginning stock update transaction")
+            
+            # Validar e atualizar estoque atomicamente com locks pessimistas
+            for item_data in order_items:
+                product_id = item_data["product"].id
+                quantity = item_data["quantity"]
+                
+                # 🔒 SELECT FOR UPDATE - Lock pessimista para evitar race conditions
+                product_locked = db.session.query(Product).filter(
+                    Product.id == product_id
+                ).with_for_update().first()
+                
+                if not product_locked:
+                    race_logger.error(f"❌ PRODUCT_NOT_FOUND_IN_TRANSACTION [Thread:{thread_id}] ProductID:{product_id}")
+                    raise ValueError(f"Produto {product_id} não encontrado durante transação")
+                
+                race_logger.info(f"🔒 STOCK_LOCKED [Thread:{thread_id}] Product:{product_locked.name} CurrentStock:{product_locked.stock_quantity} RequestedQty:{quantity}")
+                
+                # Verificar estoque dentro da transação (dados atualizados)
+                if product_locked.stock_quantity < quantity:
+                    race_logger.error(f"❌ INSUFFICIENT_STOCK_ATOMIC [Thread:{thread_id}] Product:{product_locked.name} Available:{product_locked.stock_quantity} Requested:{quantity}")
+                    raise ValueError(f"Estoque insuficiente para {product_locked.name}. Disponível: {product_locked.stock_quantity}")
+                
+                # Atualização atômica do estoque
+                old_stock = product_locked.stock_quantity
+                product_locked.stock_quantity -= quantity
+                new_stock = product_locked.stock_quantity
+                
+                race_logger.info(f"✅ ATOMIC_STOCK_UPDATE [Thread:{thread_id}] Product:{product_locked.name} StockChange:{old_stock}→{new_stock}")
+                
+                # Criar item do pedido
+                order_item = OrderItem(
+                    order_id = order.id,
+                    product_id = product_locked.id,
+                    product_name = product_locked.name,
+                    quantity = quantity,
+                    unit_price = item_data["unit_price"],
+                    total_price = item_data["total_price"],
+                )
+                db.session.add(order_item)
+            
+            # 🔒 Log de sucesso da transação atômica
+            race_logger.info(f"🔒 ATOMIC_STOCK_UPDATES_COMPLETE [Thread:{thread_id}] - All stock updates completed successfully")
+                
+        except Exception as e:
+            race_logger.error(f"💥 ATOMIC_TRANSACTION_FAILED [Thread:{thread_id}] Error:{str(e)}")
+            db.session.rollback()
+            return jsonify({"error": f"Falha na atualização de estoque: {str(e)}"}), 400
 
         # Adicionar pontos ao usuário
         points_earned = int(float(total_amount))

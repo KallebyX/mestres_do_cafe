@@ -1,8 +1,6 @@
 from flask import Blueprint, jsonify, request
-from sqlalchemy import func
 
-from database import db
-from models import Order, User, UserPoints
+from models import Order, User
 
 dashboard_bp = Blueprint("dashboard", __name__)
 
@@ -15,26 +13,21 @@ def get_user_dashboard(user_id):
             return jsonify({"error": "Usuário não encontrado"}), 404
 
         # Estatísticas do usuário
-        total_orders = Order.query.filter_by(user_id=user_id).count()
+        total_orders = Order.query.filter_by(user_id = user_id).count()
         completed_orders = Order.query.filter_by(
-            user_id=user_id, status="completed"
+            user_id = user_id, status="completed"
         ).count()
 
         # Últimos pedidos
         recent_orders = (
-            Order.query.filter_by(user_id=user_id)
+            Order.query.filter_by(user_id = user_id)
             .order_by(Order.created_at.desc())
             .limit(5)
             .all()
         )
 
-        # Histórico de pontos recente
-        recent_points = (
-            UserPoints.query.filter_by(user_id=user_id)
-            .order_by(UserPoints.created_at.desc())
-            .limit(5)
-            .all()
-        )
+        # REMOVIDO: Histórico de pontos - UserPoints não existe mais
+        recent_points = []
 
         return jsonify(
             {

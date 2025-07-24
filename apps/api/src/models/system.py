@@ -14,14 +14,14 @@ from database import db
 class SystemSetting(db.Model):
     __tablename__ = "system_settings"
 
-    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    key = Column(String(255), unique=True, nullable=False)
+    id = Column(UUID(as_uuid = True), primary_key = True, default = uuid.uuid4)
+    key = Column(String(255), unique = True, nullable = False)
     value = Column(Text)
     type = Column(String(20), default="string")
     description = Column(Text)
-    is_active = Column(Boolean, default=True)
-    created_at = Column(DateTime, default=func.now())
-    updated_at = Column(DateTime, default=func.now(), onupdate=func.now())
+    is_active = Column(Boolean, default = True)
+    created_at = Column(DateTime, default = func.now())
+    updated_at = Column(DateTime, default = func.now(), onupdate = func.now())
 
     def __repr__(self):
         return f"<SystemSetting(id={self.id}, key={self.key})>"
@@ -42,9 +42,9 @@ class SystemSetting(db.Model):
 class SystemLog(db.Model):
     __tablename__ = "system_logs"
 
-    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    level = Column(String(20), nullable=False)
-    message = Column(Text, nullable=False)
+    id = Column(UUID(as_uuid = True), primary_key = True, default = uuid.uuid4)
+    level = Column(String(20), nullable = False)
+    message = Column(Text, nullable = False)
     module = Column(String(100))
     function = Column(String(100))
     line_number = Column(String(10))
@@ -52,10 +52,10 @@ class SystemLog(db.Model):
     exception_message = Column(Text)
     stack_trace = Column(Text)
     request_id = Column(String(100))
-    user_id = Column(UUID(as_uuid=True), ForeignKey("users.id", ondelete="SET NULL"))
+    user_id = Column(UUID(as_uuid = True), ForeignKey("users.id", ondelete="SET NULL"))
     ip_address = Column(String(45))
     user_agent = Column(Text)
-    created_at = Column(DateTime, default=func.now())
+    created_at = Column(DateTime, default = func.now())
 
     def __repr__(self):
         return f"<SystemLog(id={self.id}, level={self.level}, message={self.message[:50]})>"
@@ -82,16 +82,16 @@ class SystemLog(db.Model):
 class AuditLog(db.Model):
     __tablename__ = "audit_logs"
 
-    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    user_id = Column(UUID(as_uuid=True), ForeignKey("users.id", ondelete="SET NULL"))
-    table_name = Column(String(100), nullable=False)
-    record_id = Column(String(100), nullable=False)
-    action = Column(String(20), nullable=False)
+    id = Column(UUID(as_uuid = True), primary_key = True, default = uuid.uuid4)
+    user_id = Column(UUID(as_uuid = True), ForeignKey("users.id", ondelete="SET NULL"))
+    table_name = Column(String(100), nullable = False)
+    record_id = Column(String(100), nullable = False)
+    action = Column(String(20), nullable = False)
     old_values = Column(Text)
     new_values = Column(Text)
     ip_address = Column(String(45))
     user_agent = Column(Text)
-    created_at = Column(DateTime, default=func.now())
+    created_at = Column(DateTime, default = func.now())
 
     def __repr__(self):
         return (

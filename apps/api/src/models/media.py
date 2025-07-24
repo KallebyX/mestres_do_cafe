@@ -14,28 +14,29 @@ from database import db
 class MediaFile(db.Model):
     __tablename__ = "media_files"
 
-    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    filename = Column(String(255), nullable=False)
-    original_filename = Column(String(255), nullable=False)
-    file_path = Column(Text, nullable=False)
-    file_url = Column(Text, nullable=False)
-    file_size = Column(Integer, nullable=False)
-    file_type = Column(String(50), nullable=False)
-    mime_type = Column(String(100), nullable=False)
+    id = Column(UUID(as_uuid = True), primary_key = True, default = uuid.uuid4)
+    filename = Column(String(255), nullable = False)
+    original_filename = Column(String(255), nullable = False)
+    file_path = Column(Text, nullable = False)
+    file_url = Column(Text, nullable = False)
+    file_size = Column(Integer, nullable = False)
+    file_type = Column(String(50), nullable = False)
+    mime_type = Column(String(100), nullable = False)
 
     # Associações
     product_id = Column(
-        UUID(as_uuid=True), ForeignKey("products.id", ondelete="SET NULL")
+        UUID(as_uuid = True), ForeignKey("products.id", ondelete="SET NULL")
     )
-    blog_post_id = Column(
-        UUID(as_uuid=True), ForeignKey("blog_posts.id", ondelete="SET NULL")
-    )
+    # TODO: Implementar blog_posts quando necessário
+    # blog_post_id = Column(
+    #     UUID(as_uuid = True), ForeignKey("blog_posts.id", ondelete="SET NULL")
+    # )
 
     # Metadados
     alt_text = Column(Text)
     description = Column(Text)
 
-    created_at = Column(DateTime, default=func.now())
+    created_at = Column(DateTime, default = func.now())
 
     def __repr__(self):
         return f"<MediaFile(id={self.id}, filename={self.filename}, file_type={self.file_type})>"

@@ -12,20 +12,20 @@ coupons_bp = Blueprint("coupons", __name__, url_prefix="/api/coupons")
 def get_coupons():
     """Lista todos os cupons"""
     try:
-        page = request.args.get("page", 1, type=int)
-        per_page = request.args.get("per_page", 10, type=int)
+        page = request.args.get("page", 1, type = int)
+        per_page = request.args.get("per_page", 10, type = int)
         status = request.args.get("status")
         coupon_type = request.args.get("type")
 
         query = Coupon.query
 
         if status:
-            query = query.filter_by(status=status)
+            query = query.filter_by(status = status)
         if coupon_type:
-            query = query.filter_by(coupon_type=coupon_type)
+            query = query.filter_by(coupon_type = coupon_type)
 
         coupons = query.order_by(Coupon.created_at.desc()).paginate(
-            page=page, per_page=per_page, error_out=False
+            page = page, per_page = per_page, error_out = False
         )
 
         return jsonify(
@@ -57,16 +57,16 @@ def create_coupon():
                 return jsonify({"error": f"Campo obrigatório: {field}"}), 400
 
         # Verificar se código já existe
-        existing_coupon = Coupon.query.filter_by(code=data["code"]).first()
+        existing_coupon = Coupon.query.filter_by(code = data["code"]).first()
         if existing_coupon:
             return jsonify({"error": "Código do cupom já existe"}), 400
 
         coupon = Coupon(
-            code=data["code"],
-            coupon_type=data["coupon_type"],
-            discount_value=data["discount_value"],
-            minimum_order=data.get("minimum_order", 0),
-            usage_limit=data.get("usage_limit"),
+            code = data["code"],
+            coupon_type = data["coupon_type"],
+            discount_value = data["discount_value"],
+            minimum_order = data.get("minimum_order", 0),
+            usage_limit = data.get("usage_limit"),
             valid_from=(
                 datetime.strptime(data["valid_from"], "%Y-%m-%d").date()
                 if data.get("valid_from")
@@ -77,9 +77,9 @@ def create_coupon():
                 if data.get("valid_until")
                 else None
             ),
-            description=data.get("description"),
-            first_purchase_only=data.get("first_purchase_only", False),
-            customer_usage_limit=data.get("customer_usage_limit", 1),
+            description = data.get("description"),
+            first_purchase_only = data.get("first_purchase_only", False),
+            customer_usage_limit = data.get("customer_usage_limit", 1),
         )
 
         db.session.add(coupon)
@@ -171,7 +171,7 @@ def validate_coupon(code):
         customer_id = data.get("customer_id")
         order_value = data.get("order_value", 0)
 
-        coupon = Coupon.query.filter_by(code=code).first()
+        coupon = Coupon.query.filter_by(code = code).first()
         if not coupon:
             return jsonify({"error": "Cupom não encontrado"}), 404
 
@@ -198,14 +198,14 @@ def validate_coupon(code):
 
         # Verificar limite de uso geral
         if coupon.usage_limit:
-            usage_count = CouponUsage.query.filter_by(coupon_id=coupon.id).count()
+            usage_count = CouponUsage.query.filter_by(coupon_id = coupon.id).count()
             if usage_count >= coupon.usage_limit:
                 return jsonify({"error": "Limite de uso do cupom atingido"}), 400
 
         # Verificar limite de uso por cliente
         if customer_id and coupon.customer_usage_limit:
             customer_usage = CouponUsage.query.filter_by(
-                coupon_id=coupon.id, customer_id=customer_id
+                coupon_id = coupon.id, customer_id = customer_id
             ).count()
             if customer_usage >= coupon.customer_usage_limit:
                 return (
@@ -246,7 +246,7 @@ def apply_coupon():
             if field not in data:
                 return jsonify({"error": f"Campo obrigatório: {field}"}), 400
 
-        coupon = Coupon.query.filter_by(code=data["code"]).first()
+        coupon = Coupon.query.filter_by(code = data["code"]).first()
         if not coupon:
             return jsonify({"error": "Cupom não encontrado"}), 404
 
@@ -257,10 +257,10 @@ def apply_coupon():
 
         # Criar registro de uso
         usage = CouponUsage(
-            coupon_id=coupon.id,
-            customer_id=data["customer_id"],
-            order_id=data["order_id"],
-            discount_amount=validation_response[0].json["discount_amount"],
+            coupon_id = coupon.id,
+            customer_id = data["customer_id"],
+            order_id = data["order_id"],
+            discount_amount = validation_response[0].json["discount_amount"],
         )
 
         db.session.add(usage)
@@ -341,13 +341,13 @@ def get_coupons_analytics():
 def get_coupon_usage(coupon_id):
     """Lista uso de um cupom específico"""
     try:
-        page = request.args.get("page", 1, type=int)
-        per_page = request.args.get("per_page", 10, type=int)
+        page = request.args.get("page", 1, type = int)
+        per_page = request.args.get("per_page", 10, type = int)
 
         usage = (
-            CouponUsage.query.filter_by(coupon_id=coupon_id)
+            CouponUsage.query.filter_by(coupon_id = coupon_id)
             .order_by(CouponUsage.created_at.desc())
-            .paginate(page=page, per_page=per_page, error_out=False)
+            .paginate(page = page, per_page = per_page, error_out = False)
         )
 
         return jsonify(

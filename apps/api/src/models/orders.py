@@ -43,11 +43,11 @@ class PaymentStatus(Enum):
 class Order(db.Model):
     __tablename__ = "orders"
 
-    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    order_number = Column(String(50), unique=True, nullable=False)
-    user_id = Column(UUID(as_uuid=True), ForeignKey("users.id", ondelete="SET NULL"))
+    id = Column(UUID(as_uuid = True), primary_key = True, default = uuid.uuid4)
+    order_number = Column(String(50), unique = True, nullable = False)
+    user_id = Column(UUID(as_uuid = True), ForeignKey("users.id", ondelete="SET NULL"))
     customer_id = Column(
-        UUID(as_uuid=True), ForeignKey("customers.id", ondelete="SET NULL")
+        UUID(as_uuid = True), ForeignKey("customers.id", ondelete="SET NULL")
     )
 
     # Status
@@ -55,15 +55,15 @@ class Order(db.Model):
     payment_status = Column(String(20), default="pending")
 
     # Valores
-    subtotal = Column(DECIMAL(10, 2), nullable=False)
-    discount_amount = Column(DECIMAL(10, 2), default=0.00)
-    shipping_cost = Column(DECIMAL(10, 2), default=0.00)
-    tax_amount = Column(DECIMAL(10, 2), default=0.00)
-    total_amount = Column(DECIMAL(10, 2), nullable=False)
+    subtotal = Column(DECIMAL(10, 2), nullable = False)
+    discount_amount = Column(DECIMAL(10, 2), default = 0.00)
+    shipping_cost = Column(DECIMAL(10, 2), default = 0.00)
+    tax_amount = Column(DECIMAL(10, 2), default = 0.00)
+    total_amount = Column(DECIMAL(10, 2), nullable = False)
 
     # Cupom
     coupon_code = Column(String(50))
-    coupon_discount = Column(DECIMAL(10, 2), default=0.00)
+    coupon_discount = Column(DECIMAL(10, 2), default = 0.00)
 
     # Endereço (JSON como TEXT para compatibilidade)
     shipping_address = Column(Text)
@@ -80,8 +80,8 @@ class Order(db.Model):
     admin_notes = Column(Text)
 
     # Controle
-    created_at = Column(DateTime, default=func.now())
-    updated_at = Column(DateTime, default=func.now(), onupdate=func.now())
+    created_at = Column(DateTime, default = func.now())
+    updated_at = Column(DateTime, default = func.now(), onupdate = func.now())
 
     # Relacionamentos
     user = relationship("User", back_populates="orders")
@@ -135,29 +135,29 @@ class Order(db.Model):
 class OrderItem(db.Model):
     __tablename__ = "order_items"
 
-    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    order_id = Column(UUID(as_uuid=True), ForeignKey("orders.id", ondelete="CASCADE"))
+    id = Column(UUID(as_uuid = True), primary_key = True, default = uuid.uuid4)
+    order_id = Column(UUID(as_uuid = True), ForeignKey("orders.id", ondelete="CASCADE"))
     product_id = Column(
-        UUID(as_uuid=True), ForeignKey("products.id", ondelete="SET NULL")
+        UUID(as_uuid = True), ForeignKey("products.id", ondelete="SET NULL")
     )
     variant_id = Column(
-        UUID(as_uuid=True), ForeignKey("product_variants.id", ondelete="SET NULL")
+        UUID(as_uuid = True), ForeignKey("product_variants.id", ondelete="SET NULL")
     )
 
     # Dados do produto no momento do pedido
-    product_name = Column(String(255), nullable=False)
+    product_name = Column(String(255), nullable = False)
     product_sku = Column(String(100))
     product_image = Column(Text)
 
     # Quantidade e preços
-    quantity = Column(Integer, nullable=False)
-    unit_price = Column(DECIMAL(10, 2), nullable=False)
-    total_price = Column(DECIMAL(10, 2), nullable=False)
+    quantity = Column(Integer, nullable = False)
+    unit_price = Column(DECIMAL(10, 2), nullable = False)
+    total_price = Column(DECIMAL(10, 2), nullable = False)
 
     # Metadados
     product_data = Column(Text)  # JSON como TEXT
 
-    created_at = Column(DateTime, default=func.now())
+    created_at = Column(DateTime, default = func.now())
 
     # Relacionamentos
     order = relationship("Order", back_populates="items")
@@ -187,11 +187,11 @@ class OrderItem(db.Model):
 class Cart(db.Model):
     __tablename__ = "carts"
 
-    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    user_id = Column(UUID(as_uuid=True), ForeignKey("users.id", ondelete="CASCADE"))
+    id = Column(UUID(as_uuid = True), primary_key = True, default = uuid.uuid4)
+    user_id = Column(UUID(as_uuid = True), ForeignKey("users.id", ondelete="CASCADE"))
     session_id = Column(String(255))
-    created_at = Column(DateTime, default=func.now())
-    updated_at = Column(DateTime, default=func.now(), onupdate=func.now())
+    created_at = Column(DateTime, default = func.now())
+    updated_at = Column(DateTime, default = func.now(), onupdate = func.now())
 
     # Relacionamentos
     user = relationship("User")
@@ -213,22 +213,22 @@ class Cart(db.Model):
 class CartItem(db.Model):
     __tablename__ = "cart_items"
 
-    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    id = Column(UUID(as_uuid = True), primary_key = True, default = uuid.uuid4)
     cart_id = Column(
-        UUID(as_uuid=True), ForeignKey("carts.id", ondelete="CASCADE"), nullable=False
+        UUID(as_uuid = True), ForeignKey("carts.id", ondelete="CASCADE"), nullable = False
     )
-    user_id = Column(UUID(as_uuid=True), ForeignKey("users.id", ondelete="CASCADE"))
+    user_id = Column(UUID(as_uuid = True), ForeignKey("users.id", ondelete="CASCADE"))
     session_id = Column(String(255))
     product_id = Column(
-        UUID(as_uuid=True), ForeignKey("products.id", ondelete="CASCADE")
+        UUID(as_uuid = True), ForeignKey("products.id", ondelete="CASCADE")
     )
     variant_id = Column(
-        UUID(as_uuid=True), ForeignKey("product_variants.id", ondelete="SET NULL")
+        UUID(as_uuid = True), ForeignKey("product_variants.id", ondelete="SET NULL")
     )
-    quantity = Column(Integer, nullable=False)
-    added_at = Column(DateTime, default=func.now())
-    created_at = Column(DateTime, default=func.now())
-    updated_at = Column(DateTime, default=func.now(), onupdate=func.now())
+    quantity = Column(Integer, nullable = False)
+    added_at = Column(DateTime, default = func.now())
+    created_at = Column(DateTime, default = func.now())
+    updated_at = Column(DateTime, default = func.now(), onupdate = func.now())
 
     # Relacionamentos
     cart = relationship("Cart", back_populates="items")
@@ -257,13 +257,13 @@ class CartItem(db.Model):
 class AbandonedCart(db.Model):
     __tablename__ = "abandoned_carts"
 
-    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    user_id = Column(UUID(as_uuid=True), ForeignKey("users.id", ondelete="CASCADE"))
-    cart_data = Column(Text, nullable=False)  # JSON como TEXT
+    id = Column(UUID(as_uuid = True), primary_key = True, default = uuid.uuid4)
+    user_id = Column(UUID(as_uuid = True), ForeignKey("users.id", ondelete="CASCADE"))
+    cart_data = Column(Text, nullable = False)  # JSON como TEXT
     total_amount = Column(DECIMAL(10, 2))
-    recovery_email_sent = Column(Boolean, default=False)
+    recovery_email_sent = Column(Boolean, default = False)
     recovered_at = Column(DateTime)
-    created_at = Column(DateTime, default=func.now())
+    created_at = Column(DateTime, default = func.now())
 
     def __repr__(self):
         return f"<AbandonedCart(id={self.id}, user_id={self.user_id}, total_amount={self.total_amount})>"

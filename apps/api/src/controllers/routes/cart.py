@@ -1,6 +1,7 @@
 from datetime import datetime
 
 from flask import Blueprint, jsonify, request
+from flask_jwt_extended import jwt_required, get_jwt_identity
 
 from database import db
 from models.orders import Cart, CartItem
@@ -13,22 +14,35 @@ cart_bp = Blueprint("cart", __name__, url_prefix="/api/cart")
 
 
 @cart_bp.route("/", methods=["GET"])
+@jwt_required()
 def get_cart():
-    """Obter carrinho do usuário"""
+    """Obter carrinho do usuário autenticado via JWT"""
     try:
-        user_id = request.args.get("user_id")
+        # 🔍 DIAGNÓSTICO CARRINHO - Log de acesso
+        from flask import request
+        import logging
+        logger = logging.getLogger('mestres_cafe')
+        logger.warning(f"🔍 CART ACCESS - Headers: {dict(request.headers)}")
+        logger.warning(f"🔍 CART ACCESS - User-Agent: {request.headers.get('User-Agent', 'Unknown')}")
+        logger.warning(f"🔍 CART ACCESS - Authorization: {bool(request.headers.get('Authorization'))}")
+        
+        # 🔒 Obter user_id automaticamente via JWT
+        user_id = get_jwt_identity()
         if not user_id:
             return jsonify({
-                "message": "Carrinho vazio - user_id é obrigatório",
-                "items": [],
-                "total": 0,
-                "items_count": 0
-            }), 200
+                "success": False,
+                "message": "Token JWT inválido",
+                "data": {"items": [], "total": 0, "items_count": 0}
+            }), 401
 
         # Buscar ou criar carrinho do usuário
-        cart = Cart.query.filter_by(user_id=user_id).first()
+        cart = Cart.query.filter_by(user_id = user_id).first()
         if not cart:
-            return jsonify({"items": [], "total": 0, "items_count": 0})
+            return jsonify({
+                "success": True,
+                "message": "Carrinho vazio",
+                "data": {"items": [], "total": 0, "items_count": 0}
+            }), 200
 
         # Buscar itens do carrinho com detalhes do produto
         cart_items = (
@@ -70,10 +84,18 @@ def get_cart():
                 }
             )
 
-        return jsonify({"items": items, "total": total, "items_count": len(items)})
+        return jsonify({
+            "success": True,
+            "message": "Carrinho obtido com sucesso",
+            "data": {"items": items, "total": total, "items_count": len(items)}
+        }), 200
 
     except Exception as e:
-        return jsonify({"error": str(e)}), 500
+        return jsonify({
+            "success": False,
+            "message": "Erro interno do servidor",
+            "error": str(e)
+        }), 500
 
 
 @cart_bp.route("/items", methods=["GET"])
@@ -85,7 +107,7 @@ def get_cart_items():
             return jsonify({"error": "user_id é obrigatório"}), 400
 
         # Buscar ou criar carrinho do usuário
-        cart = Cart.query.filter_by(user_id=user_id).first()
+        cart = Cart.query.filter_by(user_id = user_id).first()
         if not cart:
             return jsonify({"items": [], "total": 0, "items_count": 0})
 
@@ -135,119 +157,334 @@ def get_cart_items():
         return jsonify({"error": str(e)}), 500
 
 
-@cart_bp.route("/items", methods=["POST"])
+@cart_bp.route("/add", methods=["POST"])
+@jwt_required()
 def add_to_cart():
-    """Adicionar produto ao carrinho"""
+    """Adicionar produto ao carrinho (JWT automático)"""
     try:
+        # 🔒 Obter user_id automaticamente via JWT
+        user_id = get_jwt_identity()
+        if not user_id:
+            return jsonify({
+                "success": False,
+                "message": "Token JWT inválido"
+            }), 401
+
         data = request.get_json()
-        user_id = data.get("user_id")
         product_id = data.get("product_id")
         quantity = data.get("quantity", 1)
 
-        if not user_id or not product_id:
-            return jsonify({"error": "user_id e product_id são obrigatórios"}), 400
+        if not product_id:
+            return jsonify({
+                "success": False,
+                "message": "product_id é obrigatório"
+            }), 400
+
+        # Validar quantidade
+        if quantity <= 0:
+            return jsonify({
+                "success": False,
+                "message": "Quantidade deve ser maior que zero"
+            }), 400
 
         # Verificar se o produto existe e está ativo
-        product = Product.query.filter_by(id=product_id, is_active=True).first()
+        product = Product.query.filter_by(id = product_id, is_active = True).first()
         if not product:
-            return jsonify({"error": "Produto não encontrado ou inativo"}), 404
+            return jsonify({
+                "success": False,
+                "message": "Produto não encontrado ou inativo"
+            }), 404
 
-        # Buscar ou criar carrinho do usuário
-        cart = Cart.query.filter_by(user_id=user_id).first()
-        if not cart:
-            cart = Cart(user_id=user_id)
-            db.session.add(cart)
-            db.session.flush()
+        # 🔒 CORREÇÃO DE RACE CONDITION - Usar transação atômica para carrinho
+        import logging
+        import time
+        import threading
+        
+        race_logger = logging.getLogger('race_condition_monitor')
+        thread_id = threading.get_ident()
+        timestamp = time.time()
+        
+        try:
+            race_logger.info(f"🔒 CART_ATOMIC_TRANSACTION_START [Thread:{thread_id}] Product:{product.name}")
+            
+            # 🔒 SELECT FOR UPDATE - Lock pessimista no produto para verificação de estoque
+            product_locked = db.session.query(Product).filter(
+                Product.id == product_id,
+                Product.is_active == True
+            ).with_for_update().first()
+            
+            if not product_locked:
+                race_logger.error(f"❌ CART_PRODUCT_NOT_FOUND [Thread:{thread_id}] ProductID:{product_id}")
+                return jsonify({
+                    "success": False,
+                    "message": "Produto não encontrado"
+                }), 404
+            
+            race_logger.info(f"🔒 CART_PRODUCT_LOCKED [Thread:{thread_id}] Product:{product_locked.name} Stock:{product_locked.stock_quantity}")
+            
+            # Verificar estoque dentro da transação (dados atualizados)
+            if product_locked.stock_quantity < quantity:
+                race_logger.warning(f"❌ CART_STOCK_INSUFFICIENT_ATOMIC [Thread:{thread_id}] Product:{product_locked.name} Available:{product_locked.stock_quantity} Requested:{quantity}")
+                return jsonify({
+                    "success": False,
+                    "message": f"Estoque insuficiente. Disponível: {product_locked.stock_quantity}"
+                }), 400
+            
+            # Buscar ou criar carrinho do usuário
+            cart = Cart.query.filter_by(user_id = user_id).first()
+            if not cart:
+                cart = Cart(user_id = user_id)
+                db.session.add(cart)
+                db.session.flush()
+            
+            # Verificar se já existe no carrinho (com lock se necessário)
+            existing_item = CartItem.query.filter_by(
+                cart_id = cart.id, product_id = product_id
+            ).first()
+            
+            if existing_item:
+                # Item já existe - verificar quantidade total dentro da transação
+                current_in_cart = existing_item.quantity
+                new_quantity = current_in_cart + quantity
+                
+                race_logger.info(f"🔄 CART_UPDATE_EXISTING_ATOMIC [Thread:{thread_id}] Product:{product_locked.name} CurrentInCart:{current_in_cart} Adding:{quantity} NewTotal:{new_quantity}")
+                
+                # Verificar se a nova quantidade não excede o estoque (dados atualizados)
+                if new_quantity > product_locked.stock_quantity:
+                    race_logger.warning(f"❌ CART_TOTAL_EXCEEDS_STOCK_ATOMIC [Thread:{thread_id}] Product:{product_locked.name} RequestedTotal:{new_quantity} Available:{product_locked.stock_quantity}")
+                    return jsonify({
+                        "success": False,
+                        "message": f"Quantidade total excede estoque. Máximo: {product_locked.stock_quantity}, atual no carrinho: {existing_item.quantity}"
+                    }), 400
+                
+                # Atualizar quantidade atomicamente
+                existing_item.quantity = new_quantity
+                existing_item.updated_at = datetime.utcnow()
+                
+                race_logger.info(f"✅ CART_UPDATE_SUCCESS_ATOMIC [Thread:{thread_id}] Product:{product_locked.name} FinalQuantity:{new_quantity}")
+                
+            else:
+                # Criar novo item atomicamente
+                race_logger.info(f"➕ CART_NEW_ITEM_ATOMIC [Thread:{thread_id}] Product:{product_locked.name} Quantity:{quantity}")
+                
+                cart_item = CartItem(
+                    cart_id = cart.id,
+                    product_id = product_id,
+                    quantity = quantity,
+                    added_at = datetime.utcnow()
+                )
+                db.session.add(cart_item)
+                
+            race_logger.info(f"🔒 CART_ATOMIC_TRANSACTION_SUCCESS [Thread:{thread_id}] - Cart operation completed successfully")
+            
+            # Commit das alterações
+            db.session.commit()
+                
+        except Exception as e:
+            race_logger.error(f"💥 CART_ATOMIC_TRANSACTION_FAILED [Thread:{thread_id}] Error:{str(e)}")
+            db.session.rollback()
+            return jsonify({
+                "success": False,
+                "message": f"Erro interno: {str(e)}"
+            }), 500
 
-        # Verificar se já existe no carrinho
-        existing_item = CartItem.query.filter_by(
-            cart_id=cart.id, product_id=product_id
-        ).first()
-
-        if existing_item:
-            # Atualizar quantidade
-            existing_item.quantity += quantity
-        else:
-            # Criar novo item
-            cart_item = CartItem(
-                cart_id=cart.id, product_id=product_id, quantity=quantity
-            )
-            db.session.add(cart_item)
-
-        db.session.commit()
-
-        return jsonify({"message": "Produto adicionado ao carrinho"}), 201
+        return jsonify({
+            "success": True,
+            "message": "Produto adicionado ao carrinho com sucesso",
+            "data": {
+                "product_id": product_id,
+                "quantity": quantity,
+                "product_name": product.name
+            }
+        }), 201
 
     except Exception as e:
         db.session.rollback()
-        return jsonify({"error": str(e)}), 500
+        return jsonify({
+            "success": False,
+            "message": "Erro interno do servidor",
+            "error": str(e)
+        }), 500
 
 
-@cart_bp.route("/items/<item_id>", methods=["PUT"])
-def update_cart_item(item_id):
-    """Atualizar quantidade de um item do carrinho"""
+@cart_bp.route("/<product_id>", methods=["PUT"])
+@jwt_required()
+def update_cart_item(product_id):
+    """Atualizar quantidade de produto no carrinho via product_id"""
     try:
+        # 🔒 Obter user_id automaticamente via JWT
+        user_id = get_jwt_identity()
+        if not user_id:
+            return jsonify({
+                "success": False,
+                "message": "Token JWT inválido"
+            }), 401
+
         data = request.get_json()
         quantity = data.get("quantity")
 
         if quantity is None:
-            return jsonify({"error": "quantity é obrigatório"}), 400
+            return jsonify({
+                "success": False,
+                "message": "quantity é obrigatório"
+            }), 400
 
         if quantity <= 0:
-            return jsonify({"error": "quantity deve ser maior que zero"}), 400
+            return jsonify({
+                "success": False,
+                "message": "quantity deve ser maior que zero"
+            }), 400
 
-        cart_item = CartItem.query.get(item_id)
+        # Buscar carrinho do usuário
+        cart = Cart.query.filter_by(user_id = user_id).first()
+        if not cart:
+            return jsonify({
+                "success": False,
+                "message": "Carrinho não encontrado"
+            }), 404
+
+        # Buscar item do carrinho pelo product_id
+        cart_item = CartItem.query.filter_by(
+            cart_id = cart.id, product_id = product_id
+        ).first()
+
         if not cart_item:
-            return jsonify({"error": "Item do carrinho não encontrado"}), 404
+            return jsonify({
+                "success": False,
+                "message": "Item não encontrado no carrinho"
+            }), 404
 
+        # Verificar estoque disponível
+        product = Product.query.get(product_id)
+        if product and quantity > product.stock_quantity:
+            return jsonify({
+                "success": False,
+                "message": f"Quantidade excede estoque disponível: {product.stock_quantity}"
+            }), 400
+
+        # Atualizar quantidade
         cart_item.quantity = quantity
         cart_item.updated_at = datetime.utcnow()
         db.session.commit()
 
-        return jsonify({"message": "Quantidade atualizada"})
+        return jsonify({
+            "success": True,
+            "message": "Quantidade atualizada com sucesso",
+            "data": {
+                "product_id": product_id,
+                "new_quantity": quantity
+            }
+        }), 200
 
     except Exception as e:
         db.session.rollback()
-        return jsonify({"error": str(e)}), 500
+        return jsonify({
+            "success": False,
+            "message": "Erro interno do servidor",
+            "error": str(e)
+        }), 500
 
 
-@cart_bp.route("/items/<item_id>", methods=["DELETE"])
-def remove_from_cart(item_id):
-    """Remover item do carrinho"""
+@cart_bp.route("/<product_id>", methods=["DELETE"])
+@jwt_required()
+def remove_from_cart(product_id):
+    """Remover produto do carrinho via product_id"""
     try:
-        cart_item = CartItem.query.get(item_id)
+        # 🔒 Obter user_id automaticamente via JWT
+        user_id = get_jwt_identity()
+        if not user_id:
+            return jsonify({
+                "success": False,
+                "message": "Token JWT inválido"
+            }), 401
+
+        # Buscar carrinho do usuário
+        cart = Cart.query.filter_by(user_id = user_id).first()
+        if not cart:
+            return jsonify({
+                "success": False,
+                "message": "Carrinho não encontrado"
+            }), 404
+
+        # Buscar item do carrinho pelo product_id
+        cart_item = CartItem.query.filter_by(
+            cart_id = cart.id, product_id = product_id
+        ).first()
+
         if not cart_item:
-            return jsonify({"error": "Item do carrinho não encontrado"}), 404
+            return jsonify({
+                "success": False,
+                "message": "Produto não encontrado no carrinho"
+            }), 404
+
+        # Obter nome do produto para resposta
+        product = Product.query.get(product_id)
+        product_name = product.name if product else "Produto desconhecido"
 
         db.session.delete(cart_item)
         db.session.commit()
 
-        return jsonify({"message": "Item removido do carrinho"})
+        return jsonify({
+            "success": True,
+            "message": "Produto removido do carrinho com sucesso",
+            "data": {
+                "product_id": product_id,
+                "product_name": product_name
+            }
+        }), 200
 
     except Exception as e:
         db.session.rollback()
-        return jsonify({"error": str(e)}), 500
+        return jsonify({
+            "success": False,
+            "message": "Erro interno do servidor",
+            "error": str(e)
+        }), 500
 
 
 @cart_bp.route("/clear", methods=["DELETE"])
+@jwt_required()
 def clear_cart():
-    """Limpar todo o carrinho do usuário"""
+    """Limpar todo o carrinho do usuário autenticado"""
     try:
-        user_id = request.args.get("user_id")
+        # 🔒 Obter user_id automaticamente via JWT
+        user_id = get_jwt_identity()
         if not user_id:
-            return jsonify({"error": "user_id é obrigatório"}), 400
+            return jsonify({
+                "success": False,
+                "message": "Token JWT inválido"
+            }), 401
 
         # Buscar carrinho do usuário
-        cart = Cart.query.filter_by(user_id=user_id).first()
-        if cart:
-            CartItem.query.filter_by(cart_id=cart.id).delete()
-            db.session.commit()
+        cart = Cart.query.filter_by(user_id = user_id).first()
 
-        return jsonify({"message": "Carrinho limpo"})
+        if not cart:
+            return jsonify({
+                "success": True,
+                "message": "Carrinho já está vazio",
+                "data": {"items_removed": 0}
+            }), 200
+
+        # Contar itens antes de deletar
+        items_count = CartItem.query.filter_by(cart_id = cart.id).count()
+
+        # Deletar todos os itens
+        CartItem.query.filter_by(cart_id = cart.id).delete()
+        db.session.commit()
+
+        return jsonify({
+            "success": True,
+            "message": "Carrinho limpo com sucesso",
+            "data": {"items_removed": items_count}
+        }), 200
 
     except Exception as e:
         db.session.rollback()
-        return jsonify({"error": str(e)}), 500
+        return jsonify({
+            "success": False,
+            "message": "Erro interno do servidor",
+            "error": str(e)
+        }), 500
 
 
 @cart_bp.route("/count", methods=["GET"])
@@ -259,7 +496,7 @@ def get_cart_count():
             return jsonify({"error": "user_id é obrigatório"}), 400
 
         # Buscar carrinho do usuário
-        cart = Cart.query.filter_by(user_id=user_id).first()
+        cart = Cart.query.filter_by(user_id = user_id).first()
         if not cart:
             return jsonify({"count": 0})
 
@@ -284,8 +521,8 @@ def get_all_carts():
     """Listar todos os carrinhos (admin)"""
     try:
         # Aqui você pode adicionar verificação de admin se necessário
-        page = request.args.get("page", 1, type=int)
-        per_page = request.args.get("per_page", 20, type=int)
+        page = request.args.get("page", 1, type = int)
+        per_page = request.args.get("per_page", 20, type = int)
 
         # Buscar carrinhos agrupados por usuário
         query = (
@@ -314,7 +551,7 @@ def get_all_carts():
             total_quantity,
         ) in items:
             # Buscar carrinho do usuário
-            cart = Cart.query.filter_by(user_id=user_id).first()
+            cart = Cart.query.filter_by(user_id = user_id).first()
             if cart:
                 # Calcular total do carrinho
                 cart_total = (
@@ -366,7 +603,7 @@ def get_user_cart(user_id):
             return jsonify({"error": "Usuário não encontrado"}), 404
 
         # Buscar carrinho do usuário
-        cart = Cart.query.filter_by(user_id=user_id).first()
+        cart = Cart.query.filter_by(user_id = user_id).first()
         if not cart:
             return jsonify(
                 {

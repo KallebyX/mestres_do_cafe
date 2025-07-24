@@ -10,9 +10,9 @@ def get_users():
 
 @user_bp.route('/users', methods=['POST'])
 def create_user():
-    
+
     data = request.json
-    user = User(username=data['username'], email=data['email'])
+    user = User(username = data['username'], email = data['email'])
     db.session.add(user)
     db.session.commit()
     return jsonify(user.to_dict()), 201

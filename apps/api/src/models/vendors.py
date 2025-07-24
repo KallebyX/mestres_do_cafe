@@ -15,26 +15,26 @@ from database import db
 class Vendor(db.Model):
     __tablename__ = "vendors"
 
-    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    user_id = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=False)
-    
+    id = Column(UUID(as_uuid = True), primary_key = True, default = uuid.uuid4)
+    user_id = Column(UUID(as_uuid = True), ForeignKey("users.id"), nullable = False)
+
     # Informações básicas
-    business_name = Column(String(255), nullable=False)
+    business_name = Column(String(255), nullable = False)
     legal_name = Column(String(255))
     description = Column(Text)
     logo_url = Column(String(500))
     banner_url = Column(String(500))
-    
+
     # Documentação
-    cnpj = Column(String(18), unique=True)
+    cnpj = Column(String(18), unique = True)
     cpf = Column(String(14))
     tax_id = Column(String(50))
-    
+
     # Contato
-    email = Column(String(255), nullable=False)
+    email = Column(String(255), nullable = False)
     phone = Column(String(20))
     website = Column(String(255))
-    
+
     # Endereço
     address_street = Column(String(255))
     address_number = Column(String(20))
@@ -44,34 +44,34 @@ class Vendor(db.Model):
     address_state = Column(String(50))
     address_cep = Column(String(10))
     address_country = Column(String(50), default="Brasil")
-    
+
     # Status e aprovação
     status = Column(String(20), default="pending")  # pending, approved, rejected, suspended
     approval_status = Column(String(20), default="pending")
     approved_at = Column(DateTime)
-    approved_by = Column(UUID(as_uuid=True), ForeignKey("users.id"))
+    approved_by = Column(UUID(as_uuid = True), ForeignKey("users.id"))
     rejection_reason = Column(Text)
-    
+
     # Configurações comerciais
-    commission_rate = Column(Numeric(5, 2), default=Decimal("10.00"))  # % de comissão
+    commission_rate = Column(Numeric(5, 2), default = Decimal("10.00"))  # % de comissão
     payment_method = Column(String(50))  # bank_transfer, pix, etc.
     bank_account = Column(Text)  # JSON com dados bancários
-    
+
     # Métricas
-    total_sales = Column(Numeric(12, 2), default=Decimal("0.00"))
-    total_orders = Column(Integer, default=0)
-    total_products = Column(Integer, default=0)
-    rating = Column(Numeric(3, 2), default=Decimal("0.00"))
-    review_count = Column(Integer, default=0)
-    
+    total_sales = Column(Numeric(12, 2), default = Decimal("0.00"))
+    total_orders = Column(Integer, default = 0)
+    total_products = Column(Integer, default = 0)
+    rating = Column(Numeric(3, 2), default = Decimal("0.00"))
+    review_count = Column(Integer, default = 0)
+
     # Configurações de loja
-    store_slug = Column(String(100), unique=True)
+    store_slug = Column(String(100), unique = True)
     store_settings = Column(Text)  # JSON com configurações da loja
-    
+
     # Timestamps
-    created_at = Column(DateTime, default=func.now())
-    updated_at = Column(DateTime, default=func.now(), onupdate=func.now())
-    
+    created_at = Column(DateTime, default = func.now())
+    updated_at = Column(DateTime, default = func.now(), onupdate = func.now())
+
     # Relacionamentos
     user = relationship("User", foreign_keys=[user_id])
     approved_by_user = relationship("User", foreign_keys=[approved_by])
@@ -127,36 +127,36 @@ class Vendor(db.Model):
 class VendorProduct(db.Model):
     __tablename__ = "vendor_products"
 
-    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    vendor_id = Column(UUID(as_uuid=True), ForeignKey("vendors.id"), nullable=False)
-    product_id = Column(UUID(as_uuid=True), ForeignKey("products.id"), nullable=False)
-    
+    id = Column(UUID(as_uuid = True), primary_key = True, default = uuid.uuid4)
+    vendor_id = Column(UUID(as_uuid = True), ForeignKey("vendors.id"), nullable = False)
+    product_id = Column(UUID(as_uuid = True), ForeignKey("products.id"), nullable = False)
+
     # Preços específicos do vendedor
-    vendor_price = Column(Numeric(10, 2), nullable=False)
+    vendor_price = Column(Numeric(10, 2), nullable = False)
     vendor_cost = Column(Numeric(10, 2))
-    discount_percentage = Column(Numeric(5, 2), default=Decimal("0.00"))
-    
+    discount_percentage = Column(Numeric(5, 2), default = Decimal("0.00"))
+
     # Estoque específico do vendedor
-    stock_quantity = Column(Integer, default=0)
-    min_stock_alert = Column(Integer, default=5)
-    
+    stock_quantity = Column(Integer, default = 0)
+    min_stock_alert = Column(Integer, default = 5)
+
     # Status e aprovação
     status = Column(String(20), default="pending")  # pending, approved, rejected
-    is_featured = Column(Boolean, default=False)
-    
+    is_featured = Column(Boolean, default = False)
+
     # Configurações de envio
     shipping_weight = Column(Numeric(8, 3))  # kg
     shipping_dimensions = Column(Text)  # JSON com dimensões
     shipping_class = Column(String(50))
-    
+
     # Métricas
-    sales_count = Column(Integer, default=0)
-    view_count = Column(Integer, default=0)
-    
+    sales_count = Column(Integer, default = 0)
+    view_count = Column(Integer, default = 0)
+
     # Timestamps
-    created_at = Column(DateTime, default=func.now())
-    updated_at = Column(DateTime, default=func.now(), onupdate=func.now())
-    
+    created_at = Column(DateTime, default = func.now())
+    updated_at = Column(DateTime, default = func.now(), onupdate = func.now())
+
     # Relacionamentos
     vendor = relationship("Vendor", back_populates="products")
     product = relationship("Product")
@@ -193,30 +193,30 @@ class VendorProduct(db.Model):
 class VendorOrder(db.Model):
     __tablename__ = "vendor_orders"
 
-    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    vendor_id = Column(UUID(as_uuid=True), ForeignKey("vendors.id"), nullable=False)
-    order_id = Column(UUID(as_uuid=True), ForeignKey("orders.id"), nullable=False)
-    
+    id = Column(UUID(as_uuid = True), primary_key = True, default = uuid.uuid4)
+    vendor_id = Column(UUID(as_uuid = True), ForeignKey("vendors.id"), nullable = False)
+    order_id = Column(UUID(as_uuid = True), ForeignKey("orders.id"), nullable = False)
+
     # Valores específicos do vendedor
-    subtotal = Column(Numeric(10, 2), nullable=False)
-    shipping_cost = Column(Numeric(10, 2), default=Decimal("0.00"))
-    commission_amount = Column(Numeric(10, 2), nullable=False)
-    vendor_payout = Column(Numeric(10, 2), nullable=False)
-    
+    subtotal = Column(Numeric(10, 2), nullable = False)
+    shipping_cost = Column(Numeric(10, 2), default = Decimal("0.00"))
+    commission_amount = Column(Numeric(10, 2), nullable = False)
+    vendor_payout = Column(Numeric(10, 2), nullable = False)
+
     # Status do cumprimento
     fulfillment_status = Column(String(20), default="pending")  # pending, processing, shipped, delivered
     tracking_code = Column(String(100))
     shipping_carrier = Column(String(100))
-    
+
     # Datas importantes
     shipped_at = Column(DateTime)
     delivered_at = Column(DateTime)
     expected_delivery = Column(DateTime)
-    
+
     # Timestamps
-    created_at = Column(DateTime, default=func.now())
-    updated_at = Column(DateTime, default=func.now(), onupdate=func.now())
-    
+    created_at = Column(DateTime, default = func.now())
+    updated_at = Column(DateTime, default = func.now(), onupdate = func.now())
+
     # Relacionamentos
     vendor = relationship("Vendor", back_populates="orders")
     order = relationship("Order")
@@ -247,26 +247,26 @@ class VendorOrder(db.Model):
 class VendorCommission(db.Model):
     __tablename__ = "vendor_commissions"
 
-    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    vendor_id = Column(UUID(as_uuid=True), ForeignKey("vendors.id"), nullable=False)
-    order_id = Column(UUID(as_uuid=True), ForeignKey("orders.id"), nullable=False)
-    
+    id = Column(UUID(as_uuid = True), primary_key = True, default = uuid.uuid4)
+    vendor_id = Column(UUID(as_uuid = True), ForeignKey("vendors.id"), nullable = False)
+    order_id = Column(UUID(as_uuid = True), ForeignKey("orders.id"), nullable = False)
+
     # Valores da comissão
-    order_value = Column(Numeric(10, 2), nullable=False)
-    commission_rate = Column(Numeric(5, 2), nullable=False)
-    commission_amount = Column(Numeric(10, 2), nullable=False)
-    vendor_payout = Column(Numeric(10, 2), nullable=False)
-    
+    order_value = Column(Numeric(10, 2), nullable = False)
+    commission_rate = Column(Numeric(5, 2), nullable = False)
+    commission_amount = Column(Numeric(10, 2), nullable = False)
+    vendor_payout = Column(Numeric(10, 2), nullable = False)
+
     # Status do pagamento
     status = Column(String(20), default="pending")  # pending, paid, cancelled
     paid_at = Column(DateTime)
     payment_method = Column(String(50))
     payment_reference = Column(String(100))
-    
+
     # Timestamps
-    created_at = Column(DateTime, default=func.now())
-    updated_at = Column(DateTime, default=func.now(), onupdate=func.now())
-    
+    created_at = Column(DateTime, default = func.now())
+    updated_at = Column(DateTime, default = func.now(), onupdate = func.now())
+
     # Relacionamentos
     vendor = relationship("Vendor", back_populates="commissions")
     order = relationship("Order")
@@ -295,33 +295,33 @@ class VendorCommission(db.Model):
 class VendorReview(db.Model):
     __tablename__ = "vendor_reviews"
 
-    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    vendor_id = Column(UUID(as_uuid=True), ForeignKey("vendors.id"), nullable=False)
-    customer_id = Column(UUID(as_uuid=True), ForeignKey("customers.id"), nullable=False)
-    order_id = Column(UUID(as_uuid=True), ForeignKey("orders.id"))
-    
+    id = Column(UUID(as_uuid = True), primary_key = True, default = uuid.uuid4)
+    vendor_id = Column(UUID(as_uuid = True), ForeignKey("vendors.id"), nullable = False)
+    customer_id = Column(UUID(as_uuid = True), ForeignKey("customers.id"), nullable = False)
+    order_id = Column(UUID(as_uuid = True), ForeignKey("orders.id"))
+
     # Avaliação
-    rating = Column(Integer, nullable=False)  # 1-5 estrelas
+    rating = Column(Integer, nullable = False)  # 1-5 estrelas
     title = Column(String(255))
     comment = Column(Text)
-    
+
     # Aspectos específicos
     communication_rating = Column(Integer)  # 1-5
     shipping_rating = Column(Integer)  # 1-5
     product_quality_rating = Column(Integer)  # 1-5
-    
+
     # Status
     status = Column(String(20), default="pending")  # pending, approved, rejected
-    is_verified = Column(Boolean, default=False)
-    
+    is_verified = Column(Boolean, default = False)
+
     # Resposta do vendedor
     vendor_response = Column(Text)
     vendor_response_at = Column(DateTime)
-    
+
     # Timestamps
-    created_at = Column(DateTime, default=func.now())
-    updated_at = Column(DateTime, default=func.now(), onupdate=func.now())
-    
+    created_at = Column(DateTime, default = func.now())
+    updated_at = Column(DateTime, default = func.now(), onupdate = func.now())
+
     # Relacionamentos
     vendor = relationship("Vendor")
     customer = relationship("Customer")

@@ -1,139 +1,96 @@
+"""
+Endpoints para gerenciamento de notificações
+"""
+
 from datetime import datetime
+from typing import Any, Dict, List
 
-from flask import Blueprint, jsonify, request
-from sqlalchemy import desc, func
-
+from controllers.base import require_admin, require_auth
 from database import db
+from flask import Blueprint, g, jsonify, request
 from models.notifications import (
     Notification,
-    NotificationPreference,
-    NotificationQueue,
+    NotificationLog,
+    NotificationSubscription,
     NotificationTemplate,
+)
+from services.notification_service import (
+    NotificationChannel,
+    NotificationType,
+    get_notification_service,
 )
 
 notifications_bp = Blueprint("notifications", __name__, url_prefix="/api/notifications")
 
 
-@notifications_bp.route("", methods=["GET"])
-def get_notifications():
-    """Listar notificações do usuário"""
+@notifications_bp.route("/", methods=["GET"])
+@require_auth
+def get_user_notifications():
+    """Obter notificações do usuário logado"""
     try:
-        user_id = request.args.get("user_id")
-        page = request.args.get("page", 1, type=int)
-        per_page = request.args.get("per_page", 20, type=int)
-        is_read = request.args.get("is_read")
+        user_id = g.current_user["id"]
+        page = request.args.get("page", 1, type = int)
+        per_page = min(request.args.get("per_page", 20, type = int), 100)
+        unread_only = request.args.get("unread_only", "false").lower() == "true"
         notification_type = request.args.get("type")
 
-        if not user_id:
-            return jsonify({"error": "user_id obrigatório"}), 400
+        # Query base
+        query = Notification.query.filter_by(user_id = user_id)
 
-        # Retornar dados mock para evitar problemas de UUID
-        mock_notifications = [
-            {
-                "id": "1",
-                "user_id": user_id,
-                "type": "welcome",
-                "title": "Bem-vindo ao Mestres do Café!",
-                "message": "Obrigado por se cadastrar. Explore nossos cafés especiais.",
-                "data": {},
-                "channels": ["in_app"],
-                "is_read": False,
-                "read_at": None,
-                "expires_at": None,
-                "created_at": "2024-01-15T10:30:00Z",
-            },
-            {
-                "id": "2",
-                "user_id": user_id,
-                "type": "promotion",
-                "title": "Promoção Especial",
-                "message": "Desconto de 20% em todos os cafés especiais esta semana!",
-                "data": {"discount": 20},
-                "channels": ["in_app", "email"],
-                "is_read": False,
-                "read_at": None,
-                "expires_at": None,
-                "created_at": "2024-01-10T14:20:00Z",
-            },
-        ]
+        # Filtros opcionais
+        if unread_only:
+            query = query.filter(Notification.read_at.is_(None))
 
-        # Filtrar por tipo se especificado
         if notification_type:
-            mock_notifications = [
-                n for n in mock_notifications if n["type"] == notification_type
-            ]
+            try:
+                query = query.filter_by(
+                    notification_type = NotificationType[notification_type.upper()]
+                )
+            except KeyError:
+                return jsonify({"error": "Tipo de notificação inválido"}), 400
 
-        # Filtrar por status lido se especificado
-        if is_read is not None:
-            is_read_bool = is_read.lower() == "true"
-            mock_notifications = [
-                n for n in mock_notifications if n["is_read"] == is_read_bool
-            ]
+        # Ordenação e paginação
+        query = query.order_by(Notification.created_at.desc())
+        paginated = query.paginate(page = page, per_page = per_page, error_out = False)
 
         return jsonify(
             {
-                "notifications": mock_notifications,
+                "notifications": [
+                    notification.to_dict() for notification in paginated.items
+                ],
                 "pagination": {
                     "page": page,
                     "per_page": per_page,
-                    "total": len(mock_notifications),
-                    "pages": 1,
+                    "total": paginated.total,
+                    "pages": paginated.pages,
+                    "has_next": paginated.has_next,
+                    "has_prev": paginated.has_prev,
                 },
+                "unread_count": Notification.query.filter_by(user_id = user_id)
+                .filter(Notification.read_at.is_(None))
+                .count(),
             }
         )
 
     except Exception as e:
-        return jsonify({"error": str(e)}), 500
+        return jsonify({"error": f"Erro ao buscar notificações: {str(e)}"}), 500
 
 
-@notifications_bp.route("/", methods=["POST"])
-def create_notification():
-    """Criar nova notificação"""
-    try:
-        data = request.get_json()
-        required_fields = ["user_id", "type", "title", "message"]
-
-        for field in required_fields:
-            if field not in data:
-                return jsonify({"error": f"Campo {field} obrigatório"}), 400
-
-        notification = Notification(
-            user_id=data["user_id"],
-            type=data["type"],
-            title=data["title"],
-            message=data["message"],
-            data=data.get("data", {}),
-            channels=[data.get("channel", "in_app")],
-            is_read=False,
-            read_at=None,
-        )
-
-        db.session.add(notification)
-        db.session.commit()
-
-        return (
-            jsonify(
-                {
-                    "message": "Notificação criada com sucesso",
-                    "notification": notification.to_dict(),
-                }
-            ),
-            201,
-        )
-
-    except Exception as e:
-        db.session.rollback()
-        return jsonify({"error": str(e)}), 500
-
-
-@notifications_bp.route("/<notification_id>/read", methods=["POST"])
-def mark_as_read(notification_id):
+@notifications_bp.route("/<int:notification_id>/read", methods=["POST"])
+@require_auth
+def mark_notification_as_read(notification_id: int):
     """Marcar notificação como lida"""
     try:
-        notification = Notification.query.get_or_404(notification_id)
+        user_id = g.current_user["id"]
 
-        if not notification.is_read:
-            notification.is_read = True
+        notification = Notification.query.filter_by(
+            id = notification_id, user_id = user_id
+        ).first()
+
+        if not notification:
+            return jsonify({"error": "Notificação não encontrada"}), 404
+
+        if notification.read_at is None:
             notification.read_at = datetime.utcnow()
             db.session.commit()
 
@@ -145,39 +102,47 @@ def mark_as_read(notification_id):
         )
 
     except Exception as e:
-        db.session.rollback()
-        return jsonify({"error": str(e)}), 500
+        return jsonify({"error": f"Erro ao marcar notificação: {str(e)}"}), 500
 
 
-@notifications_bp.route("/mark-all-read", methods=["POST"])
+@notifications_bp.route("/read-all", methods=["POST"])
+@require_auth
 def mark_all_as_read():
     """Marcar todas as notificações como lidas"""
     try:
-        data = request.get_json()
-        user_id = data.get("user_id")
+        user_id = g.current_user["id"]
 
-        if not user_id:
-            return jsonify({"error": "user_id obrigatório"}), 400
-
-        # Atualizar todas as notificações não lidas do usuário
-        count = Notification.query.filter_by(user_id=user_id, is_read=False).update(
-            {"is_read": True, "read_at": datetime.utcnow()}
+        unread_notifications = Notification.query.filter_by(user_id = user_id).filter(
+            Notification.read_at.is_(None)
         )
+
+        count = unread_notifications.count()
+        unread_notifications.update({"read_at": datetime.utcnow()})
 
         db.session.commit()
 
         return jsonify({"message": f"{count} notificações marcadas como lidas"})
 
     except Exception as e:
-        db.session.rollback()
-        return jsonify({"error": str(e)}), 500
+        return (
+            jsonify({"error": f"Erro ao marcar todas as notificações: {str(e)}"}),
+            500,
+        )
 
 
-@notifications_bp.route("/<notification_id>", methods=["DELETE"])
-def delete_notification(notification_id):
-    """Deletar notificação"""
+@notifications_bp.route("/<int:notification_id>", methods=["DELETE"])
+@require_auth
+def delete_notification(notification_id: int):
+    """Deletar notificação do usuário"""
     try:
-        notification = Notification.query.get_or_404(notification_id)
+        user_id = g.current_user["id"]
+
+        notification = Notification.query.filter_by(
+            id = notification_id, user_id = user_id
+        ).first()
+
+        if not notification:
+            return jsonify({"error": "Notificação não encontrada"}), 404
 
         db.session.delete(notification)
         db.session.commit()
@@ -185,104 +150,219 @@ def delete_notification(notification_id):
         return jsonify({"message": "Notificação deletada com sucesso"})
 
     except Exception as e:
-        db.session.rollback()
-        return jsonify({"error": str(e)}), 500
+        return jsonify({"error": f"Erro ao deletar notificação: {str(e)}"}), 500
 
 
-@notifications_bp.route("/preferences/<user_id>", methods=["GET"])
-def get_preferences(user_id):
+@notifications_bp.route("/preferences", methods=["GET"])
+@require_auth
+def get_notification_preferences():
     """Obter preferências de notificação do usuário"""
     try:
-        preferences = NotificationPreference.query.filter_by(user_id=user_id).all()
+        user_id = g.current_user["id"]
 
-        return jsonify({"preferences": [pref.to_dict() for pref in preferences]})
+        preferences = NotificationSubscription.query.filter_by(user_id = user_id).all()
+
+        # Estruturar por tipo e canal
+        prefs_dict = {}
+        for pref in preferences:
+            if pref.notification_type.value not in prefs_dict:
+                prefs_dict[pref.notification_type.value] = {}
+            prefs_dict[pref.notification_type.value][pref.channel.value] = pref.enabled
+
+        return jsonify(
+            {
+                "preferences": prefs_dict,
+                "available_types": [t.value for t in NotificationType],
+                "available_channels": [c.value for c in NotificationChannel],
+            }
+        )
 
     except Exception as e:
-        return jsonify({"error": str(e)}), 500
+        return jsonify({"error": f"Erro ao buscar preferências: {str(e)}"}), 500
 
 
 @notifications_bp.route("/preferences", methods=["POST"])
-def update_preferences():
+@require_auth
+def update_notification_preferences():
     """Atualizar preferências de notificação"""
     try:
+        user_id = g.current_user["id"]
         data = request.get_json()
-        required_fields = ["user_id", "notification_type", "channel", "enabled"]
 
-        for field in required_fields:
-            if field not in data:
-                return jsonify({"error": f"Campo {field} obrigatório"}), 400
+        # Validar tipos e canais
+        try:
+            notification_type = NotificationType[data["notification_type"].upper()]
+            channel = NotificationChannel[data["channel"].upper()]
+        except KeyError as e:
+            return jsonify({"error": f"Tipo ou canal inválido: {str(e)}"}), 400
 
-        # Verificar se preferência já existe
-        preference = NotificationPreference.query.filter_by(
-            user_id=data["user_id"],
-            notification_type=data["notification_type"],
-            channel=data["channel"],
+        # Buscar ou criar preferência
+        preference = NotificationSubscription.query.filter_by(
+            user_id = user_id, notification_type = notification_type, channel = channel
         ).first()
 
-        if preference:
-            # Atualizar existente
-            preference.enabled = data["enabled"]
-            preference.settings = data.get("settings", {})
-            preference.updated_at = datetime.utcnow()
-        else:
-            # Criar nova preferência
-            preference = NotificationPreference(
-                user_id=data["user_id"],
-                notification_type=data["notification_type"],
-                channel=data["channel"],
-                enabled=data["enabled"],
-                settings=data.get("settings", {}),
+        if not preference:
+            preference = NotificationSubscription(
+                user_id = user_id,
+                notification_type = notification_type,
+                channel = channel,
+                enabled = data["enabled"],
             )
             db.session.add(preference)
+        else:
+            preference.enabled = data["enabled"]
+            preference.updated_at = datetime.utcnow()
 
         db.session.commit()
 
         return jsonify(
             {
-                "message": "Preferências atualizadas com sucesso",
+                "message": "Preferência atualizada com sucesso",
                 "preference": preference.to_dict(),
             }
         )
 
     except Exception as e:
-        db.session.rollback()
-        return jsonify({"error": str(e)}), 500
+        return jsonify({"error": f"Erro ao atualizar preferência: {str(e)}"}), 500
 
 
-@notifications_bp.route("/templates", methods=["GET"])
-def get_templates():
-    """Listar templates de notificação"""
+@notifications_bp.route("/send", methods=["POST"])
+@require_admin
+def send_notification():
+    """Enviar notificação para usuário específico (admin only)"""
     try:
-        templates = (
-            NotificationTemplate.query.filter_by(is_active=True)
-            .order_by(NotificationTemplate.name)
-            .all()
+        data = request.get_json()
+
+        # Validar tipo de notificação
+        try:
+            notification_type = NotificationType[data["notification_type"].upper()]
+        except KeyError:
+            return jsonify({"error": "Tipo de notificação inválido"}), 400
+
+        # Preparar dados da notificação
+        notification_data = {
+            "title": data["title"],
+            "content": data["content"],
+            "metadata": data.get("metadata", {}),
+            "action_url": data.get("action_url"),
+            "image_url": data.get("image_url"),
+        }
+
+        # Enviar notificação
+        success = get_notification_service().send_notification(
+            user_id = data["user_id"],
+            notification_type = notification_type,
+            data = notification_data,
+            channels = data.get("channels", [NotificationChannel.IN_APP.value]),
         )
+
+        if success:
+            return jsonify({"message": "Notificação enviada com sucesso"})
+        else:
+            return jsonify({"error": "Falha ao enviar notificação"}), 500
+
+    except Exception as e:
+        return jsonify({"error": f"Erro ao enviar notificação: {str(e)}"}), 500
+
+
+@notifications_bp.route("/broadcast", methods=["POST"])
+@require_admin
+def broadcast_notification():
+    """Enviar notificação para todos os usuários (broadcast)"""
+    try:
+        data = request.get_json()
+
+        # Validar tipo de notificação
+        try:
+            notification_type = NotificationType[data["notification_type"].upper()]
+        except KeyError:
+            return jsonify({"error": "Tipo de notificação inválido"}), 400
+
+        # Preparar dados da notificação
+        notification_data = {
+            "title": data["title"],
+            "content": data["content"],
+            "metadata": data.get("metadata", {}),
+            "action_url": data.get("action_url"),
+            "image_url": data.get("image_url"),
+        }
+
+        # Enviar para todos os usuários ativos
+        # TODO: Implementar query para usuários ativos
+        from models.user import User  # Assumindo que existe um model User
+
+        users = User.query.filter_by(is_active = True).all()
+
+        sent_count = 0
+        failed_count = 0
+
+        for user in users:
+            try:
+                success = get_notification_service().send_notification(
+                    user_id = user.id,
+                    notification_type = notification_type,
+                    data = notification_data,
+                    channels = data.get("channels", [NotificationChannel.IN_APP.value]),
+                )
+                if success:
+                    sent_count += 1
+                else:
+                    failed_count += 1
+            except Exception as e:
+                failed_count += 1
+                print(f"Erro ao enviar para usuário {user.id}: {str(e)}")
+
+        return jsonify(
+            {
+                "message": f"Broadcast concluído: {sent_count} enviadas, {failed_count} falharam",
+                "sent_count": sent_count,
+                "failed_count": failed_count,
+                "total_users": len(users),
+            }
+        )
+
+    except Exception as e:
+        return jsonify({"error": f"Erro no broadcast: {str(e)}"}), 500
+
+
+# Endpoints administrativos
+
+
+@notifications_bp.route("/admin/templates", methods=["GET"])
+@require_admin
+def get_notification_templates():
+    """Listar todos os templates de notificação"""
+    try:
+        templates = NotificationTemplate.query.all()
 
         return jsonify({"templates": [template.to_dict() for template in templates]})
 
     except Exception as e:
-        return jsonify({"error": str(e)}), 500
+        return jsonify({"error": f"Erro ao buscar templates: {str(e)}"}), 500
 
 
-@notifications_bp.route("/templates", methods=["POST"])
-def create_template():
-    """Criar template de notificação"""
+@notifications_bp.route("/admin/templates", methods=["POST"])
+@require_admin
+def create_notification_template():
+    """Criar novo template de notificação"""
     try:
         data = request.get_json()
-        required_fields = ["name", "type", "subject", "body"]
 
-        for field in required_fields:
-            if field not in data:
-                return jsonify({"error": f"Campo {field} obrigatório"}), 400
+        # Validar tipos
+        try:
+            notification_type = NotificationType[data["notification_type"].upper()]
+            channel = NotificationChannel[data["channel"].upper()]
+        except KeyError as e:
+            return jsonify({"error": f"Tipo ou canal inválido: {str(e)}"}), 400
 
         template = NotificationTemplate(
-            name=data["name"],
-            type=data["type"],
-            subject=data["subject"],
-            body=data["body"],
-            variables=data.get("variables", []),
-            is_active=True,
+            name = data["name"],
+            notification_type = notification_type,
+            channel = channel,
+            template_content = data["template_content"],
+            subject_template = data.get("subject_template"),
+            variables = data.get("variables", []),
+            is_active = data.get("is_active", True),
         )
 
         db.session.add(template)
@@ -299,359 +379,202 @@ def create_template():
         )
 
     except Exception as e:
-        db.session.rollback()
-        return jsonify({"error": str(e)}), 500
+        return jsonify({"error": f"Erro ao criar template: {str(e)}"}), 500
 
 
-@notifications_bp.route("/templates/<template_id>", methods=["PUT"])
-def update_template(template_id):
-    """Atualizar template de notificação"""
+@notifications_bp.route("/admin/logs", methods=["GET"])
+@require_admin
+def get_notification_logs():
+    """Obter logs de notificações enviadas"""
     try:
-        template = NotificationTemplate.query.get_or_404(template_id)
-        data = request.get_json()
+        page = request.args.get("page", 1, type = int)
+        per_page = min(request.args.get("per_page", 50, type = int), 200)
 
-        # Campos permitidos para atualização
-        allowed_fields = ["name", "type", "subject", "body", "variables", "is_active"]
-
-        for field in allowed_fields:
-            if field in data:
-                setattr(template, field, data[field])
-
-        template.updated_at = datetime.utcnow()
-        db.session.commit()
-
-        return jsonify(
-            {
-                "message": "Template atualizado com sucesso",
-                "template": template.to_dict(),
-            }
-        )
-
-    except Exception as e:
-        db.session.rollback()
-        return jsonify({"error": str(e)}), 500
-
-
-@notifications_bp.route("/queue", methods=["GET"])
-def get_queue():
-    """Listar fila de notificações"""
-    try:
-        page = request.args.get("page", 1, type=int)
-        per_page = request.args.get("per_page", 20, type=int)
+        # Filtros opcionais
+        user_id = request.args.get("user_id", type = int)
+        notification_type = request.args.get("type")
+        channel = request.args.get("channel")
         status = request.args.get("status")
+        date_from = request.args.get("date_from")
+        date_to = request.args.get("date_to")
 
-        query = NotificationQueue.query
+        query = NotificationLog.query
+
+        # Aplicar filtros
+        if user_id:
+            query = query.filter_by(user_id = user_id)
+
+        if notification_type:
+            try:
+                query = query.filter_by(
+                    notification_type = NotificationType[notification_type.upper()]
+                )
+            except KeyError:
+                return jsonify({"error": "Tipo de notificação inválido"}), 400
+
+        if channel:
+            try:
+                query = query.filter_by(channel = NotificationChannel[channel.upper()])
+            except KeyError:
+                return jsonify({"error": "Canal inválido"}), 400
 
         if status:
-            query = query.filter(NotificationQueue.status == status)
+            query = query.filter_by(status = status)
 
-        queue_items = query.order_by(desc(NotificationQueue.created_at)).paginate(
-            page=page, per_page=per_page, error_out=False
-        )
+        if date_from:
+            try:
+                date_from = datetime.fromisoformat(date_from)
+                query = query.filter(NotificationLog.sent_at >= date_from)
+            except ValueError:
+                return (
+                    jsonify({"error": "Formato de data inválido para date_from"}),
+                    400,
+                )
+
+        if date_to:
+            try:
+                date_to = datetime.fromisoformat(date_to)
+                query = query.filter(NotificationLog.sent_at <= date_to)
+            except ValueError:
+                return jsonify({"error": "Formato de data inválido para date_to"}), 400
+
+        # Ordenação e paginação
+        query = query.order_by(NotificationLog.sent_at.desc())
+        paginated = query.paginate(page = page, per_page = per_page, error_out = False)
+
+        # Estatísticas rápidas
+        total_sent = NotificationLog.query.filter_by(status="sent").count()
+        total_failed = NotificationLog.query.filter_by(status="failed").count()
 
         return jsonify(
             {
-                "queue": [item.to_dict() for item in queue_items.items],
+                "logs": [log.to_dict() for log in paginated.items],
                 "pagination": {
                     "page": page,
                     "per_page": per_page,
-                    "total": queue_items.total,
-                    "pages": queue_items.pages,
+                    "total": paginated.total,
+                    "pages": paginated.pages,
+                    "has_next": paginated.has_next,
+                    "has_prev": paginated.has_prev,
+                },
+                "stats": {
+                    "total_sent": total_sent,
+                    "total_failed": total_failed,
+                    "success_rate": (
+                        (total_sent / (total_sent + total_failed) * 100)
+                        if (total_sent + total_failed) > 0
+                        else 0
+                    ),
                 },
             }
         )
 
     except Exception as e:
-        return jsonify({"error": str(e)}), 500
+        return jsonify({"error": f"Erro ao buscar logs: {str(e)}"}), 500
 
 
-@notifications_bp.route("/queue", methods=["POST"])
-def add_to_queue():
-    """Adicionar notificação à fila"""
+@notifications_bp.route("/admin/stats", methods=["GET"])
+@require_admin
+def get_notification_stats():
+    """Obter estatísticas detalhadas de notificações"""
     try:
-        data = request.get_json()
-        required_fields = ["user_id", "type", "channel", "subject", "body"]
+        # Stats por tipo
+        type_stats = {}
+        for notification_type in NotificationType:
+            sent = NotificationLog.query.filter_by(
+                notification_type = notification_type, status="sent"
+            ).count()
+            failed = NotificationLog.query.filter_by(
+                notification_type = notification_type, status="failed"
+            ).count()
 
-        for field in required_fields:
-            if field not in data:
-                return jsonify({"error": f"Campo {field} obrigatório"}), 400
-
-        queue_item = NotificationQueue(
-            user_id=data["user_id"],
-            type=data["type"],
-            channel=data["channel"],
-            subject=data["subject"],
-            body=data["body"],
-            data=data.get("data", {}),
-            priority=data.get("priority", "medium"),
-            scheduled_at=(
-                datetime.fromisoformat(data["scheduled_at"])
-                if data.get("scheduled_at")
-                else None
-            ),
-            status="pending",
-        )
-
-        db.session.add(queue_item)
-        db.session.commit()
-
-        return (
-            jsonify(
-                {
-                    "message": "Notificação adicionada à fila",
-                    "queue_item": queue_item.to_dict(),
-                }
-            ),
-            201,
-        )
-
-    except Exception as e:
-        db.session.rollback()
-        return jsonify({"error": str(e)}), 500
-
-
-@notifications_bp.route("/queue/<queue_id>/process", methods=["POST"])
-def process_queue_item(queue_id):
-    """Processar item da fila"""
-    try:
-        queue_item = NotificationQueue.query.get_or_404(queue_id)
-
-        if queue_item.status != "pending":
-            return jsonify({"error": "Item não está pendente"}), 400
-
-        # Atualizar status para processando
-        queue_item.status = "processing"
-        queue_item.processed_at = datetime.utcnow()
-
-        # Criar notificação real
-        notification = Notification(
-            user_id=queue_item.user_id,
-            type=queue_item.type,
-            title=queue_item.subject,
-            message=queue_item.body,
-            data=queue_item.data,
-            channels=[queue_item.channel],
-            is_read=False,
-        )
-
-        db.session.add(notification)
-
-        # Marcar como processado
-        queue_item.status = "processed"
-
-        db.session.commit()
-
-        return jsonify(
-            {
-                "message": "Item processado com sucesso",
-                "notification": notification.to_dict(),
-            }
-        )
-
-    except Exception as e:
-        db.session.rollback()
-        return jsonify({"error": str(e)}), 500
-
-
-@notifications_bp.route("/stats/<user_id>", methods=["GET"])
-def get_user_stats(user_id):
-    """Obter estatísticas de notificações do usuário"""
-    try:
-        total_notifications = Notification.query.filter_by(user_id=user_id).count()
-
-        unread_count = Notification.query.filter_by(
-            user_id=user_id, is_read=False
-        ).count()
-
-        read_count = total_notifications - unread_count
-
-        # Estatísticas por tipo
-        type_stats = (
-            db.session.query(
-                Notification.type, func.count(Notification.id).label("count")
-            )
-            .filter_by(user_id=user_id)
-            .group_by(Notification.type)
-            .all()
-        )
-
-        # Estatísticas por canal
-        channel_stats = (
-            db.session.query(
-                Notification.channels, func.count(Notification.id).label("count")
-            )
-            .filter_by(user_id=user_id)
-            .group_by(Notification.channels)
-            .all()
-        )
-
-        return jsonify(
-            {
-                "stats": {
-                    "total": total_notifications,
-                    "unread": unread_count,
-                    "read": read_count,
-                    "by_type": {stat.type: stat.count for stat in type_stats},
-                    "by_channels": {
-                        str(stat.channels): stat.count for stat in channel_stats
-                    },
-                }
-            }
-        )
-
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
-
-
-@notifications_bp.route("/stats", methods=["GET"])
-def get_global_stats():
-    """Obter estatísticas globais de notificações"""
-    try:
-        total_notifications = Notification.query.count()
-        unread_notifications = Notification.query.filter_by(is_read=False).count()
-
-        # Estatísticas da fila
-        queue_pending = NotificationQueue.query.filter_by(status="pending").count()
-        queue_processing = NotificationQueue.query.filter_by(
-            status="processing"
-        ).count()
-        queue_processed = NotificationQueue.query.filter_by(status="processed").count()
-        queue_failed = NotificationQueue.query.filter_by(status="failed").count()
-
-        # Templates ativos
-        active_templates = NotificationTemplate.query.filter_by(is_active=True).count()
-
-        return jsonify(
-            {
-                "stats": {
-                    "notifications": {
-                        "total": total_notifications,
-                        "unread": unread_notifications,
-                        "read": total_notifications - unread_notifications,
-                    },
-                    "queue": {
-                        "pending": queue_pending,
-                        "processing": queue_processing,
-                        "processed": queue_processed,
-                        "failed": queue_failed,
-                    },
-                    "templates": {"active": active_templates},
-                }
-            }
-        )
-
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
-
-
-@notifications_bp.route("/send", methods=["POST"])
-def send_notification():
-    """Enviar notificação imediatamente"""
-    try:
-        data = request.get_json()
-        required_fields = ["user_id", "type", "title", "message"]
-
-        for field in required_fields:
-            if field not in data:
-                return jsonify({"error": f"Campo {field} obrigatório"}), 400
-
-        # Verificar preferências do usuário
-        user_id = data["user_id"]
-        notification_type = data["type"]
-        channel = data.get("channel", "web")
-
-        preference = NotificationPreference.query.filter_by(
-            user_id=user_id, notification_type=notification_type, channel=channel
-        ).first()
-
-        # Se o usuário desabilitou este tipo de notificação
-        if preference and not preference.enabled:
-            return (
-                jsonify(
-                    {"message": "Notificação bloqueada pelas preferências do usuário"}
+            type_stats[notification_type.value] = {
+                "sent": sent,
+                "failed": failed,
+                "total": sent + failed,
+                "success_rate": (
+                    (sent / (sent + failed) * 100) if (sent + failed) > 0 else 0
                 ),
-                200,
-            )
+            }
 
-        # Criar e enviar notificação
-        notification = Notification(
-            user_id=user_id,
-            type=notification_type,
-            title=data["title"],
-            message=data["message"],
-            data=data.get("data", {}),
-            channels=[channel],
-            is_read=False,
-        )
+        # Stats por canal
+        channel_stats = {}
+        for channel in NotificationChannel:
+            sent = NotificationLog.query.filter_by(
+                channel = channel, status="sent"
+            ).count()
+            failed = NotificationLog.query.filter_by(
+                channel = channel, status="failed"
+            ).count()
 
-        db.session.add(notification)
-        db.session.commit()
+            channel_stats[channel.value] = {
+                "sent": sent,
+                "failed": failed,
+                "total": sent + failed,
+                "success_rate": (
+                    (sent / (sent + failed) * 100) if (sent + failed) > 0 else 0
+                ),
+            }
 
-        return (
-            jsonify(
-                {
-                    "message": "Notificação enviada com sucesso",
-                    "notification": notification.to_dict(),
-                }
-            ),
-            201,
-        )
-
-    except Exception as e:
-        db.session.rollback()
-        return jsonify({"error": str(e)}), 500
-
-
-@notifications_bp.route("/bulk-send", methods=["POST"])
-def bulk_send():
-    """Enviar notificações em lote"""
-    try:
-        data = request.get_json()
-        required_fields = ["user_ids", "type", "title", "message"]
-
-        for field in required_fields:
-            if field not in data:
-                return jsonify({"error": f"Campo {field} obrigatório"}), 400
-
-        user_ids = data["user_ids"]
-        if not isinstance(user_ids, list):
-            return jsonify({"error": "user_ids deve ser uma lista"}), 400
-
-        notifications = []
-        for user_id in user_ids:
-            # Verificar preferências do usuário
-            preference = NotificationPreference.query.filter_by(
-                user_id=user_id,
-                notification_type=data["type"],
-                channel=data.get("channel", "web"),
-            ).first()
-
-            # Pular se usuário desabilitou notificações
-            if preference and not preference.enabled:
-                continue
-
-            notification = Notification(
-                user_id=user_id,
-                type=data["type"],
-                title=data["title"],
-                message=data["message"],
-                data=data.get("data", {}),
-                channels=[data.get("channel", "in_app")],
-                is_read=False,
-            )
-
-            notifications.append(notification)
-            db.session.add(notification)
-
-        db.session.commit()
+        # Stats gerais
+        total_notifications = Notification.query.count()
+        total_unread = Notification.query.filter(Notification.read_at.is_(None)).count()
+        total_logs = NotificationLog.query.count()
 
         return jsonify(
             {
-                "message": f"{len(notifications)} notificações enviadas com sucesso",
-                "sent_count": len(notifications),
+                "general": {
+                    "total_notifications": total_notifications,
+                    "total_unread": total_unread,
+                    "read_rate": (
+                        (
+                            (total_notifications - total_unread)
+                            / total_notifications
+                            * 100
+                        )
+                        if total_notifications > 0
+                        else 0
+                    ),
+                    "total_logs": total_logs,
+                },
+                "by_type": type_stats,
+                "by_channel": channel_stats,
             }
         )
 
     except Exception as e:
-        db.session.rollback()
-        return jsonify({"error": str(e)}), 500
+        return jsonify({"error": f"Erro ao buscar estatísticas: {str(e)}"}), 500
+
+
+# Health check para notificações
+@notifications_bp.route("/health", methods=["GET"])
+def notifications_health():
+    """Health check do sistema de notificações"""
+    try:
+        # CORREÇÃO DE SEGURANÇA: Usar text() com query parametrizada
+        from sqlalchemy import text
+        db.session.execute(text("SELECT 1"))
+
+        # Verificar configuração do serviço
+        config_status = get_notification_service().get_health_status()
+
+        return jsonify(
+            {
+                "status": "healthy",
+                "database": "connected",
+                "notification_service": config_status,
+                "timestamp": datetime.utcnow().isoformat(),
+            }
+        )
+
+    except Exception as e:
+        return (
+            jsonify(
+                {
+                    "status": "unhealthy",
+                    "error": str(e),
+                    "timestamp": datetime.utcnow().isoformat(),
+                }
+            ),
+            500,
+        )

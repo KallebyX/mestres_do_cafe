@@ -15,29 +15,29 @@ def app():
     """Cria uma instância da aplicação Flask para testes"""
     # Criar um banco de dados temporário
     db_fd, db_path = tempfile.mkstemp()
-    
+
     # Configurar variáveis de ambiente para testes
     os.environ['FLASK_ENV'] = 'testing'
     os.environ['DATABASE_URL'] = f'sqlite:///{db_path}'
     os.environ['SECRET_KEY'] = 'test-secret-key'
     os.environ['JWT_SECRET_KEY'] = 'test-jwt-secret-key'
-    
+
     # Criar aplicação para testes
     app = create_app('testing')
-    
+
     # Configurar contexto da aplicação
     with app.app_context():
         # Criar todas as tabelas
         db.create_all()
-        
+
         # Criar dados de teste
         create_test_data()
-        
+
         yield app
-        
+
         # Cleanup
         db.drop_all()
-    
+
     # Fechar e remover arquivo temporário
     os.close(db_fd)
     os.unlink(db_path)
@@ -74,7 +74,7 @@ def create_test_data():
             email_verified=True
         )
         db.session.add(admin_user)
-        
+
         # Criar usuário comum
         regular_user = User(
             email='user@test.com',
@@ -87,7 +87,7 @@ def create_test_data():
             email_verified=True
         )
         db.session.add(regular_user)
-        
+
         # Criar usuário inativo
         inactive_user = User(
             email='inactive@test.com',
@@ -100,9 +100,9 @@ def create_test_data():
             email_verified=False
         )
         db.session.add(inactive_user)
-        
+
         db.session.commit()
-        
+
     except Exception as e:
         db.session.rollback()
         print(f"Erro ao criar dados de teste: {e}")
@@ -205,7 +205,7 @@ def no_auth_headers():
 
 class TestHelpers:
     """Classe com métodos auxiliares para testes"""
-    
+
     @staticmethod
     def login_user(client, email, password):
         """Faz login de um usuário e retorna o token"""
@@ -216,7 +216,7 @@ class TestHelpers:
         if response.status_code == 200:
             return response.json['token']
         return None
-    
+
     @staticmethod
     def create_auth_headers(token):
         """Cria headers de autenticação"""
@@ -224,21 +224,21 @@ class TestHelpers:
             'Authorization': f'Bearer {token}',
             'Content-Type': 'application/json'
         }
-    
+
     @staticmethod
     def assert_error_response(response, expected_status=400):
         """Verifica se a resposta é um erro esperado"""
         assert response.status_code == expected_status
         assert 'error' in response.json
         assert response.json['error'] is not None
-    
+
     @staticmethod
     def assert_success_response(response, expected_status=200):
         """Verifica se a resposta é um sucesso esperado"""
         assert response.status_code == expected_status
         assert 'success' in response.json
         assert response.json['success'] is True
-    
+
     @staticmethod
     def assert_validation_error(response, field=None):
         """Verifica se a resposta é um erro de validação"""

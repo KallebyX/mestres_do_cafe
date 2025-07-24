@@ -26,14 +26,14 @@ class PaymentStatus(Enum):
 
 class Payment(db.Model):
     __tablename__ = 'payments'
-    
-    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid4)
-    order_id = Column(UUID(as_uuid=True), ForeignKey('orders.id'))
-    vendor_id = Column(UUID(as_uuid=True), ForeignKey('vendors.id'))  # Para split payments
-    amount = Column(DECIMAL(10, 2), nullable=False)
+
+    id = Column(UUID(as_uuid = True), primary_key = True, default = uuid4)
+    order_id = Column(UUID(as_uuid = True), ForeignKey('orders.id'))
+    vendor_id = Column(UUID(as_uuid = True), ForeignKey('vendors.id'))  # Para split payments
+    amount = Column(DECIMAL(10, 2), nullable = False)
     currency = Column(String(3), default='BRL')
     status = Column(String(20), default='pending')
-    payment_method = Column(String(50), nullable=False)
+    payment_method = Column(String(50), nullable = False)
     provider = Column(String(50))
     provider_transaction_id = Column(String(255))
     provider_response = Column(Text)
@@ -43,18 +43,18 @@ class Payment(db.Model):
     released_at = Column(DateTime)  # Quando foi liberado para o vendedor
     release_eligible_at = Column(DateTime)  # Quando se torna elegível para liberação automática
     escrow_reason = Column(String(255))  # Motivo da retenção
-    created_at = Column(DateTime, default=datetime.utcnow)
-    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
-    
+    created_at = Column(DateTime, default = datetime.utcnow)
+    updated_at = Column(DateTime, default = datetime.utcnow, onupdate = datetime.utcnow)
+
     # Relacionamentos
     order = relationship("Order", back_populates="payments")
     vendor = relationship("Vendor", back_populates="payments")
     refunds = relationship("Refund", back_populates="payment")
     disputes = relationship("PaymentDispute", back_populates="payment")
-    
+
     def __repr__(self):
         return f"<Payment(id={self.id}, amount={self.amount}, status={self.status})>"
-    
+
     def to_dict(self):
         return {
             'id': str(self.id),
@@ -75,7 +75,7 @@ class Payment(db.Model):
             'created_at': self.created_at.isoformat() if self.created_at else None,
             'updated_at': self.updated_at.isoformat() if self.updated_at else None
         }
-    
+
     def hold_payment(self, reason="Marketplace escrow - awaiting delivery confirmation"):
         """Move payment to held status for escrow"""
         self.status = PaymentStatus.HELD.value
@@ -83,18 +83,18 @@ class Payment(db.Model):
         self.escrow_reason = reason
         # Pagamento fica retido por 7 dias após entrega confirmada
         from datetime import timedelta
-        self.release_eligible_at = datetime.utcnow() + timedelta(days=7)
-    
+        self.release_eligible_at = datetime.utcnow() + timedelta(days = 7)
+
     def release_payment(self):
         """Release payment from escrow to vendor"""
         self.status = PaymentStatus.RELEASED.value
         self.released_at = datetime.utcnow()
-    
+
     def dispute_payment(self, reason):
         """Move payment to disputed status"""
         self.status = PaymentStatus.DISPUTED.value
         self.escrow_reason = reason
-    
+
     def is_eligible_for_release(self):
         """Check if payment is eligible for automatic release"""
         return (
@@ -106,25 +106,25 @@ class Payment(db.Model):
 
 class Refund(db.Model):
     __tablename__ = 'refunds'
-    
-    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid4)
-    payment_id = Column(UUID(as_uuid=True), ForeignKey('payments.id'))
-    order_id = Column(UUID(as_uuid=True), ForeignKey('orders.id'))
-    amount = Column(DECIMAL(10, 2), nullable=False)
+
+    id = Column(UUID(as_uuid = True), primary_key = True, default = uuid4)
+    payment_id = Column(UUID(as_uuid = True), ForeignKey('payments.id'))
+    order_id = Column(UUID(as_uuid = True), ForeignKey('orders.id'))
+    amount = Column(DECIMAL(10, 2), nullable = False)
     reason = Column(String(255))
     status = Column(String(20), default='pending')
     provider_refund_id = Column(String(255))
     provider_response = Column(Text)
     processed_at = Column(DateTime)
-    created_at = Column(DateTime, default=datetime.utcnow)
-    
+    created_at = Column(DateTime, default = datetime.utcnow)
+
     # Relacionamentos
     payment = relationship("Payment", back_populates="refunds")
     order = relationship("Order", back_populates="refunds")
-    
+
     def __repr__(self):
         return f"<Refund(id={self.id}, amount={self.amount}, status={self.status})>"
-    
+
     def to_dict(self):
         return {
             'id': str(self.id),
@@ -142,38 +142,38 @@ class Refund(db.Model):
 
 class PaymentDispute(db.Model):
     __tablename__ = 'payment_disputes'
-    
-    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid4)
-    payment_id = Column(UUID(as_uuid=True), ForeignKey('payments.id'))
-    order_id = Column(UUID(as_uuid=True), ForeignKey('orders.id'))
-    customer_id = Column(UUID(as_uuid=True), ForeignKey('customers.id'))
-    vendor_id = Column(UUID(as_uuid=True), ForeignKey('vendors.id'))
-    
+
+    id = Column(UUID(as_uuid = True), primary_key = True, default = uuid4)
+    payment_id = Column(UUID(as_uuid = True), ForeignKey('payments.id'))
+    order_id = Column(UUID(as_uuid = True), ForeignKey('orders.id'))
+    customer_id = Column(UUID(as_uuid = True), ForeignKey('customers.id'))
+    vendor_id = Column(UUID(as_uuid = True), ForeignKey('vendors.id'))
+
     # Detalhes da disputa
-    reason = Column(String(100), nullable=False)  # 'not_delivered', 'damaged', 'not_as_described', 'other'
-    description = Column(Text, nullable=False)
+    reason = Column(String(100), nullable = False)  # 'not_delivered', 'damaged', 'not_as_described', 'other'
+    description = Column(Text, nullable = False)
     status = Column(String(20), default='open')  # 'open', 'investigating', 'resolved', 'closed'
-    
+
     # Resolução
     resolution = Column(String(100))  # 'refund', 'partial_refund', 'replace', 'favor_vendor'
     resolution_notes = Column(Text)
-    resolved_by = Column(UUID(as_uuid=True), ForeignKey('users.id'))
+    resolved_by = Column(UUID(as_uuid = True), ForeignKey('users.id'))
     resolved_at = Column(DateTime)
-    
+
     # Controle
-    created_at = Column(DateTime, default=datetime.utcnow)
-    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
-    
+    created_at = Column(DateTime, default = datetime.utcnow)
+    updated_at = Column(DateTime, default = datetime.utcnow, onupdate = datetime.utcnow)
+
     # Relacionamentos
     payment = relationship("Payment", back_populates="disputes")
     order = relationship("Order", back_populates="disputes")
     customer = relationship("Customer", back_populates="disputes")
     vendor = relationship("Vendor", back_populates="disputes")
     resolver = relationship("User", foreign_keys=[resolved_by])
-    
+
     def __repr__(self):
         return f"<PaymentDispute(id={self.id}, reason={self.reason}, status={self.status})>"
-    
+
     def to_dict(self):
         return {
             'id': str(self.id),
@@ -195,34 +195,34 @@ class PaymentDispute(db.Model):
 
 class EscrowTransaction(db.Model):
     __tablename__ = 'escrow_transactions'
-    
-    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid4)
-    payment_id = Column(UUID(as_uuid=True), ForeignKey('payments.id'))
-    order_id = Column(UUID(as_uuid=True), ForeignKey('orders.id'))
-    vendor_id = Column(UUID(as_uuid=True), ForeignKey('vendors.id'))
-    
+
+    id = Column(UUID(as_uuid = True), primary_key = True, default = uuid4)
+    payment_id = Column(UUID(as_uuid = True), ForeignKey('payments.id'))
+    order_id = Column(UUID(as_uuid = True), ForeignKey('orders.id'))
+    vendor_id = Column(UUID(as_uuid = True), ForeignKey('vendors.id'))
+
     # Valores do escrow
-    amount = Column(DECIMAL(10, 2), nullable=False)
-    platform_fee = Column(DECIMAL(10, 2), default=0.00)
-    vendor_amount = Column(DECIMAL(10, 2), nullable=False)  # Valor final para o vendedor
-    
+    amount = Column(DECIMAL(10, 2), nullable = False)
+    platform_fee = Column(DECIMAL(10, 2), default = 0.00)
+    vendor_amount = Column(DECIMAL(10, 2), nullable = False)  # Valor final para o vendedor
+
     # Status e controle
     status = Column(String(20), default='held')  # 'held', 'released', 'disputed', 'refunded'
     held_reason = Column(String(255))
     release_eligible_at = Column(DateTime)
-    
+
     # Datas importantes
-    held_at = Column(DateTime, default=datetime.utcnow)
+    held_at = Column(DateTime, default = datetime.utcnow)
     released_at = Column(DateTime)
-    
+
     # Relacionamentos
     payment = relationship("Payment")
     order = relationship("Order")
     vendor = relationship("Vendor")
-    
+
     def __repr__(self):
         return f"<EscrowTransaction(id={self.id}, amount={self.amount}, status={self.status})>"
-    
+
     def to_dict(self):
         return {
             'id': str(self.id),
@@ -242,19 +242,19 @@ class EscrowTransaction(db.Model):
 
 class PaymentWebhook(db.Model):
     __tablename__ = 'payment_webhooks'
-    
-    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid4)
-    provider = Column(String(50), nullable=False)
-    event_type = Column(String(100), nullable=False)
-    payload = Column(Text, nullable=False)
-    processed = Column(Boolean, default=False)
+
+    id = Column(UUID(as_uuid = True), primary_key = True, default = uuid4)
+    provider = Column(String(50), nullable = False)
+    event_type = Column(String(100), nullable = False)
+    payload = Column(Text, nullable = False)
+    processed = Column(Boolean, default = False)
     processing_error = Column(Text)
-    created_at = Column(DateTime, default=datetime.utcnow)
+    created_at = Column(DateTime, default = datetime.utcnow)
     processed_at = Column(DateTime)
-    
+
     def __repr__(self):
         return f"<PaymentWebhook(id={self.id}, provider={self.provider}, event_type={self.event_type})>"
-    
+
     def to_dict(self):
         return {
             'id': str(self.id),

@@ -145,8 +145,55 @@ export const AuthProvider = ({ children }) => {
       setError(null);
 
       const response = await authAPI.register(userData);
+      
+      console.log('🔍 DIAGNÓSTICO - Register API Response:', response);
+      console.log('🔍 DIAGNÓSTICO - Has access_token?', !!response.data?.access_token);
+      console.log('🔍 DIAGNÓSTICO - Has token?', !!response.data?.token);
+      console.log('🔍 DIAGNÓSTICO - Response keys:', Object.keys(response.data || {}));
 
       if (response.success) {
+        // Se a API retornou token, fazer login automático
+        if (response.data?.access_token) {
+          const userData = response.data.user;
+          const isAdmin = userData.is_admin || false;
+          
+          // Criar perfil baseado na resposta da API (mesmo padrão do login)
+          const userProfile = {
+            id: userData.id,
+            email: userData.email,
+            name: userData.name || 'Usuário',
+            role: isAdmin ? 'admin' : 'customer',
+            permissions: isAdmin ? ['read', 'write', 'admin'] : ['read'],
+            user_type: isAdmin ? 'admin' : 'cliente_pf',
+            is_admin: isAdmin,
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString()
+          };
+          
+          const authUser = {
+            ...userData,
+            token: response.data.access_token,
+            user_type: isAdmin ? 'admin' : 'cliente_pf',
+            is_admin: isAdmin
+          };
+          
+          setUser(authUser);
+          setProfile(userProfile);
+          
+          // Salvar no localStorage (mesmo padrão do login)
+          localStorage.setItem('auth_token', response.data.access_token);
+          localStorage.setItem('user', JSON.stringify(authUser));
+          
+          console.log('✅ CORREÇÃO - Login automático após registro realizado');
+          console.log('✅ CORREÇÃO - User salvo:', authUser);
+          
+          return {
+            success: true,
+            message: "Cadastro realizado com sucesso! Login automático efetuado.",
+            user: authUser,
+          };
+        }
+        
         return {
           success: true,
           message: "Cadastro realizado com sucesso! Faça login para continuar.",

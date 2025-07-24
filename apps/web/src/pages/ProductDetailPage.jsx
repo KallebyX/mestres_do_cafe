@@ -1,4 +1,3 @@
-import { getAllProducts, getProductById } from "../lib/api";
 import {
   Award,
   Coffee,
@@ -10,13 +9,15 @@ import {
   Star,
   Truck
 } from 'lucide-react';
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
+import ShippingCalculator from '../components/ShippingCalculator';
 import { ReviewSystem } from '../components/reviews';
 import '../components/reviews/ReviewSystem.css';
 import { useAuth } from '../contexts/AuthContext';
 import { useCart } from '../contexts/CartContext';
-import ShippingCalculator from '../components/ShippingCalculator';
+import { getAllProducts, getProductById } from "../lib/api";
+import analytics from '../services/analytics';
 
 const ProductDetailPage = () => {
   const { id } = useParams();
@@ -54,8 +55,25 @@ const ProductDetailPage = () => {
       const result = await getProductById(id);
       
       if (result.success) {
-        setProduct(result.data);
-        await loadRelatedProducts(result.data.category);
+        // A API individual retorna os dados aninhados em result.data.product
+        const productData = result.data.product || result.data;
+        
+        console.log('🔍 Produto carregado:', productData);
+        console.log('🔍 Preço do produto:', productData.price);
+        console.log('🔍 Stock quantity:', productData.stock_quantity);
+        console.log('🔍 Available weights:', productData.available_weights);
+        console.log('🔍 Product prices:', productData.product_prices);
+        
+        setProduct(productData);
+        await loadRelatedProducts(productData.category);
+        
+        // Track product view event
+        analytics.trackProductView({
+          product_id: productData.id,
+          product_name: productData.name,
+          price: productData.price,
+          category: productData.category
+        });
       } else {
         throw new Error(result.error || 'Produto não encontrado');
       }
@@ -86,6 +104,17 @@ const ProductDetailPage = () => {
   const handleAddToCart = async () => {
     try {
       await addToCart(product, quantity);
+      
+      // Track add to cart event
+      analytics.trackAddToCart({
+        product_id: product.id,
+        product_name: product.name,
+        price: currentPrice,
+        category: product.category,
+        quantity: quantity,
+        weight: selectedWeight
+      });
+      
       alert(`${quantity}x ${product.name} adicionado ao carrinho!`);
     } catch (error) {
       alert('Erro ao adicionar produto ao carrinho');
@@ -113,8 +142,15 @@ const ProductDetailPage = () => {
     ];
 
   const currentWeightOption = weightOptions.find(w => w.value === selectedWeight) || weightOptions[0];
-  const currentPrice = product && currentWeightOption && product.price ? 
+  console.log('🔍 DEBUG - product:', product);
+  console.log('🔍 DEBUG - product.price:', product?.price);
+  console.log('🔍 DEBUG - currentWeightOption:', currentWeightOption);
+  console.log('🔍 DEBUG - parseFloat(product.price):', product?.price ? parseFloat(product.price) : 'undefined');
+  
+  const currentPrice = product && currentWeightOption && product.price ?
     (parseFloat(product.price) || 0) * (currentWeightOption.priceMultiplier || 1) : 0;
+  
+  console.log('🔍 DEBUG - currentPrice calculado:', currentPrice);
 
   const productImages = product?.images || [product?.image || '/default-coffee.jpg'];
 

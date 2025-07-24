@@ -44,8 +44,8 @@ const ProductPage = () => {
       // Usar helper genérico para buscar produto
       const response = await getById('products', id);
       
-      if (response.success && response.data) {
-        return response.data;
+      if (response.success && response.data?.product) {
+        return response.data.product;
       } else {
         throw new Error(response.error || 'Produto não encontrado');
       }
@@ -57,12 +57,12 @@ const ProductPage = () => {
       // Primeiro buscar o produto atual para obter sua categoria
       const currentProduct = await getById('products', id);
       
-      if (currentProduct.success && currentProduct.data) {
+      if (currentProduct.success && currentProduct.data?.product) {
         // Buscar produtos relacionados da mesma categoria
-        const response = await getFiltered('products', 
-          { 
-            category: currentProduct.data.category,
-            is_active: true 
+        const response = await getFiltered('products',
+          {
+            category: currentProduct.data.product.category,
+            is_active: true
           },
           { 
             limit: 5, // Pegar 5 para depois filtrar o atual

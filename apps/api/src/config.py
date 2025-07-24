@@ -12,17 +12,39 @@ class Config:
     JWT_SECRET_KEY = os.environ.get("JWT_SECRET_KEY")
 
     # Configurações JWT seguras
-    JWT_ACCESS_TOKEN_EXPIRES = timedelta(hours=1)  # Reduzido de 24h
-    JWT_REFRESH_TOKEN_EXPIRES = timedelta(days=30)
+    JWT_ACCESS_TOKEN_EXPIRES = timedelta(hours = 1)  # Reduzido de 24h
+    JWT_REFRESH_TOKEN_EXPIRES = timedelta(days = 30)
     JWT_ALGORITHM = "HS256"
     JWT_BLACKLIST_ENABLED = True
     JWT_BLACKLIST_TOKEN_CHECKS = ["access", "refresh"]
+    JWT_TOKEN_LOCATION = ["headers", "cookies"]
+    JWT_HEADER_NAME = "Authorization"
+    JWT_HEADER_TYPE = "Bearer"
+
+    # Configurações JWT Cookies
+    JWT_ACCESS_COOKIE_NAME = "access_token_cookie"
+    JWT_REFRESH_COOKIE_NAME = "refresh_token_cookie"
+    JWT_ACCESS_COOKIE_PATH = "/"
+    JWT_REFRESH_COOKIE_PATH = "/token/refresh"
+    JWT_COOKIE_SECURE = True  # Será sobrescrito em dev
+    JWT_COOKIE_CSRF_PROTECT = False  # Simplificar para desenvolvimento
+    JWT_COOKIE_SAMESITE = "Lax"
+
+    # Configurações JWT CSRF
+    JWT_ACCESS_CSRF_HEADER_NAME = "X-CSRF-TOKEN"
+    JWT_REFRESH_CSRF_HEADER_NAME = "X-CSRF-TOKEN"
+    JWT_ACCESS_CSRF_FIELD_NAME = "csrf_token"
+    JWT_REFRESH_CSRF_FIELD_NAME = "csrf_token"
+    JWT_ACCESS_CSRF_COOKIE_NAME = "csrf_access_token"
+    JWT_REFRESH_CSRF_COOKIE_NAME = "csrf_refresh_token"
+    JWT_ACCESS_CSRF_COOKIE_PATH = "/"
+    JWT_REFRESH_CSRF_COOKIE_PATH = "/token/refresh"
 
     # Configurações de sessão seguras
     SESSION_COOKIE_SECURE = True
     SESSION_COOKIE_HTTPONLY = True
     SESSION_COOKIE_SAMESITE = "Lax"
-    PERMANENT_SESSION_LIFETIME = timedelta(hours=1)
+    PERMANENT_SESSION_LIFETIME = timedelta(hours = 1)
 
     # Configurações de upload seguras
     MAX_CONTENT_LENGTH = 16 * 1024 * 1024  # 16MB
@@ -53,18 +75,18 @@ class Config:
         """Inicializar configurações da aplicação"""
         # Criar diretório de uploads se não existir
         upload_path = Path(app.root_path) / app.config["UPLOAD_FOLDER"]
-        upload_path.mkdir(parents=True, exist_ok=True)
+        upload_path.mkdir(parents = True, exist_ok = True)
 
         # Validar variáveis obrigatórias (Supabase não é obrigatório em desenvolvimento)
         required_vars = [
             "SECRET_KEY",
             "JWT_SECRET_KEY",
         ]
-        
+
         # Adicionar Supabase apenas se não for desenvolvimento
         if app.config.get("ENV") != "development":
             required_vars.extend(["SUPABASE_URL", "SUPABASE_ANON_KEY"])
-        
+
         missing_vars = [var for var in required_vars if not os.environ.get(var)]
 
         if missing_vars and not app.config.get("TESTING", False):
@@ -116,6 +138,7 @@ class DevelopmentConfig(Config):
 
     # Segurança relaxada para desenvolvimento
     SESSION_COOKIE_SECURE = False
+    JWT_COOKIE_SECURE = False  # Cookies JWT não precisam de HTTPS em dev
 
 
 class ProductionConfig(Config):
@@ -129,7 +152,7 @@ class ProductionConfig(Config):
     def init_app(cls, app):
         """Inicializar configurações da aplicação"""
         Config.init_app(app)
-        
+
         # Validar Supabase obrigatório em produção
         if not os.environ.get("SUPABASE_URL") or not os.environ.get("SUPABASE_ANON_KEY"):
             raise ValueError(
@@ -138,7 +161,7 @@ class ProductionConfig(Config):
 
     # CORS restritivo
     CORS_ORIGINS = (
-        os.environ.get("CORS_ORIGINS", "").split(",")
+        os.environ.get("CORS_ORIGINS", "").split(", ")
         if os.environ.get("CORS_ORIGINS")
         else [
             "https://mestres-cafe-web.onrender.com",
@@ -148,10 +171,10 @@ class ProductionConfig(Config):
 
     # Headers de segurança obrigatórios
     SECURITY_HEADERS = {
-        "Strict-Transport-Security": "max-age=31536000; includeSubDomains; preload",
+        "Strict-Transport-Security": "max-age = 31536000; includeSubDomains; preload",
         "X-Content-Type-Options": "nosniff",
         "X-Frame-Options": "DENY",
-        "X-XSS-Protection": "1; mode=block",
+        "X-XSS-Protection": "1; mode = block",
         "Referrer-Policy": "strict-origin-when-cross-origin",
         "Content-Security-Policy": (
             "default-src 'self'; "
@@ -178,7 +201,7 @@ class ProductionConfig(Config):
 
         if not app.debug:
             file_handler = RotatingFileHandler(
-                "logs/mestres_cafe.log", maxBytes=10240000, backupCount=10
+                "logs/mestres_cafe.log", maxBytes = 10240000, backupCount = 10
             )
             file_handler.setFormatter(
                 logging.Formatter(

@@ -2,7 +2,6 @@ from flask import Blueprint, request, jsonify
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from database import db
 from models.products import Product
-from datetime import datetime
 import requests
 import re
 
@@ -32,21 +31,21 @@ def validate_cep(cep):
     """Valida e formata CEP"""
     if not cep:
         return None
-    
+
     # Remove caracteres não numéricos
     cep = re.sub(r'\D', '', cep)
-    
+
     # Verifica se tem 8 dígitos
     if len(cep) != 8:
         return None
-    
+
     return cep
 
 def format_cep(cep):
     """Formata CEP com traço"""
     if not cep or len(cep) != 8:
         return cep
-    
+
     return f"{cep[:5]}-{cep[5:]}"
 
 @shipping_bp.route('/calculate', methods=['POST'])
@@ -54,7 +53,7 @@ def calculate_shipping():
     """Calcular frete para um produto"""
     try:
         data = request.get_json()
-        
+
         # Validações
         required_fields = ['origin_cep', 'destination_cep', 'weight', 'product_id']
         for field in required_fields:
@@ -63,17 +62,17 @@ def calculate_shipping():
                     'success': False,
                     'error': f'Campo {field} é obrigatório'
                 }), 400
-        
+
         # Validar CEPs
         origin_cep = validate_cep(data['origin_cep'])
         destination_cep = validate_cep(data['destination_cep'])
-        
+
         if not origin_cep or not destination_cep:
             return jsonify({
                 'success': False,
                 'error': 'CEPs inválidos'
             }), 400
-        
+
         # Verificar se produto existe
         product = Product.query.get(data['product_id'])
         if not product:
@@ -81,7 +80,7 @@ def calculate_shipping():
                 'success': False,
                 'error': 'Produto não encontrado'
             }), 404
-        
+
         # Dados do produto
         weight = float(data['weight'])
         dimensions = data.get('dimensions', {
@@ -89,12 +88,12 @@ def calculate_shipping():
             'width': 15,
             'height': 10
         })
-        
+
         # Simular cálculo de frete (substituir por integração real com Melhor Envio)
         shipping_options = calculate_shipping_mock(
             origin_cep, destination_cep, weight, dimensions
         )
-        
+
         return jsonify({
             'success': True,
             'shipping_options': shipping_options,
@@ -103,7 +102,7 @@ def calculate_shipping():
             'weight': weight,
             'dimensions': dimensions
         })
-        
+
     except Exception as e:
         return jsonify({
             'success': False,
@@ -115,12 +114,12 @@ def calculate_shipping_mock(origin_cep, destination_cep, weight, dimensions):
     # Simular diferentes opções de frete
     base_price = 15.0
     weight_factor = weight * 2.5
-    
+
     # Calcular distância baseado nos primeiros dígitos do CEP
     origin_region = int(origin_cep[:2])
     dest_region = int(destination_cep[:2])
     distance_factor = abs(origin_region - dest_region) * 0.5
-    
+
     shipping_options = [
         {
             'service_id': 'PAC',
@@ -143,7 +142,7 @@ def calculate_shipping_mock(origin_cep, destination_cep, weight, dimensions):
             'error': None
         }
     ]
-    
+
     # Adicionar opções de transportadoras se peso for maior
     if weight > 5:
         shipping_options.append({
@@ -156,7 +155,7 @@ def calculate_shipping_mock(origin_cep, destination_cep, weight, dimensions):
             'insurance_value': 0.0,
             'error': None
         })
-    
+
     return shipping_options
 
 @shipping_bp.route('/cep/<cep>', methods=['GET'])
@@ -170,23 +169,23 @@ def get_cep_info(cep):
                 'success': False,
                 'error': 'CEP inválido'
             }), 400
-        
+
         # Buscar informações do CEP via ViaCEP
         try:
             response = requests.get(
                 f"https://viacep.com.br/ws/{validated_cep}/json/",
-                timeout=10
+                timeout = 10
             )
             response.raise_for_status()
-            
+
             cep_data = response.json()
-            
+
             if cep_data.get('erro'):
                 return jsonify({
                     'success': False,
                     'error': 'CEP não encontrado'
                 }), 404
-            
+
             return jsonify({
                 'success': True,
                 'cep': format_cep(validated_cep),
@@ -198,13 +197,13 @@ def get_cep_info(cep):
                     'ibge': cep_data.get('ibge', '')
                 }
             })
-            
+
         except requests.RequestException as e:
             return jsonify({
                 'success': False,
                 'error': 'Erro ao buscar informações do CEP'
             }), 500
-        
+
     except Exception as e:
         return jsonify({
             'success': False,
@@ -241,12 +240,12 @@ def get_shipping_services():
                 'insurance_available': True
             }
         ]
-        
+
         return jsonify({
             'success': True,
             'services': services
         })
-        
+
     except Exception as e:
         return jsonify({
             'success': False,
@@ -260,7 +259,7 @@ def create_shipping_quote():
     try:
         user_id = get_jwt_identity()
         data = request.get_json()
-        
+
         # Validações
         required_fields = ['items', 'destination_cep']
         for field in required_fields:
@@ -269,7 +268,7 @@ def create_shipping_quote():
                     'success': False,
                     'error': f'Campo {field} é obrigatório'
                 }), 400
-        
+
         # Validar CEP de destino
         destination_cep = validate_cep(data['destination_cep'])
         if not destination_cep:
@@ -277,11 +276,11 @@ def create_shipping_quote():
                 'success': False,
                 'error': 'CEP de destino inválido'
             }), 400
-        
+
         # Calcular peso e dimensões totais
         total_weight = 0
         total_value = 0
-        
+
         for item in data['items']:
             product = Product.query.get(item['product_id'])
             if not product:
@@ -289,22 +288,22 @@ def create_shipping_quote():
                     'success': False,
                     'error': f'Produto {item["product_id"]} não encontrado'
                 }), 404
-            
+
             quantity = item.get('quantity', 1)
             weight = product.weight or 500  # peso padrão em gramas
-            
+
             total_weight += (weight * quantity) / 1000  # converter para kg
             total_value += product.price * quantity
-        
+
         # CEP de origem (configurável)
         origin_cep = "01310-100"  # São Paulo - SP (exemplo)
-        
+
         # Calcular frete
         shipping_options = calculate_shipping_mock(
-            origin_cep, destination_cep, total_weight, 
+            origin_cep, destination_cep, total_weight,
             {'length': 30, 'width': 25, 'height': 15}
         )
-        
+
         return jsonify({
             'success': True,
             'quote': {
@@ -315,7 +314,7 @@ def create_shipping_quote():
                 'shipping_options': shipping_options
             }
         })
-        
+
     except Exception as e:
         return jsonify({
             'success': False,

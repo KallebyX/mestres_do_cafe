@@ -1,154 +1,160 @@
 """
-Modelos de notificações
+Modelos para sistema de notificações
 """
 
 import uuid
-import json
-
-from sqlalchemy import Boolean, Column, DateTime, ForeignKey, String, Text
-from sqlalchemy.dialects.postgresql import UUID
-from sqlalchemy.orm import relationship
-from sqlalchemy.sql import func
-
+from datetime import datetime
 from database import db
+from sqlalchemy.dialects.postgresql import JSON
 
 
 class Notification(db.Model):
-    __tablename__ = "notifications"
+    """Modelo para notificações in-app"""
+    __tablename__ = 'notifications'
 
-    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    user_id = Column(UUID(as_uuid=True), ForeignKey("users.id", ondelete="CASCADE"))
-    type = Column(String(50), nullable=False)
-    title = Column(String(255), nullable=False)
-    message = Column(Text, nullable=False)
-    data = Column(Text)  # JSON string para compatibilidade SQLite
-    channels = Column(Text, default='["in_app"]')  # JSON string para compatibilidade SQLite
-    is_read = Column(Boolean, default=False)
-    read_at = Column(DateTime)
-    expires_at = Column(DateTime)
-    created_at = Column(DateTime, default=func.now())
+    id = db.Column(db.String(36), primary_key = True, default = lambda: str(uuid.uuid4()))
+    user_id = db.Column(db.String(36), db.ForeignKey('users.id'), nullable = False)
+    type = db.Column(db.String(50), nullable = False)
+    title = db.Column(db.String(255), nullable = False)
+    message = db.Column(db.Text, nullable = False)
+    data = db.Column(JSON, default={})  # Dados adicionais em JSON
+    read = db.Column(db.Boolean, default = False, nullable = False)
+    priority = db.Column(db.String(20), default='medium', nullable = False)
+    read_at = db.Column(db.DateTime, nullable = True)
+    created_at = db.Column(db.DateTime, default = datetime.utcnow, nullable = False)
 
     # Relacionamentos
-    user = relationship("User", back_populates="notifications")
-
-    def __repr__(self):
-        return f"<Notification(id={self.id}, user_id={self.user_id}, type={self.type})>"
+    user = db.relationship('User', backref='notifications')
 
     def to_dict(self):
+        """Converte modelo para dicionário"""
+        import json
         return {
-            "id": str(self.id),
-            "user_id": str(self.user_id),
-            "type": self.type,
-            "title": self.title,
-            "message": self.message,
-            "data": self.data if self.data else {},
-            "channels": self.channels,
-            "is_read": self.is_read,
-            "read_at": self.read_at.isoformat() if self.read_at else None,
-            "expires_at": self.expires_at.isoformat() if self.expires_at else None,
-            "created_at": self.created_at.isoformat(),
+            'id': self.id,
+            'user_id': self.user_id,
+            'type': self.type,
+            'title': self.title,
+            'message': self.message,
+            'data': json.loads(self.data) if isinstance(self.data, str) else self.data,
+            'read': self.read,
+            'priority': self.priority,
+            'read_at': self.read_at.isoformat() if self.read_at else None,
+            'created_at': self.created_at.isoformat() if self.created_at else None
         }
+
+    def __repr__(self):
+        return f'<Notification {self.id}: {self.title}>'
 
 
 class NotificationTemplate(db.Model):
-    __tablename__ = "notification_templates"
+    """Templates de notificação"""
+    __tablename__ = 'notification_templates'
 
-    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    name = Column(String(255), nullable=False)
-    type = Column(String(50), nullable=False)
-    channel = Column(String(20), nullable=False)
-    subject = Column(String(255))
-    body = Column(Text, nullable=False)  # Campo body para o controlador
-    content = Column(Text, nullable=False)
-    variables = Column(Text)  # JSON como TEXT
-    is_active = Column(Boolean, default=True)
-    created_at = Column(DateTime, default=func.now())
-    updated_at = Column(DateTime, default=func.now(), onupdate=func.now())
-
-    def __repr__(self):
-        return f"<NotificationTemplate(id={self.id}, name={self.name})>"
+    id = db.Column(db.String(36), primary_key = True, default = lambda: str(uuid.uuid4()))
+    type = db.Column(db.String(50), nullable = False, unique = True)
+    channel = db.Column(db.String(20), nullable = False)  # email, push, sms, in_app
+    subject = db.Column(db.String(255), nullable = True)  # Para email
+    template_content = db.Column(db.Text, nullable = False)
+    variables = db.Column(JSON, default={})  # Variáveis disponíveis no template
+    active = db.Column(db.Boolean, default = True, nullable = False)
+    created_at = db.Column(db.DateTime, default = datetime.utcnow, nullable = False)
+    updated_at = db.Column(db.DateTime, default = datetime.utcnow, onupdate = datetime.utcnow, nullable = False)
 
     def to_dict(self):
+        """Converte modelo para dicionário"""
+        import json
         return {
-            "id": str(self.id),
-            "name": self.name,
-            "type": self.type,
-            "channel": self.channel,
-            "subject": self.subject,
-            "body": self.body,
-            "content": self.content,
-            "variables": json.loads(self.variables) if self.variables else [],
-            "is_active": self.is_active,
-            "created_at": self.created_at.isoformat(),
-            "updated_at": self.updated_at.isoformat(),
+            'id': self.id,
+            'type': self.type,
+            'channel': self.channel,
+            'subject': self.subject,
+            'template_content': self.template_content,
+            'variables': json.loads(self.variables) if isinstance(self.variables, str) else self.variables,
+            'active': self.active,
+            'created_at': self.created_at.isoformat() if self.created_at else None,
+            'updated_at': self.updated_at.isoformat() if self.updated_at else None
         }
 
+    def __repr__(self):
+        return f'<NotificationTemplate {self.type}-{self.channel}>'
 
-class NotificationPreference(db.Model):
-    __tablename__ = "notification_preferences"
 
-    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    user_id = Column(UUID(as_uuid=True), ForeignKey("users.id", ondelete="CASCADE"))
-    notification_type = Column(String(50), nullable=False)
-    channel = Column(String(20), nullable=False)
-    enabled = Column(Boolean, default=True)
-    settings = Column(Text)  # JSON como TEXT
-    created_at = Column(DateTime, default=func.now())
-    updated_at = Column(DateTime, default=func.now(), onupdate=func.now())
+class NotificationSubscription(db.Model):
+    """Preferências de notificação do usuário"""
+    __tablename__ = 'notification_subscriptions'
+
+    id = db.Column(db.String(36), primary_key = True, default = lambda: str(uuid.uuid4()))
+    user_id = db.Column(db.String(36), db.ForeignKey('users.id'), nullable = False)
+    notification_type = db.Column(db.String(50), nullable = False)
+    email_enabled = db.Column(db.Boolean, default = True, nullable = False)
+    push_enabled = db.Column(db.Boolean, default = True, nullable = False)
+    sms_enabled = db.Column(db.Boolean, default = False, nullable = False)
+    in_app_enabled = db.Column(db.Boolean, default = True, nullable = False)
+    created_at = db.Column(db.DateTime, default = datetime.utcnow, nullable = False)
+    updated_at = db.Column(db.DateTime, default = datetime.utcnow, onupdate = datetime.utcnow, nullable = False)
 
     # Relacionamentos
-    user = relationship("User", back_populates="notification_preferences")
+    user = db.relationship('User', backref='notification_preferences')
 
-    def __repr__(self):
-        return f"<NotificationPreference(id={self.id}, user_id={self.user_id})>"
-
-    def to_dict(self):
-        return {
-            "id": str(self.id),
-            "user_id": str(self.user_id),
-            "notification_type": self.notification_type,
-            "channel": self.channel,
-            "enabled": self.enabled,
-            "settings": json.loads(self.settings) if self.settings else {},
-            "created_at": self.created_at.isoformat(),
-            "updated_at": self.updated_at.isoformat(),
-        }
-
-
-class NotificationQueue(db.Model):
-    __tablename__ = "notification_queue"
-
-    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    user_id = Column(UUID(as_uuid=True), ForeignKey("users.id", ondelete="CASCADE"))
-    type = Column(String(50), nullable=False)
-    channel = Column(String(20), nullable=False)
-    subject = Column(String(255))
-    body = Column(Text, nullable=False)
-    data = Column(Text)  # JSON como TEXT
-    priority = Column(String(20), default="medium")
-    status = Column(String(20), default="pending")  # pending, processing, processed, failed
-    scheduled_at = Column(DateTime)
-    processed_at = Column(DateTime)
-    created_at = Column(DateTime, default=func.now())
-
-    # Relacionamentos
-    user = relationship("User", back_populates="notification_queue")
-
-    def __repr__(self):
-        return f"<NotificationQueue(id={self.id}, user_id={self.user_id})>"
+    # Índice composto para evitar duplicatas
+    __table_args__ = (
+        db.UniqueConstraint('user_id', 'notification_type', name='unique_user_notification_type'),
+    )
 
     def to_dict(self):
+        """Converte modelo para dicionário"""
         return {
-            "id": str(self.id),
-            "user_id": str(self.user_id),
-            "type": self.type,
-            "channel": self.channel,
-            "subject": self.subject,
-            "body": self.body,
-            "data": json.loads(self.data) if self.data else {},
-            "priority": self.priority,
-            "status": self.status,
-            "scheduled_at": self.scheduled_at.isoformat() if self.scheduled_at else None,
-            "processed_at": self.processed_at.isoformat() if self.processed_at else None,
-            "created_at": self.created_at.isoformat(),
+            'id': self.id,
+            'user_id': self.user_id,
+            'notification_type': self.notification_type,
+            'email_enabled': self.email_enabled,
+            'push_enabled': self.push_enabled,
+            'sms_enabled': self.sms_enabled,
+            'in_app_enabled': self.in_app_enabled,
+            'created_at': self.created_at.isoformat() if self.created_at else None,
+            'updated_at': self.updated_at.isoformat() if self.updated_at else None
         }
+
+    def __repr__(self):
+        return f'<NotificationSubscription {self.user_id}-{self.notification_type}>'
+
+
+class NotificationLog(db.Model):
+    """Log de notificações enviadas"""
+    __tablename__ = 'notification_logs'
+
+    id = db.Column(db.String(36), primary_key = True, default = lambda: str(uuid.uuid4()))
+    user_id = db.Column(db.String(36), nullable = False)  # Não FK para manter histórico
+    notification_type = db.Column(db.String(50), nullable = False)
+    channel = db.Column(db.String(20), nullable = False)
+    recipient_email = db.Column(db.String(255), nullable = True)
+    recipient_phone = db.Column(db.String(20), nullable = True)
+    title = db.Column(db.String(255), nullable = False)
+    message = db.Column(db.Text, nullable = False)
+    status = db.Column(db.String(20), default='sent', nullable = False)  # sent, failed, delivered
+    error_message = db.Column(db.Text, nullable = True)
+    meta_data = db.Column('metadata', JSON, default={})  # Dados extras (IDs de providers, etc.)
+    sent_at = db.Column(db.DateTime, default = datetime.utcnow, nullable = False)
+    delivered_at = db.Column(db.DateTime, nullable = True)
+
+    def to_dict(self):
+        """Converte modelo para dicionário"""
+        import json
+        return {
+            'id': self.id,
+            'user_id': self.user_id,
+            'notification_type': self.notification_type,
+            'channel': self.channel,
+            'recipient_email': self.recipient_email,
+            'recipient_phone': self.recipient_phone,
+            'title': self.title,
+            'message': self.message[:200] + '...' if len(self.message) > 200 else self.message,
+            'status': self.status,
+            'error_message': self.error_message,
+            'metadata': json.loads(self.meta_data) if isinstance(self.meta_data, str) else self.meta_data,
+            'sent_at': self.sent_at.isoformat() if self.sent_at else None,
+            'delivered_at': self.delivered_at.isoformat() if self.delivered_at else None
+        }
+
+    def __repr__(self):
+        return f'<NotificationLog {self.id}: {self.notification_type}-{self.channel}>'

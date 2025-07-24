@@ -21,18 +21,24 @@ const ProductModal = ({
     name: '',
     description: '',
     price: '',
+    promotional_price: '',
     category: '',
     origin: '',
     roast_level: 'medium',
     sca_score: 80,
-    stock: 0,
+    stock_quantity: 0,
     is_active: true,
     is_featured: false,
     processing_method: '',
     altitude: '',
     harvest_year: new Date().getFullYear(),
     flavor_notes: [],
-    images: []
+    images: [],
+    product_prices: [
+      { weight: '250g', price: '', stock_quantity: 0 },
+      { weight: '500g', price: '', stock_quantity: 0 },
+      { weight: '1kg', price: '', stock_quantity: 0 }
+    ]
   });
 
   const [loading, setLoading] = useState(false);
@@ -47,18 +53,24 @@ const ProductModal = ({
         name: product.name || '',
         description: product.description || '',
         price: product.price?.toString() || '',
+        promotional_price: product.promotional_price?.toString() || '',
         category: product.category || '',
         origin: product.origin || '',
         roast_level: product.roast_level || 'medium',
         sca_score: product.sca_score || 80,
-        stock: product.stock || 0,
+        stock_quantity: product.stock_quantity || 0,
         is_active: product.is_active !== false,
         is_featured: product.is_featured || false,
         processing_method: product.processing_method || '',
         altitude: product.altitude || '',
         harvest_year: product.harvest_year || new Date().getFullYear(),
         flavor_notes: product.flavor_notes || [],
-        images: product.images || []
+        images: product.images || [],
+        product_prices: product.prices || [
+          { weight: '250g', price: '', stock_quantity: 0 },
+          { weight: '500g', price: '', stock_quantity: 0 },
+          { weight: '1kg', price: '', stock_quantity: 0 }
+        ]
       });
     } else if (!product && isOpen) {
       // Reset para novo produto
@@ -66,18 +78,24 @@ const ProductModal = ({
         name: '',
         description: '',
         price: '',
+        promotional_price: '',
         category: '',
         origin: '',
         roast_level: 'medium',
         sca_score: 80,
-        stock: 0,
+        stock_quantity: 0,
         is_active: true,
         is_featured: false,
         processing_method: '',
         altitude: '',
         harvest_year: new Date().getFullYear(),
         flavor_notes: [],
-        images: []
+        images: [],
+        product_prices: [
+          { weight: '250g', price: '', stock_quantity: 0 },
+          { weight: '500g', price: '', stock_quantity: 0 },
+          { weight: '1kg', price: '', stock_quantity: 0 }
+        ]
       });
     }
     setErrors([]);
@@ -242,11 +260,11 @@ const ProductModal = ({
                 />
               </div>
 
-              {/* Preço e Estoque */}
-              <div className="grid grid-cols-2 gap-4">
+              {/* Preços Base */}
+              <div className="grid grid-cols-3 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-slate-700 mb-2">
-                    Preço (R$) *
+                    Preço Base (R$) *
                   </label>
                   <input
                     type="number"
@@ -260,17 +278,70 @@ const ProductModal = ({
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-slate-700 mb-2">
-                    Estoque *
+                    Preço Promocional (R$)
                   </label>
                   <input
                     type="number"
-                    value={formData.stock}
-                    onChange={(e) => handleInputChange('stock', parseInt(e.target.value) || 0)}
+                    step="0.01"
+                    value={formData.promotional_price}
+                    onChange={(e) => handleInputChange('promotional_price', e.target.value)}
+                    className="w-full border border-slate-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-amber-500 focus:border-transparent"
+                    placeholder="0.00"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 mb-2">
+                    Estoque Total *
+                  </label>
+                  <input
+                    type="number"
+                    value={formData.stock_quantity}
+                    onChange={(e) => handleInputChange('stock_quantity', parseInt(e.target.value) || 0)}
                     className="w-full border border-slate-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-amber-500 focus:border-transparent"
                     placeholder="0"
                     min="0"
                     required
                   />
+                </div>
+              </div>
+
+              {/* Preços por Peso */}
+              <div className="mt-6">
+                <h4 className="text-md font-semibold text-slate-900 mb-3">💰 Preços por Peso</h4>
+                <div className="space-y-3 bg-slate-50 p-4 rounded-lg">
+                  {formData.product_prices.map((priceItem, index) => (
+                    <div key={priceItem.weight} className="grid grid-cols-3 gap-3 items-center">
+                      <div className="font-medium text-slate-700">{priceItem.weight}</div>
+                      <div>
+                        <input
+                          type="number"
+                          step="0.01"
+                          value={priceItem.price}
+                          onChange={(e) => {
+                            const newPrices = [...formData.product_prices];
+                            newPrices[index].price = e.target.value;
+                            handleInputChange('product_prices', newPrices);
+                          }}
+                          className="w-full border border-slate-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-amber-500 focus:border-transparent"
+                          placeholder="Preço (R$)"
+                        />
+                      </div>
+                      <div>
+                        <input
+                          type="number"
+                          value={priceItem.stock_quantity}
+                          onChange={(e) => {
+                            const newPrices = [...formData.product_prices];
+                            newPrices[index].stock_quantity = parseInt(e.target.value) || 0;
+                            handleInputChange('product_prices', newPrices);
+                          }}
+                          className="w-full border border-slate-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-amber-500 focus:border-transparent"
+                          placeholder="Estoque"
+                          min="0"
+                        />
+                      </div>
+                    </div>
+                  ))}
                 </div>
               </div>
 

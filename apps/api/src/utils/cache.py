@@ -9,12 +9,12 @@ from typing import Any, Optional, Union, Dict, List
 
 class CacheManager:
     """Gerenciador de cache com Redis"""
-    
+
     def __init__(self, redis_url: str = None):
         self.redis_url = redis_url or 'redis://localhost:6379'
         self._redis_client = None
         self._fallback_cache = {}  # Cache em memória como fallback
-    
+
     @property
     def redis_client(self):
         """Lazy initialization do cliente Redis"""
@@ -29,13 +29,13 @@ class CacheManager:
                 except RuntimeError:
                     # No application context, use default
                     pass
-                
+
                 self._redis_client = redis.Redis.from_url(
                     redis_url,
-                    decode_responses=True,
-                    socket_connect_timeout=5,
-                    socket_timeout=5,
-                    retry_on_timeout=True
+                    decode_responses = True,
+                    socket_connect_timeout = 5,
+                    socket_timeout = 5,
+                    retry_on_timeout = True
                 )
                 # Teste de conexão
                 self._redis_client.ping()
@@ -49,11 +49,11 @@ class CacheManager:
                     pass
                 self._redis_client = None
         return self._redis_client
-    
+
     def _generate_key(self, key: str, prefix: str = "mc") -> str:
         """Gera chave do cache com prefixo"""
         return f"{prefix}:{key}"
-    
+
     def _serialize_value(self, value: Any) -> str:
         """Serializa valor para armazenamento"""
         if isinstance(value, (str, int, float, bool)):
@@ -62,7 +62,7 @@ class CacheManager:
             # Para objetos complexos, usar pickle e base64
             import base64
             return base64.b64encode(pickle.dumps(value)).decode('utf-8')
-    
+
     def _deserialize_value(self, value: str) -> Any:
         """Deserializa valor do cache"""
         try:
@@ -74,12 +74,12 @@ class CacheManager:
                 return pickle.loads(base64.b64decode(value.encode('utf-8')))
             except Exception:
                 return value
-    
+
     def set(self, key: str, value: Any, timeout: int = 300) -> bool:
         """Define valor no cache"""
         cache_key = self._generate_key(key)
         serialized_value = self._serialize_value(value)
-        
+
         if self.redis_client:
             try:
                 return self.redis_client.setex(cache_key, timeout, serialized_value)
@@ -90,18 +90,18 @@ class CacheManager:
                         current_app.logger.error(f"Redis set error: {e}")
                 except RuntimeError:
                     pass
-        
+
         # Fallback para cache em memória
         self._fallback_cache[cache_key] = {
             'value': serialized_value,
-            'expires_at': datetime.now() + timedelta(seconds=timeout)
+            'expires_at': datetime.now() + timedelta(seconds = timeout)
         }
         return True
-    
+
     def get(self, key: str) -> Any:
         """Obtém valor do cache"""
         cache_key = self._generate_key(key)
-        
+
         if self.redis_client:
             try:
                 value = self.redis_client.get(cache_key)
@@ -114,7 +114,7 @@ class CacheManager:
                         current_app.logger.error(f"Redis get error: {e}")
                 except RuntimeError:
                     pass
-        
+
         # Fallback para cache em memória
         if cache_key in self._fallback_cache:
             cache_item = self._fallback_cache[cache_key]
@@ -122,13 +122,13 @@ class CacheManager:
                 return self._deserialize_value(cache_item['value'])
             else:
                 del self._fallback_cache[cache_key]
-        
+
         return None
-    
+
     def delete(self, key: str) -> bool:
         """Remove valor do cache"""
         cache_key = self._generate_key(key)
-        
+
         if self.redis_client:
             try:
                 return bool(self.redis_client.delete(cache_key))
@@ -139,17 +139,17 @@ class CacheManager:
                         current_app.logger.error(f"Redis delete error: {e}")
                 except RuntimeError:
                     pass
-        
+
         # Fallback para cache em memória
         if cache_key in self._fallback_cache:
             del self._fallback_cache[cache_key]
             return True
         return False
-    
+
     def exists(self, key: str) -> bool:
         """Verifica se chave existe no cache"""
         cache_key = self._generate_key(key)
-        
+
         if self.redis_client:
             try:
                 return bool(self.redis_client.exists(cache_key))
@@ -160,7 +160,7 @@ class CacheManager:
                         current_app.logger.error(f"Redis exists error: {e}")
                 except RuntimeError:
                     pass
-        
+
         # Fallback para cache em memória
         if cache_key in self._fallback_cache:
             cache_item = self._fallback_cache[cache_key]
@@ -168,9 +168,9 @@ class CacheManager:
                 return True
             else:
                 del self._fallback_cache[cache_key]
-        
+
         return False
-    
+
     def clear_pattern(self, pattern: str) -> int:
         """Remove todas as chaves que correspondem ao padrão"""
         if self.redis_client:
@@ -185,20 +185,20 @@ class CacheManager:
                         current_app.logger.error(f"Redis clear_pattern error: {e}")
                 except RuntimeError:
                     pass
-        
+
         # Fallback para cache em memória
         count = 0
         keys_to_delete = []
         for key in self._fallback_cache:
             if pattern in key:
                 keys_to_delete.append(key)
-        
+
         for key in keys_to_delete:
             del self._fallback_cache[key]
             count += 1
-        
+
         return count
-    
+
     def get_stats(self) -> Dict[str, Any]:
         """Obtém estatísticas do cache"""
         if self.redis_client:
@@ -219,7 +219,7 @@ class CacheManager:
                         current_app.logger.error(f"Redis stats error: {e}")
                 except RuntimeError:
                     pass
-        
+
         return {
             'type': 'memory',
             'keys_count': len(self._fallback_cache),
@@ -258,18 +258,18 @@ def cached(timeout: int = 300, key_prefix: str = ""):
             func_signature = f"{func.__module__}.{func.__name__}"
             args_signature = hashlib.md5(str(args).encode()).hexdigest()
             kwargs_signature = hashlib.md5(str(sorted(kwargs.items())).encode()).hexdigest()
-            
+
             cache_key = f"{key_prefix}:{func_signature}:{args_signature}:{kwargs_signature}"
-            
+
             # Tentar obter do cache
             cached_result = cache_get(cache_key)
             if cached_result is not None:
                 return cached_result
-            
+
             # Executar função e cachear resultado
             result = func(*args, **kwargs)
             cache_set(cache_key, result, timeout)
-            
+
             return result
         return wrapper
     return decorator
@@ -296,43 +296,43 @@ def invalidate_product_cache(product_id: Union[int, str]) -> int:
 
 class CacheWarmup:
     """Classe para pré-aquecer cache com dados frequentemente acessados"""
-    
+
     @staticmethod
     def warm_products_cache():
         """Pré-aquece cache de produtos"""
         from models.products import Product
-        
+
         try:
             # Cachear produtos mais populares
-            popular_products = Product.query.filter_by(is_active=True).limit(50).all()
-            
+            popular_products = Product.query.filter_by(is_active = True).limit(50).all()
+
             for product in popular_products:
                 cache_key = cache_key_for_product(product.id, "details")
-                cache_set(cache_key, product.to_dict(), timeout=3600)  # 1 hora
-            
+                cache_set(cache_key, product.to_dict(), timeout = 3600)  # 1 hora
+
             current_app.logger.info(f"Cached {len(popular_products)} popular products")
-            
+
         except Exception as e:
             current_app.logger.error(f"Error warming up products cache: {e}")
-    
+
     @staticmethod
     def warm_categories_cache():
         """Pré-aquece cache de categorias"""
         from models.products import ProductCategory
-        
+
         try:
-            categories = ProductCategory.query.filter_by(is_active=True).all()
-            
+            categories = ProductCategory.query.filter_by(is_active = True).all()
+
             cache_key = "categories:all"
-            cache_set(cache_key, [cat.to_dict() for cat in categories], timeout=7200)  # 2 horas
-            
+            cache_set(cache_key, [cat.to_dict() for cat in categories], timeout = 7200)  # 2 horas
+
             try:
                 from flask import current_app
                 if current_app:
                     current_app.logger.info(f"Cached {len(categories)} categories")
             except RuntimeError:
                 pass
-            
+
         except Exception as e:
             try:
                 from flask import current_app
@@ -340,26 +340,26 @@ class CacheWarmup:
                     current_app.logger.error(f"Error warming up categories cache: {e}")
             except RuntimeError:
                 pass
-    
+
     @staticmethod
     def warm_escrow_stats():
         """Pré-aquece cache de estatísticas do escrow"""
         try:
             from services.escrow_service import EscrowService
-            
+
             escrow_service = EscrowService()
             stats = escrow_service.get_escrow_stats()
-            
+
             cache_key = "escrow:global_stats"
-            cache_set(cache_key, stats, timeout=300)  # 5 minutos
-            
+            cache_set(cache_key, stats, timeout = 300)  # 5 minutos
+
             try:
                 from flask import current_app
                 if current_app:
                     current_app.logger.info("Cached escrow global stats")
             except RuntimeError:
                 pass
-                
+
         except Exception as e:
             try:
                 from flask import current_app

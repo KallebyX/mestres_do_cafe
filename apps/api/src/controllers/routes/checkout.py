@@ -111,7 +111,7 @@ def create_checkout_session():
             "items": validated_items,
             "total_amount": total_amount,
             "created_at": datetime.utcnow().isoformat(),
-            "expires_at": (datetime.utcnow() + timedelta(minutes=30)).isoformat(),
+            "expires_at": (datetime.utcnow() + timedelta(minutes = 30)).isoformat(),
             "status": "active",
         }
 
@@ -210,7 +210,7 @@ def process_checkout():
             "shipping_address": shipping_address,
             "total_amount": 0,  # Calculado dos itens
             "created_at": datetime.utcnow().isoformat(),
-            "estimated_delivery": (datetime.utcnow() + timedelta(days=7)).isoformat(),
+            "estimated_delivery": (datetime.utcnow() + timedelta(days = 7)).isoformat(),
         }
 
         # Simular processamento de pagamento
@@ -326,7 +326,7 @@ def get_address_by_cep(cep):
             return None
 
         response = requests.get(
-            f"https://viacep.com.br/ws/{clean_cep}/json/", timeout=5
+            f"https://viacep.com.br/ws/{clean_cep}/json/", timeout = 5
         )
         if response.status_code == 200:
             data = response.json()
@@ -454,7 +454,7 @@ def start_checkout():
             return jsonify({"error": "Usuário não encontrado"}), 404
 
         # Buscar carrinho do usuário
-        user_cart = Cart.query.filter_by(user_id=user_id).first()
+        user_cart = Cart.query.filter_by(user_id = user_id).first()
         if not user_cart:
             return jsonify({"error": "Carrinho não encontrado"}), 404
 
@@ -692,20 +692,20 @@ def complete_checkout():
         )
 
         # Criar ou atualizar customer no CRM
-        customer = Customer.query.filter_by(user_id=user_id).first()
+        customer = Customer.query.filter_by(user_id = user_id).first()
         if not customer:
             customer = Customer(
-                user_id=user_id,
-                name=user.name,
-                email=user.email,
-                phone=shipping_data.get("phone", ""),
-                address_street=shipping_data.get("street", ""),
-                address_number=shipping_data.get("number", ""),
-                address_neighborhood=shipping_data.get("neighborhood", ""),
-                address_city=shipping_data.get("city", ""),
-                address_state=shipping_data.get("state", ""),
-                address_cep=shipping_data.get("cep", ""),
-                address_country=shipping_data.get("country", "BR"),
+                user_id = user_id,
+                name = user.name,
+                email = user.email,
+                phone = shipping_data.get("phone", ""),
+                address_street = shipping_data.get("street", ""),
+                address_number = shipping_data.get("number", ""),
+                address_neighborhood = shipping_data.get("neighborhood", ""),
+                address_city = shipping_data.get("city", ""),
+                address_state = shipping_data.get("state", ""),
+                address_cep = shipping_data.get("cep", ""),
+                address_country = shipping_data.get("country", "BR"),
                 customer_type="individual",
                 status="active"
             )
@@ -773,9 +773,9 @@ def complete_checkout():
             db.session.add(order_item)
 
         # Limpar carrinho
-        user_cart = Cart.query.filter_by(user_id=user_id).first()
+        user_cart = Cart.query.filter_by(user_id = user_id).first()
         if user_cart:
-            CartItem.query.filter_by(cart_id=user_cart.id).delete()
+            CartItem.query.filter_by(cart_id = user_cart.id).delete()
 
         db.session.commit()
 

@@ -1,11 +1,12 @@
-import React, { useState, useEffect } from 'react';
-import { Search, Filter, Star, ShoppingCart, Heart, ChevronDown, Coffee, TrendingUp, Package } from 'lucide-react';
-import { useCart } from '../contexts/CartContext';
-import { useAuth } from '../contexts/AuthContext';
-import { getAllProducts } from "@/lib/api"
+import { getAllProducts } from "@/lib/api";
+import { ChevronDown, Coffee, Filter, Heart, Package, Search, ShoppingCart, Star, TrendingUp } from 'lucide-react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useDebouncedValue } from '../utils/debounce';
 import ShippingTracker from '../components/ShippingTracker';
+import { useAuth } from '../contexts/AuthContext';
+import { useCart } from '../contexts/CartContext';
+import analytics from '../services/analytics';
+import { useDebouncedValue } from '../utils/debounce';
 
 const MarketplacePage = () => {
   const [products, setProducts] = useState([]);
@@ -32,6 +33,8 @@ const MarketplacePage = () => {
   // Carregar produtos do Supabase
   useEffect(() => {
     loadProducts();
+    // Track page view para marketplace
+    analytics.trackPageView('/marketplace');
   }, []);
 
   const loadProducts = async () => {
@@ -123,6 +126,16 @@ const MarketplacePage = () => {
   const handleAddToCart = async (product) => {
     try {
       await addToCart(product, 1);
+      
+      // Track add to cart event
+      analytics.trackAddToCart({
+        product_id: product.id,
+        product_name: product.name,
+        price: product.price,
+        category: product.category,
+        quantity: 1
+      });
+      
       alert(`${product.name} adicionado ao carrinho!`);
     } catch (error) {
       alert('Erro ao adicionar produto ao carrinho');
@@ -402,7 +415,7 @@ const MarketplacePage = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
             {filteredProducts.map((product) => {
               const discount = getDiscountPercentage(product.original_price, product.price);
-              const isInStock = product.stock > 0;
+              const isInStock = (product.stock_quantity || product.stock || 0) > 0;
               const isFavorite = favoriteProducts.has(product.id);
               
               return (
@@ -482,7 +495,7 @@ const MarketplacePage = () => {
                         </span>
                       </div>
                       <div className="text-sm text-slate-500">
-                        Estoque: {product.stock}
+                        Estoque: {product.stock_quantity || product.stock || 0}
                       </div>
                     </div>
 
@@ -519,7 +532,16 @@ const MarketplacePage = () => {
                     {/* Actions */}
                     <div className="flex gap-2">
                       <button
-                        onClick={() => navigate(`/produto/${product.id}`)}
+                        onClick={() => {
+                          // Track product view event
+                          analytics.trackProductView({
+                            product_id: product.id,
+                            product_name: product.name,
+                            price: product.price,
+                            category: product.category
+                          });
+                          navigate(`/produto/${product.id}`);
+                        }}
                         className="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium py-3 px-4 rounded-xl transition-colors"
                       >
                         Ver Detalhes

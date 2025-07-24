@@ -25,16 +25,16 @@ from database import db
 class Coupon(db.Model):
     __tablename__ = "coupons"
 
-    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    code = Column(String(50), unique=True, nullable=False)
-    type = Column(String(20), nullable=False)
-    value = Column(DECIMAL(10, 2), nullable=False)
+    id = Column(UUID(as_uuid = True), primary_key = True, default = uuid.uuid4)
+    code = Column(String(50), unique = True, nullable = False)
+    type = Column(String(20), nullable = False)
+    value = Column(DECIMAL(10, 2), nullable = False)
 
     # Condições
-    minimum_amount = Column(DECIMAL(10, 2), default=0.00)
+    minimum_amount = Column(DECIMAL(10, 2), default = 0.00)
     maximum_discount = Column(DECIMAL(10, 2))
     usage_limit = Column(Integer)
-    usage_limit_per_customer = Column(Integer, default=1)
+    usage_limit_per_customer = Column(Integer, default = 1)
 
     # Validade
     start_date = Column(Date)
@@ -46,11 +46,11 @@ class Coupon(db.Model):
     exclude_products = Column(Text)  # JSON string
 
     # Controle
-    is_active = Column(Boolean, default=True)
-    usage_count = Column(Integer, default=0)
+    is_active = Column(Boolean, default = True)
+    usage_count = Column(Integer, default = 0)
 
-    created_at = Column(DateTime, default=func.now())
-    updated_at = Column(DateTime, default=func.now(), onupdate=func.now())
+    created_at = Column(DateTime, default = func.now())
+    updated_at = Column(DateTime, default = func.now(), onupdate = func.now())
 
     # Relacionamentos
     usage_records = relationship("CouponUsage", back_populates="coupon")
@@ -87,12 +87,12 @@ class Coupon(db.Model):
 class CouponUsage(db.Model):
     __tablename__ = "coupon_usage"
 
-    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    coupon_id = Column(UUID(as_uuid=True), ForeignKey("coupons.id", ondelete="CASCADE"))
-    user_id = Column(UUID(as_uuid=True), ForeignKey("users.id", ondelete="SET NULL"))
-    order_id = Column(UUID(as_uuid=True), ForeignKey("orders.id", ondelete="SET NULL"))
-    discount_amount = Column(DECIMAL(10, 2), nullable=False)
-    used_at = Column(DateTime, default=func.now())
+    id = Column(UUID(as_uuid = True), primary_key = True, default = uuid.uuid4)
+    coupon_id = Column(UUID(as_uuid = True), ForeignKey("coupons.id", ondelete="CASCADE"))
+    user_id = Column(UUID(as_uuid = True), ForeignKey("users.id", ondelete="SET NULL"))
+    order_id = Column(UUID(as_uuid = True), ForeignKey("orders.id", ondelete="SET NULL"))
+    discount_amount = Column(DECIMAL(10, 2), nullable = False)
+    used_at = Column(DateTime, default = func.now())
 
     # Relacionamentos
     coupon = relationship("Coupon", back_populates="usage_records")

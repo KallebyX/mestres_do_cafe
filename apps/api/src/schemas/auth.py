@@ -7,30 +7,30 @@ from typing import Dict, Any, Tuple, Optional, Union
 
 class LoginSchema(Schema):
     """Schema para validação de login"""
-    email = fields.Email(required=True, error_messages={
+    email = fields.Email(required = True, error_messages={
         'required': 'Email é obrigatório',
         'invalid': 'Email deve ter formato válido'
     })
-    password = fields.Str(required=True, validate=validate.Length(min=6), error_messages={
+    password = fields.Str(required = True, validate = validate.Length(min = 6), error_messages={
         'required': 'Senha é obrigatória',
         'invalid': 'Senha deve ter pelo menos 6 caracteres'
     })
 
 class RegisterSchema(Schema):
     """Schema para validação de registro"""
-    name = fields.Str(required=True, validate=validate.Length(min=2, max=200), error_messages={
+    name = fields.Str(required = True, validate = validate.Length(min = 2, max = 200), error_messages={
         'required': 'Nome é obrigatório',
         'invalid': 'Nome deve ter entre 2 e 200 caracteres'
     })
-    email = fields.Email(required=True, error_messages={
+    email = fields.Email(required = True, error_messages={
         'required': 'Email é obrigatório',
         'invalid': 'Email deve ter formato válido'
     })
-    password = fields.Str(required=True, validate=validate.Length(min=6), error_messages={
+    password = fields.Str(required = True, validate = validate.Length(min = 6), error_messages={
         'required': 'Senha é obrigatória',
         'invalid': 'Senha deve ter pelo menos 6 caracteres'
     })
-    confirm_password = fields.Str(required=True, error_messages={
+    confirm_password = fields.Str(required = True, error_messages={
         'required': 'Confirmação de senha é obrigatória'
     })
 
@@ -44,11 +44,11 @@ class RegisterSchema(Schema):
 def validate_request_data(schema_class: Schema, data: Dict[str, Any]) -> Union[Dict[str, Any], Tuple[Optional[Dict[str, Any]], Dict[str, Any]]]:
     """
     Valida dados de requisição usando schema Marshmallow
-    
+
     Args:
         schema_class: Classe do schema a ser usado
         data: Dados para validação
-        
+
     Returns:
         Dados validados ou tupla (dados, erros)
     """
@@ -62,15 +62,15 @@ def validate_request_data(schema_class: Schema, data: Dict[str, Any]) -> Union[D
 def format_validation_errors(errors: Dict[str, Any]) -> Dict[str, Any]:
     """
     Formata erros de validação para resposta padronizada
-    
+
     Args:
         errors: Erros do Marshmallow
-        
+
     Returns:
         Erros formatados
     """
     formatted_errors = {}
-    
+
     for field, messages in errors.items():
         if isinstance(messages, list):
             formatted_errors[field] = messages[0] if messages else 'Erro de validação'
@@ -78,5 +78,5 @@ def format_validation_errors(errors: Dict[str, Any]) -> Dict[str, Any]:
             formatted_errors[field] = format_validation_errors(messages)
         else:
             formatted_errors[field] = str(messages)
-    
+
     return formatted_errors

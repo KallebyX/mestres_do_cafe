@@ -17,28 +17,30 @@ stock_bp = Blueprint("stock", __name__)
 def get_stock():
     """Listar status do estoque"""
     try:
-        page = request.args.get('page', 1, type=int)
-        per_page = request.args.get('per_page', 20, type=int)
+        page = request.args.get('page', 1, type = int)
+        per_page = request.args.get('per_page', 20, type = int)
         search = request.args.get('search', '')
-        low_stock = request.args.get('low_stock', type=bool)
-        
+        low_stock = request.args.get('low_stock', type = bool)
+
         query = Product.query
-        
+
         # Filtro por busca
         if search:
+            # Sanitizar parâmetro de busca para prevenir SQL injection
+            safe_search = search.replace('%', '\\%').replace('_', '\\_')
             query = query.filter(
-                Product.name.ilike(f'%{search}%') |
-                Product.sku.ilike(f'%{search}%')
+                Product.name.ilike(f'%{safe_search}%') |
+                Product.sku.ilike(f'%{safe_search}%')
             )
-        
+
         # Filtro por estoque baixo
         if low_stock:
             query = query.filter(Product.stock_quantity <= Product.min_stock_level)
-        
+
         products = query.order_by(Product.name).paginate(
-            page=page, per_page=per_page, error_out=False
+            page = page, per_page = per_page, error_out = False
         )
-        
+
         # Calcular métricas de estoque
         total_products = Product.query.count()
         low_stock_count = Product.query.filter(
@@ -47,12 +49,12 @@ def get_stock():
         out_of_stock_count = Product.query.filter(
             Product.stock_quantity <= 0
         ).count()
-        
+
         # Valor total do estoque
         total_stock_value = db.session.query(
             func.sum(Product.price * Product.stock_quantity)
         ).scalar() or 0
-        
+
         return jsonify({
             'success': True,
             'data': {
@@ -78,7 +80,7 @@ def get_stock():
                 }
             }
         })
-        
+
     except Exception as e:
         return jsonify({
             'success': False,
@@ -91,24 +93,24 @@ def get_product_stock(product_id):
     """Obter detalhes do estoque de um produto"""
     try:
         product = Product.query.get(product_id)
-        
+
         if not product:
             raise ResourceAPIError(
                 "Produto não encontrado",
-                error_code=4040,
-                status_code=404
+                error_code = 4040,
+                status_code = 404
             )
-        
+
         # Histórico de movimentações
         movements = StockMovement.query.filter_by(
-            product_id=product_id
+            product_id = product_id
         ).order_by(StockMovement.created_at.desc()).limit(20).all()
-        
+
         # Variantes do produto
         variants = ProductVariant.query.filter_by(
-            product_id=product_id
+            product_id = product_id
         ).all()
-        
+
         return jsonify({
             'success': True,
             'data': {
@@ -121,7 +123,7 @@ def get_product_stock(product_id):
                 'variants': [variant.to_dict() for variant in variants]
             }
         })
-        
+
     except ResourceAPIError:
         raise
     except Exception as e:
@@ -136,64 +138,64 @@ def adjust_stock(product_id):
     """Ajustar estoque de um produto"""
     try:
         product = Product.query.get(product_id)
-        
+
         if not product:
             raise ResourceAPIError(
                 "Produto não encontrado",
-                error_code=4040,
-                status_code=404
+                error_code = 4040,
+                status_code = 404
             )
-        
+
         data = request.get_json()
-        
+
         if not data:
             raise ValidationAPIError("Dados não fornecidos")
-        
+
         # Validar campos obrigatórios
         required_fields = ['quantity', 'type', 'reason']
         for field in required_fields:
             if field not in data:
                 raise ValidationAPIError(f"Campo '{field}' é obrigatório")
-        
+
         quantity = data['quantity']
         movement_type = data['type']  # 'adjustment', 'sale', 'purchase', 'return'
         reason = data['reason']
-        
+
         if not isinstance(quantity, (int, float)) or quantity == 0:
             raise ValidationAPIError("Quantidade deve ser um número diferente de zero")
-        
+
         if movement_type not in ['adjustment', 'sale', 'purchase', 'return']:
             raise ValidationAPIError("Tipo de movimento inválido")
-        
+
         # Calcular nova quantidade
         old_quantity = product.stock_quantity
-        
+
         if movement_type in ['adjustment', 'purchase', 'return']:
             new_quantity = old_quantity + quantity
         else:  # sale
             new_quantity = old_quantity - quantity
-        
+
         if new_quantity < 0:
             raise ValidationAPIError("Estoque não pode ficar negativo")
-        
+
         # Atualizar produto
         product.stock_quantity = new_quantity
         product.updated_at = datetime.utcnow()
-        
+
         # Registrar movimentação
         movement = StockMovement(
-            product_id=product.id,
-            movement_type=movement_type,
-            quantity=quantity,
-            old_quantity=old_quantity,
-            new_quantity=new_quantity,
-            reason=reason,
-            notes=data.get('notes')
+            product_id = product.id,
+            movement_type = movement_type,
+            quantity = quantity,
+            old_quantity = old_quantity,
+            new_quantity = new_quantity,
+            reason = reason,
+            notes = data.get('notes')
         )
-        
+
         db.session.add(movement)
         db.session.commit()
-        
+
         return jsonify({
             'success': True,
             'message': 'Estoque ajustado com sucesso',
@@ -205,7 +207,7 @@ def adjust_stock(product_id):
                 'movement': movement.to_dict()
             }
         })
-        
+
     except (ValidationAPIError, ResourceAPIError):
         raise
     except Exception as e:
@@ -219,26 +221,26 @@ def adjust_stock(product_id):
 def get_stock_movements():
     """Listar movimentações de estoque"""
     try:
-        page = request.args.get('page', 1, type=int)
-        per_page = request.args.get('per_page', 20, type=int)
+        page = request.args.get('page', 1, type = int)
+        per_page = request.args.get('per_page', 20, type = int)
         product_id = request.args.get('product_id')
         movement_type = request.args.get('type')
-        
+
         query = StockMovement.query
-        
+
         # Filtros
         if product_id:
             query = query.filter(StockMovement.product_id == product_id)
-        
+
         if movement_type:
             query = query.filter(StockMovement.movement_type == movement_type)
-        
+
         movements = query.order_by(
             StockMovement.created_at.desc()
         ).paginate(
-            page=page, per_page=per_page, error_out=False
+            page = page, per_page = per_page, error_out = False
         )
-        
+
         return jsonify({
             'success': True,
             'data': {
@@ -251,7 +253,7 @@ def get_stock_movements():
                 }
             }
         })
-        
+
     except Exception as e:
         return jsonify({
             'success': False,
@@ -268,17 +270,17 @@ def get_stock_alerts():
             Product.stock_quantity <= Product.min_stock_level,
             Product.stock_quantity > 0
         ).all()
-        
+
         # Produtos sem estoque
         out_of_stock_products = Product.query.filter(
             Product.stock_quantity <= 0
         ).all()
-        
+
         # Produtos com estoque alto (acima do máximo)
         high_stock_products = Product.query.filter(
             Product.stock_quantity >= Product.max_stock_level
         ).all()
-        
+
         return jsonify({
             'success': True,
             'data': {
@@ -310,7 +312,7 @@ def get_stock_alerts():
                 }
             }
         })
-        
+
     except Exception as e:
         return jsonify({
             'success': False,

@@ -8,7 +8,7 @@ from flask import Blueprint, jsonify, request
 from sqlalchemy import func
 
 from database import db
-from models import CartItem, Customer, Lead, Order, OrderItem, Product, User
+from models import CartItem, Customer, Lead, Order, OrderItem, Product, ProductPrice, User
 from utils.logger import logger
 
 admin_bp = Blueprint("admin", __name__)
@@ -20,7 +20,7 @@ def get_dashboard():
     try:
         # Período padrão: últimos 30 dias
         end_date = datetime.now()
-        start_date = end_date - timedelta(days=30)
+        start_date = end_date - timedelta(days = 30)
 
         # Métricas de vendas
         orders_query = Order.query.filter(
@@ -88,19 +88,19 @@ def get_dashboard():
 
         # Produtos cadastrados
         total_products = Product.query.count()
-        active_products = Product.query.filter(Product.is_active == True).count()
+        active_products = Product.query.filter(Product.is_active).count()
 
         # Usuários registrados
         total_users = User.query.count()
-        admin_users = User.query.filter(User.is_admin == True).count()
+        admin_users = User.query.filter(User.is_admin).count()
 
         # Vendas por dia (últimos 7 dias)
         daily_sales = []
         for i in range(7):
-            day_start = (end_date - timedelta(days=i)).replace(
-                hour=0, minute=0, second=0, microsecond=0
+            day_start = (end_date - timedelta(days = i)).replace(
+                hour = 0, minute = 0, second = 0, microsecond = 0
             )
-            day_end = day_start + timedelta(days=1)
+            day_end = day_start + timedelta(days = 1)
 
             day_orders = Order.query.filter(
                 Order.created_at >= day_start,
@@ -195,8 +195,8 @@ def get_dashboard():
 def get_orders():
     """Listar pedidos para administração"""
     try:
-        page = request.args.get("page", 1, type=int)
-        per_page = request.args.get("per_page", 20, type=int)
+        page = request.args.get("page", 1, type = int)
+        per_page = request.args.get("per_page", 20, type = int)
         status = request.args.get("status")
 
         query = Order.query
@@ -205,7 +205,7 @@ def get_orders():
             query = query.filter(Order.status == status)
 
         orders = query.order_by(Order.created_at.desc()).paginate(
-            page=page, per_page=per_page, error_out=False
+            page = page, per_page = per_page, error_out = False
         )
 
         return jsonify(
@@ -391,8 +391,24 @@ def update_admin_order(order_id):
         # Se há campos para atualizar
         if update_fields:
             update_fields.append("updated_at = :updated_at")
-            sql = f"UPDATE orders SET {', '.join(update_fields)} WHERE id = :id"
-            db.session.execute(text(sql), params)
+            # CORREÇÃO DE SEGURANÇA: Usar query builder ao invés de string interpolation
+            from sqlalchemy import update
+            
+            # Construir statement de update seguro
+            stmt = update(Order).where(Order.id == clean_id)
+            update_values = {}
+            
+            # Mapear campos de volta para o modelo
+            for frontend_field, value in params.items():
+                if frontend_field not in ['id', 'updated_at']:
+                    # Usar mapeamento seguro de campos
+                    if frontend_field in field_mapping.values():
+                        update_values[frontend_field] = value
+            
+            update_values['updated_at'] = params['updated_at']
+            
+            # Executar update seguro
+            db.session.execute(stmt.values(update_values))
             db.session.commit()
 
         # Buscar pedido atualizado para retornar
@@ -527,7 +543,7 @@ def get_admin_stats():
     try:
         # Dados do dashboard principal
         end_date = datetime.now()
-        start_date = end_date - timedelta(days=30)
+        start_date = end_date - timedelta(days = 30)
 
         # Estatísticas básicas
         total_users = User.query.count()
@@ -583,19 +599,21 @@ def get_admin_stats():
 def get_admin_users():
     """Listar usuários para administração"""
     try:
-        page = request.args.get("page", 1, type=int)
-        per_page = request.args.get("per_page", 20, type=int)
+        page = request.args.get("page", 1, type = int)
+        per_page = request.args.get("per_page", 20, type = int)
         search = request.args.get("search", "")
 
         query = User.query
 
         if search:
+            # CORREÇÃO DE SEGURANÇA: Sanitizar parâmetros de busca
+            safe_search = search.replace('%', '\\%').replace('_', '\\_')
             query = query.filter(
-                User.name.ilike(f"%{search}%") | User.email.ilike(f"%{search}%")
+                User.name.ilike(f"%{safe_search}%") | User.email.ilike(f"%{safe_search}%")
             )
 
         users = query.order_by(User.created_at.desc()).paginate(
-            page=page, per_page=per_page, error_out=False
+            page = page, per_page = per_page, error_out = False
         )
 
         return jsonify(
@@ -671,7 +689,7 @@ def create_admin_user():
         # SQL para inserir usuário
         insert_sql = """
         INSERT INTO users (
-            id, name, email, password_hash, is_admin, is_active, 
+            id, name, email, password_hash, is_admin, is_active,
             phone, created_at, updated_at
         ) VALUES (
             :id, :name, :email, :password_hash, :is_admin, :is_active,
@@ -770,8 +788,24 @@ def update_admin_user(user_id):
         # Se há campos para atualizar
         if update_fields:
             update_fields.append("updated_at = :updated_at")
-            sql = f"UPDATE users SET {', '.join(update_fields)} WHERE id = :id"
-            db.session.execute(text(sql), params)
+            # CORREÇÃO DE SEGURANÇA: Usar query builder ao invés de string interpolation
+            from sqlalchemy import update
+            
+            # Construir statement de update seguro
+            stmt = update(User).where(User.id == clean_id)
+            update_values = {}
+            
+            # Mapear campos de volta para o modelo
+            for frontend_field, value in params.items():
+                if frontend_field not in ['id', 'updated_at']:
+                    # Usar mapeamento seguro de campos
+                    if frontend_field in field_mapping.values():
+                        update_values[frontend_field] = value
+            
+            update_values['updated_at'] = params['updated_at']
+            
+            # Executar update seguro
+            db.session.execute(stmt.values(update_values))
             db.session.commit()
 
         # Buscar usuário atualizado para retornar (sem senha)
@@ -909,23 +943,25 @@ def toggle_user_status(user_id):
 def get_admin_products():
     """Listar TODOS os produtos para administração (incluindo marketplace)"""
     try:
-        page = request.args.get("page", 1, type=int)
-        per_page = request.args.get("per_page", 50, type=int)
+        page = request.args.get("page", 1, type = int)
+        per_page = request.args.get("per_page", 50, type = int)
         search = request.args.get("search", "")
         status = request.args.get("status")
 
         query = Product.query
 
         if search:
+            # CORREÇÃO DE SEGURANÇA: Sanitizar parâmetros de busca
+            safe_search = search.replace('%', '\\%').replace('_', '\\_')
             query = query.filter(
-                Product.name.ilike(f"%{search}%")
-                | Product.description.ilike(f"%{search}%")
-                | Product.sku.ilike(f"%{search}%")
+                Product.name.ilike(f"%{safe_search}%")
+                | Product.description.ilike(f"%{safe_search}%")
+                | Product.sku.ilike(f"%{safe_search}%")
             )
 
         if status:
             if status == "active":
-                query = query.filter(Product.is_active == True)
+                query = query.filter(Product.is_active)
             elif status == "inactive":
                 query = query.filter(Product.is_active == False)
 
@@ -936,7 +972,7 @@ def get_admin_products():
             per_page = 100  # Limite alto para admin dashboard
 
         products = query.order_by(Product.created_at.desc()).paginate(
-            page=page, per_page=per_page, error_out=False
+            page = page, per_page = per_page, error_out = False
         )
 
         return jsonify(
@@ -1020,14 +1056,14 @@ def create_admin_product():
         # SQL para inserir produto
         insert_sql = """
         INSERT INTO products (
-            id, name, slug, description, short_description, price, cost_price, 
-            compare_price, sku, category, origin, process, roast_level, 
-            flavor_notes, sca_score, acidity, sweetness, body, weight, 
-            stock_quantity, min_stock_level, max_stock_level, is_active, 
+            id, name, slug, description, short_description, price, cost_price,
+            compare_price, promotional_price, sku, category, origin, process, roast_level,
+            flavor_notes, sca_score, acidity, sweetness, body, weight,
+            stock_quantity, min_stock_level, max_stock_level, is_active,
             is_featured, image_url, track_inventory, created_at, updated_at
         ) VALUES (
             :id, :name, :slug, :description, :short_description, :price, :cost_price,
-            :compare_price, :sku, :category, :origin, :process, :roast_level,
+            :compare_price, :promotional_price, :sku, :category, :origin, :process, :roast_level,
             :flavor_notes, :sca_score, :acidity, :sweetness, :body, :weight,
             :stock_quantity, :min_stock_level, :max_stock_level, :is_active,
             :is_featured, :image_url, :track_inventory, :created_at, :updated_at
@@ -1043,6 +1079,7 @@ def create_admin_product():
             "price": float(data["price"]),
             "cost_price": float(data.get("cost_price", 0)),
             "compare_price": float(data.get("compare_price", 0)),
+            "promotional_price": float(data.get("promotional_price", 0)),
             "sku": sku,
             "category": data.get("category", ""),
             "origin": data.get("origin", ""),
@@ -1068,6 +1105,35 @@ def create_admin_product():
         # Executar inserção
         db.session.execute(text(insert_sql), params)
         db.session.commit()
+
+        # Processar preços por peso se fornecidos
+        product_prices = data.get("product_prices", [])
+        if product_prices:
+            for idx, price_data in enumerate(product_prices):
+                price_id = str(uuid.uuid4()).replace("-", "")
+                price_sql = """
+                INSERT INTO product_prices (
+                    id, product_id, weight, price, stock_quantity,
+                    is_active, sort_order, created_at, updated_at
+                ) VALUES (
+                    :id, :product_id, :weight, :price, :stock_quantity,
+                    :is_active, :sort_order, :created_at, :updated_at
+                )
+                """
+                price_params = {
+                    "id": price_id,
+                    "product_id": product_id,
+                    "weight": price_data.get("weight", ""),
+                    "price": float(price_data.get("price", 0)),
+                    "stock_quantity": int(price_data.get("stock_quantity", 0)),
+                    "is_active": price_data.get("is_active", True),
+                    "sort_order": idx,
+                    "created_at": now,
+                    "updated_at": now,
+                }
+                db.session.execute(text(price_sql), price_params)
+            
+            db.session.commit()
 
         # Buscar produto criado para retornar
         select_sql = "SELECT * FROM products WHERE id = :id"
@@ -1100,6 +1166,7 @@ def create_admin_product():
 def update_admin_product(product_id):
     """Atualizar produto via admin"""
     try:
+        import uuid
         from sqlalchemy import text
 
         # Converter UUID para formato sem hífens como está no banco
@@ -1122,10 +1189,19 @@ def update_admin_product(product_id):
         field_mapping = {
             "name": "name",
             "description": "description",
+            "short_description": "short_description",
             "price": "price",
+            "promotional_price": "promotional_price",
             "stock_quantity": "stock_quantity",
             "category": "category",
             "origin": "origin",
+            "process": "process",
+            "roast_level": "roast_level",
+            "flavor_notes": "flavor_notes",
+            "sca_score": "sca_score",
+            "acidity": "acidity",
+            "sweetness": "sweetness",
+            "body": "body",
             "is_active": "is_active",
             "is_featured": "is_featured",
         }
@@ -1138,8 +1214,60 @@ def update_admin_product(product_id):
         # Se há campos para atualizar
         if update_fields:
             update_fields.append("updated_at = :updated_at")
-            sql = f"UPDATE products SET {', '.join(update_fields)} WHERE id = :id"
-            db.session.execute(text(sql), params)
+            # CORREÇÃO DE SEGURANÇA: Usar query builder ao invés de string interpolation
+            from sqlalchemy import update
+            
+            # Construir statement de update seguro
+            stmt = update(Product).where(Product.id == clean_id)
+            update_values = {}
+            
+            # Mapear campos de volta para o modelo
+            for frontend_field, value in params.items():
+                if frontend_field not in ['id', 'updated_at']:
+                    # Usar mapeamento seguro de campos
+                    if frontend_field in field_mapping.values():
+                        update_values[frontend_field] = value
+            
+            update_values['updated_at'] = params['updated_at']
+            
+            # Executar update seguro
+            db.session.execute(stmt.values(update_values))
+            db.session.commit()
+
+        # Processar preços por peso se fornecidos
+        product_prices = data.get("product_prices")
+        if product_prices is not None:
+            # Primeiro, remover preços existentes
+            db.session.execute(
+                text("DELETE FROM product_prices WHERE product_id = :product_id"),
+                {"product_id": clean_id}
+            )
+            
+            # Adicionar novos preços
+            for idx, price_data in enumerate(product_prices):
+                price_id = str(uuid.uuid4()).replace("-", "")
+                price_sql = """
+                INSERT INTO product_prices (
+                    id, product_id, weight, price, stock_quantity,
+                    is_active, sort_order, created_at, updated_at
+                ) VALUES (
+                    :id, :product_id, :weight, :price, :stock_quantity,
+                    :is_active, :sort_order, :created_at, :updated_at
+                )
+                """
+                price_params = {
+                    "id": price_id,
+                    "product_id": clean_id,
+                    "weight": price_data.get("weight", ""),
+                    "price": float(price_data.get("price", 0)),
+                    "stock_quantity": int(price_data.get("stock_quantity", 0)),
+                    "is_active": price_data.get("is_active", True),
+                    "sort_order": idx,
+                    "created_at": datetime.utcnow(),
+                    "updated_at": datetime.utcnow(),
+                }
+                db.session.execute(text(price_sql), price_params)
+            
             db.session.commit()
 
         # Buscar produto atualizado para retornar
@@ -1150,6 +1278,20 @@ def update_admin_product(product_id):
 
         # Converter resultado para dict
         product_dict = dict(updated_product._mapping) if updated_product else {}
+
+        # Adicionar preços por peso ao resultado
+        prices_result = db.session.execute(
+            text("""
+                SELECT id, weight, price, stock_quantity, is_active, sort_order
+                FROM product_prices
+                WHERE product_id = :product_id
+                ORDER BY sort_order
+            """),
+            {"product_id": clean_id}
+        )
+        product_dict["product_prices"] = [
+            dict(price._mapping) for price in prices_result.fetchall()
+        ]
 
         return jsonify(
             {
@@ -1273,8 +1415,8 @@ def get_admin_blog_posts():
     try:
         from models.blog import BlogPost
 
-        page = request.args.get("page", 1, type=int)
-        per_page = request.args.get("per_page", 20, type=int)
+        page = request.args.get("page", 1, type = int)
+        per_page = request.args.get("per_page", 20, type = int)
         status = request.args.get("status")
 
         query = BlogPost.query
@@ -1282,7 +1424,7 @@ def get_admin_blog_posts():
         # Aplicar filtro de status se fornecido
         if status:
             if status == "published":
-                query = query.filter(BlogPost.is_published == True)
+                query = query.filter(BlogPost.is_published)
             elif status == "draft":
                 query = query.filter(BlogPost.is_published == False)
 
@@ -1290,7 +1432,7 @@ def get_admin_blog_posts():
         query = query.order_by(BlogPost.created_at.desc())
 
         # Paginação
-        posts = query.paginate(page=page, per_page=per_page, error_out=False)
+        posts = query.paginate(page = page, per_page = per_page, error_out = False)
 
         # Converter posts para dict com dados do autor
         posts_data = []
@@ -1359,13 +1501,13 @@ def create_admin_blog_post():
         slug = re.sub(r"[^a-z0-9]+", "-", data["title"].lower()).strip("-")
 
         # Verificar se slug já existe
-        existing_post = BlogPost.query.filter_by(slug=slug).first()
+        existing_post = BlogPost.query.filter_by(slug = slug).first()
         if existing_post:
             # Adicionar número ao slug
             counter = 1
             while existing_post:
                 new_slug = f"{slug}-{counter}"
-                existing_post = BlogPost.query.filter_by(slug=new_slug).first()
+                existing_post = BlogPost.query.filter_by(slug = new_slug).first()
                 counter += 1
             slug = new_slug
 
@@ -1375,7 +1517,7 @@ def create_admin_blog_post():
         # Buscar usuário admin para ser autor
         author_id = data.get("author_id")
         if not author_id:
-            admin_user = User.query.filter_by(is_admin=True).first()
+            admin_user = User.query.filter_by(is_admin = True).first()
             if admin_user:
                 author_id = admin_user.id
 
@@ -1436,7 +1578,7 @@ def update_admin_blog_post(post_id):
         data = request.get_json()
 
         # Buscar post
-        post = BlogPost.query.filter_by(id=post_id).first()
+        post = BlogPost.query.filter_by(id = post_id).first()
         if not post:
             return (
                 jsonify({"success": False, "error": "Post não encontrado"}),
@@ -1453,9 +1595,9 @@ def update_admin_blog_post(post_id):
         # Gerar slug a partir do título se mudou
         if data.get("title") != post.title:
             slug = re.sub(r"[^a-z0-9]+", "-", data["title"].lower()).strip("-")
-            
+
             # Verificar se slug já existe
-            existing_post = BlogPost.query.filter_by(slug=slug).filter(
+            existing_post = BlogPost.query.filter_by(slug = slug).filter(
                 BlogPost.id != post_id
             ).first()
             if existing_post:
@@ -1463,7 +1605,7 @@ def update_admin_blog_post(post_id):
                 counter = 1
                 while existing_post:
                     new_slug = f"{slug}-{counter}"
-                    existing_post = BlogPost.query.filter_by(slug=new_slug).filter(
+                    existing_post = BlogPost.query.filter_by(slug = new_slug).filter(
                         BlogPost.id != post_id
                     ).first()
                     counter += 1
@@ -1482,13 +1624,13 @@ def update_admin_blog_post(post_id):
         post.is_featured = data.get("is_featured", post.is_featured)
         post.meta_title = data.get("meta_title", post.meta_title)
         post.meta_description = data.get("meta_description", post.meta_description)
-        
+
         # Atualizar published_at se mudou status
         if data.get("is_published") and not post.published_at:
             post.published_at = datetime.utcnow()
         elif not data.get("is_published"):
             post.published_at = None
-            
+
         post.updated_at = datetime.utcnow()
 
         db.session.commit()
@@ -1524,7 +1666,7 @@ def delete_admin_blog_post(post_id):
         from models.blog import BlogPost
 
         # Buscar post
-        post = BlogPost.query.filter_by(id=post_id).first()
+        post = BlogPost.query.filter_by(id = post_id).first()
         if not post:
             return (
                 jsonify({"success": False, "error": "Post não encontrado"}),
@@ -1583,11 +1725,11 @@ def toggle_blog_post_status(post_id):
 def get_top_products_revenue():
     """Analytics de produtos com maior receita"""
     try:
-        limit = request.args.get("limit", 10, type=int)
+        limit = request.args.get("limit", 10, type = int)
         period = request.args.get("period", "30")  # dias
 
         end_date = datetime.now()
-        start_date = end_date - timedelta(days=int(period))
+        start_date = end_date - timedelta(days = int(period))
 
         # Buscar produtos com maior receita
         top_products = (
@@ -1695,11 +1837,11 @@ def get_admin_summary():
 def get_customers():
     """Listar clientes para administração"""
     try:
-        page = request.args.get("page", 1, type=int)
-        per_page = request.args.get("per_page", 20, type=int)
+        page = request.args.get("page", 1, type = int)
+        per_page = request.args.get("per_page", 20, type = int)
 
         customers = Customer.query.order_by(Customer.created_at.desc()).paginate(
-            page=page, per_page=per_page, error_out=False
+            page = page, per_page = per_page, error_out = False
         )
 
         return jsonify(
@@ -1728,8 +1870,8 @@ def get_customers():
 def get_leads():
     """Listar leads para administração"""
     try:
-        page = request.args.get("page", 1, type=int)
-        per_page = request.args.get("per_page", 20, type=int)
+        page = request.args.get("page", 1, type = int)
+        per_page = request.args.get("per_page", 20, type = int)
         status = request.args.get("status")
 
         query = Lead.query
@@ -1738,7 +1880,7 @@ def get_leads():
             query = query.filter(Lead.status == status)
 
         leads = query.order_by(Lead.created_at.desc()).paginate(
-            page=page, per_page=per_page, error_out=False
+            page = page, per_page = per_page, error_out = False
         )
 
         return jsonify(
@@ -1780,11 +1922,11 @@ def get_blog_categories():
         categories_data = []
         for category in categories:
             category_dict = category.to_dict()
-            
+
             # Contar posts por categoria (usando o campo category string)
             posts_count = BlogPost.query.filter(BlogPost.category == category.name).count()
             category_dict["posts_count"] = posts_count
-            
+
             categories_data.append(category_dict)
 
         return jsonify(
@@ -1800,7 +1942,7 @@ def create_blog_category():
     """Criar nova categoria do blog"""
     try:
         from models.blog import BlogCategory
-        
+
         data = request.get_json()
 
         if not data.get("name"):
@@ -1811,23 +1953,23 @@ def create_blog_category():
 
         # Gerar slug único
         slug = data.get("slug", data["name"].lower().replace(" ", "-"))
-        existing_category = BlogCategory.query.filter_by(slug=slug).first()
+        existing_category = BlogCategory.query.filter_by(slug = slug).first()
         if existing_category:
             # Adicionar número ao slug se já existir
             counter = 1
             while existing_category:
                 new_slug = f"{slug}-{counter}"
-                existing_category = BlogCategory.query.filter_by(slug=new_slug).first()
+                existing_category = BlogCategory.query.filter_by(slug = new_slug).first()
                 counter += 1
             slug = new_slug
 
         # Criar categoria
         category = BlogCategory(
-            name=data["name"],
-            slug=slug,
-            description=data.get("description", ""),
-            color=data.get("color", "#8B4513"),
-            is_active=data.get("is_active", True)
+            name = data["name"],
+            slug = slug,
+            description = data.get("description", ""),
+            color = data.get("color", "#8B4513"),
+            is_active = data.get("is_active", True)
         )
 
         db.session.add(category)
@@ -1854,7 +1996,7 @@ def update_blog_category(category_id):
     """Atualizar categoria do blog"""
     try:
         from models.blog import BlogCategory
-        
+
         data = request.get_json()
 
         if not data.get("name"):
@@ -1864,7 +2006,7 @@ def update_blog_category(category_id):
             )
 
         # Buscar categoria
-        category = BlogCategory.query.filter_by(id=category_id).first()
+        category = BlogCategory.query.filter_by(id = category_id).first()
         if not category:
             return (
                 jsonify({"success": False, "error": "Categoria não encontrada"}),
@@ -1874,7 +2016,7 @@ def update_blog_category(category_id):
         # Atualizar slug se nome mudou
         if data["name"] != category.name:
             slug = data.get("slug", data["name"].lower().replace(" ", "-"))
-            existing_category = BlogCategory.query.filter_by(slug=slug).filter(
+            existing_category = BlogCategory.query.filter_by(slug = slug).filter(
                 BlogCategory.id != category_id
             ).first()
             if existing_category:
@@ -1882,7 +2024,7 @@ def update_blog_category(category_id):
                 counter = 1
                 while existing_category:
                     new_slug = f"{slug}-{counter}"
-                    existing_category = BlogCategory.query.filter_by(slug=new_slug).filter(
+                    existing_category = BlogCategory.query.filter_by(slug = new_slug).filter(
                         BlogCategory.id != category_id
                     ).first()
                     counter += 1
@@ -1915,9 +2057,9 @@ def delete_blog_category(category_id):
     """Deletar categoria do blog"""
     try:
         from models.blog import BlogCategory, BlogPost
-        
+
         # Buscar categoria
-        category = BlogCategory.query.filter_by(id=category_id).first()
+        category = BlogCategory.query.filter_by(id = category_id).first()
         if not category:
             return (
                 jsonify({"success": False, "error": "Categoria não encontrada"}),
@@ -1925,7 +2067,7 @@ def delete_blog_category(category_id):
             )
 
         # Verificar se há posts associados
-        posts_count = BlogPost.query.filter_by(category_id=category_id).count()
+        posts_count = BlogPost.query.filter_by(category_id = category_id).count()
         if posts_count > 0:
             return (
                 jsonify({
@@ -1956,7 +2098,7 @@ def get_dashboard_sales():
     """Dashboard específico de vendas"""
     try:
         end_date = datetime.now()
-        start_date = end_date - timedelta(days=30)
+        start_date = end_date - timedelta(days = 30)
 
         # Métricas de vendas
         total_orders = Order.query.filter(
@@ -2004,7 +2146,7 @@ def get_dashboard_products():
     """Dashboard específico de produtos"""
     try:
         total_products = Product.query.count()
-        active_products = Product.query.filter(Product.is_active == True).count()
+        active_products = Product.query.filter(Product.is_active).count()
 
         return jsonify(
             {
@@ -2091,13 +2233,13 @@ def get_admin_analytics():
     try:
         # Período padrão: últimos 30 dias
         end_date = datetime.now()
-        start_date = end_date - timedelta(days=30)
-        
+        start_date = end_date - timedelta(days = 30)
+
         # Métricas básicas
         total_users = User.query.count()
         total_orders = Order.query.count()
         total_products = Product.query.count()
-        
+
         # Receita total
         total_revenue = (
             db.session.query(func.sum(Order.total_amount))
@@ -2105,24 +2247,24 @@ def get_admin_analytics():
             .scalar()
             or 0
         )
-        
+
         # Crescimento mensal
-        previous_month_start = start_date - timedelta(days=30)
+        previous_month_start = start_date - timedelta(days = 30)
         previous_month_orders = Order.query.filter(
             Order.created_at >= previous_month_start,
             Order.created_at < start_date
         ).count()
-        
+
         current_month_orders = Order.query.filter(
             Order.created_at >= start_date,
             Order.created_at <= end_date
         ).count()
-        
+
         orders_growth = (
             ((current_month_orders - previous_month_orders) / previous_month_orders * 100)
             if previous_month_orders > 0 else 0
         )
-        
+
         # Produtos mais vendidos (últimos 30 dias)
         top_products = (
             db.session.query(
@@ -2141,20 +2283,20 @@ def get_admin_analytics():
             .limit(5)
             .all()
         )
-        
+
         # Vendas por dia (últimos 7 dias)
         daily_sales = []
         for i in range(7):
-            day = end_date - timedelta(days=i)
-            day_start = day.replace(hour=0, minute=0, second=0, microsecond=0)
-            day_end = day_start + timedelta(days=1)
-            
+            day = end_date - timedelta(days = i)
+            day_start = day.replace(hour = 0, minute = 0, second = 0, microsecond = 0)
+            day_end = day_start + timedelta(days = 1)
+
             day_orders = Order.query.filter(
                 Order.created_at >= day_start,
                 Order.created_at < day_end,
                 Order.status == "completed"
             ).count()
-            
+
             day_revenue = (
                 db.session.query(func.sum(Order.total_amount))
                 .filter(
@@ -2165,13 +2307,13 @@ def get_admin_analytics():
                 .scalar()
                 or 0
             )
-            
+
             daily_sales.append({
                 "date": day_start.strftime("%Y-%m-%d"),
                 "orders": day_orders,
                 "revenue": float(day_revenue)
             })
-        
+
         daily_sales.reverse()  # Ordem cronológica
 
         return jsonify(
@@ -2217,12 +2359,12 @@ def get_blog_analytics():
     """Analytics do blog"""
     try:
         from models.blog import BlogPost, BlogCategory
-        
+
         # Estatísticas básicas do blog
         total_posts = BlogPost.query.count()
         published_posts = BlogPost.query.filter(BlogPost.is_published.is_(True)).count()
         draft_posts = BlogPost.query.filter(BlogPost.is_published.is_(False)).count()
-        
+
         # Posts por categoria usando o campo category do BlogPost
         posts_by_category = (
             db.session.query(
@@ -2234,7 +2376,7 @@ def get_blog_analytics():
             .order_by(func.count(BlogPost.id).desc())
             .all()
         )
-        
+
         # Posts recentes
         recent_posts = (
             BlogPost.query
@@ -2243,10 +2385,10 @@ def get_blog_analytics():
             .limit(5)
             .all()
         )
-        
+
         # Categorias disponíveis
         categories = BlogCategory.query.filter(BlogCategory.is_active.is_(True)).all()
-        
+
         return jsonify({
             "success": True,
             "data": {
@@ -2295,8 +2437,8 @@ def get_sales_analytics():
     try:
         period = request.args.get("period", "30")  # dias
         end_date = datetime.now()
-        start_date = end_date - timedelta(days=int(period))
-        
+        start_date = end_date - timedelta(days = int(period))
+
         # Vendas por status
         sales_by_status = (
             db.session.query(
@@ -2311,7 +2453,7 @@ def get_sales_analytics():
             .group_by(Order.status)
             .all()
         )
-        
+
         # Métodos de pagamento mais usados
         payment_methods = (
             db.session.query(
@@ -2325,7 +2467,7 @@ def get_sales_analytics():
             .group_by(Order.payment_status)
             .all()
         )
-        
+
         # Ticket médio por período
         avg_order_value = (
             db.session.query(func.avg(Order.total_amount))
@@ -2337,7 +2479,7 @@ def get_sales_analytics():
             .scalar()
             or 0
         )
-        
+
         return jsonify({
             "success": True,
             "data": {
@@ -2379,30 +2521,30 @@ def get_products_analytics():
                 Product.category,
                 func.count(Product.id).label("count")
             )
-            .filter(Product.is_active == True)
+            .filter(Product.is_active)
             .group_by(Product.category)
             .order_by(func.count(Product.id).desc())
             .all()
         )
-        
+
         # Produtos com estoque baixo
         low_stock_products = (
             Product.query
-            .filter(Product.stock_quantity <= 10, Product.is_active == True)
+            .filter(Product.stock_quantity <= 10, Product.is_active)
             .order_by(Product.stock_quantity.asc())
             .limit(10)
             .all()
         )
-        
+
         # Produtos mais caros
         expensive_products = (
             Product.query
-            .filter(Product.is_active == True)
+            .filter(Product.is_active)
             .order_by(Product.price.desc())
             .limit(5)
             .all()
         )
-        
+
         return jsonify({
             "success": True,
             "data": {
@@ -2451,11 +2593,11 @@ def get_customers_analytics():
             .group_by(Customer.status)
             .all()
         )
-        
+
         # Novos clientes por mês
         end_date = datetime.now()
-        start_date = end_date - timedelta(days=90)  # últimos 3 meses
-        
+        start_date = end_date - timedelta(days = 90)  # últimos 3 meses
+
         new_customers_monthly = (
             db.session.query(
                 func.date_trunc('month', Customer.created_at).label("month"),
@@ -2466,7 +2608,7 @@ def get_customers_analytics():
             .order_by(func.date_trunc('month', Customer.created_at))
             .all()
         )
-        
+
         # Clientes com mais pedidos
         top_customers = (
             db.session.query(
@@ -2481,7 +2623,7 @@ def get_customers_analytics():
             .limit(10)
             .all()
         )
-        
+
         return jsonify({
             "success": True,
             "data": {
@@ -2521,10 +2663,10 @@ def get_order_documents(order_id):
     try:
         # Buscar o pedido
         order = db.session.query(Order).filter(Order.id == order_id).first()
-        
+
         if not order:
             return jsonify({"error": "Order not found"}), 404
-        
+
         # Simular documentos para demonstração
         documents = {
             "order_id": order_id,
@@ -2552,9 +2694,9 @@ def get_order_documents(order_id):
                 }
             ]
         }
-        
+
         return jsonify(documents), 200
-        
+
     except Exception as e:
         logger.error(f"Error getting order documents: {str(e)}")
         return jsonify({"error": "Internal server error"}), 500

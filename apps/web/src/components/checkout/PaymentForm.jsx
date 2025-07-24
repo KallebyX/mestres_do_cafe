@@ -1,7 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { mercadoPagoAPI } from '../../services/mercadopago-api';
 import './PaymentForm.css';
 
-const PaymentForm = ({ onNext, onBack, initialData, loading, orderTotal }) => {
+const PaymentForm = ({ onNext, onBack, initialData, loading, orderTotal, orderData }) => {
+  // Calcular total do pedido
+  const calculatedTotal = orderTotal || orderData?.total || 0;
   const [paymentMethod, setPaymentMethod] = useState(initialData?.paymentMethod || '');
   const [cardData, setCardData] = useState({
     number: '',
@@ -16,6 +19,26 @@ const PaymentForm = ({ onNext, onBack, initialData, loading, orderTotal }) => {
     ...initialData?.pixData
   });
   const [errors, setErrors] = useState({});
+  const [paymentMethods, setPaymentMethods] = useState([]);
+  const [processingPayment, setProcessingPayment] = useState(false);
+  const [paymentResult, setPaymentResult] = useState(null);
+
+  // Carregar métodos de pagamento disponíveis
+  useEffect(() => {
+    const loadPaymentMethods = async () => {
+      try {
+        const response = await mercadoPagoAPI.getTransparentPaymentMethods();
+        if (response.success) {
+          setPaymentMethods(response.payment_methods || []);
+          console.log('✅ Métodos de pagamento carregados:', response.payment_methods);
+        }
+      } catch (error) {
+        console.error('❌ Erro ao carregar métodos de pagamento:', error);
+      }
+    };
+
+    loadPaymentMethods();
+  }, []);
 
   const formatPrice = (price) => {
     return new Intl.NumberFormat('pt-BR', {
@@ -151,21 +174,95 @@ const PaymentForm = ({ onNext, onBack, initialData, loading, orderTotal }) => {
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     
-    if (validateForm()) {
-      const paymentData = {
-        paymentMethod,
-        ...(paymentMethod === 'credit_card' || paymentMethod === 'debit_card' ? { cardData } : {}),
-        ...(paymentMethod === 'pix' ? { pixData } : {}),
+    if (!validateForm()) {
+      return;
+    }
+
+    setProcessingPayment(true);
+    setPaymentResult(null);
+    setErrors({});
+
+    try {
+      console.log('🎯 Iniciando processamento de pagamento:', paymentMethod);
+
+      // Preparar dados do pedido
+      const orderPaymentData = {
+        order_id: orderData?.id || '1', // Simular ID do pedido
+        order_number: orderData?.order_number || 'MC' + Date.now(),
+        amount: calculatedTotal,
       };
-      
-      onNext(paymentData);
+
+      // Preparar dados do pagador
+      const payerData = {
+        email: initialData?.email || 'test@example.com',
+        first_name: initialData?.firstName || 'Cliente',
+        last_name: initialData?.lastName || 'Teste',
+        doc_number: pixData.cpf.replace(/\D/g, '') || '12345678901',
+      };
+
+      let result;
+
+      switch (paymentMethod) {
+        case 'pix':
+          console.log('💰 Processando pagamento PIX...');
+          result = await mercadoPagoAPI.processPayment('pix', {
+            ...payerData,
+            pixData,
+          }, orderPaymentData);
+          break;
+
+        case 'credit_card':
+        case 'debit_card':
+          console.log('💳 Processando pagamento com cartão...');
+          result = await mercadoPagoAPI.processPayment(paymentMethod, {
+            ...payerData,
+            cardData,
+          }, orderPaymentData);
+          break;
+
+        case 'boleto':
+          console.log('📄 Processando boleto bancário...');
+          result = await mercadoPagoAPI.processPayment('boleto', {
+            ...payerData,
+          }, orderPaymentData);
+          break;
+
+        default:
+          throw new Error(`Método de pagamento não suportado: ${paymentMethod}`);
+      }
+
+      if (result?.success) {
+        console.log('✅ Pagamento processado com sucesso:', result);
+        setPaymentResult(result);
+        
+        // Passar resultado para próxima etapa
+        const paymentData = {
+          paymentMethod,
+          paymentResult: result,
+          ...(paymentMethod === 'credit_card' || paymentMethod === 'debit_card' ? { cardData } : {}),
+          ...(paymentMethod === 'pix' ? { pixData, pixResult: result } : {}),
+          ...(paymentMethod === 'boleto' ? { boletoResult: result } : {}),
+        };
+        
+        onNext(paymentData);
+      } else {
+        throw new Error(result?.error || 'Falha no processamento do pagamento');
+      }
+
+    } catch (error) {
+      console.error('❌ Erro no processamento do pagamento:', error);
+      setErrors({
+        general: error.message || 'Erro no processamento do pagamento. Tente novamente.'
+      });
+    } finally {
+      setProcessingPayment(false);
     }
   };
 
-  const installmentOptions = generateInstallmentOptions(orderTotal);
+  const installmentOptions = generateInstallmentOptions(calculatedTotal);
 
   return (
     <div className="payment-form">
@@ -286,6 +383,17 @@ const PaymentForm = ({ onNext, onBack, initialData, loading, orderTotal }) => {
           <div className="error-message">{errors.paymentMethod}</div>
         )}
 
+        {errors.general && (
+          <div className="error-message general-error">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <circle cx="12" cy="12" r="10"></circle>
+              <line x1="15" y1="9" x2="9" y2="15"></line>
+              <line x1="9" y1="9" x2="15" y2="15"></line>
+            </svg>
+            {errors.general}
+          </div>
+        )}
+
         {/* PIX Form */}
         {paymentMethod === 'pix' && (
           <div className="payment-details">
@@ -298,7 +406,7 @@ const PaymentForm = ({ onNext, onBack, initialData, loading, orderTotal }) => {
                 <span>Pagando via PIX você ganha 5% de desconto!</span>
               </div>
               <div className="total-with-discount">
-                <span>Total com desconto: {formatPrice(orderTotal * 0.95)}</span>
+                <span>Total com desconto: {formatPrice(calculatedTotal * 0.95)}</span>
               </div>
             </div>
             
@@ -461,18 +569,27 @@ const PaymentForm = ({ onNext, onBack, initialData, loading, orderTotal }) => {
             Voltar
           </button>
           
-          <button 
+          <button
             type="submit"
             className="btn btn-primary"
-            disabled={loading}
+            disabled={!paymentMethod || processingPayment}
           >
-            {loading ? (
+            {processingPayment ? (
               <>
-                <span className="loading-spinner"></span>
-                Processando...
+                <svg width="20" height="20" viewBox="0 0 24 24" className="spin">
+                  <circle cx="12" cy="12" r="10" fill="none" stroke="currentColor" strokeWidth="4" opacity="0.25"></circle>
+                  <path d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" fill="currentColor"></path>
+                </svg>
+                Processando pagamento...
               </>
             ) : (
-              'Revisar Pedido'
+              <>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="M9 12l2 2 4-4"></path>
+                  <path d="M21 12c0 4.97-4.03 9-9 9s-9-4.03-9-9 4.03-9 9-9 9 4.03 9 9z"></path>
+                </svg>
+                Finalizar Compra
+              </>
             )}
           </button>
         </div>

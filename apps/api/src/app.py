@@ -7,65 +7,78 @@ import os
 import sys
 
 from dotenv import load_dotenv
-from flask import Flask, jsonify, send_from_directory, request
+from flask import Flask, jsonify, request, send_from_directory
 from flask_cors import CORS
+from flask_jwt_extended import JWTManager
 
-# Carrega variáveis de ambiente
-load_dotenv()
+# Carrega variáveis de ambiente do caminho correto
+load_dotenv(os.path.join(os.path.dirname(__file__), "..", ".env"))
 
 # Adiciona o diretório src ao path
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 # Importações locais após configuração do path
-from config import config
-from database import init_db, health_check as db_health_check
-from controllers.reviews_simple import reviews_bp
-from controllers.routes.auth import auth_bp
-from controllers.routes.cart import cart_bp
-from controllers.routes.checkout import checkout_bp
-from controllers.routes.health import health_bp
-from controllers.routes.products import products_bp
-from controllers.routes.customers import customers_bp
-from controllers.routes.orders import orders_bp
-from controllers.routes.payments import payments_bp
-from controllers.routes.leads import leads_bp
-from controllers.routes.coupons import coupons_bp
-from controllers.routes.gamification import gamification_bp
-from controllers.routes.blog import blog_bp
-from controllers.routes.newsletter import newsletter_bp
-from controllers.routes.notifications import notifications_bp
-from controllers.routes.media import media_bp
-from controllers.routes.financial import financial_bp
-from controllers.routes.hr import hr_bp
-from controllers.routes.admin import admin_bp
-from controllers.routes.suppliers import suppliers_bp
-from controllers.routes.vendors import vendors_bp
-from controllers.routes.stock import stock_bp
-from controllers.routes.escrow import escrow_bp
-from controllers.routes.mercado_pago import mercado_pago_bp
-from controllers.routes.melhor_envio import melhor_envio_bp
-from controllers.routes.monitoring import monitoring_bp
-from controllers.routes.security import security_bp
-from controllers.routes.analytics import analytics_bp
-from controllers.routes.recommendations import recommendations_bp
-from controllers.routes.tenants import tenants_bp
-from controllers.shipping import shipping_bp
-from controllers.wishlist import wishlist_bp
-from middleware.error_handler import register_error_handlers
-from utils.logger import setup_logger
-from utils.monitoring import init_monitoring
-from utils.cache import init_cache_warmup
-from middleware.security import init_security_middleware
+try:
+    from config import config
+    from database import health_check as db_health_check
+    from database import init_db
+    from controllers.reviews_simple import reviews_bp
+    from controllers.routes.auth import auth_bp
+    from controllers.routes.cart import cart_bp
+    from controllers.routes.checkout import checkout_bp
+    from controllers.routes.health import health_bp
+    from controllers.routes.products import products_bp
+    from controllers.routes.customers import customers_bp
+    from controllers.routes.orders import orders_bp
+    from controllers.routes.payments import payments_bp
+    from controllers.routes.admin import admin_bp
+    from controllers.routes.coupons import coupons_bp
+    from controllers.routes.notifications import notifications_bp  # REATIVADO: serviço implementado
+    # from controllers.routes.melhor_envio import melhor_envio_bp  # REMOVIDO: depende de services/
+    
+    # Mercado Pago - sistema de pagamentos
+    try:
+        from services.mercado_pago_service import MercadoPagoService
+        from services.event_system import event_system, EventType
+        from services.webhook_processor import webhook_processor
+        from controllers.routes.mercado_pago import mercado_pago_bp
+    except ImportError as e:
+        pass  # Sistema Mercado Pago opcional
+    except Exception as e:
+        pass  # Sistema Mercado Pago opcional
+    
+    from controllers.routes.security import security_bp
+    from controllers.routes.stock import stock_bp
+
+    
+
+    # from services.webhook_processor import webhook_processor  # REMOVIDO: depende de services/
+    from middleware.error_handler import register_error_handlers
+    from middleware.security import init_security_middleware
+    from utils.cache import init_cache_warmup
+    from utils.logger import setup_logger
+    from utils.monitoring import init_monitoring
+
+except ImportError as e:
+    print(f"❌ [DEBUG] ERRO DE IMPORTAÇÃO: {e}")
+    print(
+        f"❌ [DEBUG] Módulo faltando: {e.name if hasattr(e, 'name') else 'desconhecido'}"
+    )
+    raise
+except Exception as e:
+    print(f"❌ [DEBUG] ERRO INESPERADO NA IMPORTAÇÃO: {e}")
+    print(f"❌ [DEBUG] Tipo do erro: {type(e).__name__}")
+    raise
 
 # Supabase client
 # from controllers.orders import orders_bp
 
 
-def create_app(config_name=None):
+def create_app(config_name = None):
     """Factory function para criar a aplicação Flask"""
     app = Flask(
         __name__,
-        static_folder=None,  # Desabilita serving automático de estáticos
+        static_folder = None,  # Desabilita serving automático de estáticos
         static_url_path="",
     )
 
@@ -84,10 +97,10 @@ def create_app(config_name=None):
     # Configuração de CORS usando as configurações do ambiente
     CORS(
         app,
-        origins=app.config["CORS_ORIGINS"],
+        origins = app.config["CORS_ORIGINS"],
         allow_headers=["Content-Type", "Authorization"],
         methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-        supports_credentials=True,
+        supports_credentials = True,
     )
 
     # Registra error handlers
@@ -99,13 +112,17 @@ def create_app(config_name=None):
     # Inicializa SQLAlchemy
     init_db(app)
     logger.info("✅ SQLAlchemy inicializado com sucesso")
-    
+
+    # Inicializa JWTManager
+    jwt = JWTManager(app)
+    logger.info("✅ JWTManager inicializado com sucesso")
+
     # Inicializa sistema de monitoramento
     init_monitoring(app)
-    
+
     # Inicializa middleware de segurança
     init_security_middleware(app)
-    
+
     # Inicializa cache warming
     try:
         init_cache_warmup()
@@ -113,43 +130,40 @@ def create_app(config_name=None):
     except Exception as e:
         logger.warning(f"⚠️ Cache warming falhou: {e}")
 
+    # Inicializa webhook processor (TEMPORARIAMENTE DESABILITADO)
+    try:
+        # webhook_processor.start_processor()  # COMENTADO: estava travando o Flask
+        logger.info("✅ Webhook processor desabilitado para debug")
+    except Exception as e:
+        logger.warning(f"⚠️ Webhook processor falhou: {e}")
+
     # Registra blueprints principais
     app.register_blueprint(auth_bp, url_prefix="/api/auth")
     app.register_blueprint(products_bp, url_prefix="/api/products")
     app.register_blueprint(cart_bp, url_prefix="/api/cart")
-    app.register_blueprint(wishlist_bp, url_prefix="/api/wishlist")
     app.register_blueprint(reviews_bp, url_prefix="/api/reviews")
-    app.register_blueprint(shipping_bp, url_prefix="/api/shipping")
     app.register_blueprint(checkout_bp)  # Já tem o prefixo /api/checkout
     app.register_blueprint(health_bp, url_prefix="/api")
-    
+
     # Registra blueprints do sistema principal
     app.register_blueprint(customers_bp, url_prefix="/api/customers")
     app.register_blueprint(orders_bp, url_prefix="/api/orders")
     app.register_blueprint(payments_bp, url_prefix="/api/payments")
-    
-    # Registra blueprints de funcionalidades avançadas
-    app.register_blueprint(leads_bp, url_prefix="/api/leads")
+
+    # Registra blueprints de funcionalidades avançadas (somente os existentes)
     app.register_blueprint(coupons_bp, url_prefix="/api/coupons")
-    app.register_blueprint(gamification_bp, url_prefix="/api/gamification")
-    app.register_blueprint(blog_bp, url_prefix="/api/blog")
-    app.register_blueprint(newsletter_bp, url_prefix="/api/newsletter")
-    app.register_blueprint(notifications_bp, url_prefix="/api/notifications")
-    app.register_blueprint(media_bp, url_prefix="/api/media")
-    app.register_blueprint(financial_bp, url_prefix="/api/financial")
-    app.register_blueprint(hr_bp, url_prefix="/api/hr")
     app.register_blueprint(admin_bp, url_prefix="/api/admin")
-    app.register_blueprint(suppliers_bp, url_prefix="/api/suppliers")
-    app.register_blueprint(vendors_bp, url_prefix="/api/vendors")
     app.register_blueprint(stock_bp, url_prefix="/api/stock")
-    app.register_blueprint(escrow_bp, url_prefix="/api/escrow")
-    app.register_blueprint(mercado_pago_bp, url_prefix="/api/payments/mercadopago")
-    app.register_blueprint(melhor_envio_bp, url_prefix="/api/shipping/melhor-envio")
-    app.register_blueprint(monitoring_bp, url_prefix="/api/monitoring")
     app.register_blueprint(security_bp, url_prefix="/api/security")
-    app.register_blueprint(analytics_bp, url_prefix="/api/analytics")
-    app.register_blueprint(recommendations_bp, url_prefix="/api/recommendations")
-    app.register_blueprint(tenants_bp, url_prefix="/api/tenants")
+    app.register_blueprint(notifications_bp, url_prefix="/api/notifications")
+    
+    # 🎉 MERCADO PAGO SYSTEM ATIVADO!
+    try:
+        app.register_blueprint(mercado_pago_bp, url_prefix="/api/mercado-pago")
+        logger.info("✅ Blueprint Mercado Pago registrado com sucesso!")
+        logger.info("🎉 Sistema de pagamentos Mercado Pago ATIVADO!")
+    except Exception as e:
+        logger.warning(f"⚠️ Falha ao registrar Mercado Pago blueprint: {e}")
 
     # Rota principal removida - será tratada pelo catch-all para servir React
 
@@ -235,7 +249,7 @@ def create_app(config_name=None):
     @app.route("/api/courses")
     def get_courses():
         active = request.args.get("active", "true").lower() == "true"
-        
+
         courses = [
             {
                 "id": 1,
@@ -271,10 +285,10 @@ def create_app(config_name=None):
                 "created_at": "2024-01-10T16:00:00Z",
             },
         ]
-        
+
         if active:
             courses = [course for course in courses if course["is_active"]]
-        
+
         return jsonify(courses)
 
     # Rota catch-all para servir o React SPA
@@ -345,4 +359,4 @@ if __name__ == "__main__":
     """
     )
 
-    app.run(host="0.0.0.0", port=port, debug=debug)
+    app.run(host="0.0.0.0", port = port, debug = debug)

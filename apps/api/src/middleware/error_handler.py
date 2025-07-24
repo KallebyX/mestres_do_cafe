@@ -17,7 +17,7 @@ from typing import Dict, Any, Optional, Tuple
 
 # Configuração de logging
 logging.basicConfig(
-    level=logging.INFO,
+    level = logging.INFO,
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
     handlers=[
         logging.FileHandler('logs/error.log'),
@@ -34,36 +34,36 @@ class ErrorCode:
     MISSING_FIELD = 4001
     INVALID_FORMAT = 4002
     INVALID_VALUE = 4003
-    
+
     # Erros de autenticação (4100-4199)
     UNAUTHORIZED = 4100
     INVALID_TOKEN = 4101
     EXPIRED_TOKEN = 4102
     MISSING_TOKEN = 4103
     INVALID_CREDENTIALS = 4104
-    
+
     # Erros de autorização (4200-4299)
     FORBIDDEN = 4200
     INSUFFICIENT_PERMISSIONS = 4201
     RESOURCE_ACCESS_DENIED = 4202
-    
+
     # Erros de recursos (4300-4399)
     RESOURCE_NOT_FOUND = 4300
     RESOURCE_ALREADY_EXISTS = 4301
     RESOURCE_CONFLICT = 4302
-    
+
     # Erros de banco de dados (5000-5099)
     DATABASE_ERROR = 5000
     CONNECTION_ERROR = 5001
     INTEGRITY_ERROR = 5002
     DATA_ERROR = 5003
-    
+
     # Erros de sistema (5100-5199)
     INTERNAL_ERROR = 5100
     SERVICE_UNAVAILABLE = 5101
     TIMEOUT_ERROR = 5102
     CONFIGURATION_ERROR = 5103
-    
+
     # Erros de negócio (6000-6099)
     BUSINESS_RULE_VIOLATION = 6000
     INSUFFICIENT_STOCK = 6001
@@ -72,11 +72,11 @@ class ErrorCode:
 
 class APIError(Exception):
     """Exceção base para erros da API"""
-    
+
     def __init__(
-        self, 
-        message: str, 
-        error_code: int, 
+        self,
+        message: str,
+        error_code: int,
         status_code: int = 500,
         details: Optional[Dict[str, Any]] = None,
         cause: Optional[Exception] = None
@@ -93,46 +93,46 @@ class ValidationAPIError(APIError):
     """Erro de validação"""
     def __init__(self, message: str, details: Optional[Dict] = None):
         super().__init__(
-            message=message,
-            error_code=ErrorCode.VALIDATION_ERROR,
-            status_code=400,
-            details=details
+            message = message,
+            error_code = ErrorCode.VALIDATION_ERROR,
+            status_code = 400,
+            details = details
         )
 
 class AuthenticationAPIError(APIError):
     """Erro de autenticação"""
     def __init__(self, message: str, error_code: int = ErrorCode.UNAUTHORIZED):
         super().__init__(
-            message=message,
-            error_code=error_code,
-            status_code=401
+            message = message,
+            error_code = error_code,
+            status_code = 401
         )
 
 class AuthorizationAPIError(APIError):
     """Erro de autorização"""
     def __init__(self, message: str, error_code: int = ErrorCode.FORBIDDEN):
         super().__init__(
-            message=message,
-            error_code=error_code,
-            status_code=403
+            message = message,
+            error_code = error_code,
+            status_code = 403
         )
 
 class ResourceAPIError(APIError):
     """Erro de recurso"""
     def __init__(self, message: str, error_code: int, status_code: int = 404):
         super().__init__(
-            message=message,
-            error_code=error_code,
-            status_code=status_code
+            message = message,
+            error_code = error_code,
+            status_code = status_code
         )
 
 class BusinessAPIError(APIError):
     """Erro de regra de negócio"""
     def __init__(self, message: str, error_code: int = ErrorCode.BUSINESS_RULE_VIOLATION):
         super().__init__(
-            message=message,
-            error_code=error_code,
-            status_code=422
+            message = message,
+            error_code = error_code,
+            status_code = 422
         )
 
 def log_error(error: Exception, request_data: Dict[str, Any]) -> str:
@@ -140,7 +140,7 @@ def log_error(error: Exception, request_data: Dict[str, Any]) -> str:
     Loga erro com contexto completo
     """
     error_id = f"ERR_{datetime.now(timezone.utc).strftime('%Y%m%d_%H%M%S_%f')}"
-    
+
     error_context = {
         'error_id': error_id,
         'error_type': type(error).__name__,
@@ -154,7 +154,7 @@ def log_error(error: Exception, request_data: Dict[str, Any]) -> str:
         'timestamp': datetime.now(timezone.utc).isoformat(),
         'traceback': traceback.format_exc() if not isinstance(error, APIError) else None
     }
-    
+
     # Log com nível apropriado
     if isinstance(error, APIError):
         if error.status_code >= 500:
@@ -163,7 +163,7 @@ def log_error(error: Exception, request_data: Dict[str, Any]) -> str:
             logger.warning(f"API Warning: {error_context}")
     else:
         logger.error(f"Unexpected Error: {error_context}")
-    
+
     return error_id
 
 def get_request_data() -> Dict[str, Any]:
@@ -175,7 +175,7 @@ def get_request_data() -> Dict[str, Any]:
             'method': request.method,
             'url': request.url,
             'headers': request.headers,
-            'data': request.get_json(silent=True) or request.form.to_dict(),
+            'data': request.get_json(silent = True) or request.form.to_dict(),
             'user_agent': request.user_agent.string,
             'remote_addr': request.remote_addr
         }
@@ -187,7 +187,7 @@ def handle_validation_error(error: ValidationError) -> Tuple[Dict[str, Any], int
     Trata erros de validação do Marshmallow
     """
     error_id = log_error(error, get_request_data())
-    
+
     return {
         'error': {
             'code': ErrorCode.VALIDATION_ERROR,
@@ -203,7 +203,7 @@ def handle_sqlalchemy_error(error: SQLAlchemyError) -> Tuple[Dict[str, Any], int
     Trata erros do SQLAlchemy
     """
     error_id = log_error(error, get_request_data())
-    
+
     if isinstance(error, IntegrityError):
         return {
             'error': {
@@ -214,7 +214,7 @@ def handle_sqlalchemy_error(error: SQLAlchemyError) -> Tuple[Dict[str, Any], int
                 'timestamp': datetime.now(timezone.utc).isoformat()
             }
         }, 409
-    
+
     elif isinstance(error, DataError):
         return {
             'error': {
@@ -225,7 +225,7 @@ def handle_sqlalchemy_error(error: SQLAlchemyError) -> Tuple[Dict[str, Any], int
                 'timestamp': datetime.now(timezone.utc).isoformat()
             }
         }, 400
-    
+
     else:
         return {
             'error': {
@@ -241,7 +241,7 @@ def handle_jwt_error(error: jwt.PyJWTError) -> Tuple[Dict[str, Any], int]:
     Trata erros de JWT
     """
     error_id = log_error(error, get_request_data())
-    
+
     if isinstance(error, jwt.ExpiredSignatureError):
         error_code = ErrorCode.EXPIRED_TOKEN
         message = 'Token expirado'
@@ -251,7 +251,7 @@ def handle_jwt_error(error: jwt.PyJWTError) -> Tuple[Dict[str, Any], int]:
     else:
         error_code = ErrorCode.UNAUTHORIZED
         message = 'Erro de autenticação'
-    
+
     return {
         'error': {
             'code': error_code,
@@ -266,7 +266,7 @@ def handle_http_exception(error: HTTPException) -> Tuple[Dict[str, Any], int]:
     Trata exceções HTTP do Werkzeug
     """
     error_id = log_error(error, get_request_data())
-    
+
     return {
         'error': {
             'code': error.code,
@@ -281,7 +281,7 @@ def handle_api_error(error: APIError) -> Tuple[Dict[str, Any], int]:
     Trata erros customizados da API
     """
     error_id = log_error(error, get_request_data())
-    
+
     response_data = {
         'error': {
             'code': error.error_code,
@@ -290,13 +290,13 @@ def handle_api_error(error: APIError) -> Tuple[Dict[str, Any], int]:
             'timestamp': error.timestamp
         }
     }
-    
+
     if error.details:
         response_data['error']['details'] = error.details
-    
+
     if error.cause and current_app.debug:
         response_data['error']['cause'] = str(error.cause)
-    
+
     return response_data, error.status_code
 
 def handle_generic_error(error: Exception) -> Tuple[Dict[str, Any], int]:
@@ -304,7 +304,7 @@ def handle_generic_error(error: Exception) -> Tuple[Dict[str, Any], int]:
     Trata erros genéricos não capturados
     """
     error_id = log_error(error, get_request_data())
-    
+
     # Em produção, não expor detalhes do erro
     if current_app.debug:
         message = str(error)
@@ -312,7 +312,7 @@ def handle_generic_error(error: Exception) -> Tuple[Dict[str, Any], int]:
     else:
         message = 'Erro interno do servidor'
         details = None
-    
+
     response_data = {
         'error': {
             'code': ErrorCode.INTERNAL_ERROR,
@@ -321,42 +321,42 @@ def handle_generic_error(error: Exception) -> Tuple[Dict[str, Any], int]:
             'timestamp': datetime.now(timezone.utc).isoformat()
         }
     }
-    
+
     if details:
         response_data['error']['details'] = details
-    
+
     return response_data, 500
 
 def register_error_handlers(app):
     """
     Registra todos os handlers de erro na aplicação Flask
     """
-    
+
     @app.errorhandler(ValidationError)
     def validation_error_handler(error):
         response_data, status_code = handle_validation_error(error)
         return jsonify(response_data), status_code
-    
+
     @app.errorhandler(SQLAlchemyError)
     def sqlalchemy_error_handler(error):
         response_data, status_code = handle_sqlalchemy_error(error)
         return jsonify(response_data), status_code
-    
+
     @app.errorhandler(jwt.PyJWTError)
     def jwt_error_handler(error):
         response_data, status_code = handle_jwt_error(error)
         return jsonify(response_data), status_code
-    
+
     @app.errorhandler(HTTPException)
     def http_exception_handler(error):
         response_data, status_code = handle_http_exception(error)
         return jsonify(response_data), status_code
-    
+
     @app.errorhandler(APIError)
     def api_error_handler(error):
         response_data, status_code = handle_api_error(error)
         return jsonify(response_data), status_code
-    
+
     @app.errorhandler(Exception)
     def generic_error_handler(error):
         response_data, status_code = handle_generic_error(error)
@@ -379,11 +379,11 @@ def error_handler_decorator(f):
         except Exception as e:
             # Converte exceções genéricas em APIError
             raise APIError(
-                message=f"Erro inesperado em {f.__name__}",
-                error_code=ErrorCode.INTERNAL_ERROR,
-                cause=e
+                message = f"Erro inesperado em {f.__name__}",
+                error_code = ErrorCode.INTERNAL_ERROR,
+                cause = e
             )
-    
+
     return decorated_function
 
 # Utilitários para validação
@@ -392,7 +392,7 @@ def validate_required_fields(data: Dict[str, Any], required_fields: list) -> Non
     Valida se todos os campos obrigatórios estão presentes
     """
     missing_fields = [field for field in required_fields if field not in data or data[field] is None]
-    
+
     if missing_fields:
         raise ValidationAPIError(
             message="Campos obrigatórios ausentes",
@@ -404,12 +404,12 @@ def validate_field_types(data: Dict[str, Any], field_types: Dict[str, type]) -> 
     Valida tipos de campos
     """
     type_errors = {}
-    
+
     for field, expected_type in field_types.items():
         if field in data and data[field] is not None:
             if not isinstance(data[field], expected_type):
                 type_errors[field] = f"Esperado {expected_type.__name__}, recebido {type(data[field]).__name__}"
-    
+
     if type_errors:
         raise ValidationAPIError(
             message="Tipos de dados inválidos",
@@ -421,5 +421,5 @@ def validate_business_rules(condition: bool, message: str, error_code: int = Err
     Valida regras de negócio
     """
     if not condition:
-        raise BusinessAPIError(message=message, error_code=error_code)
+        raise BusinessAPIError(message = message, error_code = error_code)
 

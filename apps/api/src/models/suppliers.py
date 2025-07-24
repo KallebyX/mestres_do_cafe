@@ -22,45 +22,45 @@ from database import db
 
 class Supplier(db.Model):
     __tablename__ = 'suppliers'
-    
-    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    name = Column(String(255), nullable=False)
-    email = Column(String(255), nullable=False, unique=True)
-    cnpj = Column(String(18), nullable=False, unique=True)
+
+    id = Column(UUID(as_uuid = True), primary_key = True, default = uuid.uuid4)
+    name = Column(String(255), nullable = False)
+    email = Column(String(255), nullable = False, unique = True)
+    cnpj = Column(String(18), nullable = False, unique = True)
     phone = Column(String(20))
     contact_person = Column(String(255))
-    
+
     # Endereço
     address = Column(String(255))
     city = Column(String(100))
     state = Column(String(2))
     postal_code = Column(String(9))
     country = Column(String(100), default='Brasil')
-    
+
     # Status e configurações
     status = Column(String(20), default='active')
     payment_terms = Column(String(100))
     delivery_time = Column(Integer)  # em dias
     notes = Column(Text)
-    
+
     # Métricas
-    total_orders = Column(Integer, default=0)
-    total_value = Column(DECIMAL(10, 2), default=0.00)
-    avg_delivery_time = Column(Integer, default=0)
-    reliability_score = Column(Integer, default=100)
-    
+    total_orders = Column(Integer, default = 0)
+    total_value = Column(DECIMAL(10, 2), default = 0.00)
+    avg_delivery_time = Column(Integer, default = 0)
+    reliability_score = Column(Integer, default = 100)
+
     # Controle
-    is_active = Column(Boolean, default=True)
-    created_at = Column(DateTime, default=func.now())
-    updated_at = Column(DateTime, default=func.now(), onupdate=func.now())
-    
+    is_active = Column(Boolean, default = True)
+    created_at = Column(DateTime, default = func.now())
+    updated_at = Column(DateTime, default = func.now(), onupdate = func.now())
+
     # Relacionamentos
     products = relationship("Product", back_populates="supplier")
     purchase_orders = relationship("PurchaseOrder", back_populates="supplier")
-    
+
     def __repr__(self):
         return f"<Supplier(id={self.id}, name={self.name}, cnpj={self.cnpj})>"
-    
+
     def to_dict(self):
         return {
             'id': str(self.id),
@@ -90,41 +90,41 @@ class Supplier(db.Model):
 
 class PurchaseOrder(db.Model):
     __tablename__ = 'purchase_orders'
-    
-    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+
+    id = Column(UUID(as_uuid = True), primary_key = True, default = uuid.uuid4)
     supplier_id = Column(
-        UUID(as_uuid=True),
+        UUID(as_uuid = True),
         db.ForeignKey('suppliers.id', ondelete='CASCADE'),
-        nullable=False
+        nullable = False
     )
-    order_number = Column(String(50), unique=True, nullable=False)
+    order_number = Column(String(50), unique = True, nullable = False)
     status = Column(String(20), default='pending')
-    
+
     # Valores
-    subtotal = Column(DECIMAL(10, 2), default=0.00)
-    tax_amount = Column(DECIMAL(10, 2), default=0.00)
-    shipping_cost = Column(DECIMAL(10, 2), default=0.00)
-    total_amount = Column(DECIMAL(10, 2), default=0.00)
-    
+    subtotal = Column(DECIMAL(10, 2), default = 0.00)
+    tax_amount = Column(DECIMAL(10, 2), default = 0.00)
+    shipping_cost = Column(DECIMAL(10, 2), default = 0.00)
+    total_amount = Column(DECIMAL(10, 2), default = 0.00)
+
     # Datas
-    order_date = Column(DateTime, default=func.now())
+    order_date = Column(DateTime, default = func.now())
     expected_delivery = Column(DateTime)
     delivery_date = Column(DateTime)
-    
+
     # Observações
     notes = Column(Text)
-    
+
     # Controle
-    created_at = Column(DateTime, default=func.now())
-    updated_at = Column(DateTime, default=func.now(), onupdate=func.now())
-    
+    created_at = Column(DateTime, default = func.now())
+    updated_at = Column(DateTime, default = func.now(), onupdate = func.now())
+
     # Relacionamentos
     supplier = relationship("Supplier", back_populates="purchase_orders")
     items = relationship("PurchaseOrderItem", back_populates="purchase_order")
-    
+
     def __repr__(self):
         return f"<PurchaseOrder(id={self.id}, order_number={self.order_number}, status={self.status})>"
-    
+
     def to_dict(self):
         return {
             'id': str(self.id),
@@ -146,39 +146,39 @@ class PurchaseOrder(db.Model):
 
 class PurchaseOrderItem(db.Model):
     __tablename__ = 'purchase_order_items'
-    
-    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+
+    id = Column(UUID(as_uuid = True), primary_key = True, default = uuid.uuid4)
     purchase_order_id = Column(
-        UUID(as_uuid=True),
+        UUID(as_uuid = True),
         db.ForeignKey('purchase_orders.id', ondelete='CASCADE'),
-        nullable=False
+        nullable = False
     )
     product_id = Column(
-        UUID(as_uuid=True),
+        UUID(as_uuid = True),
         db.ForeignKey('products.id', ondelete='CASCADE'),
-        nullable=False
+        nullable = False
     )
-    
+
     # Detalhes do item
-    product_name = Column(String(255), nullable=False)
+    product_name = Column(String(255), nullable = False)
     product_sku = Column(String(100))
-    quantity = Column(Integer, nullable=False)
-    unit_price = Column(DECIMAL(10, 2), nullable=False)
-    total_price = Column(DECIMAL(10, 2), nullable=False)
-    
+    quantity = Column(Integer, nullable = False)
+    unit_price = Column(DECIMAL(10, 2), nullable = False)
+    total_price = Column(DECIMAL(10, 2), nullable = False)
+
     # Quantidade recebida
-    received_quantity = Column(Integer, default=0)
-    
+    received_quantity = Column(Integer, default = 0)
+
     # Controle
-    created_at = Column(DateTime, default=func.now())
-    
+    created_at = Column(DateTime, default = func.now())
+
     # Relacionamentos
     purchase_order = relationship("PurchaseOrder", back_populates="items")
     product = relationship("Product")
-    
+
     def __repr__(self):
         return f"<PurchaseOrderItem(id={self.id}, product_name={self.product_name}, quantity={self.quantity})>"
-    
+
     def to_dict(self):
         return {
             'id': str(self.id),

@@ -5,7 +5,6 @@ from datetime import datetime
 from flask import Blueprint, jsonify, request
 
 from database import db
-from models.auth import User
 from models.orders import Order
 from models.payments import Payment
 
@@ -35,7 +34,7 @@ def payments_home():
 # Simulação de gateways de pagamento
 class PaymentGateway:
     @staticmethod
-    def process_payment(amount, payment_method, card_data=None):
+    def process_payment(amount, payment_method, card_data = None):
         """Simula processamento de pagamento"""
         # Em produção, aqui seria integração real com gateway
         payment_id = str(uuid.uuid4())
@@ -102,9 +101,9 @@ def process_payment():
 
         # Processar pagamento
         gateway_response = PaymentGateway.process_payment(
-            amount=float(order.total_amount),
-            payment_method=payment_method,
-            card_data=card_data,
+            amount = float(order.total_amount),
+            payment_method = payment_method,
+            card_data = card_data,
         )
 
         if not gateway_response["success"]:
@@ -120,11 +119,11 @@ def process_payment():
 
         # Criar registro de pagamento
         payment = Payment(
-            order_id=order_id,
-            amount=order.total_amount,
-            payment_method=payment_method,
-            gateway_response=json.dumps(gateway_response),
-            status=gateway_response["status"],
+            order_id = order_id,
+            amount = order.total_amount,
+            payment_method = payment_method,
+            gateway_response = json.dumps(gateway_response),
+            status = gateway_response["status"],
         )
 
         db.session.add(payment)
@@ -189,7 +188,7 @@ def get_payment(payment_id):
 def get_order_payments(order_id):
     """Busca todos os pagamentos de um pedido"""
     try:
-        payments = Payment.query.filter_by(order_id=order_id).all()
+        payments = Payment.query.filter_by(order_id = order_id).all()
 
         return jsonify(
             {

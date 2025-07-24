@@ -59,20 +59,20 @@ def init_db(app) -> None:
 
 def get_database_url() -> str:
     """
-    Obtém a URL de conexão do banco de dados (SQLite ou PostgreSQL)
+    Obtém a URL de conexão do banco de dados (SQLite ÚNICO)
 
     Returns:
         str: URL de conexão do banco de dados
     """
 
-    # URL direta do banco (prioridade)
+    # URL direta do banco (prioridade total)
     database_url = os.getenv("DATABASE_URL")
     if database_url:
         return database_url
 
-    # Usar SQLite como padrão - usar o banco na pasta instance que tem os dados
-    # Caminho absoluto para o banco que contém os dados existentes
-    db_path = "/Users/kalleby/Downloads/mestres_cafe_enterprise/apps/api/instance/mestres_cafe.db"
+    # BANCO ÚNICO E DEFINITIVO - Apenas este caminho é permitido
+    # Caminho relativo para o banco principal na raiz da API
+    db_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "mestres_cafe.db"))
     return f"sqlite:///{db_path}"
 
 
@@ -83,19 +83,14 @@ def configure_db_events() -> None:
 
     @event.listens_for(Engine, "connect")
     def set_sqlite_pragma(dbapi_connection, connection_record):
-        """Define configurações do banco de dados"""
+        """Define configurações do banco de dados SQLite ÚNICO"""
         if hasattr(dbapi_connection, "execute"):
-            # Detectar tipo de banco
-            if "sqlite" in str(dbapi_connection.__class__):
-                # Configurações SQLite
-                dbapi_connection.execute("PRAGMA foreign_keys=ON")
-                dbapi_connection.execute("PRAGMA journal_mode=WAL")
-                dbapi_connection.execute("PRAGMA synchronous=NORMAL")
-            else:
-                # Configurações PostgreSQL
-                dbapi_connection.execute("SET timezone = 'UTC'")
-                dbapi_connection.execute("SET lock_timeout = '10s'")
-                dbapi_connection.execute("SET statement_timeout = '30s'")
+            # Configurações SQLite OTIMIZADAS
+            dbapi_connection.execute("PRAGMA foreign_keys = ON")
+            dbapi_connection.execute("PRAGMA journal_mode = WAL")
+            dbapi_connection.execute("PRAGMA synchronous = NORMAL")
+            dbapi_connection.execute("PRAGMA cache_size = 10000")
+            dbapi_connection.execute("PRAGMA temp_store = memory")
 
 
 def create_tables() -> None:
@@ -212,12 +207,12 @@ def health_check() -> dict:
         result = db.session.execute(text("SELECT 1"))
         result.fetchone()
 
-        return {"status": "healthy", "database": "PostgreSQL", "connection": "active"}
+        return {"status": "healthy", "database": "SQLite", "connection": "active"}
     except SQLAlchemyError as e:
         logger.error(f"❌ Health check falhou: {e}")
         return {
             "status": "unhealthy",
-            "database": "PostgreSQL",
+            "database": "SQLite",
             "connection": "failed",
             "error": str(e),
         }
