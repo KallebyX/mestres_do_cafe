@@ -27,5 +27,5 @@ mercadopago==2.2.3
 
 # Utilities
 click==8.1.7
-Werkzeug==2.3.7
+Werkzeug==3.0.6
 itsdangerous==2.1.2
