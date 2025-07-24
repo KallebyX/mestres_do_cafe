@@ -7,8 +7,7 @@ import {
   Package, Users
 } from 'lucide-react';
 import { createContext, useCallback, useContext, useEffect, useState } from 'react';
-import { notificationAPI } from "../services/api.js";
-import { supabase } from "../lib/supabase.js";
+import { notificationAPI, supabase } from "../lib/api.js";
 import { useAuth } from './AuthContext';
 
 const NotificationContext = createContext();

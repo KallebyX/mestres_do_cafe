@@ -9,9 +9,8 @@
 // Configurações base
 export const MERCADO_PAGO_CONFIG = {
   // Chaves públicas (ambiente detectado automaticamente)
-  // Obtenha suas chaves em: https://www.mercadopago.com.br/developers/panel/app
   publicKeys: {
-    test: 'TEST-YOUR_PUBLIC_KEY_HERE',
+    test: 'TEST-6470757372800949-072017-f45dc4b7ff499723f495a8525cfc9112-1211284486',
     production: '' // A ser configurado em produção
   },
   
