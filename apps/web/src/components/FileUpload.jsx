@@ -12,7 +12,8 @@ import {
   AlertCircle,
   Loader
 } from 'lucide-react';
-import { supabase } from "@/lib/api"
+// Supabase removed - file upload temporarily disabled
+// import { supabase } from "@/lib/api"
 import { useNotifications } from '../contexts/NotificationContext';
 
 const FileUpload = ({
@@ -84,38 +85,20 @@ const FileUpload = ({
     }
   };
 
-  // Upload de arquivo para o Supabase Storage
+  // Upload de arquivo - Supabase removido, funcionalidade temporariamente desabilitada
   const uploadFileToStorage = async (file) => {
     try {
+      // Mock upload para não quebrar o fluxo
       const fileExt = file.name.split('.').pop();
       const fileName = `${Date.now()}-${Math.random().toString(36).substring(2)}.${fileExt}`;
       const filePath = path ? `${path}/${fileName}` : fileName;
 
-      const { data, error } = await supabase.storage
-        .from(bucket)
-        .upload(filePath, file, {
-          cacheControl: '3600',
-          upsert: false
-        });
-
-      if (error) {
-        throw error;
-      }
-
-      // Obter URL pública
-      const { data: { publicUrl } } = supabase.storage
-        .from(bucket)
-        .getPublicUrl(filePath);
+      // Simular upload com delay
+      await new Promise(resolve => setTimeout(resolve, 1000));
 
       return {
-        success: true,
-        data: {
-          path: filePath,
-          url: publicUrl,
-          name: file.name,
-          size: file.size,
-          type: file.type
-        }
+        success: false,
+        error: 'Upload de arquivos temporariamente desabilitado (Supabase removido)'
       };
     } catch (error) {
       console.error('Erro no upload:', error);
@@ -231,24 +214,12 @@ const FileUpload = ({
     setUploading(false);
   };
 
-  // Remover arquivo
+  // Remover arquivo - Supabase removido
   const removeFile = async (fileId) => {
     const fileToRemove = files.find(f => f.id === fileId);
     
-    if (fileToRemove && fileToRemove.path) {
-      try {
-        // Remover do storage
-        const { error } = await supabase.storage
-          .from(bucket)
-          .remove([fileToRemove.path]);
-
-        if (error) {
-          console.error('Erro ao remover arquivo do storage:', error);
-        }
-      } catch (error) {
-        console.error('Erro ao remover arquivo:', error);
-      }
-    }
+    // Funcionalidade de remoção do storage desabilitada
+    console.warn('File removal disabled - Supabase removed');
 
     // Remover da lista
     setFiles(prev => prev.filter(f => f.id !== fileId));
