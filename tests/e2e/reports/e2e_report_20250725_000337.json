@@ -1,0 +1,92 @@
+{
+  "summary": {
+    "total_tests": 8,
+    "passed": 6,
+    "failed": 0,
+    "skipped": 2,
+    "success_rate": 75.0,
+    "duration_seconds": 0.0055,
+    "start_time": "2025-07-25T00:03:37.151535",
+    "end_time": "2025-07-25T00:03:37.157035"
+  },
+  "phases": {
+    "Framework E2E - Teste de Componentes": {
+      "total": 5,
+      "passed": 4,
+      "failed": 0,
+      "skipped": 1
+    },
+    "Simulação de Testes E2E": {
+      "total": 3,
+      "passed": 2,
+      "failed": 0,
+      "skipped": 1
+    }
+  },
+  "detailed_results": [
+    {
+      "phase": "Framework E2E - Teste de Componentes",
+      "test_name": "Configuração do Framework",
+      "status": "PASS",
+      "details": "Todas as configurações carregadas corretamente",
+      "error": "",
+      "timestamp": "2025-07-25T00:03:37.151615"
+    },
+    {
+      "phase": "Framework E2E - Teste de Componentes",
+      "test_name": "Utilitários de Validação",
+      "status": "PASS",
+      "details": "CPF: True, CNPJ: True, Email: True",
+      "error": "",
+      "timestamp": "2025-07-25T00:03:37.151790"
+    },
+    {
+      "phase": "Framework E2E - Teste de Componentes",
+      "test_name": "Geração de Dados de Teste",
+      "status": "PASS",
+      "details": "PF: teste.pf_1753401817@exemplo.com, PJ: teste.pj_1753401817@empresa.com",
+      "error": "",
+      "timestamp": "2025-07-25T00:03:37.151818"
+    },
+    {
+      "phase": "Framework E2E - Teste de Componentes",
+      "test_name": "Conectividade API",
+      "status": "PASS",
+      "details": "API respondendo em http://localhost:5001",
+      "error": "",
+      "timestamp": "2025-07-25T00:03:37.156785"
+    },
+    {
+      "phase": "Framework E2E - Teste de Componentes",
+      "test_name": "Conectividade Frontend",
+      "status": "SKIP",
+      "details": "Frontend não acessível (normal em ambiente de teste)",
+      "error": "",
+      "timestamp": "2025-07-25T00:03:37.156807"
+    },
+    {
+      "phase": "Simulação de Testes E2E",
+      "test_name": "Simulação - Cadastro PF",
+      "status": "PASS",
+      "details": "Estrutura de teste implementada e funcional",
+      "error": "",
+      "timestamp": "2025-07-25T00:03:37.156847"
+    },
+    {
+      "phase": "Simulação de Testes E2E",
+      "test_name": "Simulação - Login",
+      "status": "PASS",
+      "details": "Framework de autenticação pronto",
+      "error": "",
+      "timestamp": "2025-07-25T00:03:37.156867"
+    },
+    {
+      "phase": "Simulação de Testes E2E",
+      "test_name": "Simulação - Funcionalidade Futura",
+      "status": "SKIP",
+      "details": "Aguardando implementação das próximas fases",
+      "error": "",
+      "timestamp": "2025-07-25T00:03:37.156876"
+    }
+  ]
+}

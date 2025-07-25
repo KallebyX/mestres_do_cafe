@@ -307,6 +307,12 @@ dead_code_report.json
 duplication_report.json
 crud_status_summary.py
 
+# E2E Test Reports and Screenshots (generated files)
+tests/e2e/reports/
+tests/e2e/screenshots/
+tests/e2e/logs/
+e2e_report_*.json
+
 # Database files
 *.db-shm
 *.db-wal

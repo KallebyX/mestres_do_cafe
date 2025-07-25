@@ -1,0 +1,120 @@
+version: '3.8'
+
+services:
+  # Backend API
+  api:
+    build:
+      context: ./apps/api
+      dockerfile: Dockerfile
+      target: development
+    ports:
+      - "5001:5001"
+    environment:
+      - FLASK_ENV=development
+      - FLASK_DEBUG=1
+      - DATABASE_URL=sqlite:///mestres_cafe.db
+      - JWT_SECRET_KEY=dev-secret-key-change-in-production
+      - CORS_ORIGINS=http://localhost:3000
+      - MERCADO_PAGO_SANDBOX=true
+    volumes:
+      - ./apps/api:/app
+      - api_data:/app/instance
+    networks:
+      - mestres_cafe_network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5001/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+
+  # Frontend Web
+  web:
+    build:
+      context: ./apps/web
+      dockerfile: Dockerfile
+      target: development
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=development
+      - VITE_API_URL=http://localhost:5001/api
+      - VITE_APP_NAME=Mestres do Café
+    volumes:
+      - ./apps/web:/app
+      - /app/node_modules
+    networks:
+      - mestres_cafe_network
+    restart: unless-stopped
+    depends_on:
+      - api
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+
+  # Database (PostgreSQL for production-like environment)
+  db:
+    image: postgres:15-alpine
+    environment:
+      - POSTGRES_DB=mestres_cafe
+      - POSTGRES_USER=mestres_cafe_user
+      - POSTGRES_PASSWORD=mestres_cafe_password
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./apps/api/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    networks:
+      - mestres_cafe_network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U mestres_cafe_user -d mestres_cafe"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+
+  # Redis (for caching and sessions)
+  redis:
+    image: redis:7-alpine
+    command: redis-server --appendonly yes
+    volumes:
+      - redis_data:/data
+    networks:
+      - mestres_cafe_network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Nginx (Load balancer/Reverse proxy)
+  nginx:
+    image: nginx:alpine
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx.conf:/etc/nginx/conf.d/default.conf:ro
+      - ./ssl:/etc/nginx/ssl:ro
+    networks:
+      - mestres_cafe_network
+    restart: unless-stopped
+    depends_on:
+      - web
+      - api
+
+networks:
+  mestres_cafe_network:
+    driver: bridge
+
+volumes:
+  postgres_data:
+    driver: local
+  redis_data:
+    driver: local
+  api_data:
+    driver: local

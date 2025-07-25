@@ -1,0 +1,14 @@
+{
+  "summary": {
+    "total_tests": 0,
+    "passed": 0,
+    "failed": 0,
+    "skipped": 0,
+    "success_rate": 0,
+    "duration_seconds": 0.169369,
+    "start_time": "2025-07-24T23:53:32.262647",
+    "end_time": "2025-07-24T23:53:32.432016"
+  },
+  "phases": {},
+  "detailed_results": []
+}

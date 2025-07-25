@@ -1,0 +1,82 @@
+services:
+  # Backend API Service
+  - type: web
+    name: mestres-cafe-api
+    env: python
+    buildCommand: |
+      cd apps/api
+      pip install -r requirements.txt
+    startCommand: |
+      cd apps/api
+      gunicorn --bind 0.0.0.0:$PORT --workers 2 --threads 2 --timeout 120 --worker-class gevent --access-logfile - --error-logfile - --log-level info src.app:app
+    envVars:
+      - key: FLASK_ENV
+        value: production
+      - key: FLASK_DEBUG
+        value: "0"
+      - key: PYTHONPATH
+        value: /opt/render/project/src/apps/api/src
+      - key: DATABASE_URL
+        fromDatabase:
+          name: mestres-cafe-db
+          property: connectionString
+      - key: JWT_SECRET_KEY
+        generateValue: true
+      - key: MERCADO_PAGO_ACCESS_TOKEN
+        sync: false
+      - key: MERCADO_PAGO_CLIENT_ID
+        sync: false
+      - key: MERCADO_PAGO_CLIENT_SECRET
+        sync: false
+      - key: CORS_ORIGINS
+        value: "*"
+    healthCheckPath: /api/health
+    
+  # Frontend Web Service  
+  - type: web
+    name: mestres-cafe-web
+    env: node
+    buildCommand: |
+      cd apps/web
+      npm ci
+      npm run build:production
+    startCommand: |
+      cd apps/web
+      npm run serve:production
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: VITE_API_URL
+        value: https://mestres-cafe-api.onrender.com/api
+      - key: VITE_APP_NAME
+        value: "Mestres do Café"
+      - key: PORT
+        value: "3000"
+    staticPublishPath: apps/web/dist
+
+databases:
+  # PostgreSQL Database for production
+  - name: mestres-cafe-db
+    databaseName: mestres_cafe_prod
+    user: mestres_cafe_user
+    plan: free
+
+# Environment Groups for shared configuration
+envVarGroups:
+  - name: payment-config
+    envVars:
+      - key: MERCADO_PAGO_SANDBOX
+        value: "true"
+      - key: PAYMENT_WEBHOOK_URL
+        value: https://mestres-cafe-api.onrender.com/api/webhooks/mercado-pago
+        
+  - name: app-config
+    envVars:
+      - key: APP_NAME
+        value: "Mestres do Café"
+      - key: APP_VERSION
+        value: "1.0.0"
+      - key: TIMEZONE
+        value: "America/Sao_Paulo"
+      - key: LOCALE
+        value: "pt_BR"
