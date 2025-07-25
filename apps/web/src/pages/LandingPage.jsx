@@ -14,7 +14,7 @@ import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { ProductSkeleton, useDataState } from "../components/LoadingStates";
 import { Button } from "../components/ui/button";
-import { getFeaturedTestimonials, getFiltered } from "@/lib/api";
+import { getFeaturedTestimonials, getFiltered } from "@/lib/api.js";
 import PremiumHeroSection from "../components/PremiumHeroSection";
 
 const LandingPage = () => {

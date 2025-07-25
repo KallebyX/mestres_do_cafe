@@ -1,4 +1,4 @@
-import { stockAPI } from "@/lib/api";
+import { stockAPI } from "@/lib/api.js";
 import {
   Activity,
   AlertCircle,
