@@ -9,8 +9,8 @@ SQLAlchemy==2.0.21
 psycopg2-binary==2.9.7
 
 # Production WSGI Server
-gunicorn==21.2.0
-gevent==23.7.0
+gunicorn==23.0.0
+gevent==25.4.1
 
 # Environment & Configuration
 python-dotenv==1.0.0
@@ -36,15 +36,15 @@ Flask-Session==0.5.0
 
 # Utilities
 click==8.1.7
-Werkzeug==2.3.7
+Werkzeug==3.0.6
 itsdangerous==2.1.2
 
 # Production Dependencies
-certifi==2023.7.22
-urllib3==2.0.4
+certifi==2024.7.4
+urllib3==2.5.0
 
 # Monitoring & Logging
-sentry-sdk[flask]==1.32.0
+sentry-sdk==2.8.0
 
 # Development/Testing (opcional)
 pytest==7.4.2
