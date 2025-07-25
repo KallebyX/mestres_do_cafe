@@ -1,13 +1,13 @@
 # Mestres do Café - Render Blueprint Configuration
 # Configuração automatizada para deploy no Render (2025)
 
-services:
-  # =============================================================================
-  # PostgreSQL Database
-  # =============================================================================
-  - type: pserv
-    name: mestres-cafe-db
+databases:
+  - name: mestres-cafe-db
+    databaseName: mestres_cafe
+    user: mestres_user
     plan: free
+
+services:
 
   # =============================================================================
   # Redis Cache
@@ -45,6 +45,15 @@ services:
         value: sandbox
       - key: MELHOR_ENVIO_ENVIRONMENT
         value: sandbox
+      - key: DATABASE_URL
+        fromDatabase:
+          name: mestres-cafe-db
+          property: connectionString
+      - key: REDIS_URL
+        fromService:
+          type: redis
+          name: mestres-cafe-redis
+          property: connectionString
 
   # =============================================================================
   # Web Frontend - React + Vite
