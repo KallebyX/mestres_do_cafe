@@ -234,8 +234,15 @@ class TestUtils:
         timestamp = int(time.time())
         suffix = f"_{index}" if index is not None else f"_{timestamp}"
         
-        # NOTA: Senha de teste - usar variável de ambiente em produção
-        test_password = os.getenv("TEST_PASSWORD", "TestSenha123!")
+        # OBRIGATÓRIO: Usar variável de ambiente para senha de teste
+        test_password = os.getenv("TEST_PASSWORD")
+        
+        if not test_password:
+            raise ValueError(
+                "TEST_PASSWORD environment variable is required for E2E tests.\n"
+                "Set it with: export TEST_PASSWORD='your_test_password'\n"
+                "This ensures no hardcoded passwords in the codebase."
+            )
         
         if template == "user_pf":
             return {

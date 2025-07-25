@@ -4,6 +4,48 @@
 
 This document provides a comprehensive overview of the E2E (End-to-End) testing suite implemented for the Mestres do Café e-commerce platform. The implementation follows the systematic approach outlined in the original issue requirements.
 
+## 🔒 Security and Environment Setup
+
+### ⚠️ IMPORTANT: Environment Variables Required
+
+For security compliance (GitGuardian), **NO PASSWORDS** are hardcoded in the source code. All test credentials must be provided via environment variables.
+
+#### Required Environment Variables
+
+```bash
+# REQUIRED: Test password for E2E user accounts
+export TEST_PASSWORD="your_secure_test_password"
+```
+
+#### Optional Environment Variables
+
+```bash
+# API and Frontend URLs (defaults to localhost)
+export API_URL="http://localhost:5001"
+export FRONTEND_URL="http://localhost:3000"
+
+# Test environment type
+export TEST_ENV="local"  # or "ci" for CI/CD
+```
+
+### 🛠️ Quick Setup
+
+1. **Setup Environment:**
+   ```bash
+   cd tests/e2e
+   python setup_environment.py
+   ```
+
+2. **Configure Test Password:**
+   ```bash
+   export TEST_PASSWORD="YourSecureTestPassword123!"
+   ```
+
+3. **Validate Setup:**
+   ```bash
+   python demo_framework.py
+   ```
+
 ## 🏗️ Architecture
 
 ### Directory Structure

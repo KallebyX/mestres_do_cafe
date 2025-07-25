@@ -33,9 +33,17 @@ class TestConfig:
     def __post_init__(self):
         """Inicializa dados de teste após criação da instância"""
         if self.TEST_USERS is None:
-            # NOTA: Estas são credenciais de TESTE APENAS, não usar em produção
-            # Para segurança, use variáveis de ambiente em ambientes reais
-            test_password = os.getenv("TEST_PASSWORD", "TestSenha123!")
+            # OBRIGATÓRIO: Definir TEST_PASSWORD como variável de ambiente
+            # Para testes locais: export TEST_PASSWORD="sua_senha_de_teste"
+            # Para CI/CD: configurar variável de ambiente no pipeline
+            test_password = os.getenv("TEST_PASSWORD")
+            
+            if not test_password:
+                raise ValueError(
+                    "TEST_PASSWORD environment variable is required for E2E tests.\n"
+                    "Set it with: export TEST_PASSWORD='your_test_password'\n"
+                    "This ensures no hardcoded passwords in the codebase."
+                )
             
             self.TEST_USERS = {
                 "admin": {
