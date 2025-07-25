@@ -27,14 +27,14 @@ services:
     env: python
     rootDir: apps/api
     buildCommand: pip install -r requirements.txt
-    startCommand: gunicorn --bind 0.0.0.0:$PORT --workers 2 --threads 4 --timeout 120 --preload src.app:app
+    startCommand: python src/app.py
     envVars:
       - key: FLASK_ENV
         value: production
       - key: FLASK_DEBUG
         value: "0"
       - key: PYTHONPATH
-        value: /opt/render/project/src/src
+        value: /opt/render/project/src
       - key: SECRET_KEY
         generateValue: true
       - key: JWT_SECRET_KEY
@@ -45,6 +45,8 @@ services:
         value: sandbox
       - key: MELHOR_ENVIO_ENVIRONMENT
         value: sandbox
+      - key: PORT
+        value: "5001"
       - key: DATABASE_URL
         fromDatabase:
           name: mestres-cafe-db
@@ -62,7 +64,7 @@ services:
     name: mestres-cafe-web
     env: static
     rootDir: apps/web
-    buildCommand: npm ci && npm run build && echo "/*    /index.html   200" > dist/_redirects
+    buildCommand: npm install && npm run build && echo "/*    /index.html   200" > dist/_redirects
     staticPublishPath: dist
     envVars:
       - key: NODE_ENV
