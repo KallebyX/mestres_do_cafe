@@ -10,10 +10,10 @@ import requests
 from datetime import datetime
 
 # Add project path
-project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+project_root = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 sys.path.insert(0, project_root)
 
-from tests.e2e.utils.helpers import reporter, config, TestUtils
+from utils.helpers import reporter, config, TestUtils
 
 class E2EFrameworkDemo:
     """Demonstra o funcionamento do framework E2E criado"""

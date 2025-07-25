@@ -33,10 +33,14 @@ class TestConfig:
     def __post_init__(self):
         """Inicializa dados de teste após criação da instância"""
         if self.TEST_USERS is None:
+            # NOTA: Estas são credenciais de TESTE APENAS, não usar em produção
+            # Para segurança, use variáveis de ambiente em ambientes reais
+            test_password = os.getenv("TEST_PASSWORD", "TestSenha123!")
+            
             self.TEST_USERS = {
                 "admin": {
                     "email": "admin@test.com",
-                    "password": "admin123",
+                    "password": test_password,
                     "username": "admin",
                     "first_name": "Admin",
                     "last_name": "User",
@@ -44,7 +48,7 @@ class TestConfig:
                 },
                 "user": {
                     "email": "user@test.com", 
-                    "password": "user123",
+                    "password": test_password,
                     "username": "user",
                     "first_name": "Regular",
                     "last_name": "User",
@@ -52,7 +56,7 @@ class TestConfig:
                 },
                 "test_pf": {
                     "email": "teste.pf@exemplo.com",
-                    "password": "TestePF123!",
+                    "password": test_password,
                     "name": "João Silva",
                     "cpf_cnpj": "11144477735",  # CPF válido para testes
                     "phone": "(11) 99999-9999",
@@ -60,7 +64,7 @@ class TestConfig:
                 },
                 "test_pj": {
                     "email": "teste.pj@empresa.com", 
-                    "password": "TestePJ123!",
+                    "password": test_password,
                     "name": "Empresa Teste LTDA",
                     "company_name": "Empresa Teste LTDA",
                     "cpf_cnpj": "11444777000161",  # CNPJ válido para testes

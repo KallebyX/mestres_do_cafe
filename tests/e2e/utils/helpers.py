@@ -2,6 +2,7 @@
 Utilitários para testes E2E - Mestres do Café
 """
 import json
+import os
 import time
 import requests
 from datetime import datetime
@@ -233,10 +234,13 @@ class TestUtils:
         timestamp = int(time.time())
         suffix = f"_{index}" if index is not None else f"_{timestamp}"
         
+        # NOTA: Senha de teste - usar variável de ambiente em produção
+        test_password = os.getenv("TEST_PASSWORD", "TestSenha123!")
+        
         if template == "user_pf":
             return {
                 "email": f"teste.pf{suffix}@exemplo.com",
-                "password": "TestePF123!",
+                "password": test_password,
                 "name": f"João Silva {suffix}",
                 "cpf_cnpj": "11144477735",
                 "phone": "(11) 99999-9999",
@@ -245,7 +249,7 @@ class TestUtils:
         elif template == "user_pj":
             return {
                 "email": f"teste.pj{suffix}@empresa.com",
-                "password": "TestePJ123!",
+                "password": test_password,
                 "name": f"Empresa Teste {suffix} LTDA",
                 "company_name": f"Empresa Teste {suffix} LTDA",
                 "cpf_cnpj": "11444777000161", 
