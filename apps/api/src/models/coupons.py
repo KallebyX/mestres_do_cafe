@@ -23,6 +23,7 @@ from database import db
 
 class Coupon(db.Model):
     __tablename__ = "coupons"
+    __table_args__ = {'extend_existing': True}
 
     id = Column(String(36), primary_key = True, default=lambda: str(uuid.uuid4()))
     code = Column(String(50), unique = True, nullable = False)
@@ -85,6 +86,7 @@ class Coupon(db.Model):
 
 class CouponUsage(db.Model):
     __tablename__ = "coupon_usage"
+    __table_args__ = {'extend_existing': True}
 
     id = Column(String(36), primary_key = True, default=lambda: str(uuid.uuid4()))
     coupon_id = Column(String(36), ForeignKey("coupons.id", ondelete="CASCADE"))

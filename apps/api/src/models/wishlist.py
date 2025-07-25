@@ -18,6 +18,7 @@ from database import db
 
 class Wishlist(db.Model):
     __tablename__ = "wishlists"
+    __table_args__ = {'extend_existing': True}
 
     id = Column(String(36), primary_key = True, default=lambda: str(uuid.uuid4()))
     user_id = Column(String(36), ForeignKey("users.id"), nullable = False)
@@ -51,6 +52,7 @@ class Wishlist(db.Model):
 
 class WishlistItem(db.Model):
     __tablename__ = "wishlist_items"
+    __table_args__ = {'extend_existing': True}
 
     id = Column(String(36), primary_key = True, default=lambda: str(uuid.uuid4()))
     wishlist_id = Column(String(36), ForeignKey("wishlists.id"), nullable = False)
@@ -81,6 +83,7 @@ class WishlistItem(db.Model):
 
 class WishlistShare(db.Model):
     __tablename__ = "wishlist_shares"
+    __table_args__ = {'extend_existing': True}
 
     id = Column(String(36), primary_key = True, default=lambda: str(uuid.uuid4()))
     wishlist_id = Column(String(36), ForeignKey("wishlists.id"), nullable = False)

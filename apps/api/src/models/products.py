@@ -25,6 +25,7 @@ from database import db
 
 class ProductCategory(db.Model):
     __tablename__ = 'product_categories'
+    __table_args__ = {'extend_existing': True}
 
     id = Column(String(36), primary_key = True, default = uuid4)
     name = Column(String(255), nullable = False)
@@ -59,6 +60,7 @@ class ProductCategory(db.Model):
 
 class Product(db.Model):
     __tablename__ = 'products'
+    __table_args__ = {'extend_existing': True}
 
     id = Column(String(36), primary_key = True, default = uuid4)
     name = Column(String(255), nullable = False)
@@ -200,6 +202,7 @@ class Product(db.Model):
 
 class ProductVariant(db.Model):
     __tablename__ = 'product_variants'
+    __table_args__ = {'extend_existing': True}
 
     id = Column(String(36), primary_key = True, default = uuid4)
     product_id = Column(String(36), ForeignKey('products.id'))
@@ -255,6 +258,7 @@ class ProductVariant(db.Model):
 
 class ProductAttribute(db.Model):
     __tablename__ = 'product_attributes'
+    __table_args__ = {'extend_existing': True}
 
     id = Column(String(36), primary_key = True, default = uuid4)
     name = Column(String(255), nullable = False)
@@ -290,6 +294,7 @@ class ProductAttribute(db.Model):
 
 class ProductAttributeValue(db.Model):
     __tablename__ = 'product_attribute_values'
+    __table_args__ = {'extend_existing': True}
 
     id = Column(String(36), primary_key = True, default = uuid4)
     product_id = Column(String(36), ForeignKey('products.id'))
@@ -318,6 +323,7 @@ class ProductAttributeValue(db.Model):
 
 class StockBatch(db.Model):
     __tablename__ = 'stock_batches'
+    __table_args__ = {'extend_existing': True}
 
     id = Column(String(36), primary_key = True, default = uuid4)
     product_id = Column(String(36), ForeignKey('products.id'))
@@ -357,6 +363,7 @@ class StockBatch(db.Model):
 
 class StockMovement(db.Model):
     __tablename__ = 'stock_movements'
+    __table_args__ = {'extend_existing': True}
 
     id = Column(String(36), primary_key = True, default = uuid4)
     product_id = Column(String(36), ForeignKey('products.id'))
@@ -394,6 +401,7 @@ class StockMovement(db.Model):
 
 class StockAlert(db.Model):
     __tablename__ = 'stock_alerts'
+    __table_args__ = {'extend_existing': True}
 
     id = Column(String(36), primary_key = True, default = uuid4)
     product_id = Column(String(36), ForeignKey('products.id'))
@@ -427,6 +435,7 @@ class StockAlert(db.Model):
 
 class InventoryCount(db.Model):
     __tablename__ = 'inventory_counts'
+    __table_args__ = {'extend_existing': True}
 
     id = Column(String(36), primary_key = True, default = uuid4)
     name = Column(String(255), nullable = False)
@@ -463,6 +472,7 @@ class InventoryCount(db.Model):
 class ProductPrice(db.Model):
     """Model for product prices by weight"""
     __tablename__ = 'product_prices'
+    __table_args__ = {'extend_existing': True}
     
     id = Column(String(36), primary_key=True, default=uuid4)
     product_id = Column(String(36), ForeignKey('products.id'), nullable=False)
@@ -503,6 +513,7 @@ class ProductPrice(db.Model):
 class Review(db.Model):
     """Model for product reviews"""
     __tablename__ = 'reviews'
+    __table_args__ = {'extend_existing': True}
     
     id = Column(String(36), primary_key=True, default=uuid4)
     product_id = Column(String(36), ForeignKey('products.id'), nullable=False)
@@ -563,6 +574,7 @@ class Review(db.Model):
 class ReviewHelpful(db.Model):
     """Track which users found reviews helpful"""
     __tablename__ = 'review_helpful'
+    __table_args__ = {'extend_existing': True}
     
     id = Column(String(36), primary_key=True, default=uuid4)
     review_id = Column(String(36), ForeignKey('reviews.id'), nullable=False)
@@ -582,6 +594,7 @@ class ReviewHelpful(db.Model):
 class ReviewResponse(db.Model):
     """Company responses to reviews"""
     __tablename__ = 'review_responses'
+    __table_args__ = {'extend_existing': True}
     
     id = Column(String(36), primary_key=True, default=uuid4)
     review_id = Column(String(36), ForeignKey('reviews.id'), nullable=False)
@@ -596,6 +609,7 @@ class ReviewResponse(db.Model):
 
 class InventoryCountItem(db.Model):
     __tablename__ = 'inventory_count_items'
+    __table_args__ = {'extend_existing': True}
 
     id = Column(String(36), primary_key = True, default = uuid4)
     count_id = Column(String(36), ForeignKey('inventory_counts.id'))

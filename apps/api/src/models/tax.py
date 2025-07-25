@@ -58,6 +58,7 @@ class NCMCode(db.Model):
     Nomenclatura Comum do Mercosul - Classificação fiscal de produtos
     """
     __tablename__ = 'ncm_codes'
+    __table_args__ = {'extend_existing': True}
 
     id = Column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
     code = Column(String(8), unique=True, nullable=False)  # 8 dígitos
@@ -99,6 +100,7 @@ class CFOPCode(db.Model):
     Código Fiscal de Operações e Prestações
     """
     __tablename__ = 'cfop_codes'
+    __table_args__ = {'extend_existing': True}
 
     id = Column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
     code = Column(String(4), unique=True, nullable=False)  # 4 dígitos
@@ -134,6 +136,7 @@ class ICMSRate(db.Model):
     Alíquotas de ICMS por estado de origem e destino
     """
     __tablename__ = 'icms_rates'
+    __table_args__ = {'extend_existing': True}
 
     id = Column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
     origin_state = Column(String(2), nullable=False)  # UF origem
@@ -177,6 +180,7 @@ class ProductTax(db.Model):
     Configuração fiscal específica por produto
     """
     __tablename__ = 'product_tax'
+    __table_args__ = {'extend_existing': True}
 
     id = Column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
     product_id = Column(String(36), ForeignKey('products.id'), nullable=False)
@@ -246,6 +250,7 @@ class TaxCalculation(db.Model):
     Cálculo de impostos para pedidos
     """
     __tablename__ = 'tax_calculations'
+    __table_args__ = {'extend_existing': True}
 
     id = Column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
     order_id = Column(String(36), ForeignKey('orders.id'), nullable=False)
@@ -341,6 +346,7 @@ class TaxExemption(db.Model):
     Isenções fiscais para clientes específicos
     """
     __tablename__ = 'tax_exemptions'
+    __table_args__ = {'extend_existing': True}
 
     id = Column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
     customer_id = Column(String(36), ForeignKey('customers.id'), nullable=False)

@@ -41,6 +41,7 @@ class PaymentStatus(Enum):
 
 class Order(db.Model):
     __tablename__ = "orders"
+    __table_args__ = {'extend_existing': True}
 
     id = Column(String(36), primary_key = True, default=lambda: str(uuid.uuid4()))
     order_number = Column(String(50), unique = True, nullable = False)
@@ -133,6 +134,7 @@ class Order(db.Model):
 
 class OrderItem(db.Model):
     __tablename__ = "order_items"
+    __table_args__ = {'extend_existing': True}
 
     id = Column(String(36), primary_key = True, default=lambda: str(uuid.uuid4()))
     order_id = Column(String(36), ForeignKey("orders.id", ondelete="CASCADE"))
@@ -185,6 +187,7 @@ class OrderItem(db.Model):
 
 class Cart(db.Model):
     __tablename__ = "carts"
+    __table_args__ = {'extend_existing': True}
 
     id = Column(String(36), primary_key = True, default=lambda: str(uuid.uuid4()))
     user_id = Column(String(36), ForeignKey("users.id", ondelete="CASCADE"))
@@ -211,6 +214,7 @@ class Cart(db.Model):
 
 class CartItem(db.Model):
     __tablename__ = "cart_items"
+    __table_args__ = {'extend_existing': True}
 
     id = Column(String(36), primary_key = True, default=lambda: str(uuid.uuid4()))
     cart_id = Column(
@@ -266,6 +270,7 @@ class CartItem(db.Model):
 
 class AbandonedCart(db.Model):
     __tablename__ = "abandoned_carts"
+    __table_args__ = {'extend_existing': True}
 
     id = Column(String(36), primary_key = True, default=lambda: str(uuid.uuid4()))
     user_id = Column(String(36), ForeignKey("users.id", ondelete="CASCADE"))

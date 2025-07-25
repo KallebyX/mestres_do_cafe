@@ -11,6 +11,7 @@ from sqlalchemy.dialects.postgresql import JSON
 class Notification(db.Model):
     """Modelo para notificações in-app"""
     __tablename__ = 'notifications'
+    __table_args__ = {'extend_existing': True}
 
     id = db.Column(db.String(36), primary_key = True, default = lambda: str(uuid.uuid4()))
     user_id = db.Column(db.String(36), db.ForeignKey('users.id'), nullable = False)
@@ -49,6 +50,7 @@ class Notification(db.Model):
 class NotificationTemplate(db.Model):
     """Templates de notificação"""
     __tablename__ = 'notification_templates'
+    __table_args__ = {'extend_existing': True}
 
     id = db.Column(db.String(36), primary_key = True, default = lambda: str(uuid.uuid4()))
     type = db.Column(db.String(50), nullable = False, unique = True)
@@ -96,9 +98,10 @@ class NotificationSubscription(db.Model):
     # Relacionamentos
     user = db.relationship('User', backref='notification_preferences')
 
-    # Índice composto para evitar duplicatas
+    # Índice composto para evitar duplicatas e extend_existing
     __table_args__ = (
         db.UniqueConstraint('user_id', 'notification_type', name='unique_user_notification_type'),
+        {'extend_existing': True}
     )
 
     def to_dict(self):
@@ -122,6 +125,7 @@ class NotificationSubscription(db.Model):
 class NotificationLog(db.Model):
     """Log de notificações enviadas"""
     __tablename__ = 'notification_logs'
+    __table_args__ = {'extend_existing': True}
 
     id = db.Column(db.String(36), primary_key = True, default = lambda: str(uuid.uuid4()))
     user_id = db.Column(db.String(36), nullable = False)  # Não FK para manter histórico

@@ -21,6 +21,7 @@ from database import db
 
 class Supplier(db.Model):
     __tablename__ = 'suppliers'
+    __table_args__ = {'extend_existing': True}
 
     id = Column(String(36), primary_key = True, default=lambda: str(uuid.uuid4()))
     name = Column(String(255), nullable = False)
@@ -89,6 +90,7 @@ class Supplier(db.Model):
 
 class PurchaseOrder(db.Model):
     __tablename__ = 'purchase_orders'
+    __table_args__ = {'extend_existing': True}
 
     id = Column(String(36), primary_key = True, default=lambda: str(uuid.uuid4()))
     supplier_id = Column(
@@ -145,6 +147,7 @@ class PurchaseOrder(db.Model):
 
 class PurchaseOrderItem(db.Model):
     __tablename__ = 'purchase_order_items'
+    __table_args__ = {'extend_existing': True}
 
     id = Column(String(36), primary_key = True, default=lambda: str(uuid.uuid4()))
     purchase_order_id = Column(

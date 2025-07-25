@@ -25,6 +25,7 @@ class PaymentStatus(Enum):
 
 class Payment(db.Model):
     __tablename__ = 'payments'
+    __table_args__ = {'extend_existing': True}
 
     id = Column(String(36), primary_key = True, default = uuid4)
     order_id = Column(String(36), ForeignKey('orders.id'))
@@ -105,6 +106,7 @@ class Payment(db.Model):
 
 class Refund(db.Model):
     __tablename__ = 'refunds'
+    __table_args__ = {'extend_existing': True}
 
     id = Column(String(36), primary_key = True, default = uuid4)
     payment_id = Column(String(36), ForeignKey('payments.id'))
@@ -141,6 +143,7 @@ class Refund(db.Model):
 
 class PaymentDispute(db.Model):
     __tablename__ = 'payment_disputes'
+    __table_args__ = {'extend_existing': True}
 
     id = Column(String(36), primary_key = True, default = uuid4)
     payment_id = Column(String(36), ForeignKey('payments.id'))
@@ -194,6 +197,7 @@ class PaymentDispute(db.Model):
 
 class EscrowTransaction(db.Model):
     __tablename__ = 'escrow_transactions'
+    __table_args__ = {'extend_existing': True}
 
     id = Column(String(36), primary_key = True, default = uuid4)
     payment_id = Column(String(36), ForeignKey('payments.id'))
@@ -241,6 +245,7 @@ class EscrowTransaction(db.Model):
 
 class PaymentWebhook(db.Model):
     __tablename__ = 'payment_webhooks'
+    __table_args__ = {'extend_existing': True}
 
     id = Column(String(36), primary_key = True, default = uuid4)
     provider = Column(String(50), nullable = False)
