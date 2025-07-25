@@ -3,8 +3,8 @@ import tempfile
 import os
 from flask import Flask
 from src.app import create_app
-from src.models.base import db
-from src.models.user import User
+from src.database import db
+from src.models.auth import User
 from werkzeug.security import generate_password_hash
 import jwt
 from datetime import datetime, timedelta, timezone

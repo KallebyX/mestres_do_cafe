@@ -12,6 +12,7 @@ from database import db
 
 class SystemSetting(db.Model):
     __tablename__ = "system_settings"
+    __table_args__ = {'extend_existing': True}
 
     id = Column(String(36), primary_key = True, default=lambda: str(uuid.uuid4()))
     key = Column(String(255), unique = True, nullable = False)
@@ -40,6 +41,7 @@ class SystemSetting(db.Model):
 
 class SystemLog(db.Model):
     __tablename__ = "system_logs"
+    __table_args__ = {'extend_existing': True}
 
     id = Column(String(36), primary_key = True, default=lambda: str(uuid.uuid4()))
     level = Column(String(20), nullable = False)
@@ -80,6 +82,7 @@ class SystemLog(db.Model):
 
 class AuditLog(db.Model):
     __tablename__ = "audit_logs"
+    __table_args__ = {'extend_existing': True}
 
     id = Column(String(36), primary_key = True, default=lambda: str(uuid.uuid4()))
     user_id = Column(String(36), ForeignKey("users.id", ondelete="SET NULL"))

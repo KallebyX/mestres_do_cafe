@@ -13,6 +13,7 @@ from database import db
 
 class Vendor(db.Model):
     __tablename__ = "vendors"
+    __table_args__ = {'extend_existing': True}
 
     id = Column(String(36), primary_key = True, default=lambda: str(uuid.uuid4()))
     user_id = Column(String(36), ForeignKey("users.id"), nullable = False)
@@ -125,6 +126,7 @@ class Vendor(db.Model):
 
 class VendorProduct(db.Model):
     __tablename__ = "vendor_products"
+    __table_args__ = {'extend_existing': True}
 
     id = Column(String(36), primary_key = True, default=lambda: str(uuid.uuid4()))
     vendor_id = Column(String(36), ForeignKey("vendors.id"), nullable = False)
@@ -191,6 +193,7 @@ class VendorProduct(db.Model):
 
 class VendorOrder(db.Model):
     __tablename__ = "vendor_orders"
+    __table_args__ = {'extend_existing': True}
 
     id = Column(String(36), primary_key = True, default=lambda: str(uuid.uuid4()))
     vendor_id = Column(String(36), ForeignKey("vendors.id"), nullable = False)
@@ -245,6 +248,7 @@ class VendorOrder(db.Model):
 
 class VendorCommission(db.Model):
     __tablename__ = "vendor_commissions"
+    __table_args__ = {'extend_existing': True}
 
     id = Column(String(36), primary_key = True, default=lambda: str(uuid.uuid4()))
     vendor_id = Column(String(36), ForeignKey("vendors.id"), nullable = False)
@@ -293,6 +297,7 @@ class VendorCommission(db.Model):
 
 class VendorReview(db.Model):
     __tablename__ = "vendor_reviews"
+    __table_args__ = {'extend_existing': True}
 
     id = Column(String(36), primary_key = True, default=lambda: str(uuid.uuid4()))
     vendor_id = Column(String(36), ForeignKey("vendors.id"), nullable = False)

@@ -23,6 +23,8 @@ from sqlalchemy.sql import func
 
 class User(db.Model):
     __tablename__ = "users"
+    __table_args__ = {'extend_existing': True}
+    __table_args__ = {'extend_existing': True}
 
     # SQLite compatibility: Using String instead of UUID
     id = Column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
@@ -104,6 +106,8 @@ class User(db.Model):
 
 class UserSession(db.Model):
     __tablename__ = "user_sessions"
+    __table_args__ = {'extend_existing': True}
+    __table_args__ = {'extend_existing': True}
 
     # SQLite compatibility: Using String instead of UUID
     id = Column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))

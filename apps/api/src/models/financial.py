@@ -21,6 +21,7 @@ from database import db
 
 class FinancialAccount(db.Model):
     __tablename__ = "financial_accounts"
+    __table_args__ = {'extend_existing': True}
 
     id = Column(String(36), primary_key = True, default=lambda: str(uuid.uuid4()))
     name = Column(String(255), nullable = False)
@@ -53,6 +54,7 @@ class FinancialAccount(db.Model):
 
 class FinancialTransaction(db.Model):
     __tablename__ = "financial_transactions"
+    __table_args__ = {'extend_existing': True}
 
     id = Column(String(36), primary_key = True, default=lambda: str(uuid.uuid4()))
     account_id = Column(

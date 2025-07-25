@@ -23,6 +23,7 @@ from database import db
 
 class Customer(db.Model):
     __tablename__ = 'customers'
+    __table_args__ = {'extend_existing': True}
 
     id = Column(String(36), primary_key = True, default=lambda: str(uuid.uuid4()))
     user_id = Column(String(36), ForeignKey('users.id', ondelete='SET NULL'))
@@ -97,6 +98,7 @@ class Customer(db.Model):
 
 class CustomerAddress(db.Model):
     __tablename__ = 'customer_addresses'
+    __table_args__ = {'extend_existing': True}
 
     id = Column(String(36), primary_key = True, default=lambda: str(uuid.uuid4()))
     customer_id = Column(
@@ -143,6 +145,7 @@ class CustomerAddress(db.Model):
 
 class Lead(db.Model):
     __tablename__ = 'leads'
+    __table_args__ = {'extend_existing': True}
 
     id = Column(String(36), primary_key = True, default=lambda: str(uuid.uuid4()))
     name = Column(String(255), nullable = False)
@@ -199,6 +202,7 @@ class Lead(db.Model):
 
 class Contact(db.Model):
     __tablename__ = 'contacts'
+    __table_args__ = {'extend_existing': True}
 
     id = Column(String(36), primary_key = True, default=lambda: str(uuid.uuid4()))
     customer_id = Column(
@@ -246,6 +250,7 @@ class Contact(db.Model):
 
 class CustomerSegment(db.Model):
     __tablename__ = 'customer_segments'
+    __table_args__ = {'extend_existing': True}
 
     id = Column(String(36), primary_key = True, default=lambda: str(uuid.uuid4()))
     name = Column(String(255), nullable = False)
@@ -284,6 +289,7 @@ class CustomerSegment(db.Model):
 
 class CustomerSegmentMembership(db.Model):
     __tablename__ = 'customer_segment_memberships'
+    __table_args__ = {'extend_existing': True}
 
     id = Column(String(36), primary_key = True, default=lambda: str(uuid.uuid4()))
     customer_id = Column(

@@ -61,6 +61,7 @@ class Analytics(db.Model):
     Armazena todos os eventos coletados do frontend e backend
     """
     __tablename__ = 'analytics'
+    __table_args__ = {'extend_existing': True}
 
     id = Column(Integer, primary_key = True)
 
@@ -171,6 +172,7 @@ class AnalyticsMetrics(db.Model):
     Para performance de dashboards e relatórios
     """
     __tablename__ = 'analytics_metrics'
+    __table_args__ = {'extend_existing': True}
 
     id = Column(Integer, primary_key = True)
 
@@ -238,6 +240,7 @@ class UserBehavior(db.Model):
     Jornadas, funis de conversão e segmentação
     """
     __tablename__ = 'user_behavior'
+    __table_args__ = {'extend_existing': True}
 
     id = Column(Integer, primary_key = True)
 
@@ -340,6 +343,7 @@ class BusinessMetrics(db.Model):
     Calculados em tempo real com dados agregados
     """
     __tablename__ = 'business_metrics'
+    __table_args__ = {'extend_existing': True}
 
     id = Column(Integer, primary_key = True)
 

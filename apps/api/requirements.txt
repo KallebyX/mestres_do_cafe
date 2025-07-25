@@ -5,7 +5,7 @@ Flask-CORS==4.0.0
 Flask-JWT-Extended==4.5.2
 
 # Database SQLite Único  
-SQLAlchemy==2.0.21
+SQLAlchemy==2.0.35
 
 # Environment & Configuration
 python-dotenv==1.0.0
@@ -29,3 +29,8 @@ mercadopago==2.2.3
 click==8.1.7
 Werkzeug==2.3.7
 itsdangerous==2.1.2
+
+# Additional Dependencies for Production
+redis==6.2.0
+gunicorn[gevent]==23.0.0
+psutil==7.0.0
