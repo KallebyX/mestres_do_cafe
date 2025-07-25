@@ -19,21 +19,23 @@ services:
     ipAllowList: []
 
   # =============================================================================
-  # API Backend - Flask
+  # API Backend - Flask com Gunicorn
   # =============================================================================
   - type: web
     name: mestres-cafe-api
     plan: free
-    env: python
+    runtime: python
     rootDir: apps/api
     buildCommand: pip install -r requirements.txt
-    startCommand: python src/app.py
-    pythonVersion: "3.11.10"
+    startCommand: gunicorn --bind 0.0.0.0:$PORT --workers 2 --timeout 120 --chdir src app:app
+    healthCheckPath: /api/health
     envVars:
       - key: FLASK_ENV
         value: production
       - key: FLASK_DEBUG
         value: "0"
+      - key: ENV
+        value: production
       - key: PYTHONPATH
         value: /opt/render/project/src
       - key: SECRET_KEY
@@ -46,10 +48,12 @@ services:
         value: sandbox
       - key: MELHOR_ENVIO_ENVIRONMENT
         value: sandbox
+      - key: MELHOR_ENVIO_SANDBOX
+        value: "true"
       - key: MELHOR_ENVIO_REDIRECT_URI
         value: https://mestres-cafe-api.onrender.com/api/melhor-envio/callback
       - key: PORT
-        value: "5001"
+        value: "10000"
       - key: DATABASE_URL
         fromDatabase:
           name: mestres-cafe-db
@@ -59,13 +63,23 @@ services:
           type: redis
           name: mestres-cafe-redis
           property: connectionString
+      # Cache Configuration
+      - key: CACHE_TYPE
+        value: redis
+      - key: CACHE_DEFAULT_TIMEOUT
+        value: "300"
+      # Additional Production Settings
+      - key: WEB_CONCURRENCY
+        value: "2"
+      - key: MAX_CONTENT_LENGTH
+        value: "16777216"
 
   # =============================================================================
   # Web Frontend - React + Vite
   # =============================================================================
   - type: web
     name: mestres-cafe-web
-    env: static
+    runtime: static
     rootDir: apps/web
     buildCommand: npm install --include=dev && npx vite build && echo "/*    /index.html   200" > dist/_redirects
     staticPublishPath: dist
