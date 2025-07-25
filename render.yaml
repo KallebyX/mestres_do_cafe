@@ -26,8 +26,8 @@ services:
     plan: free
     env: python
     rootDir: apps/api
-    buildCommand: pip install -r requirements.txt
-    startCommand: python src/app.py
+    buildCommand: python3.11 -m pip install -r requirements.txt
+    startCommand: python3.11 src/app.py
     pythonVersion: "3.11"
     envVars:
       - key: FLASK_ENV
