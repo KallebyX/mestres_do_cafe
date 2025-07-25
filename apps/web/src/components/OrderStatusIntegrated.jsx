@@ -78,13 +78,11 @@ const OrderStatusIntegrated = ({ orderId, onStatusUpdate }) => {
   };
 
   const handlePaymentStatusChange = (newStatus, oldStatus) => {
-    console.log(`Payment status changed from ${oldStatus} to ${newStatus}`);
     onStatusUpdate?.('payment', newStatus, oldStatus);
     fetchOrderData(); // Refresh data
   };
 
   const handleShippingStatusChange = (newStatus, oldStatus) => {
-    console.log(`Shipping status changed from ${oldStatus} to ${newStatus}`);
     onStatusUpdate?.('shipping', newStatus, oldStatus);
     
     // Se entregue, pode impactar o escrow

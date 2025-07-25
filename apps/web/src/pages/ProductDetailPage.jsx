@@ -58,11 +58,6 @@ const ProductDetailPage = () => {
         // A API individual retorna os dados aninhados em result.data.product
         const productData = result.data.product || result.data;
         
-        console.log('🔍 Produto carregado:', productData);
-        console.log('🔍 Preço do produto:', productData.price);
-        console.log('🔍 Stock quantity:', productData.stock_quantity);
-        console.log('🔍 Available weights:', productData.available_weights);
-        console.log('🔍 Product prices:', productData.product_prices);
         
         setProduct(productData);
         await loadRelatedProducts(productData.category);
@@ -111,12 +106,6 @@ const ProductDetailPage = () => {
         return;
       }
       
-      console.log('🔍 Adicionando ao carrinho:');
-      console.log('  - Produto:', product.name);
-      console.log('  - Peso:', selectedWeight);
-      console.log('  - ProductPrice ID:', selectedProductPrice.id);
-      console.log('  - Preço unitário:', selectedProductPrice.price);
-      console.log('  - Quantidade:', quantity);
       
       const result = await addToCart(product, quantity, {
         productPriceId: selectedProductPrice.id,
@@ -170,15 +159,7 @@ const ProductDetailPage = () => {
 
   const currentWeightOption = weightOptions.find(w => w.value === selectedWeight) || weightOptions[0];
   
-  console.log('🔍 DEBUG - product:', product);
-  console.log('🔍 DEBUG - product.product_prices:', product?.product_prices);
-  console.log('🔍 DEBUG - weightOptions:', weightOptions);
-  console.log('🔍 DEBUG - selectedWeight:', selectedWeight);
-  console.log('🔍 DEBUG - currentWeightOption:', currentWeightOption);
-  
   const currentPrice = currentWeightOption?.price || 0;
-  
-  console.log('🔍 DEBUG - currentPrice final:', currentPrice);
 
   const productImages = product?.images || [product?.image || '/default-coffee.jpg'];
 
@@ -534,7 +515,7 @@ const ProductDetailPage = () => {
                 price: currentPrice
               }]}
               onQuoteSelect={(quote) => {
-                console.log('Opção de frete selecionada:', quote);
+                // Opção de frete selecionada
               }}
             />
           </div>

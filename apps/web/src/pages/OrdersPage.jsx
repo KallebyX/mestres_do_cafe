@@ -383,7 +383,6 @@ const OrdersPage = () => {
                 <ShippingTracker 
                   trackingCode={trackingModal.shipping.tracking}
                   onStatusChange={(newStatus, oldStatus) => {
-                    console.log(`Status changed from ${oldStatus} to ${newStatus}`);
                     // Atualizar o status local do pedido se necessário
                     if (newStatus === 'delivered') {
                       setOrders(prevOrders => 

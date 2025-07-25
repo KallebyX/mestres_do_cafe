@@ -16,7 +16,6 @@ export const useNotifications = () => {
   const context = useContext(NotificationContext);
   if (!context) {
     // Em vez de lançar erro, retornar valores padrão seguros
-    console.warn('⚠️ useNotifications usado fora do NotificationProvider, retornando fallbacks');
     return {
       notifications: [],
       unreadCount: 0,
@@ -249,7 +248,6 @@ export const NotificationProvider = ({ children }) => {
     try {
       // TODO: Implementar verificação via Flask API quando necessário
       // Por enquanto, não fazemos verificações automáticas
-      console.log('Verificação de alertas financeiros desativada - aguardando implementação Flask API');
     } catch (error) {
       console.error('Erro ao verificar alertas financeiros:', error);
     }
@@ -261,7 +259,6 @@ export const NotificationProvider = ({ children }) => {
     try {
       // TODO: Implementar verificação via Flask API quando necessário
       // Por enquanto, não fazemos verificações automáticas
-      console.log('Verificação de alertas de estoque desativada - aguardando implementação Flask API');
     } catch (error) {
       console.error('Erro ao verificar alertas de estoque:', error);
     }

@@ -355,7 +355,6 @@ const ShippingAdmin = () => {
               <ShippingTracker 
                 trackingCode={selectedShipment.tracking_code}
                 onStatusChange={(newStatus, oldStatus) => {
-                  console.log(`Shipment status changed from ${oldStatus} to ${newStatus}`);
                   loadShipments(); // Recarregar lista
                 }}
               />

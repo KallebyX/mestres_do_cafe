@@ -1,27 +1,25 @@
 import React, { useEffect, useState } from 'react';
 import './ShippingOptions.css';
 
-const ShippingOptions = ({ 
-  shippingOptions, 
-  selectedOption, 
-  onOptionSelect, 
-  onNext, 
-  onBack, 
-  loading,
-  couponCode,
-  onCouponApply,
-  couponDiscount
+const ShippingOptions = ({
+  options,
+  selected,
+  onSelect,
+  onNext,
+  onPrev,
+  onCalculate,
+  loading
 }) => {
-  const [selectedShipping, setSelectedShipping] = useState(selectedOption);
-  const [couponInput, setCouponInput] = useState(couponCode || '');
+  const [selectedShipping, setSelectedShipping] = useState(selected);
+  const [couponInput, setCouponInput] = useState('');
   const [couponError, setCouponError] = useState('');
   const [couponLoading, setCouponLoading] = useState(false);
 
   useEffect(() => {
-    if (selectedOption) {
-      setSelectedShipping(selectedOption);
+    if (selected) {
+      setSelectedShipping(selected);
     }
-  }, [selectedOption]);
+  }, [selected]);
 
   const formatPrice = (price) => {
     return new Intl.NumberFormat('pt-BR', {
@@ -37,26 +35,12 @@ const ShippingOptions = ({
 
   const handleShippingSelect = (option) => {
     setSelectedShipping(option);
-    onOptionSelect(option);
+    onSelect(option);
   };
 
-  const handleCouponSubmit = async (e) => {
-    e.preventDefault();
-    
-    if (!couponInput.trim()) {
-      setCouponError('Digite um código de cupom');
-      return;
-    }
-
-    setCouponLoading(true);
-    setCouponError('');
-
-    try {
-      await onCouponApply(couponInput.trim());
-    } catch (error) {
-      setCouponError(error.message || 'Cupom inválido');
-    } finally {
-      setCouponLoading(false);
+  const handleCalculateShipping = async () => {
+    if (onCalculate) {
+      await onCalculate();
     }
   };
 
@@ -118,13 +102,16 @@ const ShippingOptions = ({
     );
   }
 
-  if (!shippingOptions || shippingOptions.length === 0) {
+  if (!options || options.length === 0) {
     return (
       <div className="shipping-options">
         <h2>Opções de Frete</h2>
         <div className="no-options">
           <p>Não foi possível calcular o frete para este endereço.</p>
-          <button className="btn btn-secondary" onClick={onBack}>
+          <button className="btn btn-secondary" onClick={handleCalculateShipping}>
+            Calcular Frete
+          </button>
+          <button className="btn btn-secondary" onClick={onPrev}>
             Voltar e Corrigir Endereço
           </button>
         </div>
@@ -140,7 +127,7 @@ const ShippingOptions = ({
       </p>
 
       <div className="shipping-list">
-        {shippingOptions.map((option) => (
+        {options.map((option) => (
           <div
             key={option.id}
             className={`shipping-option ${selectedShipping?.id === option.id ? 'selected' : ''}`}
@@ -194,44 +181,6 @@ const ShippingOptions = ({
         ))}
       </div>
 
-      <div className="coupon-section">
-        <h3>Cupom de Desconto</h3>
-        <form onSubmit={handleCouponSubmit} className="coupon-form">
-          <div className="coupon-input-group">
-            <input
-              type="text"
-              value={couponInput}
-              onChange={(e) => setCouponInput(e.target.value)}
-              placeholder="Digite seu cupom de desconto"
-              className={couponError ? 'error' : ''}
-            />
-            <button 
-              type="submit"
-              className="btn btn-outline"
-              disabled={couponLoading}
-            >
-              {couponLoading ? (
-                <span className="loading-spinner small"></span>
-              ) : (
-                'Aplicar'
-              )}
-            </button>
-          </div>
-          {couponError && (
-            <span className="error-message">{couponError}</span>
-          )}
-          {couponDiscount && (
-            <div className="coupon-success">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <path d="M9 12l2 2 4-4"></path>
-                <path d="M21 12c-1 0-3-1-3-3s2-3 3-3 3 1 3 3-2 3-3 3"></path>
-                <path d="M3 12c1 0 3-1 3-3s-2-3-3-3-3 1-3 3 2 3 3 3"></path>
-              </svg>
-              Cupom aplicado! Desconto de {formatPrice(couponDiscount)}
-            </div>
-          )}
-        </form>
-      </div>
 
       <div className="delivery-info-box">
         <h3>Informações de Entrega</h3>
@@ -267,7 +216,7 @@ const ShippingOptions = ({
         <button 
           type="button" 
           className="btn btn-secondary"
-          onClick={onBack}
+          onClick={onPrev}
         >
           Voltar
         </button>

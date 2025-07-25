@@ -10,7 +10,6 @@ psycopg2-binary==2.9.7
 
 # Production WSGI Server
 gunicorn==21.2.0
-gevent==23.7.0
 
 # Environment & Configuration
 python-dotenv==1.0.0

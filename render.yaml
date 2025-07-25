@@ -64,7 +64,7 @@ services:
     name: mestres-cafe-web
     env: static
     rootDir: apps/web
-    buildCommand: npm install && npm run build && echo "/*    /index.html   200" > dist/_redirects
+    buildCommand: npm install && npx vite build && echo "/*    /index.html   200" > dist/_redirects
     staticPublishPath: dist
     envVars:
       - key: NODE_ENV

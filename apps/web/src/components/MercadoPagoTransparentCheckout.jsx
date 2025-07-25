@@ -83,7 +83,6 @@ const MercadoPagoTransparentCheckout = ({
       script.onload = () => {
         try {
           mpRef.current = new window.MercadoPago(publicKey);
-          console.log('MercadoPago SDK loaded successfully');
           resolve();
         } catch (error) {
           console.error('Error initializing MercadoPago:', error);

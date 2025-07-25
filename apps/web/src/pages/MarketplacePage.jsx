@@ -133,9 +133,6 @@ const MarketplacePage = () => {
         return;
       }
       
-      console.log('🛒 MARKETPLACE - Adicionando produto:', product.name);
-      console.log('🛒 MARKETPLACE - Peso padrão:', defaultProductPrice.weight);
-      console.log('🛒 MARKETPLACE - Preço:', defaultProductPrice.price);
       
       const result = await addToCart(product, 1, {
         productPriceId: defaultProductPrice.id,

@@ -25,7 +25,6 @@ const CustomerDashboard = () => {
 
   const loadOrders = async () => {
     if (!user?.id) {
-      console.warn('Usuário não logado ou sem ID');
       setLoading(false);
       return;
     }

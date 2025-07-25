@@ -3,19 +3,43 @@ import {
   X, Upload, Star, Coffee, AlertCircle, Check, 
   Plus, Minus, Image as ImageIcon 
 } from 'lucide-react';
-// import { 
-//   createProductAdmin, 
-//   updateProductAdmin, 
-//   getProductCategories, 
-//   getRoastLevels 
-// } from "../lib/api"
 import { validateProductData } from "../utils/validation"
+import api from '../services/api.js';
 
-// Temporary mock functions for build
-const createProductAdmin = async () => ({ success: true });
-const updateProductAdmin = async () => ({ success: true });
-const getProductCategories = async () => ([]);
-const getRoastLevels = async () => ([]);
+// Admin API functions for products
+const createProductAdmin = async (productData) => {
+  try {
+    const response = await api.post('/admin/products', productData);
+    return { success: true, data: response.data };
+  } catch (error) {
+    return {
+      success: false,
+      error: error.response?.data?.error || 'Erro ao criar produto'
+    };
+  }
+};
+
+const updateProductAdmin = async (productId, productData) => {
+  try {
+    const response = await api.put(`/admin/products/${productId}`, productData);
+    return { success: true, data: response.data };
+  } catch (error) {
+    return {
+      success: false,
+      error: error.response?.data?.error || 'Erro ao atualizar produto'
+    };
+  }
+};
+
+const getProductCategories = () => {
+  // Static categories based on backend
+  return ['arabica', 'robusta', 'especial', 'gourmet', 'organico', 'descafeinado'];
+};
+
+const getRoastLevels = () => {
+  // Static roast levels based on backend
+  return ['light', 'medium-light', 'medium', 'medium-dark', 'dark'];
+};
 
 const ProductModal = ({ 
   isOpen, 

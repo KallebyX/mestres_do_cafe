@@ -142,8 +142,7 @@ exec gunicorn \
     --bind 0.0.0.0:$PORT \
     --workers $WORKERS \
     --threads $THREADS \
-    --worker-class gevent \
-    --worker-connections 1000 \
+    --worker-class sync \
     --timeout $TIMEOUT \
     --keepalive $KEEPALIVE \
     --max-requests $MAX_REQUESTS \

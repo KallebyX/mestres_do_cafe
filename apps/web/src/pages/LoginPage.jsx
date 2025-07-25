@@ -71,14 +71,9 @@ const LoginPage = () => {
         // Usar dados diretamente do resultado do login
         const userData = result.user;
         
-        console.log('🔍 Login result user:', userData);
-        console.log('🔍 User is_admin:', userData?.is_admin);
-        
         if (userData?.is_admin || userData?.user_type === 'admin') {
-          console.log('🔍 Navigating to admin dashboard');
           navigate('/admin/crm');
         } else {
-          console.log('🔍 Navigating to customer dashboard');
           navigate('/dashboard');
         }
       } else {

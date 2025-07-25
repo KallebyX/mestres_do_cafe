@@ -50,8 +50,6 @@ export const AuthProvider = ({ children }) => {
           };
           setProfile(userProfile);
           
-          console.log('🔍 Restored user from localStorage:', userData);
-          console.log('🔍 Restored profile:', userProfile);
         }
       } catch (error) {
         console.error("Erro ao carregar dados do usuário:", error);
@@ -84,17 +82,11 @@ export const AuthProvider = ({ children }) => {
 
       const response = await authAPI.login({ email, password });
       
-      console.log('🔍 API Response:', response);
 
       if (response.success) {
         const userData = response.data.user;
         const isAdmin = userData.is_admin || false;
         
-        console.log('🔍 User Data:', userData);
-        console.log('🔍 Is Admin Check:', {
-          'userData.is_admin': userData.is_admin,
-          'final isAdmin': isAdmin
-        });
         
         // Criar perfil baseado na resposta da API
         const userProfile = {
@@ -109,7 +101,6 @@ export const AuthProvider = ({ children }) => {
           updated_at: new Date().toISOString()
         };
         
-        console.log('🔍 Created Profile:', userProfile);
         
         const authUser = {
           ...userData,
@@ -146,10 +137,6 @@ export const AuthProvider = ({ children }) => {
 
       const response = await authAPI.register(userData);
       
-      console.log('🔍 DIAGNÓSTICO - Register API Response:', response);
-      console.log('🔍 DIAGNÓSTICO - Has access_token?', !!response.data?.access_token);
-      console.log('🔍 DIAGNÓSTICO - Has token?', !!response.data?.token);
-      console.log('🔍 DIAGNÓSTICO - Response keys:', Object.keys(response.data || {}));
 
       if (response.success) {
         // Se a API retornou token, fazer login automático
@@ -184,8 +171,6 @@ export const AuthProvider = ({ children }) => {
           localStorage.setItem('auth_token', response.data.access_token);
           localStorage.setItem('user', JSON.stringify(authUser));
           
-          console.log('✅ CORREÇÃO - Login automático após registro realizado');
-          console.log('✅ CORREÇÃO - User salvo:', authUser);
           
           return {
             success: true,

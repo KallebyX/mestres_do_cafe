@@ -68,8 +68,6 @@ const AdminDashboard = () => {
   const [orders, setOrders] = useState([]);
   const [blogPosts, setBlogPosts] = useState([]);
   
-  // Debug states
-  console.log('🔍 Estado atual:', { users: users.length, products: products.length, orders: orders.length });
   const [topProducts, setTopProducts] = useState([]);
   const [hrData, setHrData] = useState({
     totalEmployees: 0,
@@ -128,9 +126,7 @@ const AdminDashboard = () => {
   // Data loading functions
   const loadStats = async () => {
     try {
-      console.log('🔄 Carregando estatísticas...');
       const result = await getStats();
-      console.log('📊 Resultado stats:', result);
       if (result.success) {
         setStats(result.data);
       } else {
@@ -145,18 +141,10 @@ const AdminDashboard = () => {
 
   const loadUsers = async () => {
     try {
-      console.log('🔄 Carregando usuários...');
       const result = await getUsers();
-      console.log('👥 Resultado users:', result);
-      console.log('🔍 Estrutura completa result.data:', result.data);
-      console.log('🔍 result.data.users:', result.data?.users);
-      console.log('🔍 result.data.data:', result.data?.data);
-      console.log('🔍 result.data.data?.users:', result.data?.data?.users);
       if (result.success) {
         // A API de users retorna data.data.users
         const usersData = Array.isArray(result.data?.data?.users) ? result.data.data.users : [];
-        console.log('📋 Dados dos usuários extraídos:', usersData);
-        console.log('📊 Quantidade de usuários:', usersData.length);
         setUsers(usersData);
       } else {
         console.error('❌ Erro ao carregar usuários:', result.error);
@@ -172,9 +160,7 @@ const AdminDashboard = () => {
 
   const loadProducts = async () => {
     try {
-      console.log('🔄 Carregando produtos...');
       const result = await getAllProductsAdmin();
-      console.log('📦 Resultado products:', result);
       if (result.success) {
         // A API admin retorna data.data.products (duplo encapsulamento)
         const productsData = result.data?.data?.products || result.data?.products || [];
@@ -193,16 +179,10 @@ const AdminDashboard = () => {
 
   const loadOrders = async () => {
     try {
-      console.log('🔄 Carregando pedidos...');
       const result = await getAllOrdersAdmin();
-      console.log('📦 Resultado orders:', result);
-      console.log('🔍 result.data.orders:', result.data?.orders);
-      console.log('🔍 result.data.data?.orders:', result.data?.data?.orders);
       if (result.success) {
         // Tentar ambas as estruturas
         const ordersData = result.data?.data?.orders || result.data?.orders || [];
-        console.log('📋 Dados dos pedidos extraídos:', ordersData);
-        console.log('📊 Quantidade de pedidos:', ordersData.length);
         setOrders(ordersData);
       } else {
         console.error('❌ Erro ao carregar pedidos:', result.error);
@@ -218,16 +198,10 @@ const AdminDashboard = () => {
 
   const loadBlogPosts = async () => {
     try {
-      console.log('🔄 Carregando posts do blog...');
       const result = await getAllBlogPostsAdmin();
-      console.log('📝 Resultado blog posts:', result);
-      console.log('🔍 result.data.posts:', result.data?.posts);
-      console.log('🔍 result.data.data?.posts:', result.data?.data?.posts);
       if (result.success) {
         // A API de blog posts retorna data.data.posts (duplo encapsulamento)
         const postsData = result.data?.data?.posts || result.data?.posts || [];
-        console.log('📋 Dados dos posts extraídos:', postsData);
-        console.log('📊 Quantidade de posts:', postsData.length);
         setBlogPosts(postsData);
       } else {
         console.error('❌ Erro ao carregar posts:', result.error);
@@ -257,9 +231,7 @@ const AdminDashboard = () => {
 
   const loadHRData = async () => {
     try {
-      console.log('🔄 Carregando dados RH...');
       const result = await hrAPI.getHRSummary();
-      console.log('👷 Resultado HR:', result);
       if (result.success) {
         setHrData(result.data);
       } else {
@@ -275,7 +247,6 @@ const AdminDashboard = () => {
   // Função otimizada para carregar métricas em tempo real usando APIs funcionais
   const loadRealTimeMetrics = async () => {
     try {
-      console.log('📊 Carregando métricas em tempo real com APIs funcionais...');
       
       // Carregar dados das APIs funcionais com Promise.allSettled para robustez
       const [statsResponse, ordersResponse, productsResponse, usersResponse, segmentsResponse] = await Promise.allSettled([
@@ -413,8 +384,6 @@ const AdminDashboard = () => {
         { name: 'Usuários Ativos', value: activeUsers.length.toString(), change: '+1.8%' },
         { name: 'Estoque Baixo', value: lowStockProducts.length.toString(), change: lowStockProducts.length > 3 ? 'Alto' : 'Normal' }
       ]);
-
-      console.log('✅ Métricas em tempo real carregadas com dados reais:', calculatedMetrics);
       
     } catch (error) {
       console.error('💥 Erro ao carregar métricas em tempo real:', error);
@@ -779,7 +748,6 @@ const AdminDashboard = () => {
   // Função para popular dados de teste
   const handlePopulateWeightPrices = async () => {
     try {
-      console.log('🔄 Populando dados de teste para preços por peso...');
       
       const result = await handleApiCall(async () => {
         return await apiRequest('/admin/products/populate-weight-prices', {
@@ -842,11 +810,6 @@ const AdminDashboard = () => {
 
   // Render users tab content
   const renderUsersTab = () => {
-    console.log('🎯 Renderizando aba de usuários. Estado users:', users);
-    console.log('🎯 Tipo do estado users:', typeof users);
-    console.log('🎯 É array?', Array.isArray(users));
-    console.log('🎯 Quantidade no estado:', users?.length);
-    
     return (
       <div className="space-y-6">
         {/* Header com busca e botão de adicionar */}

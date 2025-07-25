@@ -401,7 +401,6 @@ const ReviewList = ({
         </div>
       ) : (
         <div className="review-items">
-          {console.log('🎯 Renderizando reviews:', reviews)}
           {Array.isArray(reviews) ? reviews.map(renderReviewItem) : null}
         </div>
       )}

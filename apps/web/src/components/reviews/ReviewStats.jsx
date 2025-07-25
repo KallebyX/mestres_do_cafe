@@ -10,12 +10,10 @@ const ReviewStats = ({ productId, stats: propStats = {}, loading: propLoading = 
   const [engagementMetrics, setEngagementMetrics] = useState({});
 
   useEffect(() => {
-    console.log('🔍 ReviewStats - propStats:', propStats);
     if (Object.keys(propStats).length > 0) {
       setStats(propStats);
       setLoading(false);
     } else if (productId) {
-      console.log('🔍 ReviewStats - No propStats, calling loadStats for productId:', productId);
       loadStats();
     }
   }, [propStats, productId]);
@@ -31,27 +29,15 @@ const ReviewStats = ({ productId, stats: propStats = {}, loading: propLoading = 
         reviewsAPI.getEngagementMetrics(productId)
       ]);
 
-      console.log('🔍 ReviewStats API responses:', {
-        statsRes,
-        distributionRes,
-        engagementRes
-      });
-      
-      console.log('🔍 Distribution data:', distributionRes.data?.distribution);
-      console.log('🔍 Engagement data:', engagementRes.data?.engagement);
-
       if (statsRes.success && statsRes.data) {
-        console.log('🔍 Stats response structure:', statsRes);
         setStats(statsRes.data.stats || {});
       }
 
       if (distributionRes.success && distributionRes.data) {
-        console.log('🔍 Distribution response structure:', distributionRes);
         setRatingDistribution(distributionRes.data.distribution || {});
       }
 
       if (engagementRes.success && engagementRes.data) {
-        console.log('🔍 Engagement response structure:', engagementRes);
         setEngagementMetrics(engagementRes.data.engagement || {});
       }
 
@@ -107,8 +93,6 @@ const ReviewStats = ({ productId, stats: propStats = {}, loading: propLoading = 
     );
   }
 
-  // Debug: Sempre renderizar componente para testar
-  console.log('🔍 Final render state:', { loading, stats, ratingDistribution, engagementMetrics });
 
   return (
     <div className="review-stats">
@@ -175,7 +159,6 @@ const ReviewStats = ({ productId, stats: propStats = {}, loading: propLoading = 
             const data = (ratingDistribution && ratingDistribution[rating]) || { count: 0, percentage: 0 };
             const percentage = data.percentage || calculatePercentage(data.count, (stats && stats.total_reviews) || 1);
             
-            console.log(`Rating ${rating}:`, { data, percentage, ratingDistribution, stats });
             
             return (
               <div key={rating} className="rating-bar">
@@ -215,8 +198,6 @@ const ReviewStats = ({ productId, stats: propStats = {}, loading: propLoading = 
         </h3>
         
         <div className="engagement-metrics">
-          {console.log('🔍 Engagement metrics state:', engagementMetrics)}
-          {console.log('🔍 Stats state:', stats)}
           <div className="engagement-metric">
             <div className="engagement-metric-label">Avaliações com Imagens</div>
             <div className="engagement-metric-value">

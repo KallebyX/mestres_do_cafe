@@ -79,7 +79,7 @@ WORKDIR /app
 
 # Instalar apenas dependências de produção + Gunicorn
 COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt gunicorn[gevent] && \
+RUN pip install --no-cache-dir -r requirements.txt && \
     pip cache purge
 
 # Copiar código fonte
@@ -113,7 +113,7 @@ HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
     CMD curl -f http://localhost:5001/api/health || exit 1
 
 # Comando de produção otimizado
-CMD ["sh", "-c", "gunicorn --bind 0.0.0.0:${PORT} --workers ${GUNICORN_WORKERS} --threads ${GUNICORN_THREADS} --timeout ${GUNICORN_TIMEOUT} --keepalive ${GUNICORN_KEEPALIVE} --max-requests ${GUNICORN_MAX_REQUESTS} --max-requests-jitter ${GUNICORN_MAX_REQUESTS_JITTER} --worker-class gevent --worker-connections 1000 --access-logfile - --error-logfile - --log-level info --preload src.app:app"]
+CMD ["sh", "-c", "gunicorn --bind 0.0.0.0:${PORT} --workers ${GUNICORN_WORKERS} --threads ${GUNICORN_THREADS} --timeout ${GUNICORN_TIMEOUT} --keepalive ${GUNICORN_KEEPALIVE} --max-requests ${GUNICORN_MAX_REQUESTS} --max-requests-jitter ${GUNICORN_MAX_REQUESTS_JITTER} --access-logfile - --error-logfile - --log-level info --preload src.app:app"]
 
 # =============================================================================
 # Stage 4: Testing (opcional)

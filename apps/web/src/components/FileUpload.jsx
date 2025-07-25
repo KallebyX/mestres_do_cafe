@@ -226,7 +226,7 @@ const FileUpload = ({
     
     // Simular remoção do storage
     if (fileToRemove && fileToRemove.path) {
-      console.log('Arquivo removido:', fileToRemove.path);
+      // Arquivo removido silenciosamente
     }
 
     // Remover da lista

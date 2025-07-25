@@ -364,7 +364,6 @@ const MercadoPagoAdmin = () => {
               <PaymentStatusTracker 
                 paymentId={selectedPayment.id}
                 onStatusChange={(newStatus, oldStatus) => {
-                  console.log(`Payment status changed from ${oldStatus} to ${newStatus}`);
                   loadPayments(); // Recarregar lista
                 }}
               />

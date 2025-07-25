@@ -46,7 +46,7 @@ const RegisterPage = () => {
 
   // Função de validação step 1 otimizada para useCallback
   const validateStep1Callback = React.useCallback(() => {
-    console.log('🔍 Iniciando validação do step 1...');
+    
     console.log('📋 Dados atuais:', {
       name: formData.name,
       email: formData.email,
@@ -113,37 +113,27 @@ const RegisterPage = () => {
       }
     }
 
-    console.log('🔬 Erros encontrados:', newErrors);
     setErrors(newErrors);
     const isValid = Object.keys(newErrors).length === 0;
-    console.log(isValid ? '✅ Validação passou!' : '❌ Validação falhou!');
     return isValid;
   }, [formData, accountType]);
 
   // Effect para detectar tecla Enter no step 1 - Versão otimizada
   useEffect(() => {
     const handleKeyDown = (e) => {
-      console.log('⌨️ Tecla pressionada:', e.key, 'Step atual:', step);
-      
       if (e.key === 'Enter' && step === 1) {
         e.preventDefault();
         e.stopPropagation();
-        console.log('🔑 Enter detectado no step 1! Processando...');
-        
+
         if (validateStep1Callback()) {
-          console.log('✅ Validação passou - Avançando para step 2');
           setStep(2);
-        } else {
-          console.log('❌ Validação falhou - Permanecendo no step 1');
         }
       }
     };
 
     if (step === 1) {
-      console.log('🎯 Ativando listener Enter para step 1');
       document.addEventListener('keydown', handleKeyDown);
       return () => {
-        console.log('🗑️ Removendo listener Enter');
         document.removeEventListener('keydown', handleKeyDown);
       };
     }
@@ -180,7 +170,6 @@ const RegisterPage = () => {
     // 🧪 DEBUG: Aceitar CPFs de teste durante desenvolvimento
     const testCPFs = ['12345678901', '11111111111', '22222222222'];
     if (testCPFs.includes(cpf)) {
-      console.log('🧪 DEBUG: CPF de teste aceito:', cpf);
       return true;
     }
     
@@ -279,7 +268,6 @@ const RegisterPage = () => {
 
   // Função para preencher dados de teste automaticamente
   const fillTestData = () => {
-    console.log('🧪 Iniciando preenchimento automático de teste...');
     
     const randomNames = [
       'Maria Silva Santos',

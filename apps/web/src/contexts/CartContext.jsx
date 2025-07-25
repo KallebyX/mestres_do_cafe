@@ -171,12 +171,10 @@ export const CartProvider = ({ children }) => {
     
     if (user && user.id && isMounted) {
       // 🔒 Usuário autenticado - usar API
-      console.log('🔍 CART CONTEXT - User authenticated, loading from API');
       setRequiresLogin(false);
       loadCart();
     } else if (isMounted) {
       // 🛒 Usuário não logado - usar localStorage
-      console.log('🔍 CART CONTEXT - Guest user, loading from localStorage');
       setRequiresLogin(false); // ✅ MUDANÇA: permitir carrinho para guests
       loadGuestCart();
     }
@@ -206,12 +204,10 @@ export const CartProvider = ({ children }) => {
 
   // 🛒 Função para carregar carrinho de usuários não logados (localStorage)
   const loadGuestCart = async () => {
-    console.log('🔍 CART CONTEXT - loadGuestCart called');
     setIsLoading(true);
     
     try {
       const guestCart = cartUtils.getCart();
-      console.log('🔍 CART CONTEXT - Guest cart from localStorage:', guestCart);
       
       if (guestCart.items && guestCart.items.length > 0) {
         setCartItems(guestCart.items);
@@ -227,14 +223,8 @@ export const CartProvider = ({ children }) => {
   };
 
   const loadCart = async () => {
-    // 🔍 DIAGNÓSTICO CARRINHO - Log de acesso loadCart
-    console.log('🔍 CART CONTEXT - loadCart called');
-    console.log('🔍 CART CONTEXT - User state:', !!user, user?.id);
-    console.log('🔍 CART CONTEXT - User object:', user);
-    
     // ✅ NOVO: Usuário não logado usa localStorage
     if (!user || !user.id) {
-      console.log('🔍 CART CONTEXT - User not authenticated, loading guest cart');
       await loadGuestCart();
       return;
     }
@@ -245,21 +235,14 @@ export const CartProvider = ({ children }) => {
 // 🔄 SINCRONIZAÇÃO: Verificar se há itens no localStorage para sync
     const guestCart = cartUtils.getCart();
     if (guestCart.items && guestCart.items.length > 0) {
-      console.log('🔄 CART SYNC - Found guest cart items, syncing to API:', guestCart.items.length, 'items');
       await cartUtils.syncLocalCartToAPI(user.id, guestCart);
     }
     try {
-      // 🔍 DIAGNÓSTICO CARRINHO - Log de chamada API
-      console.log('🔍 CART CONTEXT - Attempting API call to cartAPI.getCart()');
-      
       // 🔒 BUSCAR carrinho do usuário logado via API Flask
       const response = await cartAPI.getCart();
       
-      console.log('🔍 CART CONTEXT - API response:', response);
-      
       if (!response.success) {
         console.error('❌ Erro ao carregar carrinho:', response.error || response.message);
-        console.log('🔍 CART CONTEXT - API call failed, clearing cart items');
         setCartItems([]);
         return;
       }
@@ -268,23 +251,13 @@ export const CartProvider = ({ children }) => {
       const cartData = response.data || {};
       const cartItems = cartData.data?.items || [];
       
-      console.log('🔍 CART CONTEXT - cartData:', cartData);
-      console.log('🔍 CART CONTEXT - cartData JSON:', JSON.stringify(cartData, null, 2));
-      console.log('🔍 CART CONTEXT - cartItems array:', cartItems);
-      console.log('🔍 CART CONTEXT - cartItems JSON:', JSON.stringify(cartItems, null, 2));
-      console.log('🔍 CART CONTEXT - cartItems length:', cartItems.length);
-      console.log('🔍 CART CONTEXT - cartItems type:', typeof cartItems);
-      console.log('🔍 CART CONTEXT - cartItems is Array:', Array.isArray(cartItems));
-      
       if (!Array.isArray(cartItems) || cartItems.length === 0) {
-        console.log('🔍 CART CONTEXT - No valid items found, setting empty array');
         setCartItems([]);
         return;
       }
 
       // 🔧 Mapear itens para estrutura esperada pelo frontend
       const mappedItems = cartItems.map((item, index) => {
-        console.log(`🔍 CART CONTEXT - Processing item ${index}:`, item);
         const mappedItem = {
           id: item.product_id, // Usar product_id como id principal
           product_id: item.product_id,
@@ -295,11 +268,9 @@ export const CartProvider = ({ children }) => {
           weight: item.product?.weight || null,
           category: item.product?.category || null
         };
-        console.log(`🔍 CART CONTEXT - Mapped item ${index}:`, mappedItem);
         return mappedItem;
       });
 
-      console.log('🔍 CART CONTEXT - Final mappedItems:', mappedItems);
       setCartItems(mappedItems);
       } catch (error) {
       console.error('❌ Erro ao carregar carrinho:', error);
@@ -319,8 +290,6 @@ export const CartProvider = ({ children }) => {
     try {
       if (user && user.id) {
         // 🔒 USUÁRIO LOGADO - Usar API com suporte a preços por peso
-        console.log('🛒 Adicionando ao carrinho via API (usuário:', user.id, '- produto:', product.name, '- ID:', product.id, ')');
-        console.log('🔍 Opções de peso:', options);
         
         const response = await cartAPI.add(
           product.id,
@@ -334,7 +303,6 @@ export const CartProvider = ({ children }) => {
           return { success: false, message: response.message || response.error || 'Erro ao adicionar produto' };
         }
 
-        console.log('✅ Produto adicionado via API:', response.data);
         
         // Track analytics event com peso
         analytics.trackAddToCart(product, quantity, options.weight);
@@ -348,10 +316,7 @@ export const CartProvider = ({ children }) => {
         
       } else {
         // 🛒 USUÁRIO GUEST - Usar localStorage (para compatibilidade, ainda sem peso)
-        console.log('🛒 Adicionando ao carrinho localStorage (guest - produto:', product.name, '- ID:', product.id, ')');
-        
         const updatedCart = cartUtils.addToCart(product, quantity);
-        console.log('✅ Produto adicionado ao localStorage:', updatedCart);
         
         // Track analytics event
         analytics.trackAddToCart(product, quantity, options.weight);
@@ -380,7 +345,6 @@ export const CartProvider = ({ children }) => {
     try {
       if (user && user.id) {
         // 🔒 USUÁRIO LOGADO - Usar API
-        console.log('🗑️ Removendo do carrinho via API (usuário:', user.id, '- produto:', productId, ')');
         
         const response = await cartAPI.remove(productId);
         
@@ -389,7 +353,6 @@ export const CartProvider = ({ children }) => {
           return { success: false, message: response.message || response.error || 'Erro ao remover produto' };
         }
 
-        console.log('✅ Produto removido via API:', response.data);
         
         // Track analytics event - buscar dados do produto antes de recarregar
         const removedProduct = cartItems.find(item => item.id === productId || item.product_id === productId);
@@ -406,7 +369,6 @@ export const CartProvider = ({ children }) => {
         
       } else {
         // 🛒 USUÁRIO GUEST - Usar localStorage
-        console.log('🗑️ Removendo do carrinho localStorage (guest - produto:', productId, ')');
         
         // Track analytics event antes de remover
         const removedProduct = cartItems.find(item => item.id === productId);
@@ -415,7 +377,6 @@ export const CartProvider = ({ children }) => {
         }
         
         const updatedCart = cartUtils.removeFromCart(productId);
-        console.log('✅ Produto removido do localStorage:', updatedCart);
         
         // Recarregar carrinho do localStorage
         await loadGuestCart();
@@ -445,7 +406,6 @@ export const CartProvider = ({ children }) => {
 
       if (user && user.id) {
         // 🔒 USUÁRIO LOGADO - Usar API
-        console.log('📝 Atualizando quantidade via API (usuário:', user.id, '- produto:', productId, '- qtd:', newQuantity, ')');
         
         const response = await cartAPI.update(productId, newQuantity);
         
@@ -454,7 +414,6 @@ export const CartProvider = ({ children }) => {
           return { success: false, message: response.message || response.error || 'Erro ao atualizar quantidade' };
         }
 
-        console.log('✅ Quantidade atualizada via API:', response.data);
         
         // Track analytics event - buscar dados do produto antes de recarregar
         const updatedProduct = cartItems.find(item => item.id === productId || item.product_id === productId);
@@ -478,7 +437,6 @@ export const CartProvider = ({ children }) => {
         
       } else {
         // 🛒 USUÁRIO GUEST - Usar localStorage
-        console.log('📝 Atualizando quantidade localStorage (guest - produto:', productId, '- qtd:', newQuantity, ')');
         
         // Track analytics event antes de atualizar
         const updatedProduct = cartItems.find(item => item.id === productId);
@@ -494,7 +452,6 @@ export const CartProvider = ({ children }) => {
         }
         
         const updatedCart = cartUtils.updateQuantity(productId, newQuantity);
-        console.log('✅ Quantidade atualizada no localStorage:', updatedCart);
         
         // Recarregar carrinho do localStorage
         await loadGuestCart();
@@ -514,7 +471,6 @@ export const CartProvider = ({ children }) => {
     try {
       if (user && user.id) {
         // 🔒 USUÁRIO LOGADO - Usar API
-        console.log('🧹 Limpando carrinho via API (usuário:', user.id, ')');
         
         const response = await cartAPI.clear();
         
@@ -523,7 +479,6 @@ export const CartProvider = ({ children }) => {
           return { success: false, message: response.message || response.error || 'Erro ao limpar carrinho' };
         }
         
-        console.log('✅ Carrinho limpo via API:', response.data);
         
         // Track analytics event antes de limpar estado
         const itemsCount = cartItems.length;
@@ -548,7 +503,6 @@ export const CartProvider = ({ children }) => {
         
       } else {
         // 🛒 USUÁRIO GUEST - Usar localStorage
-        console.log('🧹 Limpando carrinho localStorage (guest)');
         
         // Track analytics event antes de limpar
         const itemsCount = cartItems.length;
@@ -562,7 +516,6 @@ export const CartProvider = ({ children }) => {
         }
         
         cartUtils.clearCart();
-        console.log('✅ Carrinho limpo do localStorage');
         
         // Limpar estado local imediatamente
         setCartItems([]);
@@ -582,20 +535,13 @@ export const CartProvider = ({ children }) => {
   };
 
   const getCartItemsCount = () => {
-    // 🔍 DIAGNÓSTICO CARRINHO - Log de acesso getCartItemsCount
-    console.log('🔍 CART CONTEXT - getCartItemsCount called');
-    console.log('🔍 CART CONTEXT - User state:', !!user, user?.id);
-    console.log('🔍 CART CONTEXT - cartItems length:', cartItems.length);
-    
     if (user && user.id) {
       // 🔒 USUÁRIO LOGADO - Contar itens do estado
       const count = cartItems.reduce((total, item) => total + item.quantity, 0);
-      console.log('🔍 CART CONTEXT - Calculated count (logged user):', count);
       return count;
     } else {
       // 🛒 USUÁRIO GUEST - Contar itens do localStorage ou estado
       const count = cartItems.reduce((total, item) => total + item.quantity, 0);
-      console.log('🔍 CART CONTEXT - Calculated count (guest user):', count);
       return count;
     }
   };

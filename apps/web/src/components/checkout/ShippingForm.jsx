@@ -1,31 +1,32 @@
 import React, { useState, useEffect } from 'react';
 import './ShippingForm.css';
 
-const ShippingForm = ({ onNext, onBack, initialData, loading }) => {
+const ShippingForm = ({ data, onUpdate, onNext, onPrev, onValidateCEP, loading }) => {
   const [formData, setFormData] = useState({
     firstName: '',
     lastName: '',
     email: '',
     phone: '',
     cpf: '',
-    zipCode: '',
-    address: '',
+    cep: '',
+    street: '',
     number: '',
     complement: '',
     neighborhood: '',
     city: '',
     state: '',
-    ...initialData
+    deliveryInstructions: '',
+    ...data
   });
 
   const [errors, setErrors] = useState({});
   const [isLoadingAddress, setIsLoadingAddress] = useState(false);
 
   useEffect(() => {
-    if (initialData) {
-      setFormData(prev => ({ ...prev, ...initialData }));
+    if (data) {
+      setFormData(prev => ({ ...prev, ...data }));
     }
-  }, [initialData]);
+  }, [data]);
 
   const brazilianStates = [
     { code: 'AC', name: 'Acre' },
@@ -66,7 +67,7 @@ const ShippingForm = ({ onNext, onBack, initialData, loading }) => {
       formattedValue = formatPhone(value);
     } else if (name === 'cpf') {
       formattedValue = formatCPF(value);
-    } else if (name === 'zipCode') {
+    } else if (name === 'cep') {
       formattedValue = formatZipCode(value);
     }
 
@@ -102,18 +103,18 @@ const ShippingForm = ({ onNext, onBack, initialData, loading }) => {
     return numbers.replace(/(\d{5})(\d{3})/, '$1-$2');
   };
 
-  const fetchAddressByZipCode = async (zipCode) => {
-    if (zipCode.length !== 9) return;
+  const fetchAddressByZipCode = async (cep) => {
+    if (cep.length !== 9) return;
 
     setIsLoadingAddress(true);
     try {
-      const response = await fetch(`https://viacep.com.br/ws/${zipCode.replace('-', '')}/json/`);
+      const response = await fetch(`https://viacep.com.br/ws/${cep.replace('-', '')}/json/`);
       const data = await response.json();
 
       if (!data.erro) {
         setFormData(prev => ({
           ...prev,
-          address: data.logradouro || '',
+          street: data.logradouro || '',
           neighborhood: data.bairro || '',
           city: data.localidade || '',
           state: data.uf || ''
@@ -126,12 +127,12 @@ const ShippingForm = ({ onNext, onBack, initialData, loading }) => {
     }
   };
 
-  const handleZipCodeChange = (e) => {
+  const handleCepChange = (e) => {
     handleInputChange(e);
-    const zipCode = e.target.value;
+    const cep = e.target.value;
     
-    if (zipCode.length === 9) {
-      fetchAddressByZipCode(zipCode);
+    if (cep.length === 9) {
+      fetchAddressByZipCode(cep);
     }
   };
 
@@ -162,14 +163,14 @@ const ShippingForm = ({ onNext, onBack, initialData, loading }) => {
       newErrors.cpf = 'CPF inválido';
     }
 
-    if (!formData.zipCode.trim()) {
-      newErrors.zipCode = 'CEP é obrigatório';
-    } else if (formData.zipCode.length !== 9) {
-      newErrors.zipCode = 'CEP deve ter 8 dígitos';
+    if (!formData.cep.trim()) {
+      newErrors.cep = 'CEP é obrigatório';
+    } else if (formData.cep.length !== 9) {
+      newErrors.cep = 'CEP deve ter 8 dígitos';
     }
 
-    if (!formData.address.trim()) {
-      newErrors.address = 'Endereço é obrigatório';
+    if (!formData.street.trim()) {
+      newErrors.street = 'Endereço é obrigatório';
     }
 
     if (!formData.number.trim()) {
@@ -221,7 +222,10 @@ const ShippingForm = ({ onNext, onBack, initialData, loading }) => {
     e.preventDefault();
     
     if (validateForm()) {
-      onNext(formData);
+      // Atualizar dados no componente pai
+      onUpdate(formData);
+      // Prosseguir para próxima etapa
+      onNext();
     }
   };
 
@@ -317,34 +321,34 @@ const ShippingForm = ({ onNext, onBack, initialData, loading }) => {
           <h3>Endereço de Entrega</h3>
           
           <div className="form-group">
-            <label htmlFor="zipCode">CEP *</label>
+            <label htmlFor="cep">CEP *</label>
             <input
               type="text"
-              id="zipCode"
-              name="zipCode"
-              value={formData.zipCode}
-              onChange={handleZipCodeChange}
-              className={errors.zipCode ? 'error' : ''}
+              id="cep"
+              name="cep"
+              value={formData.cep}
+              onChange={handleCepChange}
+              className={errors.cep ? 'error' : ''}
               placeholder="00000-000"
               maxLength="9"
             />
             {isLoadingAddress && <span className="loading-text">Buscando endereço...</span>}
-            {errors.zipCode && <span className="error-message">{errors.zipCode}</span>}
+            {errors.cep && <span className="error-message">{errors.cep}</span>}
           </div>
 
           <div className="form-row">
             <div className="form-group flex-2">
-              <label htmlFor="address">Endereço *</label>
+              <label htmlFor="street">Endereço *</label>
               <input
                 type="text"
-                id="address"
-                name="address"
-                value={formData.address}
+                id="street"
+                name="street"
+                value={formData.street}
                 onChange={handleInputChange}
-                className={errors.address ? 'error' : ''}
+                className={errors.street ? 'error' : ''}
                 placeholder="Rua, Avenida, etc."
               />
-              {errors.address && <span className="error-message">{errors.address}</span>}
+              {errors.street && <span className="error-message">{errors.street}</span>}
             </div>
 
             <div className="form-group">
@@ -422,13 +426,25 @@ const ShippingForm = ({ onNext, onBack, initialData, loading }) => {
               {errors.state && <span className="error-message">{errors.state}</span>}
             </div>
           </div>
+
+          <div className="form-group">
+            <label htmlFor="deliveryInstructions">Instruções de Entrega</label>
+            <textarea
+              id="deliveryInstructions"
+              name="deliveryInstructions"
+              value={formData.deliveryInstructions}
+              onChange={handleInputChange}
+              placeholder="Instruções especiais para entrega (opcional)"
+              rows="3"
+            />
+          </div>
         </div>
 
         <div className="form-actions">
-          <button 
-            type="button" 
+          <button
+            type="button"
             className="btn btn-secondary"
-            onClick={onBack}
+            onClick={onPrev}
           >
             Voltar
           </button>

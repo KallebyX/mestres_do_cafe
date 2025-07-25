@@ -67,7 +67,6 @@ const ReviewSystem = ({
       }
 
       if (statsRes.success) {
-        console.log('🔍 ReviewSystem - statsRes:', statsRes);
         setStats(statsRes.data?.stats || statsRes.stats || statsRes.data || {});
       }
 

@@ -33,7 +33,7 @@ const MercadoPagoCheckout = ({
       const script = document.createElement('script');
       script.src = 'https://sdk.mercadopago.com/js/v2';
       script.onload = () => {
-        console.log('Mercado Pago SDK loaded');
+        // Mercado Pago SDK loaded
       };
       document.head.appendChild(script);
     }

@@ -258,6 +258,11 @@ export const cartAPI = {
     return cartAPI.addItem(productId, quantity, productPriceId, weight);
   },
 
+  // Método addToCart usado pelo CartContext
+  addToCart: async (productId, quantity = 1, productPriceId = null, weight = null) => {
+    return cartAPI.addItem(productId, quantity, productPriceId, weight);
+  },
+
   updateItem: async (productId, quantity) => {
     try {
       const response = await api.put(`/api/cart/${productId}`, { quantity });
@@ -658,9 +663,34 @@ export const notificationAPI = {
       const response = await api.get('/notifications');
       return { success: true, data: response.data };
     } catch (error) {
-      return { 
-        success: false, 
-        error: error.response?.data?.error || 'Erro ao buscar notificações' 
+      return {
+        success: false,
+        error: error.response?.data?.error || 'Erro ao buscar notificações'
+      };
+    }
+  },
+
+  // Método específico para getNotifications (usado pelo NotificationContext)
+  getNotifications: async (userId) => {
+    try {
+      const response = await api.get('/notifications', userId ? { params: { user_id: userId } } : {});
+      return { success: true, data: response.data };
+    } catch (error) {
+      return {
+        success: false,
+        error: error.response?.data?.error || 'Erro ao buscar notificações'
+      };
+    }
+  },
+
+  createNotification: async (notificationData) => {
+    try {
+      const response = await api.post('/notifications', notificationData);
+      return { success: true, data: response.data };
+    } catch (error) {
+      return {
+        success: false,
+        error: error.response?.data?.error || 'Erro ao criar notificação'
       };
     }
   },
@@ -670,9 +700,9 @@ export const notificationAPI = {
       const response = await api.put(`/notifications/${id}/read`);
       return { success: true, data: response.data };
     } catch (error) {
-      return { 
-        success: false, 
-        error: error.response?.data?.error || 'Erro ao marcar notificação como lida' 
+      return {
+        success: false,
+        error: error.response?.data?.error || 'Erro ao marcar notificação como lida'
       };
     }
   }

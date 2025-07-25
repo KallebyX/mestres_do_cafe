@@ -40,7 +40,6 @@ export const SupabaseAuthProvider = ({ children }) => {
     // Verificar se há um token salvo localmente
     const savedToken = localStorage.getItem('auth_token');
     if (savedToken) {
-      console.log('🔍 Found saved token:', savedToken);
       // Poderemos verificar a validade do token aqui no futuro
     }
     
@@ -153,7 +152,6 @@ export const SupabaseAuthProvider = ({ children }) => {
           updated_at: new Date().toISOString()
         };
         
-        console.log('🔍 Created Profile:', tempProfile);
         
         // Simular um usuário autenticado
         const tempUser = {

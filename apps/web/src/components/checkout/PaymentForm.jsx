@@ -30,7 +30,6 @@ const PaymentForm = ({ onNext, onBack, initialData, loading, orderTotal, orderDa
         const response = await mercadoPagoAPI.getTransparentPaymentMethods();
         if (response.success) {
           setPaymentMethods(response.payment_methods || []);
-          console.log('✅ Métodos de pagamento carregados:', response.payment_methods);
         }
       } catch (error) {
         console.error('❌ Erro ao carregar métodos de pagamento:', error);
@@ -186,7 +185,6 @@ const PaymentForm = ({ onNext, onBack, initialData, loading, orderTotal, orderDa
     setErrors({});
 
     try {
-      console.log('🎯 Iniciando processamento de pagamento:', paymentMethod);
 
       // Preparar dados do pedido
       const orderPaymentData = {
@@ -207,7 +205,6 @@ const PaymentForm = ({ onNext, onBack, initialData, loading, orderTotal, orderDa
 
       switch (paymentMethod) {
         case 'pix':
-          console.log('💰 Processando pagamento PIX...');
           result = await mercadoPagoAPI.processPayment('pix', {
             ...payerData,
             pixData,
@@ -216,7 +213,6 @@ const PaymentForm = ({ onNext, onBack, initialData, loading, orderTotal, orderDa
 
         case 'credit_card':
         case 'debit_card':
-          console.log('💳 Processando pagamento com cartão...');
           result = await mercadoPagoAPI.processPayment(paymentMethod, {
             ...payerData,
             cardData,
@@ -224,7 +220,6 @@ const PaymentForm = ({ onNext, onBack, initialData, loading, orderTotal, orderDa
           break;
 
         case 'boleto':
-          console.log('📄 Processando boleto bancário...');
           result = await mercadoPagoAPI.processPayment('boleto', {
             ...payerData,
           }, orderPaymentData);
@@ -235,7 +230,6 @@ const PaymentForm = ({ onNext, onBack, initialData, loading, orderTotal, orderDa
       }
 
       if (result?.success) {
-        console.log('✅ Pagamento processado com sucesso:', result);
         setPaymentResult(result);
         
         // Passar resultado para próxima etapa
