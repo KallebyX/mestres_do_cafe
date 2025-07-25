@@ -4,7 +4,6 @@ import {
   Plus, Trash2, Edit, Search, Grid, Map
 } from 'lucide-react';
 import { useNotifications } from '../contexts/NotificationContext';
-import { supabase } from "@/lib/api"
 
 const ProductLocationModal = ({ 
   isOpen, 
@@ -41,19 +40,20 @@ const ProductLocationModal = ({
 
   const loadWarehouses = async () => {
     try {
-      // Buscar depósitos reais do Supabase
-      const { data, error } = await supabase
-        .from('warehouses')
-        .select('*')
-        .eq('is_active', true)
-        .order('name');
-
-      if (error) {
-        console.error('Erro ao buscar depósitos:', error);
-        setWarehouses([]);
-      } else {
-        setWarehouses(data || []);
+      // Dados simulados de depósitos
+      const data = [
+        {
+          id: 'wh-1',
+          name: 'Depósito Principal',
+          code: 'DP-001'
+        },
+        {
+          id: 'wh-2',
+          name: 'Centro de Distribuição',
+          code: 'CD-001'
         }
+      ];
+      setWarehouses(data);
     } catch (error) {
       console.error('❌ Erro ao carregar depósitos:', error);
       setWarehouses([]);
@@ -62,35 +62,24 @@ const ProductLocationModal = ({
 
   const loadProductLocations = async () => {
     try {
-      // Buscar localizações reais do produto no Supabase
-      const { data, error } = await supabase
-        .from('product_locations')
-        .select(`
-          *,
-          warehouse:warehouses(name)
-        `)
-        .eq('product_id', product.id)
-        .order('position');
-
-      if (error) {
-        console.error('Erro ao buscar localizações:', error);
-        setLocations([]);
-      } else {
-        const mappedLocations = data?.map(location => ({
-          id: location.id,
-          warehouse_id: location.warehouse_id,
-          warehouse_name: location.warehouse?.name || 'Depósito não encontrado',
-          zone: location.zone,
-          aisle: location.aisle,
-          shelf: location.shelf,
-          position: location.position,
-          quantity: location.quantity,
-          max_capacity: location.max_capacity,
-          last_movement: location.updated_at || location.created_at
-        })) || [];
-
-        setLocations(mappedLocations);
-        }
+      // Dados simulados de localização do produto
+      if (product) {
+        const data = [
+          {
+            id: 'loc-1',
+            warehouse_id: 'wh-1',
+            warehouse_name: 'Depósito Principal',
+            zone: 'A',
+            aisle: '1',
+            shelf: '01',
+            position: 'A1-01',
+            quantity: 25,
+            max_capacity: 100,
+            last_movement: new Date().toISOString()
+          }
+        ];
+        setLocations(data);
+      }
     } catch (error) {
       console.error('❌ Erro ao carregar localizações:', error);
       setLocations([]);

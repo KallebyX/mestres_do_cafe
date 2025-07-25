@@ -1,5 +1,5 @@
 import { createContext, useContext, useEffect, useState } from 'react';
-import { cartAPI } from "../lib/api.js";
+import { cartAPI } from "../services/api.js";
 import analytics from '../services/analytics';
 import { useAuth } from './AuthContext';
 
@@ -309,7 +309,7 @@ export const CartProvider = ({ children }) => {
     }
   };
 
-  const addToCart = async (product, quantity = 1) => {
+  const addToCart = async (product, quantity = 1, options = {}) => {
     // ✅ VALIDAÇÃO RIGOROSA: Verificar se temos produto válido
     if (!product || !product.id) {
       console.error('❌ Produto inválido ou sem ID:', product);
@@ -318,10 +318,16 @@ export const CartProvider = ({ children }) => {
 
     try {
       if (user && user.id) {
-        // 🔒 USUÁRIO LOGADO - Usar API
+        // 🔒 USUÁRIO LOGADO - Usar API com suporte a preços por peso
         console.log('🛒 Adicionando ao carrinho via API (usuário:', user.id, '- produto:', product.name, '- ID:', product.id, ')');
+        console.log('🔍 Opções de peso:', options);
         
-        const response = await cartAPI.add(product.id, quantity);
+        const response = await cartAPI.add(
+          product.id,
+          quantity,
+          options.productPriceId,
+          options.weight
+        );
         
         if (!response.success) {
           console.error('❌ Erro ao adicionar ao carrinho via API:', response.error || response.message);
@@ -330,8 +336,8 @@ export const CartProvider = ({ children }) => {
 
         console.log('✅ Produto adicionado via API:', response.data);
         
-        // Track analytics event
-        analytics.trackAddToCart(product, quantity);
+        // Track analytics event com peso
+        analytics.trackAddToCart(product, quantity, options.weight);
         
         // Recarregar carrinho da API
         await loadCart();
@@ -341,14 +347,14 @@ export const CartProvider = ({ children }) => {
         };
         
       } else {
-        // 🛒 USUÁRIO GUEST - Usar localStorage
+        // 🛒 USUÁRIO GUEST - Usar localStorage (para compatibilidade, ainda sem peso)
         console.log('🛒 Adicionando ao carrinho localStorage (guest - produto:', product.name, '- ID:', product.id, ')');
         
         const updatedCart = cartUtils.addToCart(product, quantity);
         console.log('✅ Produto adicionado ao localStorage:', updatedCart);
         
         // Track analytics event
-        analytics.trackAddToCart(product, quantity);
+        analytics.trackAddToCart(product, quantity, options.weight);
         
         // Recarregar carrinho do localStorage
         await loadGuestCart();

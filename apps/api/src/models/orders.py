@@ -225,6 +225,12 @@ class CartItem(db.Model):
     variant_id = Column(
         UUID(as_uuid = True), ForeignKey("product_variants.id", ondelete="SET NULL")
     )
+    # 🔥 CORREÇÃO: Adicionar suporte a preços por peso
+    product_price_id = Column(
+        UUID(as_uuid = True), ForeignKey("product_prices.id", ondelete="SET NULL")
+    )
+    weight = Column(String(50))  # "250g", "500g", "1kg" - backup do peso
+    unit_price = Column(DECIMAL(10, 2))  # Preço unitário no momento da adição
     quantity = Column(Integer, nullable = False)
     added_at = Column(DateTime, default = func.now())
     created_at = Column(DateTime, default = func.now())
@@ -235,6 +241,7 @@ class CartItem(db.Model):
     user = relationship("User", back_populates="cart_items")
     product = relationship("Product", back_populates="cart_items")
     variant = relationship("ProductVariant", back_populates="cart_items")
+    product_price = relationship("ProductPrice")
 
     def __repr__(self):
         return f"<CartItem(id={self.id}, cart_id={self.cart_id}, product_id={self.product_id}, quantity={self.quantity})>"
@@ -247,6 +254,10 @@ class CartItem(db.Model):
             "session_id": self.session_id,
             "product_id": str(self.product_id),
             "variant_id": str(self.variant_id) if self.variant_id else None,
+            # 🔥 CORREÇÃO: Novos campos para preços por peso
+            "product_price_id": str(self.product_price_id) if self.product_price_id else None,
+            "weight": self.weight,
+            "unit_price": float(self.unit_price) if self.unit_price else None,
             "quantity": self.quantity,
             "added_at": self.added_at.isoformat() if self.added_at else None,
             "created_at": self.created_at.isoformat(),

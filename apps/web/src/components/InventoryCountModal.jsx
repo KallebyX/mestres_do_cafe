@@ -5,7 +5,6 @@ import {
   Calendar, Package, BarChart3, Target, Clock, Users
 } from 'lucide-react';
 import { useNotifications } from '../contexts/NotificationContext';
-import { supabase } from "@/lib/api"
 
 const InventoryCountModal = ({ 
   isOpen, 
@@ -42,40 +41,30 @@ const InventoryCountModal = ({
   const loadInventoryData = async () => {
     setLoading(true);
     try {
-      // Carregar inventários reais do Supabase
-      const { data, error } = await supabase
-        .from('inventory_counts')
-        .select(`
-          *,
-          warehouse:warehouses(name),
-          responsible:users(name)
-        `)
-        .order('scheduled_date', { ascending: false });
-
-      if (error) {
-        console.error('Erro ao buscar inventários:', error);
-        setInventarios([]);
-      } else {
-        setInventarios(data || []);
+      // Dados simulados de inventários
+      const inventoryData = [
+        {
+          id: 'inv-1',
+          name: 'Inventário Mensal - Janeiro 2025',
+          type: 'ciclico',
+          status: 'programado',
+          scheduled_date: '2025-01-30',
+          warehouse: 'Depósito Principal',
+          category_filter: 'Todas as categorias',
+          responsible_user: 'João Silva',
+          total_items: 15,
+          counted_items: 0,
+          progress: 0,
+          discrepancies: 0,
+          notes: 'Inventário mensal programado',
+          created_at: new Date().toISOString()
         }
+      ];
+      setInventarios(inventoryData);
 
-      // Carregar contagens reais
-      const { data: countsData, error: countsError } = await supabase
-        .from('inventory_count_items')
-        .select(`
-          *,
-          product:products(name, sku),
-          inventory:inventory_counts(name)
-        `)
-        .order('created_at', { ascending: false })
-        .limit(50);
-
-      if (countsError) {
-        console.error('Erro ao buscar contagens:', countsError);
-        setContagens([]);
-      } else {
-        setContagens(countsData || []);
-        }
+      // Dados simulados de contagens
+      const countsData = [];
+      setContagens(countsData);
 
     } catch (error) {
       console.error('❌ Erro ao carregar dados de inventário:', error);

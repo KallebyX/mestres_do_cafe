@@ -5,7 +5,7 @@ from flask_jwt_extended import jwt_required, get_jwt_identity
 
 from database import db
 from models.orders import Cart, CartItem
-from models.products import Product
+from models.products import Product, ProductPrice
 from models.auth import User
 
 cart_bp = Blueprint("cart", __name__, url_prefix="/api/cart")
@@ -111,10 +111,11 @@ def get_cart_items():
         if not cart:
             return jsonify({"items": [], "total": 0, "items_count": 0})
 
-        # Buscar itens do carrinho com detalhes do produto
+        # Buscar itens do carrinho com detalhes do produto e preços específicos
         cart_items = (
-            db.session.query(CartItem, Product)
+            db.session.query(CartItem, Product, ProductPrice)
             .join(Product)
+            .outerjoin(ProductPrice, CartItem.product_price_id == ProductPrice.id)
             .filter(CartItem.cart_id == cart.id)
             .all()
         )
@@ -122,8 +123,16 @@ def get_cart_items():
         items = []
         total = 0
 
-        for cart_item, product in cart_items:
-            item_total = float(product.price) * cart_item.quantity
+        for cart_item, product, product_price in cart_items:
+            # Usar preço específico se disponível, senão usar preço padrão
+            if cart_item.unit_price:
+                unit_price = float(cart_item.unit_price)
+            elif product_price:
+                unit_price = float(product_price.price)
+            else:
+                unit_price = float(product.price)
+            
+            item_total = unit_price * cart_item.quantity
             total += item_total
 
             # Buscar imagem principal do produto
@@ -133,6 +142,9 @@ def get_cart_items():
                 {
                     "id": cart_item.id,
                     "product_id": cart_item.product_id,
+                    "product_price_id": cart_item.product_price_id,
+                    "weight": cart_item.weight,
+                    "unit_price": unit_price,
                     "quantity": cart_item.quantity,
                     "added_at": (
                         cart_item.added_at.isoformat() if cart_item.added_at else None
@@ -172,12 +184,21 @@ def add_to_cart():
 
         data = request.get_json()
         product_id = data.get("product_id")
+        product_price_id = data.get("product_price_id")  # 🔥 NOVO: ID do preço específico
+        weight = data.get("weight")  # 🔥 NOVO: Peso como backup
         quantity = data.get("quantity", 1)
 
         if not product_id:
             return jsonify({
                 "success": False,
                 "message": "product_id é obrigatório"
+            }), 400
+
+        # 🔥 CORREÇÃO: Para produtos com preços por peso, precisa especificar o preço
+        if not product_price_id and not weight:
+            return jsonify({
+                "success": False,
+                "message": "product_price_id ou weight é obrigatório para produtos com preços variados"
             }), 400
 
         # Validar quantidade
@@ -194,6 +215,35 @@ def add_to_cart():
                 "success": False,
                 "message": "Produto não encontrado ou inativo"
             }), 404
+
+        # 🔥 CORREÇÃO: Buscar preço específico se fornecido
+        product_price = None
+        unit_price = float(product.price)  # Preço padrão
+        weight_selected = weight
+        
+        if product_price_id:
+            product_price = ProductPrice.query.filter_by(
+                id=product_price_id,
+                product_id=product_id,
+                is_active=True
+            ).first()
+            if not product_price:
+                return jsonify({
+                    "success": False,
+                    "message": "Preço específico não encontrado"
+                }), 404
+            unit_price = float(product_price.price)
+            weight_selected = product_price.weight
+        elif weight:
+            # Buscar por peso se não tiver product_price_id
+            product_price = ProductPrice.query.filter_by(
+                product_id=product_id,
+                weight=weight,
+                is_active=True
+            ).first()
+            if product_price:
+                unit_price = float(product_price.price)
+                weight_selected = product_price.weight
 
         # 🔒 CORREÇÃO DE RACE CONDITION - Usar transação atômica para carrinho
         import logging
@@ -237,10 +287,22 @@ def add_to_cart():
                 db.session.add(cart)
                 db.session.flush()
             
-            # Verificar se já existe no carrinho (com lock se necessário)
-            existing_item = CartItem.query.filter_by(
-                cart_id = cart.id, product_id = product_id
-            ).first()
+            # 🔥 CORREÇÃO CRÍTICA: Verificar se já existe considerando peso/preço específico
+            existing_item = None
+            if product_price_id:
+                # Buscar por product_price_id específico
+                existing_item = CartItem.query.filter_by(
+                    cart_id=cart.id,
+                    product_id=product_id,
+                    product_price_id=product_price_id
+                ).first()
+            else:
+                # Buscar por peso se não tiver product_price_id
+                existing_item = CartItem.query.filter_by(
+                    cart_id=cart.id,
+                    product_id=product_id,
+                    weight=weight_selected
+                ).first()
             
             if existing_item:
                 # Item já existe - verificar quantidade total dentro da transação
@@ -268,10 +330,13 @@ def add_to_cart():
                 race_logger.info(f"➕ CART_NEW_ITEM_ATOMIC [Thread:{thread_id}] Product:{product_locked.name} Quantity:{quantity}")
                 
                 cart_item = CartItem(
-                    cart_id = cart.id,
-                    product_id = product_id,
-                    quantity = quantity,
-                    added_at = datetime.utcnow()
+                    cart_id=cart.id,
+                    product_id=product_id,
+                    product_price_id=product_price_id,
+                    weight=weight_selected,
+                    unit_price=unit_price,
+                    quantity=quantity,
+                    added_at=datetime.utcnow()
                 )
                 db.session.add(cart_item)
                 

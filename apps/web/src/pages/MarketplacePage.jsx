@@ -125,19 +125,41 @@ const MarketplacePage = () => {
 
   const handleAddToCart = async (product) => {
     try {
-      await addToCart(product, 1);
+      // Para o marketplace, usar o primeiro peso disponível como padrão (menor peso)
+      const defaultProductPrice = product.product_prices?.[0];
       
-      // Track add to cart event
-      analytics.trackAddToCart({
-        product_id: product.id,
-        product_name: product.name,
-        price: product.price,
-        category: product.category,
-        quantity: 1
+      if (!defaultProductPrice) {
+        alert('Produto sem opções de peso disponíveis');
+        return;
+      }
+      
+      console.log('🛒 MARKETPLACE - Adicionando produto:', product.name);
+      console.log('🛒 MARKETPLACE - Peso padrão:', defaultProductPrice.weight);
+      console.log('🛒 MARKETPLACE - Preço:', defaultProductPrice.price);
+      
+      const result = await addToCart(product, 1, {
+        productPriceId: defaultProductPrice.id,
+        weight: defaultProductPrice.weight
       });
       
-      alert(`${product.name} adicionado ao carrinho!`);
+      if (result.success) {
+        // Track add to cart event
+        analytics.trackAddToCart({
+          product_id: product.id,
+          product_name: product.name,
+          price: defaultProductPrice.price,
+          category: product.category,
+          quantity: 1,
+          weight: defaultProductPrice.weight,
+          product_price_id: defaultProductPrice.id
+        });
+        
+        alert(`${product.name} (${defaultProductPrice.weight}) adicionado ao carrinho!`);
+      } else {
+        alert(result.message || 'Erro ao adicionar produto ao carrinho');
+      }
     } catch (error) {
+      console.error('❌ Erro ao adicionar ao carrinho:', error);
       alert('Erro ao adicionar produto ao carrinho');
     }
   };
@@ -517,8 +539,12 @@ const MarketplacePage = () => {
                     <div className="flex items-center justify-between mb-4">
                       <div>
                         <div className="flex items-center gap-2">
+                          {/* Mostrar preço do menor peso disponível */}
                           <span className="text-2xl font-bold text-slate-900">
-                            {formatPrice(product.price)}
+                            {product.product_prices && product.product_prices.length > 0
+                              ? formatPrice(product.product_prices[0].price)
+                              : formatPrice(product.price)
+                            }
                           </span>
                           {product.original_price && product.original_price > product.price && (
                             <span className="text-sm text-slate-500 line-through">
@@ -526,6 +552,12 @@ const MarketplacePage = () => {
                             </span>
                           )}
                         </div>
+                        {/* Mostrar peso padrão */}
+                        {product.product_prices && product.product_prices.length > 0 && (
+                          <div className="text-xs text-slate-500 mt-1">
+                            A partir de {product.product_prices[0].weight}
+                          </div>
+                        )}
                       </div>
                     </div>
 

@@ -4,7 +4,6 @@ import {
   Camera, Download, Upload, Plus, Search
 } from 'lucide-react';
 import { useNotifications } from '../contexts/NotificationContext';
-import { supabase } from "@/lib/api"
 
 const BarcodeScanner = ({ 
   isOpen, 
@@ -35,20 +34,24 @@ const BarcodeScanner = ({
 
   const loadProducts = async () => {
     try {
-      // Buscar produtos com código de barras do Supabase
-      const { data, error } = await supabase
-        .from('products')
-        .select('id, name, sku, barcode, price')
-        .not('barcode', 'is', null)
-        .eq('is_active', true)
-        .order('name');
-
-      if (error) {
-        console.error('Erro ao buscar produtos:', error);
-        setProducts([]);
-      } else {
-        setProducts(data || []);
+      // Dados simulados de produtos com código de barras
+      const data = [
+        {
+          id: 1,
+          name: 'Café Santos Premium',
+          sku: 'CAF-001',
+          barcode: '7891234567890',
+          price: 25.50
+        },
+        {
+          id: 2,
+          name: 'Café Bourbon Amarelo',
+          sku: 'CAF-002',
+          barcode: '7891234567891',
+          price: 32.00
         }
+      ];
+      setProducts(data);
     } catch (error) {
       console.error('❌ Erro ao carregar produtos:', error);
       setProducts([]);

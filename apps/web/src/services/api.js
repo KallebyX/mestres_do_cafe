@@ -221,26 +221,40 @@ export const cartAPI = {
       const response = await api.get('/cart');
       return { success: true, data: response.data };
     } catch (error) {
-      return { 
-        success: false, 
-        error: error.response?.data?.error || 'Erro ao buscar carrinho' 
+      return {
+        success: false,
+        error: error.response?.data?.error || 'Erro ao buscar carrinho'
       };
     }
   },
 
-  addItem: async (productId, quantity = 1) => {
+  // ✅ NOVO: Adicionar item com suporte a product_price_id e weight
+  addItem: async (productId, quantity = 1, productPriceId = null, weight = null) => {
     try {
-      const response = await api.post('/cart/items', { 
-        product_id: productId, 
-        quantity 
-      });
+      const payload = {
+        product_id: productId,
+        quantity
+      };
+      
+      // Adicionar campos de peso se fornecidos
+      if (productPriceId) payload.product_price_id = productPriceId;
+      if (weight) payload.weight = weight;
+      
+      console.log('🛒 cartAPI.addItem payload:', payload);
+      
+      const response = await api.post('/cart/items', payload);
       return { success: true, data: response.data };
     } catch (error) {
-      return { 
-        success: false, 
-        error: error.response?.data?.error || 'Erro ao adicionar item ao carrinho' 
+      return {
+        success: false,
+        error: error.response?.data?.error || error.response?.data?.message || 'Erro ao adicionar item ao carrinho'
       };
     }
+  },
+
+  // Alias para compatibilidade
+  add: async (productId, quantity = 1, productPriceId = null, weight = null) => {
+    return cartAPI.addItem(productId, quantity, productPriceId, weight);
   },
 
   updateItem: async (productId, quantity) => {
@@ -248,11 +262,16 @@ export const cartAPI = {
       const response = await api.put(`/cart/items/${productId}`, { quantity });
       return { success: true, data: response.data };
     } catch (error) {
-      return { 
-        success: false, 
-        error: error.response?.data?.error || 'Erro ao atualizar item do carrinho' 
+      return {
+        success: false,
+        error: error.response?.data?.error || 'Erro ao atualizar item do carrinho'
       };
     }
+  },
+
+  // Alias para compatibilidade
+  update: async (productId, quantity) => {
+    return cartAPI.updateItem(productId, quantity);
   },
 
   removeItem: async (productId) => {
@@ -260,11 +279,16 @@ export const cartAPI = {
       const response = await api.delete(`/cart/items/${productId}`);
       return { success: true, data: response.data };
     } catch (error) {
-      return { 
-        success: false, 
-        error: error.response?.data?.error || 'Erro ao remover item do carrinho' 
+      return {
+        success: false,
+        error: error.response?.data?.error || 'Erro ao remover item do carrinho'
       };
     }
+  },
+
+  // Alias para compatibilidade
+  remove: async (productId) => {
+    return cartAPI.removeItem(productId);
   },
 
   clearCart: async () => {
@@ -272,11 +296,16 @@ export const cartAPI = {
       const response = await api.delete('/cart');
       return { success: true, data: response.data };
     } catch (error) {
-      return { 
-        success: false, 
-        error: error.response?.data?.error || 'Erro ao limpar carrinho' 
+      return {
+        success: false,
+        error: error.response?.data?.error || 'Erro ao limpar carrinho'
       };
     }
+  },
+
+  // Alias para compatibilidade
+  clear: async () => {
+    return cartAPI.clearCart();
   }
 };
 

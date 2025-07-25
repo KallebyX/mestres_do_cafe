@@ -103,20 +103,44 @@ const ProductDetailPage = () => {
 
   const handleAddToCart = async () => {
     try {
-      await addToCart(product, quantity);
+      // Encontrar o product_price_id correspondente ao peso selecionado
+      const selectedProductPrice = product.product_prices?.find(pp => pp.weight === selectedWeight);
       
-      // Track add to cart event
-      analytics.trackAddToCart({
-        product_id: product.id,
-        product_name: product.name,
-        price: currentPrice,
-        category: product.category,
-        quantity: quantity,
+      if (!selectedProductPrice) {
+        alert('Peso selecionado não encontrado. Tente novamente.');
+        return;
+      }
+      
+      console.log('🔍 Adicionando ao carrinho:');
+      console.log('  - Produto:', product.name);
+      console.log('  - Peso:', selectedWeight);
+      console.log('  - ProductPrice ID:', selectedProductPrice.id);
+      console.log('  - Preço unitário:', selectedProductPrice.price);
+      console.log('  - Quantidade:', quantity);
+      
+      const result = await addToCart(product, quantity, {
+        productPriceId: selectedProductPrice.id,
         weight: selectedWeight
       });
       
-      alert(`${quantity}x ${product.name} adicionado ao carrinho!`);
+      if (result.success) {
+        // Track add to cart event
+        analytics.trackAddToCart({
+          product_id: product.id,
+          product_name: product.name,
+          price: currentPrice,
+          category: product.category,
+          quantity: quantity,
+          weight: selectedWeight,
+          product_price_id: selectedProductPrice.id
+        });
+        
+        alert(`${quantity}x ${product.name} (${selectedWeight}) adicionado ao carrinho!`);
+      } else {
+        alert(result.message || 'Erro ao adicionar produto ao carrinho');
+      }
     } catch (error) {
+      console.error('❌ Erro ao adicionar ao carrinho:', error);
       alert('Erro ao adicionar produto ao carrinho');
     }
   };
@@ -128,29 +152,33 @@ const ProductDetailPage = () => {
     }
   };
 
-  // Opções de peso dinâmicas do produto ou fallback padrão
-  const weightOptions = product?.available_weights ? 
-    product.available_weights.map(weight => ({
-      value: weight.size,
-      label: weight.size,
-      priceMultiplier: weight.price_multiplier || 1
+  // ✅ NOVO: Usar dados reais de product_prices vindos da API
+  const weightOptions = product?.product_prices?.length > 0 ?
+    product.product_prices.map(pp => ({
+      value: pp.weight,
+      label: pp.weight,
+      price: parseFloat(pp.price || 0),
+      stock: pp.stock_quantity || 0,
+      id: pp.id
     })) :
+    // Fallback caso não tenha product_prices
     [
-      { value: '250g', label: '250g', priceMultiplier: 1 },
-      { value: '500g', label: '500g', priceMultiplier: 1.8 },
-      { value: '1kg', label: '1kg', priceMultiplier: 3.5 }
+      { value: '250g', label: '250g', price: parseFloat(product?.price || 0), stock: product?.stock_quantity || 0, id: null },
+      { value: '500g', label: '500g', price: parseFloat(product?.price || 0) * 1.8, stock: product?.stock_quantity || 0, id: null },
+      { value: '1kg', label: '1kg', price: parseFloat(product?.price || 0) * 3.5, stock: product?.stock_quantity || 0, id: null }
     ];
 
   const currentWeightOption = weightOptions.find(w => w.value === selectedWeight) || weightOptions[0];
+  
   console.log('🔍 DEBUG - product:', product);
-  console.log('🔍 DEBUG - product.price:', product?.price);
+  console.log('🔍 DEBUG - product.product_prices:', product?.product_prices);
+  console.log('🔍 DEBUG - weightOptions:', weightOptions);
+  console.log('🔍 DEBUG - selectedWeight:', selectedWeight);
   console.log('🔍 DEBUG - currentWeightOption:', currentWeightOption);
-  console.log('🔍 DEBUG - parseFloat(product.price):', product?.price ? parseFloat(product.price) : 'undefined');
   
-  const currentPrice = product && currentWeightOption && product.price ?
-    (parseFloat(product.price) || 0) * (currentWeightOption.priceMultiplier || 1) : 0;
+  const currentPrice = currentWeightOption?.price || 0;
   
-  console.log('🔍 DEBUG - currentPrice calculado:', currentPrice);
+  console.log('🔍 DEBUG - currentPrice final:', currentPrice);
 
   const productImages = product?.images || [product?.image || '/default-coffee.jpg'];
 
@@ -336,33 +364,38 @@ const ProductDetailPage = () => {
                 <span className="text-3xl font-bold text-slate-900">
                   R$ {currentPrice.toFixed(2)}
                 </span>
-                {currentWeightOption && currentWeightOption.priceMultiplier !== 1 && (
-                  <span className="text-lg text-slate-500 line-through">
-                    R$ {((parseFloat(product.price) || 0) * (currentWeightOption.priceMultiplier || 1) * 1.2).toFixed(2)}
-                  </span>
-                )}
+                {/* Remover lógica de preço riscado por agora */}
               </div>
 
               {/* Weight Options */}
               <div className="mb-6">
                 <label className="block text-sm font-medium text-slate-700 mb-3">
-                  Peso
+                  Peso {selectedWeight && `(${selectedWeight})`}
                 </label>
                 <div className="grid grid-cols-3 gap-3">
                   {weightOptions.map((option) => (
                     <button
                       key={option.value}
                       onClick={() => setSelectedWeight(option.value)}
+                      disabled={option.stock <= 0}
                       className={`p-3 rounded-xl border-2 transition-all duration-300 ${
                         selectedWeight === option.value
                           ? 'border-amber-600 bg-amber-50 text-amber-900'
+                          : option.stock <= 0
+                          ? 'border-gray-200 bg-gray-50 text-gray-400 cursor-not-allowed'
                           : 'border-slate-200 hover:border-amber-300'
                       }`}
                     >
                       <div className="text-sm font-medium">{option.label}</div>
                       <div className="text-xs text-slate-600">
-                        R$ {((parseFloat(product.price) || 0) * (option.priceMultiplier || 1)).toFixed(2)}
+                        R$ {option.price.toFixed(2)}
                       </div>
+                      {option.stock <= 0 && (
+                        <div className="text-xs text-red-500 mt-1">Esgotado</div>
+                      )}
+                      {option.stock > 0 && option.stock <= 5 && (
+                        <div className="text-xs text-orange-500 mt-1">Restam {option.stock}</div>
+                      )}
                     </button>
                   ))}
                 </div>

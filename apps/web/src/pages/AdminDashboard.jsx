@@ -776,26 +776,57 @@ const AdminDashboard = () => {
     </div>
   );
 
+  // Função para popular dados de teste
+  const handlePopulateWeightPrices = async () => {
+    try {
+      console.log('🔄 Populando dados de teste para preços por peso...');
+      
+      const result = await handleApiCall(async () => {
+        return await apiRequest('/admin/products/populate-weight-prices', {
+          method: 'POST'
+        });
+      });
+      
+      if (result && result.success) {
+        showMessage('Dados de teste populados com sucesso!', 'success');
+        loadProducts(); // Recarregar produtos
+      }
+    } catch (error) {
+      console.error('💥 Erro ao popular dados de teste:', error);
+      showMessage('Erro ao popular dados de teste', 'error');
+    }
+  };
+
   // Render products tab content
   const renderProductsTab = () => (
     <div className="space-y-6">
-      {/* Header com busca e botão de adicionar */}
+      {/* Header com busca e botões */}
       <div className="flex flex-col sm:flex-row gap-4 justify-between items-start sm:items-center">
         <SearchAndFilter
           searchTerm={searchTerm}
           onSearchChange={setSearchTerm}
           placeholder="Pesquisar produtos..."
         />
-        <button
-          onClick={() => {
-            setEditingProduct(null);
-            setShowProductModal(true);
-          }}
-          className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-amber-500 to-orange-600 text-white font-medium rounded-lg hover:from-amber-600 hover:to-orange-700 transition-all shadow-sm"
-        >
-          <Plus className="w-4 h-4" />
-          Adicionar Produto
-        </button>
+        <div className="flex gap-3">
+          <button
+            onClick={handlePopulateWeightPrices}
+            disabled={loading}
+            className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-blue-500 to-blue-600 text-white font-medium rounded-lg hover:from-blue-600 hover:to-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-sm"
+          >
+            <Activity className="w-4 h-4" />
+            {loading ? 'Populando...' : 'Popular Dados de Teste'}
+          </button>
+          <button
+            onClick={() => {
+              setEditingProduct(null);
+              setShowProductModal(true);
+            }}
+            className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-amber-500 to-orange-600 text-white font-medium rounded-lg hover:from-amber-600 hover:to-orange-700 transition-all shadow-sm"
+          >
+            <Plus className="w-4 h-4" />
+            Adicionar Produto
+          </button>
+        </div>
       </div>
       
       <DataTable

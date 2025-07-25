@@ -7,7 +7,7 @@ import {
   Package, Users
 } from 'lucide-react';
 import { createContext, useCallback, useContext, useEffect, useState } from 'react';
-import { notificationAPI, supabase } from "../lib/api.js";
+import { notificationAPI } from "../services/api.js";
 import { useAuth } from './AuthContext';
 
 const NotificationContext = createContext();
@@ -96,18 +96,11 @@ export const NotificationProvider = ({ children }) => {
     }
   };
 
-  // Verificar se tabela existe
+  // Função placeholder - não precisamos mais verificar tabelas do Supabase
   const tableExists = useCallback(async (tableName) => {
-    try {
-      const { error } = await supabase
-        .from(tableName)
-        .select('*')
-        .limit(1);
-      
-      return !error || error.code !== '42P01';
-    } catch (error) {
-      return false;
-    }
+    // Como estamos usando Flask API, sempre retornamos false
+    // para evitar tentativas de acesso a tabelas Supabase
+    return false;
   }, []);
 
   // Carregar notificações do banco - VERSÃO ULTRA ROBUSTA
@@ -249,119 +242,30 @@ export const NotificationProvider = ({ children }) => {
     }
   }, []);
 
-  // Sistema de alertas automáticos
+  // Sistema de alertas automáticos - SIMPLIFICADO (sem Supabase)
   const checkFinancialAlerts = useCallback(async () => {
     if (!hasPermission('admin')) return;
 
     try {
-      // Verificar se tabelas existem
-      const accountsReceivableExists = await tableExists('accounts_receivable');
-      const bankAccountsExists = await tableExists('bank_accounts');
-
-      if (accountsReceivableExists) {
-        // Verificar contas vencidas
-        const { data: overdueAccounts } = await supabase
-          .from('accounts_receivable')
-          .select('*')
-          .eq('status', 'pendente')
-          .lt('due_date', new Date().toISOString().split('T')[0]);
-
-        if (overdueAccounts?.length > 0) {
-          await createNotification({
-            userId: user.id,
-            type: 'alert',
-            priority: 'high',
-            title: '⚠️ Contas Vencidas',
-            message: `${overdueAccounts.length} contas a receber estão vencidas`,
-            actionUrl: '/admin/financeiro?tab=contas-receber'
-          });
-        }
-      }
-
-      if (bankAccountsExists) {
-        // Verificar fluxo de caixa baixo
-        const { data: bankAccounts } = await supabase
-          .from('bank_accounts')
-          .select('current_balance')
-          .eq('is_active', true);
-
-        const totalBalance = bankAccounts?.reduce((sum, acc) => sum + parseFloat(acc.current_balance), 0) || 0;
-        
-        if (totalBalance < 10000) {
-          await createNotification({
-            userId: user.id,
-            type: 'alert',
-            priority: 'high',
-            title: '💰 Saldo Baixo',
-            message: `Saldo total das contas: R$ ${totalBalance.toLocaleString('pt-BR')}`,
-            actionUrl: '/admin/financeiro?tab=bancos'
-          });
-        }
-      }
-
+      // TODO: Implementar verificação via Flask API quando necessário
+      // Por enquanto, não fazemos verificações automáticas
+      console.log('Verificação de alertas financeiros desativada - aguardando implementação Flask API');
     } catch (error) {
       console.error('Erro ao verificar alertas financeiros:', error);
     }
-  }, [user, hasPermission, createNotification, tableExists]);
+  }, [user, hasPermission]);
 
   const checkStockAlerts = useCallback(async () => {
     if (!hasPermission('admin')) return;
 
     try {
-      // Verificar se tabela products_extended existe
-      const productsExtendedExists = await tableExists('products_extended');
-      
-      if (!productsExtendedExists) {
-        // Verificar tabela products padrão
-        const productsExists = await tableExists('products');
-        
-        if (!productsExists) return;
-
-        const { data: products } = await supabase
-          .from('products')
-          .select('name, stock_quantity')
-          .eq('is_active', true);
-
-        const lowStockProducts = products?.filter(p => p.stock_quantity < 10) || [];
-
-        if (lowStockProducts.length > 0) {
-          await createNotification({
-            userId: user.id,
-            type: 'stock',
-            priority: 'medium',
-            title: '📦 Estoque Baixo',
-            message: `${lowStockProducts.length} produtos com estoque baixo`,
-            actionUrl: '/admin/estoque?filter=baixo'
-          });
-        }
-        return;
-      }
-
-      // Verificar produtos com estoque baixo usando comparação simples
-      const { data: allProducts } = await supabase
-        .from('products_extended')
-        .select('name, current_stock, min_stock')
-        .eq('is_active', true);
-
-      const lowStockProducts = allProducts?.filter(p => 
-        p.current_stock < p.min_stock
-      ) || [];
-
-      if (lowStockProducts.length > 0) {
-        await createNotification({
-          userId: user.id,
-          type: 'stock',
-          priority: 'medium',
-          title: '📦 Estoque Baixo',
-          message: `${lowStockProducts.length} produtos com estoque abaixo do mínimo`,
-          actionUrl: '/admin/estoque?filter=baixo'
-        });
-      }
-
+      // TODO: Implementar verificação via Flask API quando necessário
+      // Por enquanto, não fazemos verificações automáticas
+      console.log('Verificação de alertas de estoque desativada - aguardando implementação Flask API');
     } catch (error) {
       console.error('Erro ao verificar alertas de estoque:', error);
     }
-  }, [user, hasPermission, createNotification, tableExists]);
+  }, [user, hasPermission]);
 
   // Solicitar permissão para notificações (apenas quando o usuário interagir)
   const requestNotificationPermission = useCallback(async () => {
