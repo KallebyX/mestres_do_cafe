@@ -8,8 +8,6 @@ services:
   - type: pserv
     name: mestres-cafe-db
     plan: free
-    databaseName: mestres_cafe
-    user: mestres_user
 
   # =============================================================================
   # Redis Cache
