@@ -27,7 +27,7 @@ services:
     runtime: python
     rootDir: apps/api
     buildCommand: pip install -r requirements.txt
-    startCommand: gunicorn --bind 0.0.0.0:$PORT --workers 2 --timeout 120 --chdir src app:app
+    startCommand: gunicorn --bind 0.0.0.0:$PORT --workers 2 --timeout 120 src.app:app
     healthCheckPath: /api/health
     envVars:
       - key: FLASK_ENV
@@ -37,7 +37,7 @@ services:
       - key: ENV
         value: production
       - key: PYTHONPATH
-        value: /opt/render/project/src
+        value: /opt/render/project/src/apps/api
       - key: SECRET_KEY
         generateValue: true
       - key: JWT_SECRET_KEY
