@@ -83,10 +83,6 @@ class Config:
             "JWT_SECRET_KEY",
         ]
 
-        # Adicionar Supabase apenas se não for desenvolvimento
-        if app.config.get("ENV") != "development":
-            required_vars.extend(["SUPABASE_URL", "SUPABASE_ANON_KEY"])
-
         missing_vars = [var for var in required_vars if not os.environ.get(var)]
 
         if missing_vars and not app.config.get("TESTING", False):
@@ -148,20 +144,33 @@ class ProductionConfig(Config):
     TESTING = False
     ENV = "production"
 
+    # Database PostgreSQL (Render fornece automaticamente)
+    SQLALCHEMY_DATABASE_URI = os.environ.get("DATABASE_URL")
+    
+    # Redis Cache (Render fornece automaticamente) 
+    REDIS_URL = os.environ.get("REDIS_URL")
+
     @classmethod
     def init_app(cls, app):
         """Inicializar configurações da aplicação"""
         Config.init_app(app)
 
-        # Validar Supabase obrigatório em produção
-        if not os.environ.get("SUPABASE_URL") or not os.environ.get("SUPABASE_ANON_KEY"):
+        # Validar configurações críticas para produção
+        required_vars = ["SECRET_KEY", "JWT_SECRET_KEY"]
+        missing_vars = [var for var in required_vars if not os.environ.get(var)]
+        
+        if missing_vars:
             raise ValueError(
-                "SUPABASE_URL e SUPABASE_ANON_KEY são obrigatórios em produção"
+                f"Variáveis obrigatórias em produção ausentes: {missing_vars}"
             )
+            
+        # DATABASE_URL será fornecida automaticamente pelo Render
+        if not os.environ.get("DATABASE_URL"):
+            app.logger.warning("DATABASE_URL não configurada - será fornecida pelo Render")
 
-    # CORS restritivo
+    # CORS restritivo para Render
     CORS_ORIGINS = (
-        os.environ.get("CORS_ORIGINS", "").split(", ")
+        os.environ.get("CORS_ORIGINS", "").split(",")
         if os.environ.get("CORS_ORIGINS")
         else [
             "https://mestres-cafe-web.onrender.com",

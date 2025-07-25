@@ -47,6 +47,7 @@
     "date-fns": "^3.0.0",
     "jspdf": "^2.5.1",
     "jspdf-autotable": "^3.5.31",
+    "lodash-es": "^4.17.21",
     "lucide-react": "^0.294.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",

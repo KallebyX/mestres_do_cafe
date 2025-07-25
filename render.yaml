@@ -1,0 +1,219 @@
+# Mestres do Café - Render Blueprint Configuration
+# Configuração automatizada para deploy no Render (2025)
+
+version: "1"
+
+services:
+  # =============================================================================
+  # PostgreSQL Database
+  # =============================================================================
+  - name: mestres-cafe-db
+    type: pserv
+    plan: free
+    region: oregon
+    databases:
+      - name: mestres_cafe
+        user: kalleby
+    extensions:
+      - uuid-ossp
+      - pgcrypto
+    initScript: |
+      -- Enable UUID and crypto extensions
+      CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+      CREATE EXTENSION IF NOT EXISTS "pgcrypto";
+      
+      -- Set timezone to Brazil
+      SET timezone = 'America/Sao_Paulo';
+      SET client_encoding = 'UTF8';
+
+  # =============================================================================
+  # Redis Cache
+  # =============================================================================
+  - name: mestres-cafe-redis
+    type: redis
+    plan: free
+    region: oregon
+    maxmemoryPolicy: allkeys-lru
+
+  # =============================================================================
+  # API Backend - Flask
+  # =============================================================================
+  - name: mestres-cafe-api
+    type: web
+    region: oregon
+    plan: free
+    runtime: python3
+    rootDir: apps/api
+    buildFilter:
+      paths:
+        - apps/api/**
+      ignoredPaths:
+        - apps/api/**/*.md
+        - apps/api/**/*.log
+        - apps/api/**/logs/**
+        - apps/api/**/__pycache__/**
+        - apps/api/**/*.pyc
+    buildCommand: |
+      echo "🔧 Installing Python dependencies..."
+      pip install --upgrade pip
+      pip install -r requirements.txt
+      
+      echo "🗄️ Setting up database..."
+      python -c "
+      import os
+      os.environ['DATABASE_URL'] = '$DATABASE_URL'
+      os.environ['FLASK_ENV'] = 'production'
+      
+      from src.database import db
+      from src.app import create_app
+      
+      app = create_app('production')
+      with app.app_context():
+          print('Creating database tables...')
+          db.create_all()
+          print('Database setup completed!')
+      "
+      
+      echo "✅ Build completed successfully!"
+    startCommand: |
+      gunicorn --bind 0.0.0.0:$PORT \
+               --workers 2 \
+               --threads 4 \
+               --timeout 120 \
+               --keepalive 2 \
+               --max-requests 1000 \
+               --max-requests-jitter 100 \
+               --access-logfile - \
+               --error-logfile - \
+               --log-level info \
+               --preload \
+               src.app:app
+    envVars:
+      - key: FLASK_ENV
+        value: production
+      - key: FLASK_DEBUG
+        value: "0"
+      - key: PYTHONPATH
+        value: /opt/render/project/src/src
+      - key: SECRET_KEY
+        generateValue: true
+      - key: JWT_SECRET_KEY
+        generateValue: true
+      - key: CORS_ORIGINS
+        value: https://mestres-cafe-web.onrender.com,https://mestresdocafe.com.br
+      - key: MERCADO_PAGO_ENVIRONMENT
+        value: sandbox
+      - key: MELHOR_ENVIO_ENVIRONMENT
+        value: sandbox
+      # Secrets que devem ser configurados manualmente:
+      # MERCADO_PAGO_ACCESS_TOKEN
+      # MERCADO_PAGO_PUBLIC_KEY  
+      # MERCADO_PAGO_WEBHOOK_SECRET
+      # MELHOR_ENVIO_API_KEY
+      # MELHOR_ENVIO_CLIENT_ID
+      # MELHOR_ENVIO_CLIENT_SECRET
+    connectionInfo:
+      - fromService: mestres-cafe-db
+        key: DATABASE_URL
+      - fromService: mestres-cafe-redis
+        key: REDIS_URL
+    healthCheckPath: /api/health
+
+  # =============================================================================
+  # Web Frontend - React + Vite
+  # =============================================================================
+  - name: mestres-cafe-web
+    type: static
+    region: oregon
+    buildFilter:
+      paths:
+        - apps/web/**
+      ignoredPaths:
+        - apps/web/**/*.md
+        - apps/web/**/node_modules/**
+        - apps/web/**/.vite/**
+        - apps/web/**/dist/**
+    rootDir: apps/web
+    buildCommand: |
+      echo "📦 Installing Node.js dependencies..."
+      npm ci --only=production
+      
+      echo "🏗️ Building React application..."
+      npm run build:production
+      
+      echo "📂 Copying build files..."
+      cp -r dist/* /opt/render/project/src/public/
+      
+      echo "📄 Creating _redirects for SPA routing..."
+      echo "/*    /index.html   200" > /opt/render/project/src/public/_redirects
+      
+      echo "✅ Frontend build completed!"
+    staticPublishPath: dist
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: VITE_API_URL
+        value: https://mestres-cafe-api.onrender.com/api
+      - key: VITE_APP_NAME
+        value: "Mestres do Café"
+      # VITE_MERCADO_PAGO_PUBLIC_KEY deve ser configurado manualmente
+    headers:
+      - path: /*
+        headers:
+          X-Frame-Options: DENY
+          X-Content-Type-Options: nosniff
+          Referrer-Policy: strict-origin-when-cross-origin
+          X-XSS-Protection: "1; mode=block"
+      - path: /static/*
+        headers:
+          Cache-Control: public, max-age=31536000, immutable
+      - path: /assets/*
+        headers:
+          Cache-Control: public, max-age=31536000, immutable
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html
+
+# =============================================================================
+# Database Configuration
+# =============================================================================
+databases:
+  - name: mestres_cafe
+    databaseName: mestres_cafe
+    user: kalleby
+    region: oregon
+    plan: free
+
+# =============================================================================
+# Additional Configuration Notes
+# =============================================================================
+# 
+# 1. MANUAL SETUP REQUIRED:
+#    - Configure MercadoPago credentials in Render dashboard
+#    - Configure MelhorEnvio credentials in Render dashboard
+#    - Set custom domain if needed
+#    - Configure webhook URLs after deployment
+#
+# 2. PRODUCTION CHECKLIST:
+#    - Update CORS_ORIGINS with production domain
+#    - Configure proper SSL certificates
+#    - Set up monitoring and alerts
+#    - Configure backup strategy for database
+#
+# 3. SCALING CONSIDERATIONS:
+#    - Upgrade to paid plans for production workloads
+#    - Consider additional workers for API service
+#    - Implement CDN for static assets
+#    - Set up database read replicas if needed
+#
+# 4. SECURITY:
+#    - Rotate secrets regularly
+#    - Enable database encryption
+#    - Set up VPC if available
+#    - Configure rate limiting
+#
+# 5. DEPLOYMENT COMMANDS:
+#    - render-cli blueprint sync (if using CLI)
+#    - Or connect GitHub repository to Render dashboard
+#    - Configure auto-deploy on main branch pushes
