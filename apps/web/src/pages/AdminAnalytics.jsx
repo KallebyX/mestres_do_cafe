@@ -6,7 +6,7 @@ import {
 } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
-import { adminAPI } from "@/lib/api.js";
+import { analyticsAPI } from "@/lib/api.js";
 import { LineChart, BarChart, MetricCard, AreaChart, ProgressRing, PieChartComponent } from '../components/ui/charts';
 
 const AdminAnalytics = () => {
@@ -28,7 +28,7 @@ const AdminAnalytics = () => {
   const loadAnalyticsData = async () => {
     setLoading(true);
     try {
-      const data = await adminAPI.getAnalytics(timeRange);
+      const data = await analyticsAPI.getStats(timeRange);
       setAnalyticsData(data);
       } catch (error) {
       console.error('Erro ao carregar dados de analytics:', error);
