@@ -16,7 +16,6 @@ from sqlalchemy import (
     String,
     Text,
 )
-from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 
@@ -60,7 +59,7 @@ class NCMCode(db.Model):
     """
     __tablename__ = 'ncm_codes'
 
-    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    id = Column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
     code = Column(String(8), unique=True, nullable=False)  # 8 dígitos
     description = Column(Text, nullable=False)
     unit = Column(String(10))  # Unidade de medida estatística
@@ -101,7 +100,7 @@ class CFOPCode(db.Model):
     """
     __tablename__ = 'cfop_codes'
 
-    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    id = Column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
     code = Column(String(4), unique=True, nullable=False)  # 4 dígitos
     description = Column(Text, nullable=False)
     application = Column(Text)  # Quando usar este CFOP
@@ -136,7 +135,7 @@ class ICMSRate(db.Model):
     """
     __tablename__ = 'icms_rates'
 
-    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    id = Column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
     origin_state = Column(String(2), nullable=False)  # UF origem
     destination_state = Column(String(2), nullable=False)  # UF destino
     rate = Column(DECIMAL(5, 2), nullable=False)  # Alíquota em %
@@ -179,9 +178,9 @@ class ProductTax(db.Model):
     """
     __tablename__ = 'product_tax'
 
-    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    product_id = Column(UUID(as_uuid=True), ForeignKey('products.id'), nullable=False)
-    ncm_id = Column(UUID(as_uuid=True), ForeignKey('ncm_codes.id'), nullable=False)
+    id = Column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
+    product_id = Column(String(36), ForeignKey('products.id'), nullable=False)
+    ncm_id = Column(String(36), ForeignKey('ncm_codes.id'), nullable=False)
     
     # Origem da mercadoria
     tax_origin = Column(String(1), default="0")  # 0=Nacional, 1=Estrangeira, etc
@@ -248,11 +247,11 @@ class TaxCalculation(db.Model):
     """
     __tablename__ = 'tax_calculations'
 
-    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    order_id = Column(UUID(as_uuid=True), ForeignKey('orders.id'), nullable=False)
-    order_item_id = Column(UUID(as_uuid=True), ForeignKey('order_items.id'))
-    product_id = Column(UUID(as_uuid=True), ForeignKey('products.id'), nullable=False)
-    cfop_id = Column(UUID(as_uuid=True), ForeignKey('cfop_codes.id'), nullable=False)
+    id = Column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
+    order_id = Column(String(36), ForeignKey('orders.id'), nullable=False)
+    order_item_id = Column(String(36), ForeignKey('order_items.id'))
+    product_id = Column(String(36), ForeignKey('products.id'), nullable=False)
+    cfop_id = Column(String(36), ForeignKey('cfop_codes.id'), nullable=False)
     
     # Valores base
     base_value = Column(DECIMAL(10, 2), nullable=False)  # Valor base para cálculo
@@ -343,8 +342,8 @@ class TaxExemption(db.Model):
     """
     __tablename__ = 'tax_exemptions'
 
-    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    customer_id = Column(UUID(as_uuid=True), ForeignKey('customers.id'), nullable=False)
+    id = Column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
+    customer_id = Column(String(36), ForeignKey('customers.id'), nullable=False)
     
     # Tipo de isenção
     tax_type = Column(String(20), nullable=False)  # icms, pis, cofins, ipi
@@ -364,7 +363,7 @@ class TaxExemption(db.Model):
     
     # Controle
     is_active = Column(Boolean, default=True)
-    approved_by = Column(UUID(as_uuid=True), ForeignKey('users.id'))
+    approved_by = Column(String(36), ForeignKey('users.id'))
     approved_at = Column(DateTime)
     
     created_at = Column(DateTime, default=func.now())

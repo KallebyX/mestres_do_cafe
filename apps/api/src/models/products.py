@@ -16,7 +16,6 @@ from sqlalchemy import (
     Text,
     JSON,
 )
-from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
 from sqlalchemy.types import DECIMAL
 from sqlalchemy.ext.hybrid import hybrid_property
@@ -27,12 +26,12 @@ from database import db
 class ProductCategory(db.Model):
     __tablename__ = 'product_categories'
 
-    id = Column(UUID(as_uuid = True), primary_key = True, default = uuid4)
+    id = Column(String(36), primary_key = True, default = uuid4)
     name = Column(String(255), nullable = False)
     slug = Column(String(255), unique = True, nullable = False)
     description = Column(Text)
     image_url = Column(Text)
-    parent_id = Column(UUID(as_uuid = True), ForeignKey('product_categories.id'))
+    parent_id = Column(String(36), ForeignKey('product_categories.id'))
     sort_order = Column(Integer, default = 0)
     is_active = Column(Boolean, default = True)
     created_at = Column(DateTime, default = datetime.utcnow)
@@ -61,15 +60,15 @@ class ProductCategory(db.Model):
 class Product(db.Model):
     __tablename__ = 'products'
 
-    id = Column(UUID(as_uuid = True), primary_key = True, default = uuid4)
+    id = Column(String(36), primary_key = True, default = uuid4)
     name = Column(String(255), nullable = False)
     slug = Column(String(255), unique = True, nullable = False)
     description = Column(Text)
     short_description = Column(Text)
     sku = Column(String(100), unique = True)
-    category_id = Column(UUID(as_uuid = True), ForeignKey('product_categories.id'))
+    category_id = Column(String(36), ForeignKey('product_categories.id'))
     category = Column(String(100))
-    supplier_id = Column(UUID(as_uuid = True), ForeignKey('suppliers.id'))
+    supplier_id = Column(String(36), ForeignKey('suppliers.id'))
 
     # Preços
     price = Column(DECIMAL(10, 2), nullable = False)
@@ -202,8 +201,8 @@ class Product(db.Model):
 class ProductVariant(db.Model):
     __tablename__ = 'product_variants'
 
-    id = Column(UUID(as_uuid = True), primary_key = True, default = uuid4)
-    product_id = Column(UUID(as_uuid = True), ForeignKey('products.id'))
+    id = Column(String(36), primary_key = True, default = uuid4)
+    product_id = Column(String(36), ForeignKey('products.id'))
     name = Column(String(255), nullable = False)
     sku = Column(String(100), unique = True, nullable = False)
 
@@ -257,7 +256,7 @@ class ProductVariant(db.Model):
 class ProductAttribute(db.Model):
     __tablename__ = 'product_attributes'
 
-    id = Column(UUID(as_uuid = True), primary_key = True, default = uuid4)
+    id = Column(String(36), primary_key = True, default = uuid4)
     name = Column(String(255), nullable = False)
     slug = Column(String(255), unique = True, nullable = False)
     type = Column(String(50), nullable = False)  # text, number, select, boolean
@@ -292,9 +291,9 @@ class ProductAttribute(db.Model):
 class ProductAttributeValue(db.Model):
     __tablename__ = 'product_attribute_values'
 
-    id = Column(UUID(as_uuid = True), primary_key = True, default = uuid4)
-    product_id = Column(UUID(as_uuid = True), ForeignKey('products.id'))
-    attribute_id = Column(UUID(as_uuid = True), ForeignKey('product_attributes.id'))
+    id = Column(String(36), primary_key = True, default = uuid4)
+    product_id = Column(String(36), ForeignKey('products.id'))
+    attribute_id = Column(String(36), ForeignKey('product_attributes.id'))
     value = Column(Text, nullable = False)
     created_at = Column(DateTime, default = datetime.utcnow)
     updated_at = Column(DateTime, default = datetime.utcnow, onupdate = datetime.utcnow)
@@ -320,8 +319,8 @@ class ProductAttributeValue(db.Model):
 class StockBatch(db.Model):
     __tablename__ = 'stock_batches'
 
-    id = Column(UUID(as_uuid = True), primary_key = True, default = uuid4)
-    product_id = Column(UUID(as_uuid = True), ForeignKey('products.id'))
+    id = Column(String(36), primary_key = True, default = uuid4)
+    product_id = Column(String(36), ForeignKey('products.id'))
     batch_number = Column(String(100), nullable = False)
     quantity = Column(Integer, nullable = False)
     cost_price = Column(DECIMAL(10, 2))
@@ -359,16 +358,16 @@ class StockBatch(db.Model):
 class StockMovement(db.Model):
     __tablename__ = 'stock_movements'
 
-    id = Column(UUID(as_uuid = True), primary_key = True, default = uuid4)
-    product_id = Column(UUID(as_uuid = True), ForeignKey('products.id'))
+    id = Column(String(36), primary_key = True, default = uuid4)
+    product_id = Column(String(36), ForeignKey('products.id'))
     type = Column(String(50), nullable = False)  # entrada, saida, ajuste
     quantity = Column(Integer, nullable = False)
     reference_type = Column(String(50))  # order, purchase, adjustment
-    reference_id = Column(UUID(as_uuid = True))
+    reference_id = Column(String(36))
     cost_price = Column(DECIMAL(10, 2))
     reason = Column(String(255))
     notes = Column(Text)
-    user_id = Column(UUID(as_uuid = True), ForeignKey('users.id'))
+    user_id = Column(String(36), ForeignKey('users.id'))
     created_at = Column(DateTime, default = datetime.utcnow)
 
     # Relacionamentos
@@ -396,14 +395,14 @@ class StockMovement(db.Model):
 class StockAlert(db.Model):
     __tablename__ = 'stock_alerts'
 
-    id = Column(UUID(as_uuid = True), primary_key = True, default = uuid4)
-    product_id = Column(UUID(as_uuid = True), ForeignKey('products.id'))
+    id = Column(String(36), primary_key = True, default = uuid4)
+    product_id = Column(String(36), ForeignKey('products.id'))
     type = Column(String(50), nullable = False)  # low_stock, out_of_stock
     message = Column(Text, nullable = False)
     threshold = Column(Integer)
     is_resolved = Column(Boolean, default = False)
     resolved_at = Column(DateTime)
-    resolved_by = Column(UUID(as_uuid = True), ForeignKey('users.id'))
+    resolved_by = Column(String(36), ForeignKey('users.id'))
     created_at = Column(DateTime, default = datetime.utcnow)
 
     # Relacionamentos
@@ -429,14 +428,14 @@ class StockAlert(db.Model):
 class InventoryCount(db.Model):
     __tablename__ = 'inventory_counts'
 
-    id = Column(UUID(as_uuid = True), primary_key = True, default = uuid4)
+    id = Column(String(36), primary_key = True, default = uuid4)
     name = Column(String(255), nullable = False)
     description = Column(Text)
     status = Column(String(50), default='draft')
     location = Column(String(200))
     started_at = Column(DateTime)
     completed_at = Column(DateTime)
-    created_by = Column(UUID(as_uuid = True), ForeignKey('users.id'))
+    created_by = Column(String(36), ForeignKey('users.id'))
     created_at = Column(DateTime, default = datetime.utcnow)
     updated_at = Column(DateTime, default = datetime.utcnow, onupdate = datetime.utcnow)
 
@@ -465,8 +464,8 @@ class ProductPrice(db.Model):
     """Model for product prices by weight"""
     __tablename__ = 'product_prices'
     
-    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid4)
-    product_id = Column(UUID(as_uuid=True), ForeignKey('products.id'), nullable=False)
+    id = Column(String(36), primary_key=True, default=uuid4)
+    product_id = Column(String(36), ForeignKey('products.id'), nullable=False)
     
     weight = Column(String(50), nullable=False)  # "250g", "500g", "1kg"
     price = Column(DECIMAL(10, 2), nullable=False)
@@ -505,9 +504,9 @@ class Review(db.Model):
     """Model for product reviews"""
     __tablename__ = 'reviews'
     
-    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid4)
-    product_id = Column(UUID(as_uuid=True), ForeignKey('products.id'), nullable=False)
-    user_id = Column(UUID(as_uuid=True), ForeignKey('users.id'), nullable=False)
+    id = Column(String(36), primary_key=True, default=uuid4)
+    product_id = Column(String(36), ForeignKey('products.id'), nullable=False)
+    user_id = Column(String(36), ForeignKey('users.id'), nullable=False)
     
     rating = Column(Integer, nullable=False)  # 1-5
     title = Column(String(200))
@@ -565,9 +564,9 @@ class ReviewHelpful(db.Model):
     """Track which users found reviews helpful"""
     __tablename__ = 'review_helpful'
     
-    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid4)
-    review_id = Column(UUID(as_uuid=True), ForeignKey('reviews.id'), nullable=False)
-    user_id = Column(UUID(as_uuid=True), ForeignKey('users.id'), nullable=False)
+    id = Column(String(36), primary_key=True, default=uuid4)
+    review_id = Column(String(36), ForeignKey('reviews.id'), nullable=False)
+    user_id = Column(String(36), ForeignKey('users.id'), nullable=False)
     is_helpful = Column(Boolean, nullable=False)
     created_at = Column(DateTime, default=datetime.utcnow)
     
@@ -584,9 +583,9 @@ class ReviewResponse(db.Model):
     """Company responses to reviews"""
     __tablename__ = 'review_responses'
     
-    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid4)
-    review_id = Column(UUID(as_uuid=True), ForeignKey('reviews.id'), nullable=False)
-    admin_user_id = Column(UUID(as_uuid=True), ForeignKey('users.id'), nullable=False)
+    id = Column(String(36), primary_key=True, default=uuid4)
+    review_id = Column(String(36), ForeignKey('reviews.id'), nullable=False)
+    admin_user_id = Column(String(36), ForeignKey('users.id'), nullable=False)
     response = Column(Text, nullable=False)
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
@@ -598,14 +597,14 @@ class ReviewResponse(db.Model):
 class InventoryCountItem(db.Model):
     __tablename__ = 'inventory_count_items'
 
-    id = Column(UUID(as_uuid = True), primary_key = True, default = uuid4)
-    count_id = Column(UUID(as_uuid = True), ForeignKey('inventory_counts.id'))
-    product_id = Column(UUID(as_uuid = True), ForeignKey('products.id'))
+    id = Column(String(36), primary_key = True, default = uuid4)
+    count_id = Column(String(36), ForeignKey('inventory_counts.id'))
+    product_id = Column(String(36), ForeignKey('products.id'))
     expected_quantity = Column(Integer, nullable = False)
     actual_quantity = Column(Integer)
     difference = Column(Integer)
     notes = Column(Text)
-    counted_by = Column(UUID(as_uuid = True), ForeignKey('users.id'))
+    counted_by = Column(String(36), ForeignKey('users.id'))
     counted_at = Column(DateTime)
     created_at = Column(DateTime, default = datetime.utcnow)
 

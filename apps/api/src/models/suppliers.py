@@ -13,7 +13,6 @@ from sqlalchemy import (
     Text,
     DECIMAL,
 )
-from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 
@@ -23,7 +22,7 @@ from database import db
 class Supplier(db.Model):
     __tablename__ = 'suppliers'
 
-    id = Column(UUID(as_uuid = True), primary_key = True, default = uuid.uuid4)
+    id = Column(String(36), primary_key = True, default=lambda: str(uuid.uuid4()))
     name = Column(String(255), nullable = False)
     email = Column(String(255), nullable = False, unique = True)
     cnpj = Column(String(18), nullable = False, unique = True)
@@ -91,9 +90,9 @@ class Supplier(db.Model):
 class PurchaseOrder(db.Model):
     __tablename__ = 'purchase_orders'
 
-    id = Column(UUID(as_uuid = True), primary_key = True, default = uuid.uuid4)
+    id = Column(String(36), primary_key = True, default=lambda: str(uuid.uuid4()))
     supplier_id = Column(
-        UUID(as_uuid = True),
+        String(36),
         db.ForeignKey('suppliers.id', ondelete='CASCADE'),
         nullable = False
     )
@@ -147,14 +146,14 @@ class PurchaseOrder(db.Model):
 class PurchaseOrderItem(db.Model):
     __tablename__ = 'purchase_order_items'
 
-    id = Column(UUID(as_uuid = True), primary_key = True, default = uuid.uuid4)
+    id = Column(String(36), primary_key = True, default=lambda: str(uuid.uuid4()))
     purchase_order_id = Column(
-        UUID(as_uuid = True),
+        String(36),
         db.ForeignKey('purchase_orders.id', ondelete='CASCADE'),
         nullable = False
     )
     product_id = Column(
-        UUID(as_uuid = True),
+        String(36),
         db.ForeignKey('products.id', ondelete='CASCADE'),
         nullable = False
     )

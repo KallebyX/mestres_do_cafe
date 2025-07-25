@@ -16,7 +16,6 @@ from sqlalchemy import (
     String,
     Text,
 )
-from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 
@@ -43,11 +42,11 @@ class PaymentStatus(Enum):
 class Order(db.Model):
     __tablename__ = "orders"
 
-    id = Column(UUID(as_uuid = True), primary_key = True, default = uuid.uuid4)
+    id = Column(String(36), primary_key = True, default=lambda: str(uuid.uuid4()))
     order_number = Column(String(50), unique = True, nullable = False)
-    user_id = Column(UUID(as_uuid = True), ForeignKey("users.id", ondelete="SET NULL"))
+    user_id = Column(String(36), ForeignKey("users.id", ondelete="SET NULL"))
     customer_id = Column(
-        UUID(as_uuid = True), ForeignKey("customers.id", ondelete="SET NULL")
+        String(36), ForeignKey("customers.id", ondelete="SET NULL")
     )
 
     # Status
@@ -135,13 +134,13 @@ class Order(db.Model):
 class OrderItem(db.Model):
     __tablename__ = "order_items"
 
-    id = Column(UUID(as_uuid = True), primary_key = True, default = uuid.uuid4)
-    order_id = Column(UUID(as_uuid = True), ForeignKey("orders.id", ondelete="CASCADE"))
+    id = Column(String(36), primary_key = True, default=lambda: str(uuid.uuid4()))
+    order_id = Column(String(36), ForeignKey("orders.id", ondelete="CASCADE"))
     product_id = Column(
-        UUID(as_uuid = True), ForeignKey("products.id", ondelete="SET NULL")
+        String(36), ForeignKey("products.id", ondelete="SET NULL")
     )
     variant_id = Column(
-        UUID(as_uuid = True), ForeignKey("product_variants.id", ondelete="SET NULL")
+        String(36), ForeignKey("product_variants.id", ondelete="SET NULL")
     )
 
     # Dados do produto no momento do pedido
@@ -187,8 +186,8 @@ class OrderItem(db.Model):
 class Cart(db.Model):
     __tablename__ = "carts"
 
-    id = Column(UUID(as_uuid = True), primary_key = True, default = uuid.uuid4)
-    user_id = Column(UUID(as_uuid = True), ForeignKey("users.id", ondelete="CASCADE"))
+    id = Column(String(36), primary_key = True, default=lambda: str(uuid.uuid4()))
+    user_id = Column(String(36), ForeignKey("users.id", ondelete="CASCADE"))
     session_id = Column(String(255))
     created_at = Column(DateTime, default = func.now())
     updated_at = Column(DateTime, default = func.now(), onupdate = func.now())
@@ -213,21 +212,21 @@ class Cart(db.Model):
 class CartItem(db.Model):
     __tablename__ = "cart_items"
 
-    id = Column(UUID(as_uuid = True), primary_key = True, default = uuid.uuid4)
+    id = Column(String(36), primary_key = True, default=lambda: str(uuid.uuid4()))
     cart_id = Column(
-        UUID(as_uuid = True), ForeignKey("carts.id", ondelete="CASCADE"), nullable = False
+        String(36), ForeignKey("carts.id", ondelete="CASCADE"), nullable = False
     )
-    user_id = Column(UUID(as_uuid = True), ForeignKey("users.id", ondelete="CASCADE"))
+    user_id = Column(String(36), ForeignKey("users.id", ondelete="CASCADE"))
     session_id = Column(String(255))
     product_id = Column(
-        UUID(as_uuid = True), ForeignKey("products.id", ondelete="CASCADE")
+        String(36), ForeignKey("products.id", ondelete="CASCADE")
     )
     variant_id = Column(
-        UUID(as_uuid = True), ForeignKey("product_variants.id", ondelete="SET NULL")
+        String(36), ForeignKey("product_variants.id", ondelete="SET NULL")
     )
     # 🔥 CORREÇÃO: Adicionar suporte a preços por peso
     product_price_id = Column(
-        UUID(as_uuid = True), ForeignKey("product_prices.id", ondelete="SET NULL")
+        String(36), ForeignKey("product_prices.id", ondelete="SET NULL")
     )
     weight = Column(String(50))  # "250g", "500g", "1kg" - backup do peso
     unit_price = Column(DECIMAL(10, 2))  # Preço unitário no momento da adição
@@ -268,8 +267,8 @@ class CartItem(db.Model):
 class AbandonedCart(db.Model):
     __tablename__ = "abandoned_carts"
 
-    id = Column(UUID(as_uuid = True), primary_key = True, default = uuid.uuid4)
-    user_id = Column(UUID(as_uuid = True), ForeignKey("users.id", ondelete="CASCADE"))
+    id = Column(String(36), primary_key = True, default=lambda: str(uuid.uuid4()))
+    user_id = Column(String(36), ForeignKey("users.id", ondelete="CASCADE"))
     cart_data = Column(Text, nullable = False)  # JSON como TEXT
     total_amount = Column(DECIMAL(10, 2))
     recovery_email_sent = Column(Boolean, default = False)

@@ -15,7 +15,8 @@ from sqlalchemy import (
     String,
     Text,
 )
-from sqlalchemy.dialects.postgresql import UUID
+# SQLite compatibility: Using String instead of UUID
+# from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 
@@ -23,11 +24,12 @@ from sqlalchemy.sql import func
 class User(db.Model):
     __tablename__ = "users"
 
-    id = Column(UUID(as_uuid = True), primary_key = True, default = uuid.uuid4)
-    supabase_id = Column(UUID(as_uuid = True), unique = True)
-    email = Column(String(255), unique = True, nullable = False)
-    name = Column(String(255), nullable = False)
-    username = Column(String(255), unique = True)
+    # SQLite compatibility: Using String instead of UUID
+    id = Column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
+    supabase_id = Column(String(36), unique=True)  # SQLite compatibility
+    email = Column(String(255), unique=True, nullable=False)
+    name = Column(String(255), nullable=False)
+    username = Column(String(255), unique=True)
     first_name = Column(String(255))
     last_name = Column(String(255))
     password_hash = Column(String(255))
@@ -103,15 +105,16 @@ class User(db.Model):
 class UserSession(db.Model):
     __tablename__ = "user_sessions"
 
-    id = Column(UUID(as_uuid = True), primary_key = True, default = uuid.uuid4)
-    user_id = Column(UUID(as_uuid = True), ForeignKey("users.id", ondelete="CASCADE"))
-    session_token = Column(Text, unique = True, nullable = False)
+    # SQLite compatibility: Using String instead of UUID
+    id = Column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
+    user_id = Column(String(36), ForeignKey("users.id", ondelete="CASCADE"))
+    session_token = Column(Text, unique=True, nullable=False)
     refresh_token = Column(Text)
     device_info = Column(Text)  # JSON como TEXT para compatibilidade
     ip_address = Column(String(45))  # Suporte IPv4 e IPv6
     user_agent = Column(Text)
-    expires_at = Column(DateTime, nullable = False)
-    created_at = Column(DateTime, default = func.now())
+    expires_at = Column(DateTime, nullable=False)
+    created_at = Column(DateTime, default=func.now())
 
     # Relacionamentos
     user = relationship("User", back_populates="sessions")

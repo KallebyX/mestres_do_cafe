@@ -5,7 +5,6 @@ Modelos para sistema multi-vendor do marketplace
 import uuid
 from decimal import Decimal
 from sqlalchemy import Boolean, Column, DateTime, String, Text, Numeric, Integer, ForeignKey
-from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 
@@ -15,8 +14,8 @@ from database import db
 class Vendor(db.Model):
     __tablename__ = "vendors"
 
-    id = Column(UUID(as_uuid = True), primary_key = True, default = uuid.uuid4)
-    user_id = Column(UUID(as_uuid = True), ForeignKey("users.id"), nullable = False)
+    id = Column(String(36), primary_key = True, default=lambda: str(uuid.uuid4()))
+    user_id = Column(String(36), ForeignKey("users.id"), nullable = False)
 
     # Informações básicas
     business_name = Column(String(255), nullable = False)
@@ -49,7 +48,7 @@ class Vendor(db.Model):
     status = Column(String(20), default="pending")  # pending, approved, rejected, suspended
     approval_status = Column(String(20), default="pending")
     approved_at = Column(DateTime)
-    approved_by = Column(UUID(as_uuid = True), ForeignKey("users.id"))
+    approved_by = Column(String(36), ForeignKey("users.id"))
     rejection_reason = Column(Text)
 
     # Configurações comerciais
@@ -127,9 +126,9 @@ class Vendor(db.Model):
 class VendorProduct(db.Model):
     __tablename__ = "vendor_products"
 
-    id = Column(UUID(as_uuid = True), primary_key = True, default = uuid.uuid4)
-    vendor_id = Column(UUID(as_uuid = True), ForeignKey("vendors.id"), nullable = False)
-    product_id = Column(UUID(as_uuid = True), ForeignKey("products.id"), nullable = False)
+    id = Column(String(36), primary_key = True, default=lambda: str(uuid.uuid4()))
+    vendor_id = Column(String(36), ForeignKey("vendors.id"), nullable = False)
+    product_id = Column(String(36), ForeignKey("products.id"), nullable = False)
 
     # Preços específicos do vendedor
     vendor_price = Column(Numeric(10, 2), nullable = False)
@@ -193,9 +192,9 @@ class VendorProduct(db.Model):
 class VendorOrder(db.Model):
     __tablename__ = "vendor_orders"
 
-    id = Column(UUID(as_uuid = True), primary_key = True, default = uuid.uuid4)
-    vendor_id = Column(UUID(as_uuid = True), ForeignKey("vendors.id"), nullable = False)
-    order_id = Column(UUID(as_uuid = True), ForeignKey("orders.id"), nullable = False)
+    id = Column(String(36), primary_key = True, default=lambda: str(uuid.uuid4()))
+    vendor_id = Column(String(36), ForeignKey("vendors.id"), nullable = False)
+    order_id = Column(String(36), ForeignKey("orders.id"), nullable = False)
 
     # Valores específicos do vendedor
     subtotal = Column(Numeric(10, 2), nullable = False)
@@ -247,9 +246,9 @@ class VendorOrder(db.Model):
 class VendorCommission(db.Model):
     __tablename__ = "vendor_commissions"
 
-    id = Column(UUID(as_uuid = True), primary_key = True, default = uuid.uuid4)
-    vendor_id = Column(UUID(as_uuid = True), ForeignKey("vendors.id"), nullable = False)
-    order_id = Column(UUID(as_uuid = True), ForeignKey("orders.id"), nullable = False)
+    id = Column(String(36), primary_key = True, default=lambda: str(uuid.uuid4()))
+    vendor_id = Column(String(36), ForeignKey("vendors.id"), nullable = False)
+    order_id = Column(String(36), ForeignKey("orders.id"), nullable = False)
 
     # Valores da comissão
     order_value = Column(Numeric(10, 2), nullable = False)
@@ -295,10 +294,10 @@ class VendorCommission(db.Model):
 class VendorReview(db.Model):
     __tablename__ = "vendor_reviews"
 
-    id = Column(UUID(as_uuid = True), primary_key = True, default = uuid.uuid4)
-    vendor_id = Column(UUID(as_uuid = True), ForeignKey("vendors.id"), nullable = False)
-    customer_id = Column(UUID(as_uuid = True), ForeignKey("customers.id"), nullable = False)
-    order_id = Column(UUID(as_uuid = True), ForeignKey("orders.id"))
+    id = Column(String(36), primary_key = True, default=lambda: str(uuid.uuid4()))
+    vendor_id = Column(String(36), ForeignKey("vendors.id"), nullable = False)
+    customer_id = Column(String(36), ForeignKey("customers.id"), nullable = False)
+    order_id = Column(String(36), ForeignKey("orders.id"))
 
     # Avaliação
     rating = Column(Integer, nullable = False)  # 1-5 estrelas
