@@ -1,6 +1,13 @@
 import pytest
 import tempfile
 import os
+
+# Set testing environment BEFORE any other imports to prevent double app creation
+os.environ['FLASK_ENV'] = 'testing'
+os.environ['DATABASE_URL'] = 'sqlite:///:memory:'
+os.environ['SECRET_KEY'] = 'test-secret-key'
+os.environ['JWT_SECRET_KEY'] = 'test-jwt-secret-key'
+
 from flask import Flask
 from src.app import create_app
 from src.database import db
@@ -24,9 +31,16 @@ def app():
 
     # Criar aplicação para testes
     app = create_app('testing')
+    
+    # Override the database configuration for testing
+    app.config['SQLALCHEMY_DATABASE_URI'] = f'sqlite:///{db_path}'
+    app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
     # Configurar contexto da aplicação
     with app.app_context():
+        # Re-initialize the database with the test app
+        from src.database import db
+        
         # Criar todas as tabelas
         db.create_all()
 

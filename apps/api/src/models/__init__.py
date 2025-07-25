@@ -121,9 +121,19 @@ __all__ = [
     "VendorOrder",
     "VendorCommission",
     "VendorReview",
+    # Reviews
+    "Review",
+    "ReviewHelpful", 
+    "ReviewResponse",
+    # Wishlist
+    "Wishlist",
+    "WishlistItem",
+    "WishlistShare",
+    # Pricing
+    "ProductPrice",
     # Multi-tenancy
     "Tenant",
-    "TenantSubscription",
+    "TenantSubscription", 
     "TenantSettings",
     # System
     "SystemSetting",

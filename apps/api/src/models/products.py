@@ -574,7 +574,6 @@ class Review(db.Model):
 class ReviewHelpful(db.Model):
     """Track which users found reviews helpful"""
     __tablename__ = 'review_helpful'
-    __table_args__ = {'extend_existing': True}
     
     id = Column(String(36), primary_key=True, default=uuid4)
     review_id = Column(String(36), ForeignKey('reviews.id'), nullable=False)
@@ -582,9 +581,10 @@ class ReviewHelpful(db.Model):
     is_helpful = Column(Boolean, nullable=False)
     created_at = Column(DateTime, default=datetime.utcnow)
     
-    # Unique constraint to prevent duplicate votes
+    # Combined table arguments with both extend_existing and constraints
     __table_args__ = (
         db.UniqueConstraint('review_id', 'user_id', name='unique_review_user_vote'),
+        {'extend_existing': True}
     )
     
     def __repr__(self):

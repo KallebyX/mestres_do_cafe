@@ -15,7 +15,12 @@ from marshmallow import ValidationError
 import jwt
 from typing import Dict, Any, Optional, Tuple
 
-# Configuração de logging
+# Configuração de logging com criação automática do diretório
+import os
+log_dir = 'logs'
+if not os.path.exists(log_dir):
+    os.makedirs(log_dir, exist_ok=True)
+
 logging.basicConfig(
     level = logging.INFO,
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',

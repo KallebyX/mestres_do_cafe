@@ -336,10 +336,16 @@ def seed_initial_data():
         print(f"❌ Erro ao verificar dados iniciais: {e}")
 
 
-# Cria a aplicação
-app = create_app()
+# Cria a aplicação apenas se não for em um contexto de teste
+app = None
+if __name__ == "__main__" or not os.environ.get('FLASK_ENV') == 'testing':
+    app = create_app()
 
 if __name__ == "__main__":
+    # Cria a aplicação se ainda não foi criada
+    if app is None:
+        app = create_app()
+        
     with app.app_context():
         # Cria as tabelas
         # db.create_all() # This line is removed as Supabase is used

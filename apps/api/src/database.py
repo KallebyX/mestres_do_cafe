@@ -30,13 +30,23 @@ def init_db(app) -> None:
     database_url = get_database_url()
     app.config["SQLALCHEMY_DATABASE_URI"] = database_url
     app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
-    app.config["SQLALCHEMY_ENGINE_OPTIONS"] = {
-        "pool_pre_ping": True,
-        "pool_recycle": 300,
-        "pool_size": 10,
-        "max_overflow": 20,
-        "pool_timeout": 30,
-    }
+    
+    # Configure engine options based on database type
+    if "sqlite" in database_url.lower():
+        # SQLite-specific configuration
+        app.config["SQLALCHEMY_ENGINE_OPTIONS"] = {
+            "pool_pre_ping": True,
+            "pool_recycle": 300,
+        }
+    else:
+        # PostgreSQL-specific configuration 
+        app.config["SQLALCHEMY_ENGINE_OPTIONS"] = {
+            "pool_pre_ping": True,
+            "pool_recycle": 300,
+            "pool_size": 10,
+            "max_overflow": 20,
+            "pool_timeout": 30,
+        }
 
     # Inicializar SQLAlchemy
     db.init_app(app)
