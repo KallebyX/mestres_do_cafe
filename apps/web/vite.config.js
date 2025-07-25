@@ -86,6 +86,7 @@ export default defineConfig(({ command, mode }) => {
       sourcemap: false, // Desabilitar em produção
       minify: 'terser',
       target: 'es2015',
+      emptyOutDir: true,
       
       // Configurações do Rollup
       rollupOptions: {
@@ -176,7 +177,11 @@ export default defineConfig(({ command, mode }) => {
               return `assets/css/[name]-[hash:8][extname]`;
             }
             return `assets/[name]-[hash:8][extname]`;
-          }
+          },
+          
+          // Formato dos módulos para evitar problemas de MIME type
+          format: 'es',
+          exports: 'named'
         },
         
         // Tree shaking agressivo
