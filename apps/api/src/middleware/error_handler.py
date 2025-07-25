@@ -6,6 +6,7 @@ Captura, loga e trata todos os tipos de erros sem mascarar
 import logging
 import traceback
 import sys
+import os
 from datetime import datetime, timezone
 from functools import wraps
 from flask import request, jsonify, current_app
@@ -14,6 +15,11 @@ from sqlalchemy.exc import SQLAlchemyError, IntegrityError, DataError
 from marshmallow import ValidationError
 import jwt
 from typing import Dict, Any, Optional, Tuple
+
+# Criar diretório de logs se não existir
+logs_dir = 'logs'
+if not os.path.exists(logs_dir):
+    os.makedirs(logs_dir, exist_ok=True)
 
 # Configuração de logging
 logging.basicConfig(
