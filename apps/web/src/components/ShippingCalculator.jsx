@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Truck, Package, Clock, DollarSign, Shield, MapPin } from 'lucide-react';
+import { buildApiUrl } from '../config/api.js';
 
 const ShippingCalculator = ({ 
   products = [], 
@@ -28,7 +29,7 @@ const ShippingCalculator = ({
       setLoading(true);
       setError('');
 
-      const response = await fetch('/api/shipping/melhor-envio/calculate', {
+      const response = await fetch(buildApiUrl('api/melhor-envio/calculate'), {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'

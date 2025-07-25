@@ -47,18 +47,26 @@ class MelhorEnvioService:
         Calcula opções de frete entre CEPs
         """
         try:
+            logger.info("🔍 DEBUG calculate_shipping - INÍCIO")
+            
             # Se não tiver API key, retornar valores fixos para desenvolvimento
             if not self.api_key:
                 logger.warning("MELHOR_ENVIO_API_KEY não configurada - usando valores fixos")
+                logger.info("🔍 DEBUG - Chamando _get_fallback_quotes()")
                 return self._get_fallback_quotes()
             
+            logger.info("🔍 DEBUG - Formatando produtos...")
             # Preparar dados para a API
+            formatted_products = self._format_products(products)
+            logger.info(f"🔍 DEBUG - Produtos formatrados: {formatted_products}")
+            
             payload = {
                 "from": {"postal_code": origin_cep.replace('-', '')},
                 "to": {"postal_code": destination_cep.replace('-', '')},
-                "products": self._format_products(products)
+                "products": formatted_products
             }
             
+            logger.info("🔍 DEBUG - Fazendo requisição para API...")
             # Fazer requisição para API
             response = requests.post(
                 f"{self.base_url}/api/v2/me/shipment/calculate",
@@ -69,6 +77,7 @@ class MelhorEnvioService:
             
             if response.status_code == 200:
                 data = response.json()
+                logger.info(f"🔍 DEBUG - Resposta API recebida: {data}")
                 quotes = self._format_quotes(data)
                 
                 logger.info(f"Frete calculado: {origin_cep} → {destination_cep}")
@@ -87,6 +96,8 @@ class MelhorEnvioService:
             return self._get_fallback_quotes()
         except Exception as e:
             logger.error(f"Erro inesperado no cálculo de frete: {str(e)}")
+            import traceback
+            logger.error(f"🔍 DEBUG Stack trace: {traceback.format_exc()}")
             return self._get_fallback_quotes()
 
     def create_shipment(self, order_data: Dict[str, Any]) -> Dict[str, Any]:
@@ -327,8 +338,19 @@ class MelhorEnvioService:
         """
         Formata produtos para envio à API
         """
+        # DEBUG: Log da estrutura recebida
+        logger.info(f"🔍 DEBUG _format_products - Tipo: {type(products)}")
+        logger.info(f"🔍 DEBUG _format_products - Conteúdo: {products}")
+        
         formatted = []
-        for product in products:
+        for i, product in enumerate(products):
+            logger.info(f"🔍 DEBUG Produto {i} - Tipo: {type(product)}, Valor: {product}")
+            
+            # Verificar se product é realmente um dict
+            if not isinstance(product, dict):
+                logger.error(f"❌ ERRO: Produto {i} não é dict! Tipo: {type(product)}")
+                continue
+                
             formatted.append({
                 'id': product.get('id', str(uuid.uuid4())),
                 'width': max(product.get('width', 10), 10),
@@ -340,12 +362,32 @@ class MelhorEnvioService:
             })
         return formatted
 
-    def _format_quotes(self, api_data: Dict) -> List[Dict]:
+    def _format_quotes(self, api_data) -> List[Dict]:
         """
         Formata cotações retornadas pela API
         """
+        logger.info(f"🔍 DEBUG _format_quotes - Tipo: {type(api_data)}")
+        logger.info(f"🔍 DEBUG _format_quotes - Conteúdo: {api_data}")
+        
         quotes = []
-        for item in api_data.get('data', []):
+        
+        # A API do Melhor Envio retorna diretamente uma lista, não um dict com 'data'
+        if isinstance(api_data, list):
+            items = api_data
+        elif isinstance(api_data, dict) and 'data' in api_data:
+            items = api_data['data']
+        else:
+            logger.error(f"❌ Formato inesperado da API: {type(api_data)}")
+            return []
+            
+        logger.info(f"🔍 DEBUG - Processando {len(items)} quotes")
+        
+        for item in items:
+            # Pular items com erro
+            if 'error' in item:
+                logger.warning(f"⚠️ Quote com erro ignorada: {item.get('name')} - {item.get('error')}")
+                continue
+                
             quotes.append({
                 'id': item.get('id'),
                 'name': item.get('name'),
@@ -355,6 +397,8 @@ class MelhorEnvioService:
                 'delivery_time': f"{item.get('delivery_time', 5)} dias úteis",
                 'packages': item.get('packages', [])
             })
+            
+        logger.info(f"🔍 DEBUG - {len(quotes)} quotes processadas com sucesso")
         return quotes
 
     def _prepare_shipment_data(self, order_data: Dict) -> Dict:
