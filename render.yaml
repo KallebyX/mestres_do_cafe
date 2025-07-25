@@ -28,7 +28,6 @@ services:
     rootDir: apps/api
     buildCommand: pip install -r requirements.txt
     startCommand: python src/app.py
-    runtime: python-3.11.9
     envVars:
       - key: FLASK_ENV
         value: production
