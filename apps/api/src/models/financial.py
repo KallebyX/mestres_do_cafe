@@ -14,7 +14,6 @@ from sqlalchemy import (
     String,
     Text,
 )
-from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.sql import func
 
 from database import db
@@ -23,7 +22,7 @@ from database import db
 class FinancialAccount(db.Model):
     __tablename__ = "financial_accounts"
 
-    id = Column(UUID(as_uuid = True), primary_key = True, default = uuid.uuid4)
+    id = Column(String(36), primary_key = True, default=lambda: str(uuid.uuid4()))
     name = Column(String(255), nullable = False)
     type = Column(String(50), nullable = False)
     balance = Column(DECIMAL(12, 2), default = 0.00)
@@ -55,9 +54,9 @@ class FinancialAccount(db.Model):
 class FinancialTransaction(db.Model):
     __tablename__ = "financial_transactions"
 
-    id = Column(UUID(as_uuid = True), primary_key = True, default = uuid.uuid4)
+    id = Column(String(36), primary_key = True, default=lambda: str(uuid.uuid4()))
     account_id = Column(
-        UUID(as_uuid = True), ForeignKey("financial_accounts.id", ondelete="CASCADE")
+        String(36), ForeignKey("financial_accounts.id", ondelete="CASCADE")
     )
     type = Column(String(20), nullable = False)
     category = Column(String(100))
@@ -66,9 +65,9 @@ class FinancialTransaction(db.Model):
 
     # Referências
     customer_id = Column(
-        UUID(as_uuid = True), ForeignKey("customers.id", ondelete="SET NULL")
+        String(36), ForeignKey("customers.id", ondelete="SET NULL")
     )
-    order_id = Column(UUID(as_uuid = True), ForeignKey("orders.id", ondelete="SET NULL"))
+    order_id = Column(String(36), ForeignKey("orders.id", ondelete="SET NULL"))
 
     # Datas
     transaction_date = Column(Date, nullable = False)

@@ -1,41 +1,25 @@
 import React, { createContext, useContext, useEffect, useState, useMemo, useCallback } from 'react';
-import { supabase } from "@/lib/api"
+// Supabase removed - using local API
+// import { supabase } from "@/lib/api"
 import { authAPI } from '../services/api';
 
-const SupabaseAuthContext = createContext({});
+const AuthContext = createContext({});
 
 export const useAuth = () => {
-  const context = useContext(SupabaseAuthContext);
+  const context = useContext(AuthContext);
   if (!context) {
-    throw new Error('useAuth deve ser usado dentro de SupabaseAuthProvider');
+    throw new Error('useAuth deve ser usado dentro de AuthProvider');
   }
   return context;
 };
 
-export const SupabaseAuthProvider = ({ children }) => {
+export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [profile, setProfile] = useState(null);
 
   useEffect(() => {
-    // Verificar sessão inicial - desabilitado temporariamente para usar nossa API
-    // getSession();
-
-    // Listener para mudanças de autenticação - desabilitado temporariamente
-    /* const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
-        if (session?.user) {
-          setUser(session.user);
-          await loadUserProfile(session.user.id);
-        } else {
-          setUser(null);
-          setProfile(null);
-        }
-        setLoading(false);
-      }
-    );
-
-    return () => subscription?.unsubscribe(); */
+    // Auth system migrated from Supabase to local API
     
     // Verificar se há um token salvo localmente
     const savedToken = localStorage.getItem('auth_token');
@@ -47,85 +31,28 @@ export const SupabaseAuthProvider = ({ children }) => {
     setLoading(false);
   }, []);
 
+  // Simplified functions without Supabase dependencies
   const getSession = async () => {
-    try {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (session?.user) {
-        setUser(session.user);
-        await loadUserProfile(session.user.id);
-      }
-    } catch (error) {
-      console.error('Erro ao verificar sessão:', error);
-    } finally {
-      setLoading(false);
-    }
+    // Using local token instead of Supabase session
+    const token = localStorage.getItem('auth_token');
+    return token ? { valid: true } : { valid: false };
   };
 
   const loadUserProfile = async (userId) => {
-    try {
-      const { data, error } = await supabase
-        .from('users')
-        .select('*')
-        .eq('id', userId)
-        .single();
-
-      if (error) {
-        console.error('Erro ao carregar perfil:', error);
-        // Se não encontrar perfil, criar um básico
-        await createUserProfile(userId);
-      } else {
-        setProfile(data);
-      }
-    } catch (error) {
-      console.error('Erro ao carregar perfil do usuário:', error);
-    }
+    // Profile management simplified for local API
+    console.log('Profile loading simplified - Supabase removed');
   };
 
   const createUserProfile = async (userId) => {
-    try {
-      const { data: { user: authUser } } = await supabase.auth.getUser();
-      
-      // Extrair informações do Google se disponíveis
-      const isGoogleUser = authUser.app_metadata?.provider === 'google';
-      const googleData = authUser.user_metadata || {};
-      
-      const profileData = {
-        id: userId,
-        email: authUser.email,
-        name: googleData.name || authUser.email?.split('@')[0] || 'Usuário',
-        avatar_url: googleData.avatar_url || googleData.picture || null,
-        user_type: 'cliente_pf',
-        points: 0,
-        level: 'Bronze',
-        role: 'customer',
-        permissions: ['read'],
-        provider: isGoogleUser ? 'google' : 'email',
-        google_id: isGoogleUser ? googleData.sub : null,
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString()
-      };
-
-      const { data, error } = await supabase
-        .from('users')
-        .insert([profileData])
-        .select()
-        .single();
-
-      if (error) {
-        console.error('Erro ao criar perfil:', error);
-      } else {
-        setProfile(data);
-      }
-    } catch (error) {
-      console.error('Erro ao criar perfil do usuário:', error);
-    }
+    // Profile creation simplified for local API
+    console.log('Profile creation simplified - Supabase removed');
   };
 
   const login = async (email, password) => {
     try {
       setLoading(true);
       
-      // Tentar primeiro com nossa API simples
+      // Use our local API only (Supabase removed)
       const apiResult = await authAPI.login({ email, password });
       
       console.log('🔍 API Result:', apiResult);
@@ -141,7 +68,7 @@ export const SupabaseAuthProvider = ({ children }) => {
           'final isAdmin': isAdmin
         });
         
-        // Criar um perfil temporário baseado na resposta da API
+        // Criar um perfil baseado na resposta da API
         const tempProfile = {
           id: userData.id,
           email: userData.email,
@@ -176,22 +103,9 @@ export const SupabaseAuthProvider = ({ children }) => {
         };
       }
       
-      // Se a API falhar, tentar Supabase
-      const { data, error } = await supabase.auth.signInWithPassword({
-        email,
-        password
-      });
-
-      if (error) {
-        return { 
-          success: false, 
-          error: apiResult.error || error.message || 'Erro ao fazer login'
-        };
-      }
-
       return { 
-        success: true, 
-        user: data.user 
+        success: false, 
+        error: apiResult.error || 'Erro ao fazer login'
       };
     } catch (error) {
       return { 
@@ -207,58 +121,30 @@ export const SupabaseAuthProvider = ({ children }) => {
     try {
       setLoading(true);
       
-      // Registrar usuário no Supabase Auth
-      const { data, error } = await supabase.auth.signUp({
+      // Use our local API for registration (Supabase removed)
+      const apiResult = await authAPI.register({
         email,
         password,
-        options: {
-          data: {
-            name: userData.name || 'Usuário'
-          }
-        }
+        name: userData.name || 'Usuário',
+        phone: userData.phone || '',
+        cpf_cnpj: userData.cpf_cnpj || '',
+        company_name: userData.company_name || '',
+        company_segment: userData.company_segment || '',
+        accountType: userData.accountType || 'individual'
       });
 
-      if (error) {
+      if (apiResult.success) {
+        return { 
+          success: true, 
+          user: apiResult.data,
+          message: 'Conta criada com sucesso!'
+        };
+      } else {
         return { 
           success: false, 
-          error: error.message || 'Erro ao criar conta'
+          error: apiResult.error || 'Erro ao criar conta'
         };
       }
-
-      // Se o registro foi bem-sucedido e temos um usuário
-      if (data.user) {
-        // Criar perfil na tabela users
-        const profileData = {
-          id: data.user.id,
-          email: email,
-          name: userData.name || 'Usuário',
-          phone: userData.phone || '',
-          cpf_cnpj: userData.cpf_cnpj || '',
-          company_name: userData.company_name || '',
-          company_segment: userData.company_segment || '',
-          user_type: userData.accountType || 'cliente_pf',
-          points: 0,
-          level: 'Bronze',
-          role: 'customer',
-          permissions: ['read'],
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString()
-        };
-
-        const { error: profileError } = await supabase
-          .from('users')
-          .insert([profileData]);
-
-        if (profileError) {
-          console.error('Erro ao criar perfil:', profileError);
-        }
-      }
-
-      return { 
-        success: true, 
-        user: data.user,
-        message: 'Conta criada com sucesso! Verifique seu email para confirmar.'
-      };
     } catch (error) {
       return { 
         success: false, 
@@ -269,90 +155,25 @@ export const SupabaseAuthProvider = ({ children }) => {
     }
   };
 
-  // Login com Google
+  // OAuth functions disabled (Supabase removed)
   const loginWithGoogle = async () => {
-    try {
-      setLoading(true);
-      
-      const { data, error } = await supabase.auth.signInWithOAuth({
-        provider: 'google',
-        options: {
-          redirectTo: `${window.location.origin}/auth/callback`,
-          queryParams: {
-            access_type: 'offline',
-            prompt: 'consent',
-          }
-        }
-      });
-
-      if (error) {
-        return { 
-          success: false, 
-          error: error.message || 'Erro ao fazer login com Google'
-        };
-      }
-
-      return { 
-        success: true,
-        message: 'Redirecionando para o Google...'
-      };
-    } catch (error) {
-      return { 
-        success: false, 
-        error: 'Erro inesperado ao fazer login com Google' 
-      };
-    } finally {
-      setLoading(false);
-    }
+    return { 
+      success: false, 
+      error: 'Login com Google não disponível (Supabase removido)'
+    };
   };
 
-  // Cadastro com Google (mesmo fluxo do login)
   const registerWithGoogle = async () => {
-    try {
-      setLoading(true);
-      
-      const { data, error } = await supabase.auth.signInWithOAuth({
-        provider: 'google',
-        options: {
-          redirectTo: `${window.location.origin}/auth/callback`,
-          queryParams: {
-            access_type: 'offline',
-            prompt: 'consent',
-          }
-        }
-      });
-
-      if (error) {
-        return { 
-          success: false, 
-          error: error.message || 'Erro ao criar conta com Google'
-        };
-      }
-
-      return { 
-        success: true,
-        message: 'Redirecionando para o Google...'
-      };
-    } catch (error) {
-      return { 
-        success: false, 
-        error: 'Erro inesperado ao criar conta com Google' 
-      };
-    } finally {
-      setLoading(false);
-    }
+    return { 
+      success: false, 
+      error: 'Cadastro com Google não disponível (Supabase removido)'
+    };
   };
 
   const logout = async () => {
     try {
       // Limpar token local
       localStorage.removeItem('auth_token');
-      
-      const { error } = await supabase.auth.signOut();
-      if (error) {
-        console.error('Erro ao fazer logout:', error);
-        // Mesmo com erro do Supabase, vamos limpar o estado local
-      }
       
       setUser(null);
       setProfile(null);
@@ -362,62 +183,23 @@ export const SupabaseAuthProvider = ({ children }) => {
     }
   };
 
+  // Simplified functions without Supabase
   const updateProfile = async (updates) => {
-    try {
-      if (!user) {
-        return { success: false, error: 'Usuário não autenticado' };
-      }
-
-      const { error } = await supabase
-        .from('users')
-        .update({
-          ...updates,
-          updated_at: new Date().toISOString()
-        })
-        .eq('id', user.id);
-
-      if (error) {
-        return { success: false, error: error.message };
-      }
-
-      // Atualizar o estado local
-      setProfile(prev => ({ ...prev, ...updates }));
-      return { success: true };
-    } catch (error) {
-      return { success: false, error: 'Erro ao atualizar perfil' };
+    if (!user) {
+      return { success: false, error: 'Usuário não autenticado' };
     }
+    
+    // Update local state only (Supabase removed)
+    setProfile(prev => ({ ...prev, ...updates }));
+    return { success: true };
   };
 
   const updatePassword = async (newPassword) => {
-    try {
-      const { error } = await supabase.auth.updateUser({
-        password: newPassword
-      });
-
-      if (error) {
-        return { success: false, error: error.message };
-      }
-
-      return { success: true };
-    } catch (error) {
-      return { success: false, error: 'Erro ao atualizar senha' };
-    }
+    return { success: false, error: 'Atualização de senha não disponível (Supabase removido)' };
   };
 
   const resetPassword = async (email) => {
-    try {
-      const { error } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: `${window.location.origin}/reset-password`
-      });
-
-      if (error) {
-        return { success: false, error: error.message };
-      }
-
-      return { success: true };
-    } catch (error) {
-      return { success: false, error: 'Erro ao enviar email de recuperação' };
-    }
+    return { success: false, error: 'Recuperação de senha não disponível (Supabase removido)' };
   };
 
   const getCurrentUser = () => {
@@ -452,93 +234,39 @@ export const SupabaseAuthProvider = ({ children }) => {
     return profile?.role === 'super_admin';
   }, [profile?.role]);
 
-  // Funções administrativas
+  // Simplified administrative functions (Supabase removed)
   const promoteToAdmin = async (userId) => {
-    try {
-      if (!isSuperAdmin) {
-        return { success: false, error: 'Permissão negada' };
-      }
-
-      const { error } = await supabase
-        .from('users')
-        .update({
-          role: 'admin',
-          permissions: ['read', 'write', 'admin'],
-          updated_at: new Date().toISOString()
-        })
-        .eq('id', userId);
-
-      if (error) {
-        return { success: false, error: error.message };
-      }
-
-      return { success: true };
-    } catch (error) {
-      return { success: false, error: 'Erro ao promover usuário' };
-    }
+    return { success: false, error: 'Função administrativa não disponível (Supabase removido)' };
   };
 
   const revokeAdmin = async (userId) => {
-    try {
-      if (!isSuperAdmin) {
-        return { success: false, error: 'Permissão negada' };
-      }
-
-      const { error } = await supabase
-        .from('users')
-        .update({
-          role: 'customer',
-          permissions: ['read'],
-          updated_at: new Date().toISOString()
-        })
-        .eq('id', userId);
-
-      if (error) {
-        return { success: false, error: error.message };
-      }
-
-      return { success: true };
-    } catch (error) {
-      return { success: false, error: 'Erro ao revogar permissões' };
-    }
+    return { success: false, error: 'Função administrativa não disponível (Supabase removido)' };
   };
 
-  // Funções de pontos e gamificação
   const addPoints = async (points, reason = 'Atividade') => {
-    try {
-      if (!user || !profile) return { success: false, error: 'Usuário não autenticado' };
+    if (!user || !profile) return { success: false, error: 'Usuário não autenticado' };
+    
+    const newPoints = (profile.points || 0) + points;
+    const newLevel = calculateLevel(newPoints);
+    
+    setProfile(prev => ({ ...prev, points: newPoints, level: newLevel }));
+    return { success: true, newLevel: newLevel !== profile.level };
+  };
 
-      const newPoints = (profile.points || 0) + points;
-      const newLevel = calculateLevel(newPoints);
+  const getUserStats = async () => {
+    return null; // Statistics not available (Supabase removed)
+  };
 
-      const { error } = await supabase
-        .from('users')
-        .update({
-          points: newPoints,
-          level: newLevel,
-          updated_at: new Date().toISOString()
-        })
-        .eq('id', user.id);
+  const activateAdminCreatedAccount = async (password) => {
+    return { success: false, error: 'Ativação de conta não disponível (Supabase removido)' };
+  };
 
-      if (error) {
-        return { success: false, error: error.message };
-      }
+  const requestPasswordReset = async (email) => {
+    return { success: false, error: 'Recuperação de senha não disponível (Supabase removido)' };
+  };
 
-      // Registrar histórico de pontos
-      await supabase
-        .from('points_history')
-        .insert({
-          user_id: user.id,
-          points: points,
-          reason: reason,
-          created_at: new Date().toISOString()
-        });
-
-      setProfile(prev => ({ ...prev, points: newPoints, level: newLevel }));
-      return { success: true, newLevel: newLevel !== profile.level };
-    } catch (error) {
-      return { success: false, error: 'Erro ao adicionar pontos' };
-    }
+  const confirmPasswordReset = async (newPassword) => {
+    return { success: false, error: 'Redefinição de senha não disponível (Supabase removido)' };
   };
 
   const calculateLevel = (points) => {
@@ -547,168 +275,6 @@ export const SupabaseAuthProvider = ({ children }) => {
     if (points >= 1500) return 'Ouro';
     if (points >= 500) return 'Prata';
     return 'Bronze';
-  };
-
-  // Analytics e métricas
-  const getUserStats = async () => {
-    try {
-      if (!user) return null;
-
-      const { data, error } = await supabase
-        .from('user_stats')
-        .select('*')
-        .eq('user_id', user.id)
-        .single();
-
-      if (error && error.code !== 'PGRST116') {
-        console.error('Erro ao buscar estatísticas:', error);
-        return null;
-      }
-
-      return data;
-    } catch (error) {
-      console.error('Erro ao buscar estatísticas do usuário:', error);
-      return null;
-    }
-  };
-
-  // Ativar conta criada pelo admin
-  const activateAdminCreatedAccount = async (password) => {
-    try {
-      if (!user || !profile) {
-        return { success: false, error: 'Usuário não autenticado' };
-      }
-
-      if (!profile.criado_por_admin || !profile.pendente_ativacao) {
-        return { success: false, error: 'Esta conta não precisa ser ativada' };
-      }
-
-      // Atualizar senha no Supabase Auth
-      const { error: authError } = await supabase.auth.updateUser({
-        password: password
-      });
-
-      if (authError) {
-        return { success: false, error: authError.message };
-      }
-
-      // Atualizar status na tabela users
-      const { error: profileError } = await supabase
-        .from('users')
-        .update({
-          pendente_ativacao: false,
-          data_ativacao: new Date().toISOString(),
-          updated_at: new Date().toISOString()
-        })
-        .eq('id', user.id);
-
-      if (profileError) {
-        return { success: false, error: profileError.message };
-      }
-
-      // Atualizar estado local
-      setProfile(prev => ({
-        ...prev,
-        pendente_ativacao: false,
-        data_ativacao: new Date().toISOString()
-      }));
-
-      return { 
-        success: true, 
-        message: 'Conta ativada com sucesso!' 
-      };
-    } catch (error) {
-      console.error('Erro ao ativar conta:', error);
-      return { 
-        success: false, 
-        error: 'Erro interno ao ativar conta' 
-      };
-    }
-  };
-
-  // Função para solicitar redefinição de senha
-  const requestPasswordReset = async (email) => {
-    try {
-      setLoading(true);
-      
-      // Garantir que estamos na porta correta (importante para desenvolvimento)
-      let redirectURL;
-      if (window.location.hostname === 'localhost') {
-        redirectURL = 'http://localhost:5173/redefinir-senha';
-      } else {
-        redirectURL = `${window.location.origin}/redefinir-senha`;
-      }
-      
-      const { data, error } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: redirectURL
-      });
-
-      if (error) {
-        console.error('❌ Erro no resetPasswordForEmail:', error);
-        
-        // Mensagens de erro mais específicas
-        let errorMessage = 'Erro ao enviar email de redefinição.';
-        if (error.message.includes('rate limit')) {
-          errorMessage = 'Muitas tentativas. Aguarde alguns minutos e tente novamente.';
-        } else if (error.message.includes('not found') || error.message.includes('User not found')) {
-          errorMessage = 'Email não encontrado. Verifique se o email está correto.';
-        } else if (error.message.includes('invalid')) {
-          errorMessage = 'Email inválido. Verifique o formato do email.';
-        } else if (error.message.includes('signup')) {
-          errorMessage = 'Este email não possui conta. Faça o cadastro primeiro.';
-        }
-        
-        return { 
-          success: false, 
-          error: errorMessage
-        };
-      }
-
-      return { 
-        success: true, 
-        message: 'Email de redefinição enviado! Verifique sua caixa de entrada e spam.' 
-      };
-    } catch (err) {
-      console.error('❌ Erro no requestPasswordReset:', err);
-      return { 
-        success: false, 
-        error: 'Erro de conexão com o servidor. Tente novamente.' 
-      };
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // Função para redefinir senha com token (não usada mais - feita diretamente na página)
-  const confirmPasswordReset = async (newPassword) => {
-    try {
-      setLoading(true);
-      
-      const { error } = await supabase.auth.updateUser({
-        password: newPassword
-      });
-
-      if (error) {
-        console.error('Erro no confirmPasswordReset:', error);
-        return { 
-          success: false, 
-          error: error.message || 'Erro ao redefinir senha. Token pode ter expirado.' 
-        };
-      }
-
-      return { 
-        success: true, 
-        message: 'Senha redefinida com sucesso!' 
-      };
-    } catch (err) {
-      console.error('Erro no confirmPasswordReset:', err);
-      return { 
-        success: false, 
-        error: 'Erro de conexão. Tente novamente.' 
-      };
-    } finally {
-      setLoading(false);
-    }
   };
 
   const value = {
@@ -739,10 +305,10 @@ export const SupabaseAuthProvider = ({ children }) => {
   };
 
   return (
-    <SupabaseAuthContext.Provider value={value}>
+    <AuthContext.Provider value={value}>
       {children}
-    </SupabaseAuthContext.Provider>
+    </AuthContext.Provider>
   );
 };
 
-export default SupabaseAuthContext; 
+export default AuthContext; 

@@ -5,7 +5,6 @@ Modelos de mídia e arquivos
 import uuid
 
 from sqlalchemy import Column, DateTime, ForeignKey, Integer, String, Text
-from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.sql import func
 
 from database import db
@@ -14,7 +13,7 @@ from database import db
 class MediaFile(db.Model):
     __tablename__ = "media_files"
 
-    id = Column(UUID(as_uuid = True), primary_key = True, default = uuid.uuid4)
+    id = Column(String(36), primary_key = True, default=lambda: str(uuid.uuid4()))
     filename = Column(String(255), nullable = False)
     original_filename = Column(String(255), nullable = False)
     file_path = Column(Text, nullable = False)
@@ -25,11 +24,11 @@ class MediaFile(db.Model):
 
     # Associações
     product_id = Column(
-        UUID(as_uuid = True), ForeignKey("products.id", ondelete="SET NULL")
+        String(36), ForeignKey("products.id", ondelete="SET NULL")
     )
     # TODO: Implementar blog_posts quando necessário
     # blog_post_id = Column(
-    #     UUID(as_uuid = True), ForeignKey("blog_posts.id", ondelete="SET NULL")
+    #     String(36), ForeignKey("blog_posts.id", ondelete="SET NULL")
     # )
 
     # Metadados

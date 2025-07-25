@@ -11,7 +11,6 @@ from sqlalchemy import (
     Text,
     text,
 )
-from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
 
 from database import db
@@ -20,8 +19,8 @@ from database import db
 class Wishlist(db.Model):
     __tablename__ = "wishlists"
 
-    id = Column(UUID(as_uuid = True), primary_key = True, default = uuid.uuid4)
-    user_id = Column(UUID(as_uuid = True), ForeignKey("users.id"), nullable = False)
+    id = Column(String(36), primary_key = True, default=lambda: str(uuid.uuid4()))
+    user_id = Column(String(36), ForeignKey("users.id"), nullable = False)
     name = Column(String(255), default="Minha Lista de Desejos")
     description = Column(Text)
     is_public = Column(Boolean, default = False)
@@ -53,9 +52,9 @@ class Wishlist(db.Model):
 class WishlistItem(db.Model):
     __tablename__ = "wishlist_items"
 
-    id = Column(UUID(as_uuid = True), primary_key = True, default = uuid.uuid4)
-    wishlist_id = Column(UUID(as_uuid = True), ForeignKey("wishlists.id"), nullable = False)
-    product_id = Column(UUID(as_uuid = True), ForeignKey("products.id"), nullable = False)
+    id = Column(String(36), primary_key = True, default=lambda: str(uuid.uuid4()))
+    wishlist_id = Column(String(36), ForeignKey("wishlists.id"), nullable = False)
+    product_id = Column(String(36), ForeignKey("products.id"), nullable = False)
     notes = Column(Text)
     priority = Column(String(20), default="medium")  # low, medium, high
     created_at = Column(DateTime, default = datetime.utcnow)
@@ -83,10 +82,10 @@ class WishlistItem(db.Model):
 class WishlistShare(db.Model):
     __tablename__ = "wishlist_shares"
 
-    id = Column(UUID(as_uuid = True), primary_key = True, default = uuid.uuid4)
-    wishlist_id = Column(UUID(as_uuid = True), ForeignKey("wishlists.id"), nullable = False)
+    id = Column(String(36), primary_key = True, default=lambda: str(uuid.uuid4()))
+    wishlist_id = Column(String(36), ForeignKey("wishlists.id"), nullable = False)
     shared_with_user_id = Column(
-        UUID(as_uuid = True), ForeignKey("users.id"), nullable = False
+        String(36), ForeignKey("users.id"), nullable = False
     )
     share_token = Column(String(255), unique = True)
     permission_level = Column(String(20), default="view")  # view, edit

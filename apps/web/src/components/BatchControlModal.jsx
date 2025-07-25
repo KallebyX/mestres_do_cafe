@@ -5,7 +5,8 @@ import {
   Hash, Truck, FileText, Search
 } from 'lucide-react';
 import { useNotifications } from '../contexts/NotificationContext';
-import { supabase } from "@/lib/api"
+// Supabase removed - batch control functionality uses mock data
+// import { supabase } from "@/lib/api"
 
 const BatchControlModal = ({ 
   isOpen, 
@@ -42,41 +43,44 @@ const BatchControlModal = ({
   const loadBatchData = async () => {
     setLoading(true);
     try {
-      // Carregar lotes reais do Supabase
-      const { data, error } = await supabase
-        .from('product_batches')
-        .select(`
-          *,
-          product:products(name, sku)
-        `)
-        .eq('product_id', product.id)
-        .order('created_at', { ascending: false });
-
-      if (error) {
-        console.error('Erro ao buscar lotes:', error);
-        setBatches([]);
-      } else {
-        setBatches(data || []);
+      // Mock data for batch control - Supabase removed
+      console.warn('Batch data loading disabled - using mock data (Supabase removed)');
+      
+      // Set mock batches data
+      const mockBatches = [
+        {
+          id: 'batch-1',
+          batch_number: 'LOT202401001',
+          manufacturing_date: '2024-01-15',
+          expiry_date: '2024-07-15',
+          supplier_batch: 'FORN001',
+          quantity: 100,
+          available_quantity: 85,
+          unit_cost: 15.50,
+          quality_status: 'aprovado',
+          status: 'ativo',
+          location: 'A1-01',
+          notes: 'Lote de alta qualidade',
+          created_at: '2024-01-15T10:00:00Z'
         }
-
-      // Carregar movimentações de lotes reais
-      const { data: movementsData, error: movementsError } = await supabase
-        .from('batch_movements')
-        .select(`
-          *,
-          batch:product_batches(batch_number),
-          user:users(name)
-        `)
-        .eq('product_id', product.id)
-        .order('created_at', { ascending: false })
-        .limit(20);
-
-      if (movementsError) {
-        console.error('Erro ao buscar movimentações de lotes:', movementsError);
-        setMovements([]);
-      } else {
-        setMovements(movementsData || []);
+      ];
+      
+      const mockMovements = [
+        {
+          id: 'mov-1',
+          batch_id: 'batch-1',
+          batch_number: 'LOT202401001',
+          type: 'entrada',
+          quantity: 100,
+          date: '2024-01-15',
+          reason: 'Novo lote criado',
+          document: '-',
+          user: 'Sistema'
         }
+      ];
+      
+      setBatches(mockBatches);
+      setMovements(mockMovements);
 
     } catch (error) {
       console.error('❌ Erro ao carregar dados de lotes:', error);

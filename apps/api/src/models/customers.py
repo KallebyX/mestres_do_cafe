@@ -15,7 +15,6 @@ from sqlalchemy import (
     String,
     Text,
 )
-from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 
@@ -25,8 +24,8 @@ from database import db
 class Customer(db.Model):
     __tablename__ = 'customers'
 
-    id = Column(UUID(as_uuid = True), primary_key = True, default = uuid.uuid4)
-    user_id = Column(UUID(as_uuid = True), ForeignKey('users.id', ondelete='SET NULL'))
+    id = Column(String(36), primary_key = True, default=lambda: str(uuid.uuid4()))
+    user_id = Column(String(36), ForeignKey('users.id', ondelete='SET NULL'))
     name = Column(String(255), nullable = False)
     email = Column(String(255), nullable = False)
     phone = Column(String(20))
@@ -99,9 +98,9 @@ class Customer(db.Model):
 class CustomerAddress(db.Model):
     __tablename__ = 'customer_addresses'
 
-    id = Column(UUID(as_uuid = True), primary_key = True, default = uuid.uuid4)
+    id = Column(String(36), primary_key = True, default=lambda: str(uuid.uuid4()))
     customer_id = Column(
-        UUID(as_uuid = True),
+        String(36),
         ForeignKey('customers.id', ondelete='CASCADE')
     )
     type = Column(String(20), default='delivery')
@@ -145,7 +144,7 @@ class CustomerAddress(db.Model):
 class Lead(db.Model):
     __tablename__ = 'leads'
 
-    id = Column(UUID(as_uuid = True), primary_key = True, default = uuid.uuid4)
+    id = Column(String(36), primary_key = True, default=lambda: str(uuid.uuid4()))
     name = Column(String(255), nullable = False)
     email = Column(String(255), nullable = False)
     phone = Column(String(20))
@@ -156,11 +155,11 @@ class Lead(db.Model):
     estimated_value = Column(DECIMAL(10, 2))
     conversion_probability = Column(Integer, default = 0)
     assigned_to = Column(
-        UUID(as_uuid = True),
+        String(36),
         ForeignKey('users.id', ondelete='SET NULL')
     )
     customer_id = Column(
-        UUID(as_uuid = True),
+        String(36),
         ForeignKey('customers.id', ondelete='SET NULL')
     )
     notes = Column(Text)
@@ -201,17 +200,17 @@ class Lead(db.Model):
 class Contact(db.Model):
     __tablename__ = 'contacts'
 
-    id = Column(UUID(as_uuid = True), primary_key = True, default = uuid.uuid4)
+    id = Column(String(36), primary_key = True, default=lambda: str(uuid.uuid4()))
     customer_id = Column(
-        UUID(as_uuid = True),
+        String(36),
         ForeignKey('customers.id', ondelete='CASCADE')
     )
     lead_id = Column(
-        UUID(as_uuid = True),
+        String(36),
         ForeignKey('leads.id', ondelete='CASCADE')
     )
     user_id = Column(
-        UUID(as_uuid = True),
+        String(36),
         ForeignKey('users.id', ondelete='SET NULL')
     )
     type = Column(String(20), nullable = False)
@@ -248,7 +247,7 @@ class Contact(db.Model):
 class CustomerSegment(db.Model):
     __tablename__ = 'customer_segments'
 
-    id = Column(UUID(as_uuid = True), primary_key = True, default = uuid.uuid4)
+    id = Column(String(36), primary_key = True, default=lambda: str(uuid.uuid4()))
     name = Column(String(255), nullable = False)
     description = Column(Text)
     criteria = Column(Text)  # JSON como TEXT
@@ -286,13 +285,13 @@ class CustomerSegment(db.Model):
 class CustomerSegmentMembership(db.Model):
     __tablename__ = 'customer_segment_memberships'
 
-    id = Column(UUID(as_uuid = True), primary_key = True, default = uuid.uuid4)
+    id = Column(String(36), primary_key = True, default=lambda: str(uuid.uuid4()))
     customer_id = Column(
-        UUID(as_uuid = True),
+        String(36),
         ForeignKey('customers.id', ondelete='CASCADE')
     )
     segment_id = Column(
-        UUID(as_uuid = True),
+        String(36),
         ForeignKey('customer_segments.id', ondelete='CASCADE')
     )
     added_at = Column(DateTime, default = func.now())

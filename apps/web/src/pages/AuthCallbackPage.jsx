@@ -1,19 +1,21 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { supabase } from "@/lib/api"
-import { Coffee, Shield, CheckCircle } from 'lucide-react';
+// Supabase removed - OAuth callback disabled
+// import { supabase } from "@/lib/api"
+import { Coffee, Shield, AlertCircle } from 'lucide-react';
 import Logo from '../components/Logo';
 
 const AuthCallbackPage = () => {
   const navigate = useNavigate();
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('OAuth authentication não está disponível (Supabase removido)');
 
   useEffect(() => {
-    handleAuthCallback();
-  }, []);
-
-  const handleAuthCallback = async () => {
+    // OAuth callback disabled (Supabase removed)
+    setTimeout(() => {
+      navigate('/login');
+    }, 3000);
+  }, [navigate]);
     try {
       // Obter sessão do callback
       const { data: { session }, error: sessionError } = await supabase.auth.getSession();

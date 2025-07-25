@@ -5,7 +5,6 @@ Modelos de sistema
 import uuid
 
 from sqlalchemy import Boolean, Column, DateTime, ForeignKey, String, Text
-from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.sql import func
 
 from database import db
@@ -14,7 +13,7 @@ from database import db
 class SystemSetting(db.Model):
     __tablename__ = "system_settings"
 
-    id = Column(UUID(as_uuid = True), primary_key = True, default = uuid.uuid4)
+    id = Column(String(36), primary_key = True, default=lambda: str(uuid.uuid4()))
     key = Column(String(255), unique = True, nullable = False)
     value = Column(Text)
     type = Column(String(20), default="string")
@@ -42,7 +41,7 @@ class SystemSetting(db.Model):
 class SystemLog(db.Model):
     __tablename__ = "system_logs"
 
-    id = Column(UUID(as_uuid = True), primary_key = True, default = uuid.uuid4)
+    id = Column(String(36), primary_key = True, default=lambda: str(uuid.uuid4()))
     level = Column(String(20), nullable = False)
     message = Column(Text, nullable = False)
     module = Column(String(100))
@@ -52,7 +51,7 @@ class SystemLog(db.Model):
     exception_message = Column(Text)
     stack_trace = Column(Text)
     request_id = Column(String(100))
-    user_id = Column(UUID(as_uuid = True), ForeignKey("users.id", ondelete="SET NULL"))
+    user_id = Column(String(36), ForeignKey("users.id", ondelete="SET NULL"))
     ip_address = Column(String(45))
     user_agent = Column(Text)
     created_at = Column(DateTime, default = func.now())
@@ -82,8 +81,8 @@ class SystemLog(db.Model):
 class AuditLog(db.Model):
     __tablename__ = "audit_logs"
 
-    id = Column(UUID(as_uuid = True), primary_key = True, default = uuid.uuid4)
-    user_id = Column(UUID(as_uuid = True), ForeignKey("users.id", ondelete="SET NULL"))
+    id = Column(String(36), primary_key = True, default=lambda: str(uuid.uuid4()))
+    user_id = Column(String(36), ForeignKey("users.id", ondelete="SET NULL"))
     table_name = Column(String(100), nullable = False)
     record_id = Column(String(100), nullable = False)
     action = Column(String(20), nullable = False)

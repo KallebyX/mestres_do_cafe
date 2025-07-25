@@ -1,13 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { supabase } from "@/lib/api"
-import { Mail, ArrowLeft, CheckCircle, AlertCircle } from 'lucide-react';
+// Supabase removed - password reset disabled  
+// import { supabase } from "@/lib/api"
+import { Mail, ArrowLeft, AlertCircle } from 'lucide-react';
 
 const ForgotPasswordPage = () => {
   const location = useLocation();
   const [email, setEmail] = useState('');
   const [isSubmitted, setIsSubmitted] = useState(false);
-  const [error, setError] = useState('');
+  const [error, setError] = useState('Recuperação de senha não está disponível (Supabase removido)');
   const [success, setSuccess] = useState('');
   const [loading, setLoading] = useState(false);
 

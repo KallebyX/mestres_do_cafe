@@ -3,7 +3,6 @@ Modelos de pagamentos e transações
 """
 
 from sqlalchemy import Column, String, Text, Integer, Boolean, DateTime, ForeignKey
-from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
 from sqlalchemy.types import DECIMAL
 from datetime import datetime
@@ -27,9 +26,9 @@ class PaymentStatus(Enum):
 class Payment(db.Model):
     __tablename__ = 'payments'
 
-    id = Column(UUID(as_uuid = True), primary_key = True, default = uuid4)
-    order_id = Column(UUID(as_uuid = True), ForeignKey('orders.id'))
-    vendor_id = Column(UUID(as_uuid = True), ForeignKey('vendors.id'))  # Para split payments
+    id = Column(String(36), primary_key = True, default = uuid4)
+    order_id = Column(String(36), ForeignKey('orders.id'))
+    vendor_id = Column(String(36), ForeignKey('vendors.id'))  # Para split payments
     amount = Column(DECIMAL(10, 2), nullable = False)
     currency = Column(String(3), default='BRL')
     status = Column(String(20), default='pending')
@@ -107,9 +106,9 @@ class Payment(db.Model):
 class Refund(db.Model):
     __tablename__ = 'refunds'
 
-    id = Column(UUID(as_uuid = True), primary_key = True, default = uuid4)
-    payment_id = Column(UUID(as_uuid = True), ForeignKey('payments.id'))
-    order_id = Column(UUID(as_uuid = True), ForeignKey('orders.id'))
+    id = Column(String(36), primary_key = True, default = uuid4)
+    payment_id = Column(String(36), ForeignKey('payments.id'))
+    order_id = Column(String(36), ForeignKey('orders.id'))
     amount = Column(DECIMAL(10, 2), nullable = False)
     reason = Column(String(255))
     status = Column(String(20), default='pending')
@@ -143,11 +142,11 @@ class Refund(db.Model):
 class PaymentDispute(db.Model):
     __tablename__ = 'payment_disputes'
 
-    id = Column(UUID(as_uuid = True), primary_key = True, default = uuid4)
-    payment_id = Column(UUID(as_uuid = True), ForeignKey('payments.id'))
-    order_id = Column(UUID(as_uuid = True), ForeignKey('orders.id'))
-    customer_id = Column(UUID(as_uuid = True), ForeignKey('customers.id'))
-    vendor_id = Column(UUID(as_uuid = True), ForeignKey('vendors.id'))
+    id = Column(String(36), primary_key = True, default = uuid4)
+    payment_id = Column(String(36), ForeignKey('payments.id'))
+    order_id = Column(String(36), ForeignKey('orders.id'))
+    customer_id = Column(String(36), ForeignKey('customers.id'))
+    vendor_id = Column(String(36), ForeignKey('vendors.id'))
 
     # Detalhes da disputa
     reason = Column(String(100), nullable = False)  # 'not_delivered', 'damaged', 'not_as_described', 'other'
@@ -157,7 +156,7 @@ class PaymentDispute(db.Model):
     # Resolução
     resolution = Column(String(100))  # 'refund', 'partial_refund', 'replace', 'favor_vendor'
     resolution_notes = Column(Text)
-    resolved_by = Column(UUID(as_uuid = True), ForeignKey('users.id'))
+    resolved_by = Column(String(36), ForeignKey('users.id'))
     resolved_at = Column(DateTime)
 
     # Controle
@@ -196,10 +195,10 @@ class PaymentDispute(db.Model):
 class EscrowTransaction(db.Model):
     __tablename__ = 'escrow_transactions'
 
-    id = Column(UUID(as_uuid = True), primary_key = True, default = uuid4)
-    payment_id = Column(UUID(as_uuid = True), ForeignKey('payments.id'))
-    order_id = Column(UUID(as_uuid = True), ForeignKey('orders.id'))
-    vendor_id = Column(UUID(as_uuid = True), ForeignKey('vendors.id'))
+    id = Column(String(36), primary_key = True, default = uuid4)
+    payment_id = Column(String(36), ForeignKey('payments.id'))
+    order_id = Column(String(36), ForeignKey('orders.id'))
+    vendor_id = Column(String(36), ForeignKey('vendors.id'))
 
     # Valores do escrow
     amount = Column(DECIMAL(10, 2), nullable = False)
@@ -243,7 +242,7 @@ class EscrowTransaction(db.Model):
 class PaymentWebhook(db.Model):
     __tablename__ = 'payment_webhooks'
 
-    id = Column(UUID(as_uuid = True), primary_key = True, default = uuid4)
+    id = Column(String(36), primary_key = True, default = uuid4)
     provider = Column(String(50), nullable = False)
     event_type = Column(String(100), nullable = False)
     payload = Column(Text, nullable = False)

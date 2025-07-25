@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
-import { supabase } from "@/lib/api";
+// Supabase removed - orders will use mock data
+// import { supabase } from "@/lib/api";
 import ShippingTracker from '../components/ShippingTracker';
 import { Package, Truck, Eye, X } from 'lucide-react';
 
