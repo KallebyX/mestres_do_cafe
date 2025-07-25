@@ -736,5 +736,20 @@ export const shippingAPI = {
   }
 };
 
+// =============================================
+// EXPORTS PARA COMPATIBILIDADE
+// =============================================
+
+// Funções para compatibilidade com imports diretos
+export const getAllProducts = productsAPI.getAll;
+export const getProductById = productsAPI.getById;
+export const getFeaturedProducts = productsAPI.getFeatured;
+
+// Função específica para testimonials (usando reviews featured)
+export const getFeaturedTestimonials = reviewsAPI.getFeatured;
+
+// Função getFiltered (wrapper para getAllProducts com filtros)
+export const getFiltered = (filters = {}) => productsAPI.getAll(filters);
+
 // Exportar instância do axios para uso direto se necessário
 export default api;
