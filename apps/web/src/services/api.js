@@ -749,7 +749,21 @@ export const getFeaturedProducts = productsAPI.getFeatured;
 export const getFeaturedTestimonials = reviewsAPI.getFeatured;
 
 // Função getFiltered (wrapper para getAllProducts com filtros)
-export const getFiltered = (filters = {}) => productsAPI.getAll(filters);
+export const getFiltered = (table, filters = {}, options = {}) => {
+  console.log('🔧 getFiltered chamada com:', { table, filters, options });
+  
+  // Se table não for uma string, assume que o primeiro parâmetro são os filtros
+  if (typeof table !== 'string') {
+    console.log('🔧 Modo compatibilidade: primeiro parâmetro são os filtros');
+    return productsAPI.getAll(table);
+  }
+  
+  // Combinar filtros e opções para o formato esperado pela API
+  const combinedFilters = { ...filters, ...options };
+  console.log('🔧 Filtros combinados:', combinedFilters);
+  
+  return productsAPI.getAll(combinedFilters);
+};
 
 // Exportar instância do axios para uso direto se necessário
 export default api;

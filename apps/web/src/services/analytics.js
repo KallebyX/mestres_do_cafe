@@ -5,11 +5,11 @@
 
 class AnalyticsService {
     constructor() {
-        this.baseURL = `${process.env.REACT_APP_API_URL}/api/analytics`;
+        this.baseURL = `${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/analytics`;
         this.eventQueue = [];
         this.sessionId = this.getOrCreateSessionId();
         this.userId = null;
-        this.isEnabled = process.env.NODE_ENV === 'production' || process.env.REACT_APP_ANALYTICS_ENABLED === 'true';
+        this.isEnabled = import.meta.env.MODE === 'production' || import.meta.env.VITE_ANALYTICS_ENABLED === 'true';
         this.batchSize = 10;
         this.flushInterval = 5000; // 5 segundos
         

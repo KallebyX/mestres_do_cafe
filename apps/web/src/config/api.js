@@ -3,7 +3,7 @@ import axios from 'axios';
 // Configuração da API baseada no ambiente
 const API_CONFIG = {
   development: {
-    baseURL: import.meta.env.VITE_API_URL || 'http://localhost:5001',
+    baseURL: import.meta.env.VITE_API_URL || 'http://localhost:5000',
     timeout: 10000,
   },
   production: {
