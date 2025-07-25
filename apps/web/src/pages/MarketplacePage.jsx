@@ -1,4 +1,4 @@
-import { getAllProducts } from "@/lib/api.js";
+import { getAllProducts } from "../services/api.js";
 import { ChevronDown, Coffee, Filter, Heart, Package, Search, ShoppingCart, Star, TrendingUp } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
