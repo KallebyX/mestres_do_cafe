@@ -303,6 +303,55 @@ class AuthenticationTests:
             )
             return False
             
+    def test_token_validation(self):
+        """Testa validação de token JWT"""
+        try:
+            # Primeiro fazer login para obter um token
+            user_data = config.TEST_USERS.get("user")
+            if not user_data:
+                reporter.log_test_result(
+                    "Validação de Token JWT",
+                    "SKIP",
+                    "Usuário de teste não disponível"
+                )
+                return False
+                
+            token = api_client.login(user_data["email"], user_data["password"])
+            if not token:
+                reporter.log_test_result(
+                    "Validação de Token JWT",
+                    "FAIL",
+                    "Não foi possível fazer login para obter token"
+                )
+                return False
+                
+            # Testar se o token permite acesso a rotas protegidas
+            response = api_client.get("/api/auth/profile")
+            if response.status_code == 200:
+                reporter.log_test_result(
+                    "Validação de Token JWT",
+                    "PASS",
+                    "Token JWT validado com sucesso"
+                )
+                return True
+            else:
+                reporter.log_test_result(
+                    "Validação de Token JWT",
+                    "FAIL",
+                    "Token não permite acesso a rotas protegidas",
+                    f"Status Code: {response.status_code}"
+                )
+                return False
+                
+        except Exception as e:
+            reporter.log_test_result(
+                "Validação de Token JWT",
+                "FAIL",
+                "Erro inesperado durante validação de token",
+                str(e)
+            )
+            return False
+            
     def test_logout(self):
         """Testa logout funcional"""
         try:
