@@ -8,6 +8,8 @@ services:
   - type: pserv
     name: mestres-cafe-db
     plan: free
+    databaseName: mestres_cafe
+    user: mestres_user
 
   # =============================================================================
   # Redis Cache
@@ -16,6 +18,7 @@ services:
     name: mestres-cafe-redis
     plan: free
     maxmemoryPolicy: allkeys-lru
+    ipAllowList: []
 
   # =============================================================================
   # API Backend - Flask
@@ -23,7 +26,7 @@ services:
   - type: web
     name: mestres-cafe-api
     plan: free
-    runtime: python3
+    env: python
     rootDir: apps/api
     buildCommand: pip install -r requirements.txt
     startCommand: gunicorn --bind 0.0.0.0:$PORT --workers 2 --threads 4 --timeout 120 --preload src.app:app
