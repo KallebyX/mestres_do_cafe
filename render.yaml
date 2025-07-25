@@ -28,6 +28,7 @@ services:
     rootDir: apps/api
     buildCommand: pip install -r requirements.txt
     startCommand: python src/app.py
+    runtime: python-3.11.9
     envVars:
       - key: FLASK_ENV
         value: production
@@ -45,6 +46,8 @@ services:
         value: sandbox
       - key: MELHOR_ENVIO_ENVIRONMENT
         value: sandbox
+      - key: MELHOR_ENVIO_REDIRECT_URI
+        value: https://mestres-cafe-api.onrender.com/api/melhor-envio/callback
       - key: PORT
         value: "5001"
       - key: DATABASE_URL
@@ -64,7 +67,7 @@ services:
     name: mestres-cafe-web
     env: static
     rootDir: apps/web
-    buildCommand: npm install && npx vite build && echo "/*    /index.html   200" > dist/_redirects
+    buildCommand: npm install --include=dev && npx vite build && echo "/*    /index.html   200" > dist/_redirects
     staticPublishPath: dist
     envVars:
       - key: NODE_ENV
