@@ -9,7 +9,7 @@ import api from '../services/api.js';
 // Admin API functions for products
 const createProductAdmin = async (productData) => {
   try {
-    const response = await api.post('/admin/products', productData);
+    const response = await api.post('/api/admin/products', productData);
     return { success: true, data: response.data };
   } catch (error) {
     return {
@@ -21,7 +21,7 @@ const createProductAdmin = async (productData) => {
 
 const updateProductAdmin = async (productId, productData) => {
   try {
-    const response = await api.put(`/admin/products/${productId}`, productData);
+    const response = await api.put(`/api/admin/products/${productId}`, productData);
     return { success: true, data: response.data };
   } catch (error) {
     return {

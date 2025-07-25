@@ -3,8 +3,25 @@
     "mercadopago-mcp-server-prod": {
       "url": "https://mcp.mercadopago.com/mcp",
       "headers": {
-        "Authorization": "Bearer TEST-6470757372800949-072017-f45dc4b7ff499723f495a8525cfc9112-1211284486"
-      }
+        "Authorization": "Bearer TEST-455837457520173-071509-34ac9181ded8c8ba2458d3c1732174ac-2557444097"
+      },
+      "disabled": true,
+      "alwaysAllow": []
+    },
+    "postgres": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@modelcontextprotocol/server-postgres",
+        "postgresql://kalleby:mestres123@localhost:5432/mestres_cafe"
+      ]
     }
-  }
+  },
+  "sequentialthinking": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@modelcontextprotocol/server-sequential-thinking"
+      ]
+    },
 }

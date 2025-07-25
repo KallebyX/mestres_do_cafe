@@ -418,7 +418,7 @@ export const checkoutApi = {
 export const analyticsAPI = {
   getStats: async () => {
     try {
-      const response = await api.get('/admin/analytics/stats');
+      const response = await api.get('/api/admin/analytics/stats');
       return { success: true, data: response.data };
     } catch (error) {
       return { 

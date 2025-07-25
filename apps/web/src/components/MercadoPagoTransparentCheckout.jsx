@@ -6,8 +6,6 @@ import {
   Lock, 
   AlertCircle, 
   CheckCircle2,
-  Eye,
-  EyeOff,
   Loader2,
   ShieldCheck
 } from 'lucide-react';
@@ -29,16 +27,6 @@ const MercadoPagoTransparentCheckout = ({
   const [step, setStep] = useState('method'); // method, form, processing, result
   
   // Estados específicos por método
-  const [cardData, setCardData] = useState({
-    number: '',
-    expiry_month: '',
-    expiry_year: '',
-    cvv: '',
-    cardholder_name: '',
-    cardholder_doc_type: 'CPF',
-    cardholder_doc_number: ''
-  });
-  
   const [pixData, setPixData] = useState({
     payer_email: customerData?.email || '',
     payer_first_name: customerData?.firstName || '',
@@ -52,46 +40,71 @@ const MercadoPagoTransparentCheckout = ({
     payer_first_name: customerData?.firstName || '',
     payer_last_name: customerData?.lastName || '',
     payer_doc_type: 'CPF',
-    payer_doc_number: ''
+    payer_doc_number: '',
+    // Campos de endereço obrigatórios para boleto
+    address_street_name: '',
+    address_street_number: '',
+    address_zip_code: '',
+    address_city: '',
+    address_federal_unit: ''
   });
-  
-  const [installments, setInstallments] = useState([]);
-  const [selectedInstallments, setSelectedInstallments] = useState(1);
-  const [cardToken, setCardToken] = useState('');
-  const [showCvv, setShowCvv] = useState(false);
-  const [fieldErrors, setFieldErrors] = useState({});
   
   // Refs
   const mpRef = useRef(null);
+  const cardFormRef = useRef(null);
   
   // Configuração do MercadoPago SDK
-  const publicKey = environment === 'sandbox' 
-    ? 'TEST-6470757372800949-072017-f45dc4b7ff499723f495a8525cfc9112-1211284486'
+  const publicKey = environment === 'sandbox'
+    ? 'TEST-78dd54f8-b60d-40f8-b339-24f92a8082b7'
     : 'PRODUCTION_PUBLIC_KEY'; // Será substituída pelas credenciais de produção
     
   useEffect(() => {
-    loadMercadoPagoSDK();
+    initializeMercadoPago();
     loadPaymentMethods();
   }, []);
   
-  const loadMercadoPagoSDK = async () => {
-    if (window.MercadoPago) return;
+  const initializeMercadoPago = async () => {
+    if (window.MercadoPago) {
+      mpRef.current = new window.MercadoPago(publicKey);
+      await loadIdentificationTypes();
+      return;
+    }
     
-    return new Promise((resolve, reject) => {
-      const script = document.createElement('script');
-      script.src = 'https://sdk.mercadopago.com/js/v2';
-      script.onload = () => {
-        try {
+    // Aguarda o script carregar (já está no HTML)
+    let attempts = 0;
+    const checkMP = setInterval(() => {
+      if (window.MercadoPago || attempts > 50) {
+        clearInterval(checkMP);
+        if (window.MercadoPago) {
           mpRef.current = new window.MercadoPago(publicKey);
-          resolve();
-        } catch (error) {
-          console.error('Error initializing MercadoPago:', error);
-          reject(error);
+          loadIdentificationTypes();
         }
-      };
-      script.onerror = reject;
-      document.head.appendChild(script);
-    });
+      }
+      attempts++;
+    }, 100);
+  };
+  
+  const loadIdentificationTypes = async () => {
+    if (!mpRef.current) return;
+    
+    try {
+      const identificationTypes = await mpRef.current.getIdentificationTypes();
+      
+      const docTypeSelect = document.getElementById('form-checkout__identificationType');
+      if (docTypeSelect && identificationTypes) {
+        // Limpa opções existentes
+        docTypeSelect.innerHTML = '<option value="">Selecione o tipo</option>';
+        
+        identificationTypes.forEach(type => {
+          const option = document.createElement('option');
+          option.value = type.id;
+          option.textContent = type.name;
+          docTypeSelect.appendChild(option);
+        });
+      }
+    } catch (error) {
+      console.error("Erro ao obter tipos de documento:", error);
+    }
   };
   
   const loadPaymentMethods = async () => {
@@ -109,153 +122,186 @@ const MercadoPagoTransparentCheckout = ({
     }
   };
   
-  const formatCardNumber = (value) => {
-    return value.replace(/\s/g, '').replace(/(.{4})/g, '$1 ').trim();
-  };
-  
-  const formatCPF = (value) => {
-    return value
-      .replace(/\D/g, '')
-      .replace(/(\d{3})(\d)/, '$1.$2')
-      .replace(/(\d{3})(\d)/, '$1.$2')
-      .replace(/(\d{3})(\d{1,2})$/, '$1-$2');
-  };
-  
-  const validateCard = () => {
-    const errors = {};
-    
-    if (!cardData.number.replace(/\s/g, '')) {
-      errors.number = 'Número do cartão é obrigatório';
-    }
-    
-    if (!cardData.expiry_month || !cardData.expiry_year) {
-      errors.expiry = 'Data de validade é obrigatória';
-    }
-    
-    if (!cardData.cvv) {
-      errors.cvv = 'CVV é obrigatório';
-    }
-    
-    if (!cardData.cardholder_name.trim()) {
-      errors.cardholder_name = 'Nome do portador é obrigatório';
-    }
-    
-    if (!cardData.cardholder_doc_number) {
-      errors.cardholder_doc_number = 'CPF é obrigatório';
-    }
-    
-    setFieldErrors(errors);
-    return Object.keys(errors).length === 0;
-  };
-  
-  const createCardToken = async () => {
-    if (!mpRef.current || !validateCard()) return null;
+  const initializeCardForm = () => {
+    if (!mpRef.current) return;
     
     try {
-      const response = await fetch(
-        '/api/payments/mercadopago/transparent/create-card-token',
-        {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
+      cardFormRef.current = mpRef.current.cardForm({
+        amount: amount.toString(),
+        iframe: true,
+        form: {
+          id: "form-checkout",
+          cardNumber: { 
+            id: "form-checkout__cardNumber", 
+            placeholder: "Número do cartão" 
           },
-          body: JSON.stringify({
-            card_number: cardData.number.replace(/\s/g, ''),
-            expiry_month: parseInt(cardData.expiry_month),
-            expiry_year: parseInt(cardData.expiry_year),
-            cvv: cardData.cvv,
-            cardholder_name: cardData.cardholder_name
-          })
+          expirationDate: { 
+            id: "form-checkout__expirationDate", 
+            placeholder: "MM/AA" 
+          },
+          securityCode: { 
+            id: "form-checkout__securityCode", 
+            placeholder: "CVV" 
+          },
+          cardholderName: { 
+            id: "form-checkout__cardholderName" 
+          },
+          issuer: { 
+            id: "form-checkout__issuer" 
+          },
+          installments: { 
+            id: "form-checkout__installments" 
+          },        
+          identificationType: { 
+            id: "form-checkout__identificationType" 
+          },
+          identificationNumber: { 
+            id: "form-checkout__identificationNumber" 
+          },
+          cardholderEmail: { 
+            id: "form-checkout__cardholderEmail" 
+          }
+        },
+        callbacks: {
+          onFormMounted: error => {
+            if (error) {
+              console.warn("Erro ao montar formulário:", error);
+              setError("Erro ao carregar formulário de cartão");
+            } else {
+              console.log("Formulário montado com sucesso");
+            }
+          },
+          onSubmit: event => {
+            event.preventDefault();
+            handleCardFormSubmit();
+          },
+          onFetching: (resource) => {
+            const progressBar = document.querySelector(".progress-bar");
+            if (progressBar) {
+              progressBar.removeAttribute("value");
+              return () => progressBar.setAttribute("value", "0");
+            }
+          }
         }
-      );
-      
-      const data = await response.json();
-      
-      if (data.success) {
-        setCardToken(data.token);
-        return data.token;
-      } else {
-        throw new Error(data.error);
-      }
+      });
     } catch (error) {
-      console.error('Error creating card token:', error);
-      setError('Erro ao processar dados do cartão');
-      return null;
+      console.error('Erro ao inicializar cardForm:', error);
+      setError('Erro ao inicializar formulário de cartão');
     }
   };
   
-  const loadInstallments = async (paymentMethodId) => {
-    try {
-      const response = await fetch(
-        `/api/payments/mercadopago/transparent/installments?` +
-        `amount=${amount}&payment_method_id=${paymentMethodId}`
-      );
-      
-      const data = await response.json();
-      
-      if (data.success) {
-        setInstallments(data.installments);
-      }
-    } catch (error) {
-      console.error('Error loading installments:', error);
-    }
-  };
-  
-  const processPayment = async () => {
+  const handleCardFormSubmit = async () => {
+    if (!cardFormRef.current) return;
+    
     setLoading(true);
     setError('');
     setStep('processing');
     
     try {
-      let paymentData = {
+      const cardFormData = cardFormRef.current.getCardFormData();
+      
+      const {
+        paymentMethodId: payment_method_id,
+        issuerId: issuer_id,
+        cardholderEmail: email,
+        amount,
+        token,
+        installments,
+        identificationNumber,
+        identificationType
+      } = cardFormData;
+      
+      const paymentData = {
         order_id: orderId,
-        amount: amount,
-        description: `Pedido #${orderId.slice(-8)} - Mestres do Café`
+        amount: parseFloat(amount),
+        description: `Pedido #${orderId.slice(-8)} - Mestres do Café`,
+        payment_method_id,
+        token,
+        installments: parseInt(installments),
+        issuer_id,
+        payer_email: email,
+        payer_identification: {
+          type: identificationType,
+          number: identificationNumber
+        },
+        enable_3ds: true
       };
       
-      if (selectedMethod.startsWith('card_')) {
-        const token = await createCardToken();
-        if (!token) {
-          setLoading(false);
-          setStep('form');
-          return;
-        }
-        
-        paymentData = {
-          ...paymentData,
-          payment_method_id: selectedMethod,
-          token: token,
-          installments: selectedInstallments,
-          payer_email: customerData?.email || '',
-          payer_first_name: cardData.cardholder_name.split(' ')[0],
-          payer_last_name: cardData.cardholder_name.split(' ').slice(1).join(' '),
-          payer_doc_type: cardData.cardholder_doc_type,
-          payer_doc_number: cardData.cardholder_doc_number.replace(/\D/g, ''),
-          enable_3ds: true
-        };
-      } else if (selectedMethod === 'pix') {
-        paymentData = {
-          ...paymentData,
-          payment_method_id: 'pix',
-          payer_email: pixData.payer_email,
-          payer_first_name: pixData.payer_first_name,
-          payer_last_name: pixData.payer_last_name,
-          payer_doc_type: pixData.payer_doc_type,
-          payer_doc_number: pixData.payer_doc_number.replace(/\D/g, ''),
-          pix_expiration: 3600 // 1 hora
-        };
-      } else if (selectedMethod === 'bolbradesco') {
-        paymentData = {
-          ...paymentData,
-          payment_method_id: 'bolbradesco',
-          payer_email: boletoData.payer_email,
-          payer_first_name: boletoData.payer_first_name,
-          payer_last_name: boletoData.payer_last_name,
-          payer_doc_type: boletoData.payer_doc_type,
-          payer_doc_number: boletoData.payer_doc_number.replace(/\D/g, '')
-        };
-      }
+      await processPayment(paymentData);
       
+    } catch (error) {
+      console.error('Erro ao processar dados do cartão:', error);
+      setError('Erro ao processar dados do cartão');
+      setStep('form');
+      setLoading(false);
+    }
+  };
+  
+  const processPixPayment = async () => {
+    setLoading(true);
+    setError('');
+    setStep('processing');
+    
+    try {
+      const paymentData = {
+        order_id: orderId,
+        amount: amount,
+        description: `Pedido #${orderId.slice(-8)} - Mestres do Café`,
+        payment_method_id: 'pix',
+        payer_email: pixData.payer_email,
+        payer_first_name: pixData.payer_first_name,
+        payer_last_name: pixData.payer_last_name,
+        payer_doc_type: pixData.payer_doc_type,
+        payer_doc_number: pixData.payer_doc_number.replace(/\D/g, ''),
+        pix_expiration: 3600 // 1 hora
+      };
+      
+      await processPayment(paymentData);
+    } catch (error) {
+      console.error('Erro ao processar PIX:', error);
+      setError('Erro ao processar pagamento PIX');
+      setStep('form');
+      setLoading(false);
+    }
+  };
+  
+  const processBoletoPayment = async () => {
+    setLoading(true);
+    setError('');
+    setStep('processing');
+    
+    try {
+      const paymentData = {
+        order_id: orderId,
+        amount: amount,
+        description: `Pedido #${orderId.slice(-8)} - Mestres do Café`,
+        payment_method_id: 'bolbradesco',
+        payer_email: boletoData.payer_email,
+        payer_first_name: boletoData.payer_first_name,
+        payer_last_name: boletoData.payer_last_name,
+        payer_doc_type: boletoData.payer_doc_type,
+        payer_doc_number: boletoData.payer_doc_number.replace(/\D/g, ''),
+        // Endereço obrigatório para boleto
+        payer_address: {
+          street_name: boletoData.address_street_name,
+          street_number: boletoData.address_street_number,
+          zip_code: boletoData.address_zip_code.replace(/\D/g, ''),
+          city: boletoData.address_city,
+          federal_unit: boletoData.address_federal_unit
+        }
+      };
+      
+      await processPayment(paymentData);
+    } catch (error) {
+      console.error('Erro ao processar boleto:', error);
+      setError('Erro ao processar pagamento por boleto');
+      setStep('form');
+      setLoading(false);
+    }
+  };
+  
+  const processPayment = async (paymentData) => {
+    try {
       const response = await fetch(
         '/api/payments/mercadopago/transparent/process-payment',
         {
@@ -300,6 +346,20 @@ const MercadoPagoTransparentCheckout = ({
     }).format(value);
   };
   
+  const formatCPF = (value) => {
+    return value
+      .replace(/\D/g, '')
+      .replace(/(\d{3})(\d)/, '$1.$2')
+      .replace(/(\d{3})(\d)/, '$1.$2')
+      .replace(/(\d{3})(\d{1,2})$/, '$1-$2');
+  };
+  
+  const formatCEP = (value) => {
+    return value
+      .replace(/\D/g, '')
+      .replace(/(\d{5})(\d{1,3})$/, '$1-$2');
+  };
+  
   const getMethodIcon = (method) => {
     if (method.startsWith('card_') || ['visa', 'master', 'elo', 'amex'].includes(method)) {
       return <CreditCard className="h-6 w-6" />;
@@ -323,39 +383,7 @@ const MercadoPagoTransparentCheckout = ({
     return names[method] || method;
   };
   
-  const handleCardNumberChange = (e) => {
-    const value = e.target.value.replace(/\D/g, '');
-    if (value.length <= 16) {
-      setCardData(prev => ({
-        ...prev,
-        number: value
-      }));
-      
-      // Detectar bandeira e carregar parcelas
-      if (value.length >= 6) {
-        const bin = value.substring(0, 6);
-        // Lógica para detectar bandeira e carregar parcelas
-        if (value.startsWith('4')) {
-          loadInstallments('visa');
-        } else if (value.startsWith('5') || value.startsWith('2')) {
-          loadInstallments('master');
-        }
-      }
-    }
-  };
-  
-  const handleExpiryChange = (e) => {
-    const value = e.target.value.replace(/\D/g, '');
-    const month = value.substring(0, 2);
-    const year = value.substring(2, 4);
-    
-    setCardData(prev => ({
-      ...prev,
-      expiry_month: month,
-      expiry_year: year
-    }));
-  };
-  
+  // Seleção de método de pagamento
   if (step === 'method') {
     return (
       <div className="max-w-lg mx-auto bg-white rounded-xl shadow-lg p-6">
@@ -381,6 +409,10 @@ const MercadoPagoTransparentCheckout = ({
               onClick={() => {
                 setSelectedMethod(method.id);
                 setStep('form');
+                // Inicializar cardForm para métodos de cartão
+                if (method.id.startsWith('card_') || ['visa', 'master', 'elo', 'amex'].includes(method.id)) {
+                  setTimeout(initializeCardForm, 100);
+                }
               }}
               className="w-full p-4 border-2 border-gray-200 rounded-lg hover:border-blue-300 hover:bg-blue-50 transition-colors flex items-center justify-between group"
             >
@@ -392,7 +424,7 @@ const MercadoPagoTransparentCheckout = ({
                   </p>
                   <p className="text-sm text-gray-600">
                     {method.id === 'pix' && 'Aprovação instantânea'}
-                    {method.id.startsWith('card_') && 'Até 12x sem juros'}
+                    {(method.id.startsWith('card_') || ['visa', 'master', 'elo', 'amex'].includes(method.id)) && 'Até 12x sem juros'}
                     {method.id === 'bolbradesco' && 'Vencimento em 3 dias'}
                   </p>
                 </div>
@@ -417,6 +449,7 @@ const MercadoPagoTransparentCheckout = ({
     );
   }
   
+  // Formulários de pagamento
   if (step === 'form') {
     return (
       <div className="max-w-lg mx-auto bg-white rounded-xl shadow-lg p-6">
@@ -447,143 +480,71 @@ const MercadoPagoTransparentCheckout = ({
           </div>
         )}
         
-        {/* Formulário do Cartão */}
-        {selectedMethod.startsWith('card_') && (
-          <div className="space-y-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Número do cartão
-              </label>
-              <input
-                type="text"
-                value={formatCardNumber(cardData.number)}
-                onChange={handleCardNumberChange}
-                placeholder="1234 5678 9012 3456"
-                className={`w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
-                  fieldErrors.number ? 'border-red-300' : 'border-gray-300'
-                }`}
-              />
-              {fieldErrors.number && (
-                <p className="text-red-600 text-sm mt-1">{fieldErrors.number}</p>
+        {/* Formulário do Cartão - Estrutura exata do prompt.md */}
+        {(selectedMethod.startsWith('card_') || ['visa', 'master', 'elo', 'amex'].includes(selectedMethod)) && (
+          <form id="form-checkout">
+            <div id="form-checkout__cardNumber" className="container mb-4 p-3 border rounded-lg"></div>
+            <div className="grid grid-cols-2 gap-4 mb-4">
+              <div id="form-checkout__expirationDate" className="container p-3 border rounded-lg"></div>
+              <div id="form-checkout__securityCode" className="container p-3 border rounded-lg"></div>
+            </div>
+            <input 
+              type="text" 
+              id="form-checkout__cardholderName" 
+              placeholder="Titular do cartão"
+              className="w-full p-3 border rounded-lg mb-4 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            />
+            <select 
+              id="form-checkout__issuer"
+              className="w-full p-3 border rounded-lg mb-4 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            >
+              <option value="">Selecione o banco</option>
+            </select>
+            <select 
+              id="form-checkout__installments"
+              className="w-full p-3 border rounded-lg mb-4 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            >
+              <option value="">Selecione as parcelas</option>
+            </select>
+            <select 
+              id="form-checkout__identificationType"
+              className="w-full p-3 border rounded-lg mb-4 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            >
+              <option value="">Tipo de documento</option>
+            </select>
+            <input 
+              type="text" 
+              id="form-checkout__identificationNumber" 
+              placeholder="CPF do titular"
+              className="w-full p-3 border rounded-lg mb-4 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            />
+            <input 
+              type="email" 
+              id="form-checkout__cardholderEmail" 
+              placeholder="E-mail"
+              defaultValue={customerData?.email || ''}
+              className="w-full p-3 border rounded-lg mb-4 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            />
+            <button 
+              type="submit" 
+              id="form-checkout__submit"
+              disabled={loading}
+              className="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-3 px-4 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
+            >
+              {loading ? (
+                <>
+                  <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                  Processando...
+                </>
+              ) : (
+                <>
+                  <Lock className="h-4 w-4 mr-2" />
+                  Pagar
+                </>
               )}
-            </div>
-            
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Validade
-                </label>
-                <input
-                  type="text"
-                  value={`${cardData.expiry_month}${cardData.expiry_year ? '/' + cardData.expiry_year : ''}`}
-                  onChange={handleExpiryChange}
-                  placeholder="MM/AA"
-                  maxLength="5"
-                  className={`w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
-                    fieldErrors.expiry ? 'border-red-300' : 'border-gray-300'
-                  }`}
-                />
-                {fieldErrors.expiry && (
-                  <p className="text-red-600 text-sm mt-1">{fieldErrors.expiry}</p>
-                )}
-              </div>
-              
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  CVV
-                </label>
-                <div className="relative">
-                  <input
-                    type={showCvv ? 'text' : 'password'}
-                    value={cardData.cvv}
-                    onChange={(e) => {
-                      const value = e.target.value.replace(/\D/g, '');
-                      if (value.length <= 4) {
-                        setCardData(prev => ({ ...prev, cvv: value }));
-                      }
-                    }}
-                    placeholder="123"
-                    className={`w-full p-3 border rounded-lg pr-10 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
-                      fieldErrors.cvv ? 'border-red-300' : 'border-gray-300'
-                    }`}
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowCvv(!showCvv)}
-                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
-                  >
-                    {showCvv ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                  </button>
-                </div>
-                {fieldErrors.cvv && (
-                  <p className="text-red-600 text-sm mt-1">{fieldErrors.cvv}</p>
-                )}
-              </div>
-            </div>
-            
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Nome no cartão
-              </label>
-              <input
-                type="text"
-                value={cardData.cardholder_name}
-                onChange={(e) => setCardData(prev => ({ 
-                  ...prev, 
-                  cardholder_name: e.target.value.toUpperCase() 
-                }))}
-                placeholder="NOME COMO NO CARTÃO"
-                className={`w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
-                  fieldErrors.cardholder_name ? 'border-red-300' : 'border-gray-300'
-                }`}
-              />
-              {fieldErrors.cardholder_name && (
-                <p className="text-red-600 text-sm mt-1">{fieldErrors.cardholder_name}</p>
-              )}
-            </div>
-            
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                CPF do portador
-              </label>
-              <input
-                type="text"
-                value={formatCPF(cardData.cardholder_doc_number)}
-                onChange={(e) => setCardData(prev => ({ 
-                  ...prev, 
-                  cardholder_doc_number: e.target.value.replace(/\D/g, '') 
-                }))}
-                placeholder="000.000.000-00"
-                maxLength="14"
-                className={`w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
-                  fieldErrors.cardholder_doc_number ? 'border-red-300' : 'border-gray-300'
-                }`}
-              />
-              {fieldErrors.cardholder_doc_number && (
-                <p className="text-red-600 text-sm mt-1">{fieldErrors.cardholder_doc_number}</p>
-              )}
-            </div>
-            
-            {installments.length > 0 && (
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Parcelas
-                </label>
-                <select
-                  value={selectedInstallments}
-                  onChange={(e) => setSelectedInstallments(parseInt(e.target.value))}
-                  className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                >
-                  {installments.map((installment) => (
-                    <option key={installment.installments} value={installment.installments}>
-                      {installment.installments}x de {formatAmount(installment.installment_amount)}
-                      {installment.installment_rate === 0 ? ' sem juros' : ' com juros'}
-                    </option>
-                  ))}
-                </select>
-              </div>
-            )}
-          </div>
+            </button>
+            <progress value="0" className="progress-bar w-full mt-4 hidden">Carregando...</progress>
+          </form>
         )}
         
         {/* Formulário PIX */}
@@ -663,10 +624,28 @@ const MercadoPagoTransparentCheckout = ({
                 className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
               />
             </div>
+            
+            <button
+              onClick={processPixPayment}
+              disabled={loading}
+              className="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-3 px-4 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
+            >
+              {loading ? (
+                <>
+                  <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                  Processando...
+                </>
+              ) : (
+                <>
+                  <Lock className="h-4 w-4 mr-2" />
+                  Finalizar Pagamento PIX
+                </>
+              )}
+            </button>
           </div>
         )}
         
-        {/* Formulário Boleto */}
+        {/* Formulário Boleto com campos de endereço */}
         {selectedMethod === 'bolbradesco' && (
           <div className="space-y-4">
             <div className="bg-yellow-50 p-4 rounded-lg">
@@ -743,26 +722,140 @@ const MercadoPagoTransparentCheckout = ({
                 className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
               />
             </div>
+            
+            {/* Campos de endereço obrigatórios para boleto */}
+            <div className="border-t pt-4">
+              <h3 className="text-lg font-medium text-gray-900 mb-4">Endereço de Cobrança</h3>
+              
+              <div className="grid grid-cols-3 gap-4">
+                <div className="col-span-2">
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Rua/Logradouro
+                  </label>
+                  <input
+                    type="text"
+                    value={boletoData.address_street_name}
+                    onChange={(e) => setBoletoData(prev => ({ 
+                      ...prev, 
+                      address_street_name: e.target.value 
+                    }))}
+                    placeholder="Nome da rua"
+                    className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Número
+                  </label>
+                  <input
+                    type="text"
+                    value={boletoData.address_street_number}
+                    onChange={(e) => setBoletoData(prev => ({ 
+                      ...prev, 
+                      address_street_number: e.target.value 
+                    }))}
+                    placeholder="123"
+                    className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  />
+                </div>
+              </div>
+              
+              <div className="grid grid-cols-3 gap-4 mt-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    CEP
+                  </label>
+                  <input
+                    type="text"
+                    value={formatCEP(boletoData.address_zip_code)}
+                    onChange={(e) => setBoletoData(prev => ({ 
+                      ...prev, 
+                      address_zip_code: e.target.value.replace(/\D/g, '') 
+                    }))}
+                    placeholder="00000-000"
+                    maxLength="9"
+                    className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Cidade
+                  </label>
+                  <input
+                    type="text"
+                    value={boletoData.address_city}
+                    onChange={(e) => setBoletoData(prev => ({ 
+                      ...prev, 
+                      address_city: e.target.value 
+                    }))}
+                    placeholder="Cidade"
+                    className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Estado
+                  </label>
+                  <select
+                    value={boletoData.address_federal_unit}
+                    onChange={(e) => setBoletoData(prev => ({ 
+                      ...prev, 
+                      address_federal_unit: e.target.value 
+                    }))}
+                    className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  >
+                    <option value="">Estado</option>
+                    <option value="AC">AC</option>
+                    <option value="AL">AL</option>
+                    <option value="AP">AP</option>
+                    <option value="AM">AM</option>
+                    <option value="BA">BA</option>
+                    <option value="CE">CE</option>
+                    <option value="DF">DF</option>
+                    <option value="ES">ES</option>
+                    <option value="GO">GO</option>
+                    <option value="MA">MA</option>
+                    <option value="MT">MT</option>
+                    <option value="MS">MS</option>
+                    <option value="MG">MG</option>
+                    <option value="PA">PA</option>
+                    <option value="PB">PB</option>
+                    <option value="PR">PR</option>
+                    <option value="PE">PE</option>
+                    <option value="PI">PI</option>
+                    <option value="RJ">RJ</option>
+                    <option value="RN">RN</option>
+                    <option value="RS">RS</option>
+                    <option value="RO">RO</option>
+                    <option value="RR">RR</option>
+                    <option value="SC">SC</option>
+                    <option value="SP">SP</option>
+                    <option value="SE">SE</option>
+                    <option value="TO">TO</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+            
+            <button
+              onClick={processBoletoPayment}
+              disabled={loading}
+              className="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-3 px-4 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
+            >
+              {loading ? (
+                <>
+                  <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                  Processando...
+                </>
+              ) : (
+                <>
+                  <Lock className="h-4 w-4 mr-2" />
+                  Gerar Boleto
+                </>
+              )}
+            </button>
           </div>
         )}
-        
-        <button
-          onClick={processPayment}
-          disabled={loading}
-          className="w-full mt-6 bg-blue-600 hover:bg-blue-700 text-white font-medium py-3 px-4 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
-        >
-          {loading ? (
-            <>
-              <Loader2 className="h-4 w-4 animate-spin mr-2" />
-              Processando...
-            </>
-          ) : (
-            <>
-              <Lock className="h-4 w-4 mr-2" />
-              Finalizar Pagamento
-            </>
-          )}
-        </button>
         
         <div className="mt-4 text-center text-sm text-gray-600">
           <Lock className="h-4 w-4 inline mr-1" />
@@ -772,6 +865,7 @@ const MercadoPagoTransparentCheckout = ({
     );
   }
   
+  // Tela de processamento
   if (step === 'processing') {
     return (
       <div className="max-w-lg mx-auto bg-white rounded-xl shadow-lg p-8 text-center">

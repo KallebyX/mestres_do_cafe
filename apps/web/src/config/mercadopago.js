@@ -10,7 +10,7 @@
 export const MERCADO_PAGO_CONFIG = {
   // Chaves públicas (ambiente detectado automaticamente)
   publicKeys: {
-    test: 'TEST-6470757372800949-072017-f45dc4b7ff499723f495a8525cfc9112-1211284486',
+    test: 'TEST-78dd54f8-b60d-40f8-b339-24f92a8082b7',
     production: '' // A ser configurado em produção
   },
   

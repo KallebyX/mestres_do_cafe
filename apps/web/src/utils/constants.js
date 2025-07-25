@@ -53,11 +53,11 @@ export const API_ENDPOINTS = {
     CATEGORIES: '/blog/categories'
   },
   ADMIN: {
-    STATS: '/admin/stats',
-    USERS: '/admin/users',
-    PRODUCTS: '/admin/products',
-    ORDERS: '/admin/orders',
-    ANALYTICS: '/admin/analytics'
+    STATS: '/api/admin/stats',
+    USERS: '/api/admin/users',
+    PRODUCTS: '/api/admin/products',
+    ORDERS: '/api/admin/orders',
+    ANALYTICS: '/api/admin/analytics'
   }
 };
 

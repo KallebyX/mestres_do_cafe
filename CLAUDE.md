@@ -33,6 +33,16 @@ npm run clean                        # Clean dist directory
 npm run build:analyze                # Analyze bundle size
 ```
 
+### Docker Development
+```bash
+docker-compose up -d                 # Start all services (PostgreSQL, Redis, API, Web)
+docker-compose up db redis           # Start only database services
+docker-compose logs -f api           # View API logs
+docker-compose exec api python src/app.py # Run commands in API container
+docker-compose down                  # Stop all services
+docker-compose build --no-cache      # Rebuild containers
+```
+
 ## Architecture Overview
 
 ### Monorepo Structure
@@ -41,7 +51,7 @@ npm run build:analyze                # Analyze bundle size
 
 ### Backend (Flask API)
 - **Entry Point**: `apps/api/src/app.py` - Main Flask application with modular blueprint registration
-- **Database**: PostgreSQL database with native UUID support and auto-initialization
+- **Database**: PostgreSQL production (Docker), SQLite development/testing with auto-initialization
 - **Routes**: Organized in `src/controllers/routes/` by feature:
   - `auth.py` - JWT authentication, login/logout, registration
   - `products.py` - Product catalog, search, filtering
@@ -51,10 +61,14 @@ npm run build:analyze                # Analyze bundle size
   - `cart.py` - Shopping cart operations
   - `checkout.py` - Checkout process
   - `mercado_pago.py` - MercadoPago payment integration
-- **Models**: SQLAlchemy models in `src/models/` with comprehensive relationships
-- **Services**: Business logic in `src/services/` (MercadoPago, event system, webhooks, notifications)
+  - `melhor_envio.py` - Shipping integration service
+  - `notifications.py` - Notification management system
+  - `health.py` - Health check endpoints
+- **Models**: SQLAlchemy models in `src/models/` with comprehensive relationships and UUID support
+- **Services**: Business logic in `src/services/` (MercadoPago, Melhor Envio, event system, webhooks, notifications)
 - **Middleware**: Security headers, error handling, MercadoPago validation
-- **Configuration**: Multi-environment config in `src/config.py` with JWT settings
+- **Configuration**: Multi-environment config in `src/config.py` with JWT and database settings
+- **Testing**: pytest with test fixtures in `conftest.py` creating isolated test database
 
 ### Frontend (React)
 - **Entry Point**: `apps/web/src/main.jsx` - React 18 app with router setup
@@ -72,41 +86,48 @@ npm run build:analyze                # Analyze bundle size
 - **Build System**: Vite with optimized production builds, code splitting, and asset optimization
 
 ### Key Integrations
-- **Payment Processing**: MercadoPago integration for Brazilian market
-- **Authentication**: JWT-based auth with refresh tokens
-- **Database**: PostgreSQL with SQLAlchemy ORM and native UUIDs
-- **Styling**: Tailwind CSS with custom theme
-- **State Management**: React Context + TanStack Query
+- **Payment Processing**: MercadoPago integration for Brazilian market with webhook support
+- **Shipping**: Melhor Envio integration for shipping calculations and tracking
+- **Authentication**: JWT-based auth with refresh tokens and secure session management
+- **Database**: PostgreSQL production, SQLite development, with SQLAlchemy ORM and native UUIDs
+- **Caching**: Redis for sessions and caching (production)
+- **Styling**: Tailwind CSS with custom theme and Radix UI components
+- **State Management**: React Context + TanStack Query for server state
+- **Build System**: Vite with advanced optimization, code splitting, and tree shaking
 
 ### Testing Strategy
-- **Backend**: pytest with fixtures in `conftest.py`, creates test Flask app with PostgreSQL test database
+- **Backend**: pytest with fixtures in `conftest.py`, creates test Flask app with isolated SQLite test database
 - **Frontend**: Vitest for unit/integration tests with React Testing Library integration
 - **Test Data**: Automated test user creation and database seeding with UUIDs
-- **Test Environment**: Isolated PostgreSQL test database per test session
+- **Test Environment**: Isolated test database per test session with clean state
 
 ### Build & Deployment
-- **Frontend**: Vite bundler with code splitting and optimization
-- **Docker**: Dockerfiles available for both apps
-- **Environment**: Uses `.env` files for configuration
-- **Linting**: ESLint for frontend, Python standards for backend
+- **Frontend**: Vite bundler with advanced optimization, manual chunk splitting, tree shaking
+- **Docker**: Full Docker Compose setup with PostgreSQL, Redis, API, and Web services
+- **Environment**: Multi-environment configuration with `.env` files and Docker environment variables
+- **Linting**: ESLint for frontend (max 50 warnings), Python PEP 8 standards for backend
+- **Production**: Optimized builds with Terser minification, asset compression, and CDN-ready structure
 
 ### Development Notes
 - **Default test user**: `teste@pato.com` / `123456`
-- **API runs on port 5001**, frontend on port 3000
-- **PostgreSQL database** auto-initializes with sample products and test users
-- **CORS configured** for cross-origin development
+- **Ports**: API (5001), Frontend (3000), PostgreSQL (5432), Redis (6379)
+- **Database**: Auto-initializes with sample products and test users (SQLite dev, PostgreSQL prod)
+- **CORS configured** for cross-origin development with multiple allowed origins
 - **JWT tokens expire in 1 hour** (configurable in `src/config.py`)
-- **Proxy configuration**: Frontend proxies `/api` requests to backend
-- **ESLint configured** with React hooks and best practices (max 50 warnings allowed)
-- **Path aliases**: Use `@/` imports for cleaner imports in frontend code
-- **Environment files**: Use `.env` files for local configuration
-- **UUIDs**: Native PostgreSQL UUIDs for all primary keys for security
+- **Proxy configuration**: Frontend proxies `/api` requests to backend automatically
+- **Path aliases**: Use `@/` imports for cleaner imports in frontend code (`@/components`, `@/services`, etc.)
+- **Environment files**: Copy `.env.example` to `.env` for local configuration
+- **UUIDs**: Native database UUIDs for all primary keys for enhanced security
+- **Hot reload**: Both frontend (Vite HMR) and backend (Flask debug mode) support hot reloading
 
 ### Code Conventions
-- **Backend**: Follow Python PEP 8 standards, use SQLAlchemy models with PostgreSQL for database operations
-- **Frontend**: Use functional components with hooks, Tailwind CSS for styling
-- **API Design**: RESTful endpoints with consistent JSON responses and error handling
-- **State Management**: Use React Context for global state, TanStack Query for server state
-- **Component Structure**: Feature-based organization, reusable UI components in `components/ui/`
-- **Form Handling**: React Hook Form with Zod validation for type safety
-- **Database**: PostgreSQL with native UUIDs, optimized indexes, and proper constraints
+- **Backend**: Follow Python PEP 8 standards, use SQLAlchemy models with database operations
+- **Frontend**: Use functional components with hooks, Tailwind CSS for styling, TypeScript for type safety
+- **API Design**: RESTful endpoints with consistent JSON responses and comprehensive error handling
+- **State Management**: Use React Context for global state, TanStack Query for server state caching
+- **Component Structure**: Feature-based organization, reusable UI components in `components/ui/` using Radix UI
+- **Form Handling**: React Hook Form with Zod validation for runtime type safety and validation
+- **Database**: Native UUIDs for primary keys, optimized indexes, and proper foreign key constraints
+- **Import Organization**: Use path aliases (`@/`) and group imports by type (external, internal, relative)
+- **Error Handling**: Comprehensive error boundaries in React and structured error responses from Flask
+- **Security**: Never expose sensitive data, use environment variables, validate all inputs
