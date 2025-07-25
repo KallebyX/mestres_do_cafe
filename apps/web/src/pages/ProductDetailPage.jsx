@@ -16,7 +16,7 @@ import { ReviewSystem } from '../components/reviews';
 import '../components/reviews/ReviewSystem.css';
 import { useAuth } from '../contexts/AuthContext';
 import { useCart } from '../contexts/CartContext';
-import { getAllProducts, getProductById } from "@/lib/api";
+import { getAllProducts, getProductById } from "@/lib/api.js";
 import analytics from '../services/analytics';
 
 const ProductDetailPage = () => {
