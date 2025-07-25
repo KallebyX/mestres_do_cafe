@@ -237,6 +237,9 @@ class TestingConfig(Config):
     # Segurança relaxada para testes
     SESSION_COOKIE_SECURE = False
 
+    # CORS permissivo para testes
+    CORS_ORIGINS = ["*"]
+
 
 # Mapeamento de configurações
 config = {
