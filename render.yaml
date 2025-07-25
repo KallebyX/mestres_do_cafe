@@ -50,6 +50,10 @@ services:
         value: sandbox
       - key: MELHOR_ENVIO_SANDBOX
         value: "true"
+# Melhor Envio - Configure manually in Render Dashboard
+      # MELHOR_ENVIO_CLIENT_ID=your_client_id
+      # MELHOR_ENVIO_CLIENT_SECRET=your_client_secret  
+      # MELHOR_ENVIO_API_KEY=your_api_key
       - key: MELHOR_ENVIO_REDIRECT_URI
         value: https://mestres-cafe-api.onrender.com/api/melhor-envio/callback
       - key: PORT

@@ -1,4 +1,4 @@
-# Deploy Checklist - Mestres do Café Enterprise
+o# Deploy Checklist - Mestres do Café Enterprise
 
 ## ✅ Problemas Resolvidos
 

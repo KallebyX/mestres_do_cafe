@@ -131,3 +131,9 @@ docker-compose build --no-cache      # Rebuild containers
 - **Import Organization**: Use path aliases (`@/`) and group imports by type (external, internal, relative)
 - **Error Handling**: Comprehensive error boundaries in React and structured error responses from Flask
 - **Security**: Never expose sensitive data, use environment variables, validate all inputs
+
+## Important Development Guidelines
+- Always prefer editing existing files over creating new ones
+- Never create documentation files unless explicitly requested
+- Follow existing code patterns and conventions in the codebase
+- Use the established testing patterns with pytest (backend) and Vitest (frontend)

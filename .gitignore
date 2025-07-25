@@ -42,12 +42,24 @@ jspm_packages/
 # Yarn Integrity file
 .yarn-integrity
 
-# Environment variables
+# Environment variables and secrets
 .env
+.env.*
 .env.local
 .env.development.local
 .env.test.local
 .env.production.local
+.env.staging
+.env.production
+
+# API Keys and credentials (NEVER commit these)
+**/MELHOR_ENVIO_*
+**/MERCADO_PAGO_*
+**/*_TOKEN*
+**/*_KEY*
+**/*_SECRET*
+credentials.json
+config/secrets.json
 
 # parcel-bundler cache (https://parceljs.org/)
 .cache
