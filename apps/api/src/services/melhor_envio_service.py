@@ -47,18 +47,13 @@ class MelhorEnvioService:
         Calcula opções de frete entre CEPs
         """
         try:
-            logger.info("🔍 DEBUG calculate_shipping - INÍCIO")
-            
             # Se não tiver API key, retornar valores fixos para desenvolvimento
             if not self.api_key:
                 logger.warning("MELHOR_ENVIO_API_KEY não configurada - usando valores fixos")
-                logger.info("🔍 DEBUG - Chamando _get_fallback_quotes()")
                 return self._get_fallback_quotes()
             
-            logger.info("🔍 DEBUG - Formatando produtos...")
             # Preparar dados para a API
             formatted_products = self._format_products(products)
-            logger.info(f"🔍 DEBUG - Produtos formatrados: {formatted_products}")
             
             payload = {
                 "from": {"postal_code": origin_cep.replace('-', '')},
@@ -66,7 +61,6 @@ class MelhorEnvioService:
                 "products": formatted_products
             }
             
-            logger.info("🔍 DEBUG - Fazendo requisição para API...")
             # Fazer requisição para API
             response = requests.post(
                 f"{self.base_url}/api/v2/me/shipment/calculate",
@@ -77,7 +71,6 @@ class MelhorEnvioService:
             
             if response.status_code == 200:
                 data = response.json()
-                logger.info(f"🔍 DEBUG - Resposta API recebida: {data}")
                 quotes = self._format_quotes(data)
                 
                 logger.info(f"Frete calculado: {origin_cep} → {destination_cep}")
@@ -338,17 +331,12 @@ class MelhorEnvioService:
         """
         Formata produtos para envio à API
         """
-        # DEBUG: Log da estrutura recebida
-        logger.info(f"🔍 DEBUG _format_products - Tipo: {type(products)}")
-        logger.info(f"🔍 DEBUG _format_products - Conteúdo: {products}")
-        
         formatted = []
-        for i, product in enumerate(products):
-            logger.info(f"🔍 DEBUG Produto {i} - Tipo: {type(product)}, Valor: {product}")
+        for product in products:
             
             # Verificar se product é realmente um dict
             if not isinstance(product, dict):
-                logger.error(f"❌ ERRO: Produto {i} não é dict! Tipo: {type(product)}")
+                logger.error(f"❌ ERRO: Produto não é dict! Tipo: {type(product)}")
                 continue
                 
             formatted.append({
@@ -366,9 +354,6 @@ class MelhorEnvioService:
         """
         Formata cotações retornadas pela API
         """
-        logger.info(f"🔍 DEBUG _format_quotes - Tipo: {type(api_data)}")
-        logger.info(f"🔍 DEBUG _format_quotes - Conteúdo: {api_data}")
-        
         quotes = []
         
         # A API do Melhor Envio retorna diretamente uma lista, não um dict com 'data'
@@ -379,8 +364,6 @@ class MelhorEnvioService:
         else:
             logger.error(f"❌ Formato inesperado da API: {type(api_data)}")
             return []
-            
-        logger.info(f"🔍 DEBUG - Processando {len(items)} quotes")
         
         for item in items:
             # Pular items com erro
@@ -398,7 +381,6 @@ class MelhorEnvioService:
                 'packages': item.get('packages', [])
             })
             
-        logger.info(f"🔍 DEBUG - {len(quotes)} quotes processadas com sucesso")
         return quotes
 
     def _prepare_shipment_data(self, order_data: Dict) -> Dict:

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Package, Star, Clock, User, TrendingUp, Coffee, ShoppingBag, Award, Target, Zap, Crown } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
-import { ordersAPI } from "@/lib/api.js";
+import { ordersAPI } from "@/lib/api";
 import { useNavigate } from 'react-router-dom';
 
 const CustomerDashboard = () => {
