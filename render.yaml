@@ -85,7 +85,7 @@ services:
     name: mestres-cafe-web
     runtime: static
     rootDir: apps/web
-    buildCommand: npm install && npx vite build --mode production && echo "/* /index.html 200" > dist/_redirects
+    buildCommand: rm -rf node_modules package-lock.json && npm cache clean --force && npm install --include=dev && npx vite build --mode production && echo "/* /index.html 200" > dist/_redirects
     staticPublishPath: dist
     envVars:
       - key: NODE_ENV
