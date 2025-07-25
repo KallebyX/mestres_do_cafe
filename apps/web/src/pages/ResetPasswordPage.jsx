@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { supabase } from "@/lib/api"
 import { Lock, Eye, EyeOff, CheckCircle, AlertCircle, Shield } from 'lucide-react';
 
 const ResetPasswordPage = () => {
@@ -19,34 +18,19 @@ const ResetPasswordPage = () => {
   const [sessionConfigured, setSessionConfigured] = useState(false);
   const [loading, setLoading] = useState(false);
 
-  // Extrair tokens da URL - VERSÃO SIMPLIFICADA E ROBUSTA
+  // Verificar token de redefinição
   useEffect(() => {
     const configureSession = async () => {
-      // URL completa para debug
-      const fullURL = window.location.href;
-      // MÉTODO SIMPLES: Extrair diretamente dos search params
       const currentURL = new URL(window.location.href);
       const params = currentURL.searchParams;
       
-      const accessToken = params.get('access_token');
-      const refreshToken = params.get('refresh_token') || '';
-      const type = params.get('type') || 'recovery';
+      const token = params.get('token');
       
-      console.log('🔍 EXTRAÇÃO DIRETA DOS PARÂMETROS:', {
-        accessToken: accessToken ? `${accessToken.substring(0, 20)}...` : '❌ NÃO ENCONTRADO',
-        refreshToken: refreshToken ? `${refreshToken.substring(0, 20)}...` : '❌ VAZIO',
-        type: type || 'NÃO ESPECIFICADO',
-        allParams: Object.fromEntries(params.entries())
-      });
-
       // Verificar se temos o token necessário
-      if (!accessToken || accessToken.trim() === '') {
-        console.error('❌ ACCESS TOKEN NÃO ENCONTRADO');
-        console.log('📋 Parâmetros disponíveis:', Object.fromEntries(params.entries()));
-        
+      if (!token || token.trim() === '') {
         setErrors({ submit: 'Link inválido ou expirado. Solicite um novo link de redefinição.' });
         setTimeout(() => {
-          navigate('/esqueci-senha', { 
+          navigate('/esqueci-senha', {
             state: { error: 'Link inválido ou expirado. Solicite um novo link de redefinição.' }
           });
         }, 3000);
@@ -54,24 +38,19 @@ const ResetPasswordPage = () => {
       }
 
       try {
-        // Usar o access_token como refresh_token se não tiver um refresh_token válido
-        const sessionData = {
-          access_token: accessToken,
-          refresh_token: refreshToken || accessToken
-        };
-        
-        console.log('📋 Dados da sessão:', {
-          access_token: `${accessToken.substring(0, 20)}...`,
-          refresh_token: sessionData.refresh_token ? `${sessionData.refresh_token.substring(0, 20)}...` : 'USANDO ACCESS TOKEN'
+        // Verificar se o token é válido
+        const response = await fetch('/api/auth/verify-reset-token', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ token }),
         });
 
-        const { data, error } = await supabase.auth.setSession(sessionData);
-
-        if (error) {
-          console.error('❌ ERRO NA CONFIGURAÇÃO DA SESSÃO:', error);
+        if (!response.ok) {
           setErrors({ submit: 'Token inválido ou expirado. Solicite um novo link de redefinição.' });
           setTimeout(() => {
-            navigate('/esqueci-senha', { 
+            navigate('/esqueci-senha', {
               state: { error: 'Token inválido ou expirado. Solicite um novo link de redefinição.' }
             });
           }, 3000);
@@ -84,7 +63,7 @@ const ResetPasswordPage = () => {
         console.error('💥 ERRO FATAL:', err);
         setErrors({ submit: 'Erro de conexão. Tente novamente.' });
         setTimeout(() => {
-          navigate('/esqueci-senha', { 
+          navigate('/esqueci-senha', {
             state: { error: 'Erro de conexão. Tente novamente.' }
           });
         }, 3000);
@@ -154,13 +133,25 @@ const ResetPasswordPage = () => {
 
     try {
       setLoading(true);
-      // Usar diretamente a API do Supabase para atualizar a senha
-      const { data, error } = await supabase.auth.updateUser({
-        password: formData.password
+      
+      const currentURL = new URL(window.location.href);
+      const params = currentURL.searchParams;
+      const token = params.get('token');
+      
+      // Usar a API Flask para redefinir a senha
+      const response = await fetch('/api/auth/reset-password', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          token,
+          password: formData.password
+        }),
       });
       
-      if (error) {
-        console.error('❌ Erro ao redefinir senha:', error);
+      if (!response.ok) {
+        const error = await response.json();
         setErrors({ submit: error.message || 'Erro ao redefinir senha. Tente novamente.' });
         return;
       }
@@ -168,7 +159,7 @@ const ResetPasswordPage = () => {
       setSuccess('Senha redefinida com sucesso!');
       
       setTimeout(() => {
-        navigate('/login', { 
+        navigate('/login', {
           state: { message: 'Senha redefinida com sucesso! Faça login com sua nova senha.' }
         });
       }, 2000);

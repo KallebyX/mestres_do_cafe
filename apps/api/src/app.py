@@ -35,7 +35,7 @@ try:
     from controllers.routes.admin_products import admin_products_bp
     from controllers.routes.coupons import coupons_bp
     from controllers.routes.notifications import notifications_bp  # REATIVADO: serviço implementado
-    # from controllers.routes.melhor_envio import melhor_envio_bp  # REMOVIDO: depende de services/
+    from controllers.routes.melhor_envio import melhor_envio_bp  # REATIVADO: serviço implementado
     
     # Mercado Pago - sistema de pagamentos
     try:
@@ -158,6 +158,14 @@ def create_app(config_name = None):
     app.register_blueprint(stock_bp, url_prefix="/api/stock")
     app.register_blueprint(security_bp, url_prefix="/api/security")
     app.register_blueprint(notifications_bp, url_prefix="/api/notifications")
+    
+    # 🚚 MELHOR ENVIO SYSTEM ATIVADO!
+    try:
+        app.register_blueprint(melhor_envio_bp, url_prefix="/api/melhor-envio")
+        logger.info("✅ Blueprint Melhor Envio registrado com sucesso!")
+        logger.info("🚚 Sistema de frete Melhor Envio ATIVADO!")
+    except Exception as e:
+        logger.warning(f"⚠️ Falha ao registrar Melhor Envio blueprint: {e}")
     
     # 🎉 MERCADO PAGO SYSTEM ATIVADO!
     try:

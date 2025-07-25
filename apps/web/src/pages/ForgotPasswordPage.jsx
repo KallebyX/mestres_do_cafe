@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { supabase } from "@/lib/api"
 import { Mail, ArrowLeft, CheckCircle, AlertCircle } from 'lucide-react';
 
 const ForgotPasswordPage = () => {
@@ -41,13 +40,17 @@ const ForgotPasswordPage = () => {
 
     try {
       setLoading(true);
-      // Usar diretamente a API do Supabase
-      const { error } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: `${window.location.origin}/redefinir-senha`
+      
+      // Simular envio de email de redefinição
+      const response = await fetch('/api/auth/forgot-password', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email }),
       });
 
-      if (error) {
-        console.error('❌ Erro ao enviar email:', error);
+      if (!response.ok) {
         setError('Erro ao enviar email. Verifique se o email está correto e tente novamente.');
         return;
       }

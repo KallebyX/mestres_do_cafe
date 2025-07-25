@@ -49,17 +49,15 @@ def init_db(app) -> None:
         try:
             # Testar conexão
             db.engine.connect()
-            db_type = "SQLite" if "sqlite" in database_url.lower() else "PostgreSQL"
-            logger.info(f"✅ Conexão com {db_type} estabelecida com sucesso")
+            logger.info(f"✅ Conexão com PostgreSQL estabelecida com sucesso")
         except SQLAlchemyError as e:
-            db_type = "SQLite" if "sqlite" in database_url.lower() else "PostgreSQL"
-            logger.error(f"❌ Erro ao conectar com {db_type}: {e}")
+            logger.error(f"❌ Erro ao conectar com PostgreSQL: {e}")
             raise
 
 
 def get_database_url() -> str:
     """
-    Obtém a URL de conexão do banco de dados (SQLite ÚNICO)
+    Obtém a URL de conexão do banco de dados (PostgreSQL ÚNICO)
 
     Returns:
         str: URL de conexão do banco de dados
@@ -70,27 +68,22 @@ def get_database_url() -> str:
     if database_url:
         return database_url
 
-    # BANCO ÚNICO E DEFINITIVO - Apenas este caminho é permitido
-    # Caminho relativo para o banco principal na raiz da API
-    db_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "mestres_cafe.db"))
-    return f"sqlite:///{db_path}"
+    # BANCO ÚNICO E DEFINITIVO - Apenas PostgreSQL é permitido
+    # Fallback para desenvolvimento local PostgreSQL
+    return "postgresql://kalleby@localhost:5432/mestres_cafe"
 
 
 def configure_db_events() -> None:
     """
-    Configura eventos do SQLAlchemy para otimização
+    Configura eventos do SQLAlchemy para otimização PostgreSQL
     """
 
     @event.listens_for(Engine, "connect")
-    def set_sqlite_pragma(dbapi_connection, connection_record):
-        """Define configurações do banco de dados SQLite ÚNICO"""
-        if hasattr(dbapi_connection, "execute"):
-            # Configurações SQLite OTIMIZADAS
-            dbapi_connection.execute("PRAGMA foreign_keys = ON")
-            dbapi_connection.execute("PRAGMA journal_mode = WAL")
-            dbapi_connection.execute("PRAGMA synchronous = NORMAL")
-            dbapi_connection.execute("PRAGMA cache_size = 10000")
-            dbapi_connection.execute("PRAGMA temp_store = memory")
+    def set_postgresql_config(dbapi_connection, connection_record):
+        """Define configurações do banco de dados PostgreSQL"""
+        # PostgreSQL não precisa de configurações PRAGMA como SQLite
+        # As configurações de pool já estão definidas em SQLALCHEMY_ENGINE_OPTIONS
+        logger.info("Conexão PostgreSQL estabelecida com configurações otimizadas")
 
 
 def create_tables() -> None:
@@ -207,12 +200,12 @@ def health_check() -> dict:
         result = db.session.execute(text("SELECT 1"))
         result.fetchone()
 
-        return {"status": "healthy", "database": "SQLite", "connection": "active"}
+        return {"status": "healthy", "database": "PostgreSQL", "connection": "active"}
     except SQLAlchemyError as e:
         logger.error(f"❌ Health check falhou: {e}")
         return {
             "status": "unhealthy",
-            "database": "SQLite",
+            "database": "PostgreSQL",
             "connection": "failed",
             "error": str(e),
         }

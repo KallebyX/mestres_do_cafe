@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 import axios from 'axios';
 import { apiConfig } from '../config/api.js';
 
@@ -128,84 +129,84 @@ export const authAPI = {
 export const productsAPI = {
   getAll: async (filters = {}) => {
     try {
-      const response = await api.get('/products', { params: filters });
+      const response = await api.get('/api/products', { params: filters });
       return { success: true, data: response.data };
     } catch (error) {
-      return { 
-        success: false, 
-        error: error.response?.data?.error || 'Erro ao buscar produtos' 
+      return {
+        success: false,
+        error: error.response?.data?.error || 'Erro ao buscar produtos'
       };
     }
   },
 
   getById: async (id) => {
     try {
-      const response = await api.get(`/products/${id}`);
+      const response = await api.get(`/api/products/${id}`);
       return { success: true, data: response.data };
     } catch (error) {
-      return { 
-        success: false, 
-        error: error.response?.data?.error || 'Erro ao buscar produto' 
+      return {
+        success: false,
+        error: error.response?.data?.error || 'Erro ao buscar produto'
       };
     }
   },
 
   create: async (productData) => {
     try {
-      const response = await api.post('/products', productData);
+      const response = await api.post('/api/products', productData);
       return { success: true, data: response.data };
     } catch (error) {
-      return { 
-        success: false, 
-        error: error.response?.data?.error || 'Erro ao criar produto' 
+      return {
+        success: false,
+        error: error.response?.data?.error || 'Erro ao criar produto'
       };
     }
   },
 
   update: async (id, productData) => {
     try {
-      const response = await api.put(`/products/${id}`, productData);
+      const response = await api.put(`/api/products/${id}`, productData);
       return { success: true, data: response.data };
     } catch (error) {
-      return { 
-        success: false, 
-        error: error.response?.data?.error || 'Erro ao atualizar produto' 
+      return {
+        success: false,
+        error: error.response?.data?.error || 'Erro ao atualizar produto'
       };
     }
   },
 
   delete: async (id) => {
     try {
-      const response = await api.delete(`/products/${id}`);
+      const response = await api.delete(`/api/products/${id}`);
       return { success: true, data: response.data };
     } catch (error) {
-      return { 
-        success: false, 
-        error: error.response?.data?.error || 'Erro ao deletar produto' 
+      return {
+        success: false,
+        error: error.response?.data?.error || 'Erro ao deletar produto'
       };
     }
   },
 
   getFeatured: async () => {
     try {
-      const response = await api.get('/products/featured');
+      const response = await api.get('/api/products/featured');
       return { success: true, data: response.data };
     } catch (error) {
-      return { 
-        success: false, 
-        error: error.response?.data?.error || 'Erro ao buscar produtos em destaque' 
+      return {
+        success: false,
+        error: error.response?.data?.error || 'Erro ao buscar produtos em destaque'
       };
     }
   },
 
   getByCategory: async (category) => {
     try {
-      const response = await api.get(`/products/category/${category}`);
+      const response = await api.get(`/api/products/category/${category}`);
       return { success: true, data: response.data };
     } catch (error) {
-      return { 
-        success: false, 
-        error: error.response?.data?.error || 'Erro ao buscar produtos por categoria' 
+      return {
+        success: false,
+        error: error.response?.data?.error || 'Erro ao buscar produtos por categoria'
       };
     }
   }
@@ -218,7 +219,7 @@ export const productsAPI = {
 export const cartAPI = {
   getCart: async () => {
     try {
-      const response = await api.get('/cart');
+      const response = await api.get('/api/cart/');
       return { success: true, data: response.data };
     } catch (error) {
       return {
@@ -228,7 +229,7 @@ export const cartAPI = {
     }
   },
 
-  // ✅ NOVO: Adicionar item com suporte a product_price_id e weight
+  // ✅ CORRIGIDO: Usar URLs corretas do backend
   addItem: async (productId, quantity = 1, productPriceId = null, weight = null) => {
     try {
       const payload = {
@@ -242,7 +243,7 @@ export const cartAPI = {
       
       console.log('🛒 cartAPI.addItem payload:', payload);
       
-      const response = await api.post('/cart/items', payload);
+      const response = await api.post('/api/cart/add', payload);
       return { success: true, data: response.data };
     } catch (error) {
       return {
@@ -259,7 +260,7 @@ export const cartAPI = {
 
   updateItem: async (productId, quantity) => {
     try {
-      const response = await api.put(`/cart/items/${productId}`, { quantity });
+      const response = await api.put(`/api/cart/${productId}`, { quantity });
       return { success: true, data: response.data };
     } catch (error) {
       return {
@@ -276,7 +277,7 @@ export const cartAPI = {
 
   removeItem: async (productId) => {
     try {
-      const response = await api.delete(`/cart/items/${productId}`);
+      const response = await api.delete(`/api/cart/${productId}`);
       return { success: true, data: response.data };
     } catch (error) {
       return {
@@ -293,7 +294,7 @@ export const cartAPI = {
 
   clearCart: async () => {
     try {
-      const response = await api.delete('/cart');
+      const response = await api.delete('/api/cart/clear');
       return { success: true, data: response.data };
     } catch (error) {
       return {
@@ -549,24 +550,36 @@ export const blogAPI = {
 export const reviewsAPI = {
   getByProduct: async (productId) => {
     try {
-      const response = await api.get(`/reviews/product/${productId}`);
+      const response = await api.get(`/api/reviews/product/${productId}`);
       return { success: true, data: response.data };
     } catch (error) {
-      return { 
-        success: false, 
-        error: error.response?.data?.error || 'Erro ao buscar avaliações' 
+      return {
+        success: false,
+        error: error.response?.data?.error || 'Erro ao buscar avaliações'
       };
     }
   },
 
   create: async (reviewData) => {
     try {
-      const response = await api.post('/reviews', reviewData);
+      const response = await api.post('/api/reviews', reviewData);
       return { success: true, data: response.data };
     } catch (error) {
-      return { 
-        success: false, 
-        error: error.response?.data?.error || 'Erro ao criar avaliação' 
+      return {
+        success: false,
+        error: error.response?.data?.error || 'Erro ao criar avaliação'
+      };
+    }
+  },
+
+  getFeatured: async (params = {}) => {
+    try {
+      const response = await api.get('/api/reviews/featured', { params });
+      return { success: true, data: response.data };
+    } catch (error) {
+      return {
+        success: false,
+        error: error.response?.data?.error || 'Erro ao buscar avaliações em destaque'
       };
     }
   }

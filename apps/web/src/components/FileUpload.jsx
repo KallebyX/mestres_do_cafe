@@ -12,7 +12,6 @@ import {
   AlertCircle,
   Loader
 } from 'lucide-react';
-import { supabase } from "@/lib/api"
 import { useNotifications } from '../contexts/NotificationContext';
 
 const FileUpload = ({
@@ -84,34 +83,24 @@ const FileUpload = ({
     }
   };
 
-  // Upload de arquivo para o Supabase Storage
+  // Simular upload de arquivo
   const uploadFileToStorage = async (file) => {
     try {
+      // Simular delay de upload
+      await new Promise(resolve => setTimeout(resolve, 1500));
+      
       const fileExt = file.name.split('.').pop();
       const fileName = `${Date.now()}-${Math.random().toString(36).substring(2)}.${fileExt}`;
       const filePath = path ? `${path}/${fileName}` : fileName;
-
-      const { data, error } = await supabase.storage
-        .from(bucket)
-        .upload(filePath, file, {
-          cacheControl: '3600',
-          upsert: false
-        });
-
-      if (error) {
-        throw error;
-      }
-
-      // Obter URL pública
-      const { data: { publicUrl } } = supabase.storage
-        .from(bucket)
-        .getPublicUrl(filePath);
+      
+      // URL simulada
+      const simulatedUrl = `https://example.com/uploads/${fileName}`;
 
       return {
         success: true,
         data: {
           path: filePath,
-          url: publicUrl,
+          url: simulatedUrl,
           name: file.name,
           size: file.size,
           type: file.type
@@ -235,19 +224,9 @@ const FileUpload = ({
   const removeFile = async (fileId) => {
     const fileToRemove = files.find(f => f.id === fileId);
     
+    // Simular remoção do storage
     if (fileToRemove && fileToRemove.path) {
-      try {
-        // Remover do storage
-        const { error } = await supabase.storage
-          .from(bucket)
-          .remove([fileToRemove.path]);
-
-        if (error) {
-          console.error('Erro ao remover arquivo do storage:', error);
-        }
-      } catch (error) {
-        console.error('Erro ao remover arquivo:', error);
-      }
+      console.log('Arquivo removido:', fileToRemove.path);
     }
 
     // Remover da lista

@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { supabase } from "@/lib/api"
 import { Coffee, Shield, CheckCircle } from 'lucide-react';
 import Logo from '../components/Logo';
 
@@ -15,32 +14,43 @@ const AuthCallbackPage = () => {
 
   const handleAuthCallback = async () => {
     try {
-      // Obter sessão do callback
-      const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+      // Extrair dados do callback da URL
+      const urlParams = new URLSearchParams(window.location.search);
+      const code = urlParams.get('code');
+      const state = urlParams.get('state');
       
-      if (sessionError) {
-        console.error('❌ Erro ao obter sessão:', sessionError);
-        setError('Erro ao processar autenticação: ' + sessionError.message);
+      if (!code) {
+        console.error('❌ Código de autorização não encontrado');
+        setError('Código de autorização inválido');
         setTimeout(() => navigate('/login'), 3000);
         return;
       }
 
-      if (!session?.user) {
+      // Processar callback com a Flask API
+      const response = await fetch('/api/auth/callback', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ code, state }),
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        setError('Erro ao processar autenticação: ' + (error.message || 'Erro desconhecido'));
+        setTimeout(() => navigate('/login'), 3000);
+        return;
+      }
+
+      const userData = await response.json();
+      
+      if (!userData.user) {
         navigate('/login');
         return;
       }
 
-      // Buscar ou criar perfil do usuário
-      const userProfile = await getOrCreateUserProfile(session.user);
-      
-      if (!userProfile) {
-        setError('Erro ao criar perfil do usuário');
-        setTimeout(() => navigate('/login'), 3000);
-        return;
-      }
-
       // Redirecionar baseado no role do usuário
-      redirectUser(userProfile);
+      redirectUser(userData.user);
 
     } catch (error) {
       console.error('❌ Erro no callback de autenticação:', error);
@@ -51,66 +61,6 @@ const AuthCallbackPage = () => {
     }
   };
 
-  const getOrCreateUserProfile = async (authUser) => {
-    try {
-      // Primeiro, tentar buscar o perfil existente
-      const { data: existingProfile, error: fetchError } = await supabase
-        .from('users')
-        .select('*')
-        .eq('id', authUser.id)
-        .single();
-
-      if (existingProfile && !fetchError) {
-        return existingProfile;
-      }
-
-      // Extrair informações do Google se disponíveis
-      const isGoogleUser = authUser.app_metadata?.provider === 'google';
-      const googleData = authUser.user_metadata || {};
-      
-      // Verificar se é admin por email
-      const adminEmails = [
-        'daniel@mestres-do-cafe.com',
-        'admin@mestres-do-cafe.com',
-        'danielmelo.dev@gmail.com'
-      ];
-      
-      const isAdmin = adminEmails.includes(authUser.email?.toLowerCase());
-      
-      const profileData = {
-        id: authUser.id,
-        email: authUser.email,
-        name: googleData.name || googleData.full_name || authUser.email?.split('@')[0] || 'Usuário',
-        avatar_url: googleData.avatar_url || googleData.picture || null,
-        user_type: 'cliente_pf',
-        points: 0,
-        level: 'Aprendiz do Café',
-        role: isAdmin ? 'admin' : 'customer',
-        permissions: isAdmin ? ['read', 'write', 'admin'] : ['read'],
-        provider: isGoogleUser ? 'google' : 'email',
-        google_id: isGoogleUser ? googleData.sub : null,
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString()
-      };
-
-      const { data: newProfile, error: createError } = await supabase
-        .from('users')
-        .insert([profileData])
-        .select()
-        .single();
-
-      if (createError) {
-        console.error('❌ Erro ao criar perfil:', createError);
-        return null;
-      }
-
-      return newProfile;
-
-    } catch (error) {
-      console.error('❌ Erro ao obter/criar perfil:', error);
-      return null;
-    }
-  };
 
   const redirectUser = (userProfile) => {
     // Verificar se é admin

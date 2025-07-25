@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useCart } from '../contexts/CartContext';
+import { useAuth } from '../contexts/AuthContext';
 import CartReview from '../components/checkout/CartReview';
 import ShippingForm from '../components/checkout/ShippingForm';
 import ShippingOptions from '../components/checkout/ShippingOptions';
@@ -23,6 +24,7 @@ const CHECKOUT_STEPS = [
 const CheckoutPage = () => {
   const navigate = useNavigate();
   const { cartItems, cartTotal, clearCart } = useCart();
+  const { user } = useAuth();
   
   const [currentStep, setCurrentStep] = useState(1);
   const [sessionToken, setSessionToken] = useState(null);
@@ -77,10 +79,13 @@ const CheckoutPage = () => {
       try {
         setLoading(true);
         
-        // Simular user_id (em produção viria do contexto de autenticação)
-        const userId = 1;
+        // Verificar se usuário está autenticado
+        if (!user || !user.id) {
+          navigate('/login');
+          return;
+        }
         
-        const response = await checkoutAPI.startCheckout({ user_id: userId });
+        const response = await checkoutAPI.startCheckout({ user_id: user.id });
         
         if (response.session_token) {
           setSessionToken(response.session_token);
@@ -192,7 +197,7 @@ const CheckoutPage = () => {
       
       const response = await checkoutAPI.applyCoupon({
         session_token: sessionToken,
-        user_id: 1,
+        user_id: user.id,
         coupon_code: couponCode,
         subtotal: checkoutData.totals.subtotal
       });
@@ -225,7 +230,7 @@ const CheckoutPage = () => {
 
       const orderData = {
         session_token: sessionToken,
-        user_id: 1,
+        user_id: user.id,
         shipping_data: checkoutData.shipping,
         payment_data: checkoutData.payment,
         cart_data: cartItems.map(item => ({

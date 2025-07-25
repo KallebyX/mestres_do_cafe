@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
-import { supabase } from "@/lib/api";
 import ShippingTracker from '../components/ShippingTracker';
 import { Package, Truck, Eye, X } from 'lucide-react';
 
@@ -27,44 +26,57 @@ const OrdersPage = () => {
   const loadOrders = async () => {
     setIsLoading(true);
     try {
-      // Buscar pedidos reais do Supabase
-      const { data, error } = await supabase
-        .from('orders')
-        .select(`
-          *,
-          order_items (
-            *,
-            products (name, price)
-          ),
-          users (name, email)
-        `)
-        .eq('user_id', user.id)
-        .order('created_at', { ascending: false });
-
-      if (error) {
-        console.error('Erro ao carregar pedidos:', error);
-        setOrders([]);
-      } else {
-        // Mapear dados para formato esperado
-        const mappedOrders = data?.map(order => ({
-          id: order.id,
-          date: order.created_at?.split('T')[0] || new Date().toISOString().split('T')[0],
-          status: order.status || 'pending',
-          total: parseFloat(order.total_amount || 0),
-          items: order.order_items?.map(item => ({
-            name: item.products?.name || 'Produto não encontrado',
-            quantity: item.quantity,
-            price: parseFloat(item.unit_price || item.products?.price || 0)
-          })) || [],
+      // Dados simulados de pedidos do usuário
+      const simulatedOrders = [
+        {
+          id: 'ORD-001',
+          date: '2024-01-20',
+          status: 'completed',
+          total: 89.50,
+          items: [
+            {
+              name: 'Café Santos Premium 250g',
+              quantity: 2,
+              price: 25.50
+            },
+            {
+              name: 'Café Bourbon Amarelo 500g',
+              quantity: 1,
+              price: 38.50
+            }
+          ],
           shipping: {
-            method: order.shipping_method || 'Entrega Padrão',
-            address: order.shipping_address || 'Endereço não informado',
-            tracking: order.tracking_code || null
+            method: 'Entrega Expressa',
+            address: 'Rua das Flores, 123 - São Paulo, SP',
+            tracking: 'BR123456789'
           }
-        })) || [];
-
-        setOrders(mappedOrders);
+        },
+        {
+          id: 'ORD-002',
+          date: '2024-01-25',
+          status: 'pending',
+          total: 127.00,
+          items: [
+            {
+              name: 'Café Catuaí Vermelho 1kg',
+              quantity: 1,
+              price: 65.00
+            },
+            {
+              name: 'Café Arábica Especial 500g',
+              quantity: 2,
+              price: 31.00
+            }
+          ],
+          shipping: {
+            method: 'Entrega Padrão',
+            address: 'Rua das Flores, 123 - São Paulo, SP',
+            tracking: null
+          }
         }
+      ];
+
+      setOrders(simulatedOrders);
     } catch (error) {
       console.error('❌ Erro ao carregar pedidos:', error);
       setOrders([]);

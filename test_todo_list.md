@@ -74,21 +74,157 @@
 - [ ] Testar responsividade mobile
 - [ ] Verificar performance de carregamento
 
+### 9. Testes de Banco de Dados SQLite
+- [ ] Verificar integridade do banco SQLite único
+- [ ] Validar funcionamento correto dos UUIDs como TEXT
+- [ ] Testar relacionamentos entre tabelas com UUIDs
+- [ ] Verificar performance de queries com UUIDs
+- [ ] Validar backup e restore do banco SQLite
+- [ ] Testar migrações e alterações de schema
+- [ ] Verificar segurança dos UUIDs (anti-enumeration)
+- [ ] Validar transações e rollbacks
+- [ ] Testar concurrent access ao SQLite
+- [ ] Verificar otimizações SQLite (WAL, cache, etc.)
+- [ ] Validar consistência de dados após operações CRUD
+
+### 10. Testes de Diagnóstico Técnico
+- [ ] Analisar possíveis fontes de problemas nos testes E2E
+- [ ] Verificar conectividade Frontend → API
+- [ ] Verificar estado do banco de dados e dados de teste
+- [ ] Implementar logs de diagnóstico
+- [ ] Confirmar diagnóstico com o usuário
+- [ ] Validar sistema JWT completo
+- [ ] Testar inicialização do JWTManager no app.py
+- [ ] Confirmar consistência SQLite vs PostgreSQL
+- [ ] Verificar configuração de CORS
+- [ ] Testar endpoints de health check
+- [ ] Validar configurações de ambiente (.env)
+- [ ] Verificar logs de erro da aplicação
+
+### 11. Testes Avançados de Funcionalidades
+- [ ] Testar sistema de cadastro (Pessoa Física) completo
+- [ ] Validar sistema de login com credenciais corretas
+- [ ] Testar criação de usuário no banco correto
+- [ ] Validar login com credenciais válidas após criação
+- [ ] Testar rotas protegidas (carrinho) após login
+- [ ] Testar dropdown "Segmento de Atuação"
+- [ ] Completar teste de cadastro Pessoa Jurídica
+- [ ] Testar sistema completo de preços por peso
+- [ ] Validar navegação no catálogo de produtos
+- [ ] Testar visualização detalhada de produtos
+- [ ] Testar adição de produtos ao carrinho
+- [ ] Validar persistência de dados do carrinho
+- [ ] Testar remoção de produtos do carrinho
+- [ ] Testar incremento/decremento de quantidades
+- [ ] Validar cálculo correto de totais do carrinho
+- [ ] Testar sistema de autenticação com diferentes roles
+- [ ] Validar sistema de notificações do frontend
+
+### 12. Testes de Integração Final
+- [ ] Testar atualização manual de quantidades no carrinho
+- [ ] Testar processo de checkout completo
+- [ ] Testar finalização de pedido
+- [ ] Testar visualização do histórico de pedidos
+- [ ] Testar gerenciamento de perfil do usuário
+- [ ] Testar sistema de logout
+- [ ] Testar navegação geral e responsividade
+- [ ] Validar remoção de logs de diagnóstico
+- [ ] Testar fluxo completo E2E (cadastro → compra → pagamento)
+- [ ] Validar integração completa Frontend ↔ Backend ↔ Database
+- [ ] Testar recuperação de sessão após reload da página
+- [ ] Validar funcionamento em diferentes navegadores
+- [ ] Testar comportamento offline/online
+- [ ] Validar performance sob carga simulada
+
+### 13. Testes de Migração PostgreSQL
+- [ ] Validar instalação e configuração PostgreSQL local
+- [ ] Testar conexão com database PostgreSQL
+- [ ] Executar migração de dados SQLite → PostgreSQL
+- [ ] Validar integridade dos dados migrados
+- [ ] Testar UUIDs nativos funcionando corretamente
+- [ ] Validar relacionamentos entre tabelas com UUIDs
+- [ ] Testar performance PostgreSQL vs SQLite anterior
+- [ ] Validar backup e restore PostgreSQL
+- [ ] Testar transações e rollbacks
+- [ ] Configurar conexões para produção
+- [ ] Validar pool de conexões otimizado
+- [ ] Testar queries complexas otimizadas para PostgreSQL
+- [ ] Verificar extensões PostgreSQL necessárias (uuid-ossp)
+- [ ] Validar indexes e otimizações
+- [ ] Testar concurrent access e locks
+
+### 14. Testes Pós-Migração Sistema Completo
+- [ ] Re-executar todos os testes de autenticação
+- [ ] Re-validar sistema de carrinho com PostgreSQL
+- [ ] Testar checkout completo com dados reais PostgreSQL
+- [ ] Validar persistência de dados em PostgreSQL
+- [ ] Testar sistema de pedidos e histórico
+- [ ] Re-validar painel administrativo completo
+- [ ] Testar relatórios e analytics
+- [ ] Validar sistema de produtos e estoque
+- [ ] Testar integrações externas (Mercado Pago)
+- [ ] Validar sistema de notificações
+- [ ] Testar sistema de usuários e permissões
+- [ ] Validar cálculos de preços e impostos
+- [ ] Testar sistema de cupons e descontos
+- [ ] Verificar logs e monitoramento
+- [ ] Validar sistema de avaliações e reviews
+
 ---
 
 ## 🚀 Prompt para Nova Tarefa
 
-```
+```bash
 Preciso testar o fluxo completo do e-commerce Mestres do Café seguindo a lista de testes em test_todo_list.md. 
 
-Começar pelos testes de cadastro:
-1. Primeiro testar cadastro de Pessoa Física com CPF válido
-2. Depois testar cadastro de Pessoa Jurídica com CNPJ válido
-3. Fazer login com ambas as contas criadas
-4. Continuar com os demais testes da lista
+O sistema foi migrado para PostgreSQL único com UUIDs nativos. Executar testes em ordem:
+
+1. TESTES DE MIGRAÇÃO POSTGRESQL (Seção 13):
+   - Verificar instalação e configuração PostgreSQL
+   - Validar migração de dados SQLite → PostgreSQL
+   - Testar UUIDs nativos e relacionamentos
+   - Verificar performance e otimizações
+
+2. TESTES PÓS-MIGRAÇÃO (Seção 14):
+   - Re-executar todos os testes de sistema
+   - Validar funcionalidades com PostgreSQL
+   - Verificar integridade dos dados migrados
+   - Confirmar performance equivalente ou superior
+
+3. TESTES DE BANCO DE DADOS (Seção 9):
+   - Verificar integridade do PostgreSQL
+   - Validar funcionamento dos UUIDs nativos
+   - Testar relacionamentos e performance
+
+4. TESTES DE DIAGNÓSTICO (Seção 10):
+   - Confirmar conectividade Frontend → API → PostgreSQL
+   - Validar sistema JWT completo
+   - Verificar consistência do banco
+
+5. TESTES BÁSICOS (Seções 1-8):
+   - Cadastro PF/PJ com validação
+   - Login e autenticação
+   - Navegação e catálogo
+   - Carrinho e checkout
+   - Pagamentos e pós-venda
+   - Painel admin
+
+6. TESTES AVANÇADOS (Seção 11):
+   - Sistema completo de preços por peso
+   - Funcionalidades já validadas anteriormente
+   - Novos recursos implementados
+
+7. TESTES DE INTEGRAÇÃO FINAL (Seção 12):
+   - Fluxo E2E completo
+   - Performance e responsividade
+   - Validação final do sistema
 
 O sistema está rodando em:
 - Frontend: http://localhost:3000
 - API: http://localhost:5001
+- Database: PostgreSQL (mestres_cafe_production)
 
-Executar cada teste de forma sistemática, reportando sucesso ou falha, e documentando qualquer problema encontrado.
+IMPORTANTE: Consultar MIGRATION_POSTGRESQL.md para procedimentos de migração.
+
+Executar cada teste sistematicamente reportando sucesso/falha e documentando problemas.
+```
