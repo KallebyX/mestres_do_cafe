@@ -11,105 +11,166 @@ import {
   Star,
   CheckCircle,
   ArrowRight,
-  Shield
+  Shield,
+  Phone,
+  Mail,
+  Instagram,
+  ShoppingCart,
+  Briefcase,
+  GraduationCap,
+  Gift,
+  Palette,
+  Zap
 } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import StickyCTA from '../components/StickyCTA';
+import ProductCard from '../components/ProductCard';
+import ServiceCard from '../components/ServiceCard';
+import AboutPageSEO from '../components/AboutPageSEO';
 
 const AboutPage = () => {
-  const achievements = [
+  // Dados dos produtos premium
+  const premiumProducts = [
     {
-      number: "1000+",
-      label: "Clientes Satisfeitos",
-      icon: Users,
-      color: "from-blue-500 to-blue-600"
+      name: "Catuai Amarelo 86+",
+      score: "86+",
+      origin: "Alta Mogiana/SP",
+      profile: {
+        body: "cítrico",
+        acidity: "alta",
+        sweetness: "média",
+        intensity: "moderada"
+      },
+      notes: ["frutas tropicais", "caramelo", "retrogosto prolongado"],
+      sizes: ["100g", "250g", "500g", "1kg"]
     },
     {
-      number: "50+",
-      label: "Variedades Premium",
-      icon: Coffee,
-      color: "from-amber-500 to-amber-600"
+      name: "Arara 84+",
+      score: "84+",
+      origin: "Serra do Caparaó",
+      profile: {
+        body: "sedoso",
+        acidity: "média",
+        sweetness: "alta",
+        intensity: "suave"
+      },
+      notes: ["chocolate", "avelã", "final adocicado"],
+      sizes: ["100g", "250g", "500g", "1kg"]
     },
     {
-      number: "85+",
-      label: "Pontuação SCA",
-      icon: Award,
-      color: "from-green-500 to-green-600"
+      name: "Bourbon Amarelo 82+",
+      score: "82+",
+      origin: "Alta Mogiana/SP",
+      profile: {
+        body: "encorpado",
+        acidity: "média",
+        sweetness: "alta",
+        intensity: "forte"
+      },
+      notes: ["caramelo", "baunilha", "final cremoso"],
+      sizes: ["100g", "250g", "500g", "1kg"]
     },
     {
-      number: "15+",
-      label: "Produtores Parceiros",
-      icon: MapPin,
-      color: "from-purple-500 to-purple-600"
+      name: "Catucaí Amarelo 87+",
+      score: "87+",
+      origin: "Serra do Caparaó",
+      profile: {
+        body: "equilibrado",
+        acidity: "brilhante",
+        sweetness: "alta",
+        intensity: "moderada"
+      },
+      notes: ["floral", "frutas vermelhas", "final limpo"],
+      sizes: ["100g", "250g", "500g", "1kg"]
+    },
+    {
+      name: "Catuai Vermelho 85+",
+      score: "85+",
+      origin: "Alta Mogiana/SP",
+      profile: {
+        body: "encorpado",
+        acidity: "média",
+        sweetness: "alta",
+        intensity: "forte"
+      },
+      notes: ["chocolate amargo", "especiarias", "final persistente"],
+      sizes: ["100g", "250g", "500g", "1kg"]
     }
   ];
 
-  const values = [
+  // Serviços B2B
+  const b2bServices = [
     {
-      icon: Target,
-      title: "Excelência",
-      description: "Buscamos a perfeição em cada grão, desde a seleção até a torra artesanal.",
-      gradient: "from-emerald-500 to-teal-600"
+      icon: GraduationCap,
+      title: "Consultoria em Métodos de Preparo",
+      description: "Especialistas certificados SCA para treinar sua equipe e otimizar processos de preparo.",
+      gradient: "from-blue-500 to-blue-600"
     },
     {
-      icon: Heart,
-      title: "Paixão",
-      description: "O amor pelo café especial move cada decisão e processo da nossa torrefação.",
+      icon: Palette,
+      title: "White Label",
+      description: "Seu café, sua identidade. Desenvolvemos blends exclusivos e embalagem com sua marca.",
+      gradient: "from-purple-500 to-purple-600"
+    },
+    {
+      icon: Zap,
+      title: "Workshops",
+      description: "Capacitação prática para baristas e equipes de café com certificação SCA.",
       gradient: "from-yellow-500 to-orange-600"
     },
     {
-      icon: Leaf,
-      title: "Sustentabilidade",
-      description: "Práticas responsáveis que respeitam o meio ambiente e os produtores.",
-      gradient: "from-blue-500 to-purple-600"
+      icon: Target,
+      title: "Treinamentos Especializados",
+      description: "Programas customizados para diferentes níveis de conhecimento e necessidades do negócio.",
+      gradient: "from-green-500 to-teal-600"
+    },
+    {
+      icon: Gift,
+      title: "Kits de Presentes e Brindes",
+      description: "Soluções personalizadas para eventos corporativos, clientes VIP e ações de marketing.",
+      gradient: "from-pink-500 to-rose-600"
     }
   ];
 
-  const process = [
+  // Depoimentos (mock)
+  const testimonials = [
     {
-      step: "01",
-      title: "Seleção Rigorosa",
-      description: "Visitamos produtores e selecionamos apenas grãos com pontuação SCA acima de 80 pontos."
+      name: "Carlos Mendes",
+      role: "Proprietário - Café Aroma",
+      content: "A Mestres do Café transformou nosso negócio. A qualidade dos grãos e o suporte técnico são excepcionais.",
+      rating: 5
     },
     {
-      step: "02", 
-      title: "Análise Sensorial",
-      description: "Degustação profissional para identificar perfis únicos e características especiais."
+      name: "Ana Paula Silva",
+      role: "Gerente - Hotel Premium",
+      content: "Nossos hóspedes adoram o café servido no café da manhã. A consistência da qualidade é impressionante.",
+      rating: 5
     },
     {
-      step: "03",
-      title: "Torra Artesanal",
-      description: "Processo controlado por mestres torradores para realçar as melhores qualidades."
-    },
-    {
-      step: "04",
-      title: "Controle de Qualidade",
-      description: "Cada lote é testado para garantir consistência e excelência no produto final."
+      name: "Roberto Costa",
+      role: "Diretor - Empresa Tech",
+      content: "O white label foi perfeito para nossa marca. Profissionalismo e qualidade em todos os detalhes.",
+      rating: 5
     }
   ];
 
-  const team = [
-    {
-      name: "Daniel Nascimento",
-      role: "Fundador & Mestre Torrador",
-      avatar: "👨‍💼",
-      description: "15 anos de experiência em café especial. Certificado Q-Grader SCA."
-    },
-    {
-      name: "Maria Santos",
-      role: "Coordenadora de Qualidade",
-      avatar: "👩‍🔬",
-      description: "Especialista em análise sensorial e controle de qualidade dos cafés."
-    },
-    {
-      name: "João Silva",
-      role: "Relacionamento com Produtores",
-      avatar: "👨‍🌾",
-      description: "Responsável pela seleção e parcerias com os melhores caficultores."
-    }
-  ];
+  // Função para abrir WhatsApp
+  const openWhatsApp = () => {
+    const message = "Olá! Gostaria de saber mais sobre os serviços B2B da Mestres do Café.";
+    const whatsappUrl = `https://wa.me/55996458600?text=${encodeURIComponent(message)}`;
+    window.open(whatsappUrl, '_blank');
+  };
+
+  // Função para abrir e-commerce
+  const openEcommerce = () => {
+    window.open('/marketplace', '_blank');
+  };
 
   return (
-    <div className="min-h-screen bg-white">
-      {/* Hero Section */}
+    <>
+      <AboutPageSEO />
+      <div className="min-h-screen bg-white">
+        {/* Hero Section - "Quem Somos" */}
       <section className="relative overflow-hidden bg-gradient-to-br from-slate-900 via-slate-800 to-amber-900 py-20 lg:py-32">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_70%,rgba(245,158,11,0.1),transparent_70%)]"></div>
         
@@ -117,36 +178,56 @@ const AboutPage = () => {
           <div className="grid lg:grid-cols-2 gap-12 lg:gap-20 items-center">
             {/* Left Column */}
             <div className="space-y-8">
-              {/* Badge */}
+              {/* Badge SCAA */}
               <div className="inline-flex items-center gap-2 bg-amber-600/20 border border-amber-600/30 rounded-full px-4 py-2">
                 <Award className="w-4 h-4 text-amber-400" />
-                <span className="text-amber-400 font-medium text-sm">Certificação SCA</span>
+                <span className="text-amber-400 font-medium text-sm">Certificação SCAA</span>
               </div>
 
-              {/* Headline */}
+              {/* Headline Principal */}
               <div className="space-y-6">
                 <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-white leading-tight">
-                  Nossa História no
+                  Torrefação de Cafés Especiais
                   <span className="block text-amber-400">
-                    Café Especial
+                    com SCAA, da Origem à Xícara
                   </span>
                 </h1>
                 
                 <p className="text-xl text-slate-300 leading-relaxed">
-                  Há mais de 5 anos dedicados à arte da torrefação artesanal, 
-                  transformando grãos especiais em experiências inesquecíveis para nossos clientes.
+                  Selecionamos grãos de MG, SP, BA e ES e torramos por perfil para revelar o ápice de sabor. 
+                  Compromisso com excelência desde 2019.
                 </p>
               </div>
 
-              {/* Stats */}
-              <div className="grid grid-cols-2 gap-6">
-                <div className="text-center lg:text-left">
-                  <div className="text-3xl lg:text-4xl font-bold text-amber-400 mb-1">5+</div>
-                  <div className="text-slate-300 text-sm">Anos de Experiência</div>
+              {/* CTAs */}
+              <div className="flex flex-col sm:flex-row gap-4">
+                <button 
+                  onClick={openWhatsApp}
+                  className="group inline-flex items-center justify-center gap-2 bg-amber-600 hover:bg-amber-700 text-white font-semibold px-8 py-4 rounded-2xl transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-1"
+                >
+                  <Briefcase className="w-5 h-5" />
+                  Fale com a Torrefação (B2B)
+                  <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                </button>
+                
+                <button 
+                  onClick={openEcommerce}
+                  className="inline-flex items-center justify-center gap-2 border-2 border-amber-600/30 hover:border-amber-600 text-amber-400 hover:text-amber-300 font-semibold px-8 py-4 rounded-2xl transition-all duration-300 hover:bg-amber-600/10"
+                >
+                  <ShoppingCart className="w-5 h-5" />
+                  Comprar no E-commerce
+                </button>
+              </div>
+
+              {/* Origem e Certificação */}
+              <div className="flex items-center gap-6 text-slate-300 text-sm">
+                <div className="flex items-center gap-2">
+                  <MapPin className="w-4 h-4 text-amber-400" />
+                  <span>Alta Mogiana/SP + Serra do Caparaó</span>
                 </div>
-                <div className="text-center lg:text-left">
-                  <div className="text-3xl lg:text-4xl font-bold text-amber-400 mb-1">92</div>
-                  <div className="text-slate-300 text-sm">Pontuação Máxima</div>
+                <div className="flex items-center gap-2">
+                  <Star className="w-4 h-4 text-amber-400" />
+                  <span>Pontuações 82+ a 87+</span>
                 </div>
               </div>
             </div>
@@ -157,12 +238,12 @@ const AboutPage = () => {
                 <div className="text-center space-y-6">
                   <div className="text-7xl lg:text-8xl">☕</div>
                   
-                  {/* Awards */}
+                  {/* Certificações */}
                   <div className="space-y-4">
                     <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-6 shadow-lg">
                       <div className="flex items-center justify-center gap-2 mb-3">
                         <Award className="w-6 h-6 text-amber-600" />
-                        <span className="font-bold text-slate-900">Certificação SCA</span>
+                        <span className="font-bold text-slate-900">Certificação SCAA</span>
                       </div>
                       <p className="text-slate-700 text-sm">Associação Americana de Cafés Especiais</p>
                     </div>
@@ -201,41 +282,7 @@ const AboutPage = () => {
         </div>
       </section>
 
-      {/* Achievements Section */}
-      <section className="py-20 lg:py-32 bg-slate-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16">
-            <h2 className="text-3xl lg:text-5xl font-bold text-slate-900 mb-6">
-              Nossas Conquistas
-            </h2>
-            <p className="text-xl text-slate-600 max-w-3xl mx-auto">
-              Números que refletem nosso compromisso com a excelência e a satisfação dos nossos clientes
-            </p>
-          </div>
-
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
-            {achievements.map((achievement, index) => (
-              <div key={index} className="group text-center">
-                <div className="relative mb-8">
-                  <div className={`w-20 h-20 bg-gradient-to-r ${achievement.color} rounded-3xl flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform duration-300 shadow-lg`}>
-                    <achievement.icon className="w-10 h-10 text-white" />
-                  </div>
-                </div>
-                
-                <div className="text-4xl lg:text-5xl font-bold text-slate-900 mb-2">
-                  {achievement.number}
-                </div>
-                
-                <div className="text-slate-600 font-medium">
-                  {achievement.label}
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Our Story Section */}
+      {/* Nossa História & Propósito */}
       <section className="py-20 lg:py-32">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid lg:grid-cols-2 gap-16 items-center">
@@ -248,24 +295,33 @@ const AboutPage = () => {
                 </div>
                 
                 <h2 className="text-3xl lg:text-5xl font-bold text-slate-900">
-                  Paixão que Moveu uma
-                  <span className="block text-amber-600">Revolução no Café</span>
+                  Desde 2019, entregamos
+                  <span className="block text-amber-600">consistência e excelência</span>
                 </h2>
                 
                 <div className="space-y-4 text-lg text-slate-600 leading-relaxed">
                   <p>
-                    Tudo começou com uma viagem às montanhas de Minas Gerais, onde Daniel Nascimento, 
-                    nosso fundador, se apaixonou pela complexidade e riqueza dos cafés especiais brasileiros.
+                    Somos uma torrefação de cafés especiais com sede em Santa Maria - RS,
+                    comprometida em oferecer grãos de excelência provenientes dos
+                    estados de MG, SP, BA e ES. Todos os nossos grãos possuem as mais
+                    altas pontuações e são certificados pela Associação Americana de Cafés
+                    Especiais (SCAA), garantindo qualidade superior e sabor incomparável.
                   </p>
                   
                   <p>
-                    Em 2019, decidiu transformar essa paixão em missão: levar cafés de qualidade excepcional 
-                    diretamente dos melhores produtores para a mesa dos brasileiros.
+                    Nosso processo de torrefação é cuidadosamente desenvolvido para
+                    extrair o melhor perfil de cada grão, realçando suas características
+                    únicas e proporcionando uma experiência de café inigualável.
+                    Adaptamos nossas técnicas para atender às especificidades de cada
+                    lote, assegurando um produto final que encanta e surpreende.
                   </p>
                   
                   <p>
-                    Hoje, somos reconhecidos como uma das principais torrefações artesanais do Sul do Brasil, 
-                    com certificação SCA e parcerias diretas com mais de 15 produtores especializados.
+                    <strong>Desde 2019, temos o orgulho de levar cafés especiais para lares e
+                    negócios, conquistando a preferência dos nossos clientes com a
+                    consistência e a excelência que marcam nosso compromisso. Permita-
+                    nos levar essa qualidade para o dia a dia do seu negócio e transformar a
+                    sua experiência com café.</strong>
                   </p>
                 </div>
               </div>
@@ -297,7 +353,7 @@ const AboutPage = () => {
                 <div className="text-6xl mb-4">🏆</div>
                 <h3 className="text-xl font-bold text-slate-900 mb-2">Qualidade Certificada</h3>
                 <p className="text-slate-600">
-                  Todos os nossos cafés são avaliados pelos rigorosos padrões SCA
+                  Todos os nossos cafés são avaliados pelos rigorosos padrões SCAA
                 </p>
               </div>
             </div>
@@ -305,134 +361,260 @@ const AboutPage = () => {
         </div>
       </section>
 
-      {/* Values Section */}
+      {/* Qualidade, Origem & Certificação */}
       <section className="py-20 lg:py-32 bg-slate-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <div className="inline-flex items-center gap-2 bg-white rounded-full px-4 py-2 mb-6 shadow-sm">
-              <Heart className="w-4 h-4 text-amber-600" />
-              <span className="text-slate-700 font-medium text-sm">Nossos Valores</span>
+              <Award className="w-4 h-4 text-amber-600" />
+              <span className="text-slate-700 font-medium text-sm">Qualidade & Origem</span>
             </div>
             
             <h2 className="text-3xl lg:text-5xl font-bold text-slate-900 mb-6">
-              O Que Nos Move
+              Trabalhamos com lotes de
+              <span className="block text-amber-600">Alta Mogiana/SP e Serra do Caparaó</span>
             </h2>
             
             <p className="text-xl text-slate-600 max-w-3xl mx-auto">
-              Valores que guiam cada decisão e definem nossa identidade como torrefação artesanal
+              Reconhecidos mundialmente, com altas pontuações e certificação SCAA
             </p>
           </div>
 
           <div className="grid md:grid-cols-3 gap-8">
-            {values.map((value, index) => (
-              <div key={index} className="group bg-white rounded-3xl p-8 shadow-lg hover:shadow-2xl transition-all duration-500 transform hover:-translate-y-2">
-                <div className="relative mb-8">
-                  <div className={`w-16 h-16 bg-gradient-to-r ${value.gradient} rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300 shadow-lg`}>
-                    <value.icon className="w-8 h-8 text-white" />
-                  </div>
-                </div>
-                
-                <h3 className="text-2xl font-bold text-slate-900 mb-4">
-                  {value.title}
-                </h3>
-                
-                <p className="text-slate-600 leading-relaxed text-lg">
-                  {value.description}
-                </p>
+            <div className="bg-white rounded-3xl p-8 shadow-lg hover:shadow-xl transition-shadow duration-300">
+              <div className="w-16 h-16 bg-gradient-to-r from-amber-500 to-amber-600 rounded-2xl flex items-center justify-center mb-6">
+                <MapPin className="w-8 h-8 text-white" />
               </div>
-            ))}
+              <h3 className="text-2xl font-bold text-slate-900 mb-4">Origem Selecionada</h3>
+              <p className="text-slate-600 leading-relaxed">
+                Grãos de MG, SP, BA e ES, com foco em regiões de altitude e microclimas especiais.
+              </p>
+            </div>
+
+            <div className="bg-white rounded-3xl p-8 shadow-lg hover:shadow-xl transition-shadow duration-300">
+              <div className="w-16 h-16 bg-gradient-to-r from-green-500 to-green-600 rounded-2xl flex items-center justify-center mb-6">
+                <Award className="w-8 h-8 text-white" />
+              </div>
+              <h3 className="text-2xl font-bold text-slate-900 mb-4">Certificação SCAA</h3>
+              <p className="text-slate-600 leading-relaxed">
+                Todos os nossos cafés passam pela rigorosa avaliação da Associação Americana de Cafés Especiais.
+              </p>
+            </div>
+
+            <div className="bg-white rounded-3xl p-8 shadow-lg hover:shadow-xl transition-shadow duration-300">
+              <div className="w-16 h-16 bg-gradient-to-r from-purple-500 to-purple-600 rounded-2xl flex items-center justify-center mb-6">
+                <Star className="w-8 h-8 text-white" />
+              </div>
+              <h3 className="text-2xl font-bold text-slate-900 mb-4">Altas Pontuações</h3>
+              <p className="text-slate-600 leading-relaxed">
+                Cafés com pontuação de 82+ a 87+, garantindo qualidade sensorial excepcional.
+              </p>
+            </div>
           </div>
         </div>
       </section>
 
-      {/* Process Section */}
+      {/* Processo de Torra Orientada ao Perfil */}
       <section className="py-20 lg:py-32">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid lg:grid-cols-2 gap-16 items-center">
+            {/* Left Column - Content */}
+            <div className="space-y-8">
+              <div className="space-y-6">
+                <div className="inline-flex items-center gap-2 bg-slate-100 rounded-full px-4 py-2">
+                  <TrendingUp className="w-4 h-4 text-slate-600" />
+                  <span className="text-slate-700 font-medium text-sm">Nosso Processo</span>
+                </div>
+                
+                <h2 className="text-3xl lg:text-5xl font-bold text-slate-900">
+                  Cada lote recebe uma
+                  <span className="block text-amber-600">curva de torra sob medida</span>
+                </h2>
+                
+                <div className="space-y-4 text-lg text-slate-600 leading-relaxed">
+                  <p>
+                    <strong>Cada lote recebe uma curva de torra sob medida. Ajustamos tempo, temperatura e desenvolvimento para realçar notas naturais e equilíbrio.</strong>
+                  </p>
+                  
+                  <p>
+                    Nossa equipe de mestres torradores analisa cada grão individualmente, 
+                    desenvolvendo perfis únicos que realçam as características naturais de cada origem.
+                  </p>
+                  
+                  <p>
+                    O processo é controlado por computador com monitoramento constante, 
+                    garantindo consistência e repetibilidade em cada torra.
+                  </p>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div className="text-center p-4 bg-amber-50 rounded-xl">
+                  <div className="text-2xl font-bold text-amber-600 mb-1">15-20</div>
+                  <div className="text-slate-600 text-sm">Minutos de Torra</div>
+                </div>
+                <div className="text-center p-4 bg-amber-50 rounded-xl">
+                  <div className="text-2xl font-bold text-amber-600 mb-1">185-210°C</div>
+                  <div className="text-slate-600 text-sm">Temperatura Controlada</div>
+                </div>
+              </div>
+            </div>
+
+            {/* Right Column - Process Steps */}
+            <div className="space-y-6">
+              {[
+                {
+                  step: "01",
+                  title: "Análise do Grão",
+                  description: "Avaliamos densidade, umidade e características sensoriais para definir a curva ideal."
+                },
+                {
+                  step: "02",
+                  title: "Desenvolvimento da Curva",
+                  description: "Criamos perfis personalizados considerando origem, altitude e características do lote."
+                },
+                {
+                  step: "03",
+                  title: "Monitoramento Contínuo",
+                  description: "Acompanhamos cada etapa com tecnologia de ponta para garantir precisão."
+                },
+                {
+                  step: "04",
+                  title: "Controle de Qualidade",
+                  description: "Cada torra é testada sensorialmente para validar o perfil desenvolvido."
+                }
+              ].map((step, index) => (
+                <div key={index} className="flex items-start gap-4">
+                  <div className="flex-shrink-0 w-12 h-12 bg-gradient-to-r from-amber-500 to-amber-600 rounded-xl flex items-center justify-center">
+                    <span className="text-white font-bold text-sm">{step.step}</span>
+                  </div>
+                  <div>
+                    <h4 className="font-bold text-slate-900 mb-1">{step.title}</h4>
+                    <p className="text-slate-600 text-sm">{step.description}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Linha de Produtos */}
+      <section className="py-20 lg:py-32 bg-slate-50">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
-            <div className="inline-flex items-center gap-2 bg-slate-100 rounded-full px-4 py-2 mb-6">
-              <TrendingUp className="w-4 h-4 text-slate-600" />
-              <span className="text-slate-700 font-medium text-sm">Nosso Processo</span>
+            <div className="inline-flex items-center gap-2 bg-white rounded-full px-4 py-2 mb-6 shadow-sm">
+              <Coffee className="w-4 h-4 text-amber-600" />
+              <span className="text-slate-700 font-medium text-sm">Nossos Cafés</span>
             </div>
             
             <h2 className="text-3xl lg:text-5xl font-bold text-slate-900 mb-6">
-              Do Grão à Xícara Perfeita
+              Linha de Produtos Premium
             </h2>
             
             <p className="text-xl text-slate-600 max-w-3xl mx-auto">
-              Cada etapa é cuidadosamente planejada para garantir a máxima qualidade e sabor
+              Cafés especiais com perfis sensoriais únicos, disponíveis em múltiplos tamanhos
             </p>
           </div>
 
-          <div className="space-y-8">
-            {process.map((step, index) => (
-              <div key={index} className="relative">
-                {/* Connection Line */}
-                {index < process.length - 1 && (
-                  <div className="absolute left-8 top-20 w-0.5 h-16 bg-slate-200 z-0"></div>
-                )}
-                
-                <div className="flex items-start gap-8 relative z-10">
-                  {/* Step Number */}
-                  <div className="flex-shrink-0 w-16 h-16 bg-gradient-to-r from-amber-500 to-amber-600 rounded-2xl flex items-center justify-center shadow-lg">
-                    <span className="text-white font-bold text-xl">{step.step}</span>
-                  </div>
-                  
-                  {/* Content */}
-                  <div className="flex-1 bg-white rounded-3xl p-8 shadow-lg hover:shadow-xl transition-shadow duration-300">
-                    <h3 className="text-2xl font-bold text-slate-900 mb-4">
-                      {step.title}
-                    </h3>
-                    <p className="text-slate-600 text-lg leading-relaxed">
-                      {step.description}
-                    </p>
-                  </div>
-                </div>
-              </div>
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8 mb-12">
+            {premiumProducts.map((product, index) => (
+              <ProductCard key={index} product={product} />
             ))}
+          </div>
+
+          <div className="text-center">
+            <button 
+              onClick={openEcommerce}
+              className="inline-flex items-center justify-center gap-2 bg-amber-600 hover:bg-amber-700 text-white font-semibold px-8 py-4 rounded-2xl transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-1"
+            >
+              <Coffee className="w-5 h-5" />
+              Ver todos os cafés
+              <ArrowRight className="w-4 h-4" />
+            </button>
           </div>
         </div>
       </section>
 
-      {/* Team Section */}
+      {/* Serviços para Empresas (B2B) */}
+      <section className="py-20 lg:py-32">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-16">
+            <div className="inline-flex items-center gap-2 bg-amber-100 rounded-full px-4 py-2 mb-6">
+              <Briefcase className="w-4 h-4 text-amber-600" />
+              <span className="text-amber-800 font-medium text-sm">Serviços B2B</span>
+            </div>
+            
+            <h2 className="text-3xl lg:text-5xl font-bold text-slate-900 mb-6">
+              Soluções Completas para
+              <span className="block text-amber-600">Empresas e Negócios</span>
+            </h2>
+            
+            <p className="text-xl text-slate-600 max-w-3xl mx-auto">
+              Desde consultoria especializada até white label personalizado, elevamos a experiência de café do seu negócio
+            </p>
+          </div>
+
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8 mb-12">
+            {b2bServices.map((service, index) => (
+              <ServiceCard key={index} service={service} />
+            ))}
+          </div>
+
+          <div className="text-center">
+            <button 
+              onClick={openWhatsApp}
+              className="inline-flex items-center justify-center gap-2 bg-slate-900 hover:bg-slate-800 text-white font-semibold px-8 py-4 rounded-2xl transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-1"
+            >
+              <Briefcase className="w-5 h-5" />
+              Solicitar Proposta
+              <ArrowRight className="w-4 h-4" />
+            </button>
+          </div>
+        </div>
+      </section>
+
+      {/* Prova Social */}
       <section className="py-20 lg:py-32 bg-slate-900 relative overflow-hidden">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_70%_30%,rgba(245,158,11,0.1),transparent_70%)]"></div>
         
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <div className="inline-flex items-center gap-2 bg-amber-600/20 border border-amber-600/30 rounded-full px-4 py-2 mb-6">
-              <Users className="w-4 h-4 text-amber-400" />
-              <span className="text-amber-400 font-medium text-sm">Nossa Equipe</span>
+              <Star className="w-4 h-4 text-amber-400" />
+              <span className="text-amber-400 font-medium text-sm">Depoimentos</span>
             </div>
             
             <h2 className="text-3xl lg:text-5xl font-bold text-white mb-6">
-              Pessoas Apaixonadas
-              <span className="block text-amber-400">Por Café Especial</span>
+              O que nossos clientes
+              <span className="block text-amber-400">B2B dizem</span>
             </h2>
             
             <p className="text-xl text-slate-300 max-w-3xl mx-auto">
-              Conheça os especialistas que tornam possível levar a você os melhores cafés do Brasil
+              Empresas que confiam na Mestres do Café para elevar a experiência de café de seus negócios
             </p>
           </div>
 
           <div className="grid md:grid-cols-3 gap-8">
-            {team.map((member, index) => (
+            {testimonials.map((testimonial, index) => (
               <div key={index} className="bg-white/10 backdrop-blur-sm rounded-3xl p-8 border border-white/20 hover:bg-white/20 transition-all duration-300">
-                <div className="text-center">
-                  <div className="w-20 h-20 bg-amber-600/20 rounded-full flex items-center justify-center mx-auto mb-6 text-3xl">
-                    {member.avatar}
+                <div className="flex mb-4">
+                  {[...Array(testimonial.rating)].map((_, i) => (
+                    <Star key={i} className="w-5 h-5 text-amber-400 fill-current" />
+                  ))}
+                </div>
+                
+                <p className="text-slate-300 leading-relaxed mb-6 italic">
+                  &ldquo;{testimonial.content}&rdquo;
+                </p>
+                
+                <div>
+                  <div className="font-bold text-white mb-1">
+                    {testimonial.name}
                   </div>
-                  
-                  <h3 className="text-xl font-bold text-white mb-2">
-                    {member.name}
-                  </h3>
-                  
-                  <div className="text-amber-400 font-medium mb-4">
-                    {member.role}
+                  <div className="text-amber-400 text-sm">
+                    {testimonial.role}
                   </div>
-                  
-                  <p className="text-slate-300 leading-relaxed">
-                    {member.description}
-                  </p>
                 </div>
               </div>
             ))}
@@ -440,92 +622,115 @@ const AboutPage = () => {
         </div>
       </section>
 
-      {/* Statistics Section */}
-      <section className="py-20 lg:py-32 bg-slate-900 relative overflow-hidden">
-        <div className="absolute inset-0">
-          {/* Floating Elements */}
-          <div className="absolute top-20 left-10 w-20 h-20 bg-amber-400/10 rounded-full animate-pulse"></div>
-          <div className="absolute bottom-20 right-10 w-32 h-32 bg-amber-400/5 rounded-full animate-pulse delay-300"></div>
-          <div className="absolute top-40 right-20 w-16 h-16 bg-amber-400/10 rounded-full animate-pulse delay-700"></div>
-        </div>
-        
-        <div className="relative max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <div className="space-y-16">
-            <div>
-              <h2 className="text-3xl lg:text-5xl font-bold text-white mb-8">
-                Impacto que Fazemos
-              </h2>
-              
-              <div className="grid md:grid-cols-4 gap-8">
-                <div className="space-y-2">
-                  <div className="text-4xl lg:text-5xl font-bold text-amber-400">98%</div>
-                  <div className="text-slate-300">Satisfação</div>
-                </div>
-                <div className="space-y-2">
-                  <div className="text-4xl lg:text-5xl font-bold text-amber-400">24h</div>
-                  <div className="text-slate-300">Entrega Rápida</div>
-                </div>
-                <div className="space-y-2">
-                  <div className="text-4xl lg:text-5xl font-bold text-amber-400">100%</div>
-                  <div className="text-slate-300">Café Fresco</div>
-                </div>
-                <div className="space-y-2">
-                  <div className="text-4xl lg:text-5xl font-bold text-amber-400">7</div>
-                  <div className="text-slate-300">Dias Garantia</div>
-                </div>
-              </div>
-            </div>
-
-            {/* Trust Indicators */}
-            <div className="flex flex-wrap justify-center items-center gap-8 text-slate-400">
-              <div className="flex items-center gap-2">
-                <Shield className="w-5 h-5" />
-                <span className="text-sm">SSL Seguro</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <Award className="w-5 h-5" />
-                <span className="text-sm">Certificação SCA</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <CheckCircle className="w-5 h-5" />
-                <span className="text-sm">Qualidade Premium</span>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* CTA Section */}
+      {/* Chamada Final */}
       <section className="py-20 lg:py-32 bg-amber-50">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <div className="space-y-8">
-            <div className="text-6xl">🤝</div>
+            <div className="text-6xl">🚀</div>
             
             <h2 className="text-3xl lg:text-5xl font-bold text-slate-900">
-              Faça Parte da Nossa
-              <span className="block text-amber-600">Comunidade do Café</span>
+              Vamos elevar a experiência
+              <span className="block text-amber-600">de café do seu negócio?</span>
             </h2>
             
             <p className="text-xl text-slate-600 max-w-2xl mx-auto leading-relaxed">
-              Junte-se a milhares de apreciadores que já descobriram o verdadeiro sabor do café especial brasileiro.
+              Fale com a nossa torrefação para soluções B2B personalizadas ou visite o e-commerce para experimentar nossos cafés especiais.
             </p>
             
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <button className="group inline-flex items-center justify-center gap-2 bg-amber-600 hover:bg-amber-700 text-white font-semibold px-8 py-4 rounded-2xl transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-1">
-                <Coffee className="w-5 h-5" />
-                Experimente Nossos Cafés
+              <button 
+                onClick={openWhatsApp}
+                className="group inline-flex items-center justify-center gap-2 bg-amber-600 hover:bg-amber-700 text-white font-semibold px-8 py-4 rounded-2xl transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-1"
+              >
+                <Briefcase className="w-5 h-5" />
+                Falar com a Torrefação
                 <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
               </button>
               
-              <button className="inline-flex items-center justify-center gap-2 border-2 border-slate-300 hover:border-amber-600 text-slate-700 hover:text-amber-600 font-semibold px-8 py-4 rounded-2xl transition-all duration-300">
-                <Users className="w-5 h-5" />
-                Conheça Nossa História
+              <button 
+                onClick={openEcommerce}
+                className="inline-flex items-center justify-center gap-2 border-2 border-amber-600/30 hover:border-amber-600 text-amber-700 hover:text-amber-600 font-semibold px-8 py-4 rounded-2xl transition-all duration-300 hover:bg-amber-600/10"
+              >
+                <ShoppingCart className="w-5 h-5" />
+                Ir ao E-commerce
               </button>
             </div>
           </div>
         </div>
       </section>
-    </div>
+
+      {/* Bloco Contatos */}
+      <section className="py-20 lg:py-32 bg-slate-900">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-16">
+            <h2 className="text-3xl lg:text-5xl font-bold text-white mb-6">
+              Entre em Contato
+            </h2>
+            <p className="text-xl text-slate-300 max-w-3xl mx-auto">
+              Estamos prontos para atender você e sua empresa com soluções personalizadas
+            </p>
+          </div>
+
+          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
+            <div className="text-center">
+              <div className="w-16 h-16 bg-amber-600/20 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                <MapPin className="w-8 h-8 text-amber-400" />
+              </div>
+              <h3 className="text-lg font-bold text-white mb-2">Endereço</h3>
+              <p className="text-slate-300 text-sm">
+                Rua Riachuelo 351, Sala 102<br />
+                Centro, Santa Maria/RS
+              </p>
+            </div>
+
+            <div className="text-center">
+              <div className="w-16 h-16 bg-amber-600/20 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                <Mail className="w-8 h-8 text-amber-400" />
+              </div>
+              <h3 className="text-lg font-bold text-white mb-2">E-mail</h3>
+              <a 
+                href="mailto:financeiro.mestresdocafe@gmail.com" 
+                className="text-amber-400 hover:text-amber-300 text-sm transition-colors"
+              >
+                financeiro.mestresdocafe@gmail.com
+              </a>
+            </div>
+
+            <div className="text-center">
+              <div className="w-16 h-16 bg-amber-600/20 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                <Phone className="w-8 h-8 text-amber-400" />
+              </div>
+              <h3 className="text-lg font-bold text-white mb-2">Telefone/WhatsApp</h3>
+              <a 
+                href="tel:+55996458600" 
+                className="text-amber-400 hover:text-amber-300 text-sm transition-colors"
+              >
+                (55) 99645-8600
+              </a>
+            </div>
+
+            <div className="text-center">
+              <div className="w-16 h-16 bg-amber-600/20 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                <Instagram className="w-8 h-8 text-amber-400" />
+              </div>
+              <h3 className="text-lg font-bold text-white mb-2">Instagram</h3>
+              <a 
+                href="https://instagram.com/mestresdocafe" 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="text-amber-400 hover:text-amber-300 text-sm transition-colors"
+              >
+                @mestresdocafe
+              </a>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* CTA Sticky Mobile */}
+      <StickyCTA variant="whatsapp" />
+      </div>
+    </>
   );
 };
 

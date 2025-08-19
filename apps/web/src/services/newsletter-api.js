@@ -199,7 +199,7 @@ Olá, [NOME]! ☕✨
 ├ 🏆 Premium: 25% OFF
 ├ ⭐ Especiais: 20% OFF  
 ├ 🌟 Tradicionais: 15% OFF
-└ 🎁 FRETE GRÁTIS acima de R$ 89
+└ 🎁 FRETE GRÁTIS acima de R$ 200 em Santa Maria
 
 ⏰ *ÚLTIMAS HORAS* - Válido até [DATA]
 
@@ -267,7 +267,7 @@ Olá, [NOME]! ☕🤝
 
 🎁 *SEUS BENEFÍCIOS DE BOAS-VINDAS:*
 ├ 🏷️ 15% OFF na primeira compra
-├ 🚚 FRETE GRÁTIS sem valor mínimo
+├ 🚚 FRETE GRÁTIS para Santa Maria (acima de R$ 200)
 ├ ⭐ 200 PONTOS de bônus
 ├ 📱 Acesso VIP às promoções
 └ 📰 Newsletter exclusiva
@@ -309,7 +309,7 @@ Hoje é um dia muito especial! A família Mestres do Café deseja um feliz anive
 ├ 🏷️ 30% OFF em TODA loja
 ├ ☕ Café de aniversário GRÁTIS*  
 ├ 🎂 Brownie especial na compra
-├ 📦 Frete grátis para qualquer valor
+├ 📦 Frete grátis para Santa Maria (acima de R$ 200)
 └ ⭐ PONTOS EM DOBRO por 7 dias
 
 🏪 *RETIRAR SEU CAFÉ GRÁTIS:*

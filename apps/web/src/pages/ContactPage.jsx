@@ -72,7 +72,7 @@ const ContactPage = () => {
   const faq = [
     {
       question: "Qual o prazo de entrega?",
-      answer: "Para Santa Maria: 24-48h. Demais regiões: 3-7 dias úteis. Frete grátis acima de R$ 99."
+              answer: "Para Santa Maria: 24-48h. Demais regiões: 3-7 dias úteis. Frete grátis acima de R$ 200 em Santa Maria."
     },
     {
       question: "Como garantem o frescor do café?",

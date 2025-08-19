@@ -85,9 +85,9 @@ const LandingPage = () => {
     },
     {
       icon: <Truck className="w-6 h-6" />,
-      title: "Frete Grátis",
-      description:
-        "Entrega gratuita para compras acima de R$ 99 em todo o Brasil",
+              title: "Frete Grátis em Santa Maria",
+              description:
+          "Entrega gratuita para compras acima de R$ 200 em Santa Maria",
     },
     {
       icon: <Shield className="w-6 h-6" />,

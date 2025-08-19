@@ -409,8 +409,8 @@ const ProductPage = () => {
                 <div className="flex items-center gap-3">
                   <Truck className="w-6 h-6 text-coffee-gold" />
                   <div>
-                    <p className="text-sm font-medium text-coffee-intense">Frete Grátis</p>
-                    <p className="text-xs text-coffee-gray">Acima de R$ 99</p>
+                                            <p className="text-sm font-medium text-coffee-intense">Frete Grátis em Santa Maria (acima de R$ 200)</p>
+                                          <p className="text-xs text-coffee-gray">Acima de R$ 200</p>
                   </div>
                 </div>
                 <div className="flex items-center gap-3">

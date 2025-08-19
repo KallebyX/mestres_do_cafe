@@ -222,7 +222,7 @@ const CartDropdown = () => {
                   {cartTotal < 80 && (
                     <div className="bg-amber-50 border border-amber-200 rounded-lg p-2">
                       <p className="text-xs text-amber-800">
-                        Faltam R$ {(80 - cartTotal).toFixed(2)} para frete grátis!
+                        Faltam R$ {(200 - cartTotal).toFixed(2)} para frete grátis em Santa Maria!
                       </p>
                     </div>
                   )}

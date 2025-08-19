@@ -148,7 +148,7 @@ const RegisterPage = () => {
     {
       icon: Truck,
       title: "Entrega Rápida",
-      description: "Frete grátis para Santa Maria e região"
+              description: "Frete grátis para Santa Maria (acima de R$ 200)"
     },
     {
       icon: Coffee,

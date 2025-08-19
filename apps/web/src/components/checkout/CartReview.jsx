@@ -93,7 +93,7 @@ const CartReview = ({ items, total, onNext, loading }) => {
           </svg>
         </div>
         <div className="notice-text">
-          <strong>Frete grátis</strong> para compras acima de R$ 100,00 na Grande São Paulo
+                          <strong>Frete grátis</strong> para compras acima de R$ 200,00 em Santa Maria
         </div>
       </div>
 

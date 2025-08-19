@@ -345,11 +345,14 @@ def get_address_by_cep(cep):
     return None
 
 
-def calculate_shipping_mock(origin_cep, destination_cep, products):
+def calculate_shipping_mock(origin_cep, destination_cep, products, subtotal=0):
     """Calcula frete de forma simulada"""
     try:
-        # Determinar região de destino
-        dest_state = get_state_from_cep(destination_cep)
+        # Converter subtotal para float se necessário
+        try:
+            subtotal_value = float(subtotal)
+        except (ValueError, TypeError):
+            subtotal_value = 0.0
 
         # Calcular peso total
         total_weight = sum(
@@ -357,6 +360,30 @@ def calculate_shipping_mock(origin_cep, destination_cep, products):
         )
         total_weight = max(total_weight, 0.3)  # Peso mínimo
 
+        # Verificar se é Santa Maria pelo CEP (970xx-xxx ou 971xx-xxx)
+        clean_cep = destination_cep.replace("-", "").replace(" ", "")
+        is_santa_maria = clean_cep.startswith("970") or clean_cep.startswith("971")
+        
+        # FRETE GRÁTIS PARA SANTA MARIA (compras acima de R$ 200)
+        logger.info(f"DEBUG: CEP={clean_cep}, Santa Maria={is_santa_maria}, Subtotal={subtotal_value}")
+        if is_santa_maria and subtotal_value >= 200.00:
+            logger.info("🎉 FRETE GRÁTIS APLICADO!")
+            return [
+                {
+                    "id": str(uuid.uuid4()),
+                    "carrier_name": "Mestres do Café",
+                    "service_name": "Entrega Local Grátis",
+                    "service_code": "LOCAL_FREE",
+                    "price": 0.00,
+                    "delivery_time": 1,
+                    "description": "Frete grátis para Santa Maria - Entrega em 24h",
+                    "is_free": True,
+                }
+            ]
+
+        # Determinar região de destino para cálculo normal
+        dest_state = get_state_from_cep(destination_cep)
+        
         # Preços base por estado
         state_prices = {
             "SP": 15.00,
@@ -374,7 +401,7 @@ def calculate_shipping_mock(origin_cep, destination_cep, products):
 
         base_price = state_prices.get(dest_state, 30.00)
         weight_multiplier = max(1.0, total_weight / 1.0)
-
+        
         options = [
             {
                 "id": str(uuid.uuid4()),
@@ -395,6 +422,18 @@ def calculate_shipping_mock(origin_cep, destination_cep, products):
                 "description": "Entrega expressa dos Correios",
             },
         ]
+        
+        # Adicionar opção local para Santa Maria (com desconto)
+        if is_santa_maria:
+            options.append({
+                "id": str(uuid.uuid4()),
+                "carrier_name": "Mestres do Café",
+                "service_name": "Entrega Local",
+                "service_code": "LOCAL",
+                "price": round(base_price * 0.5 * weight_multiplier, 2),
+                "delivery_time": 1,
+                "description": "Entrega local em Santa Maria - 24h",
+            })
 
         return options
 
@@ -433,6 +472,17 @@ def get_state_from_cep(cep):
     }
 
     return states.get(prefix, "SP")
+
+
+def is_santa_maria_cep(cep):
+    """Verifica se o CEP é de Santa Maria (RS)"""
+    clean_cep = cep.replace("-", "").replace(" ", "")
+    if len(clean_cep) < 5:
+        return False
+    
+    # CEPs de Santa Maria: 97000-000 a 97199-999
+    prefix = clean_cep[:5]
+    return prefix.startswith("970") or prefix.startswith("971")
 
 
 # ========== ROTAS PRINCIPAIS ========== #
@@ -567,6 +617,7 @@ def calculate_shipping_options():
         user_id = data.get("user_id")
         destination_cep = data.get("destination_cep")
         products = data.get("products", [])
+        subtotal = data.get("subtotal", 0)
 
         if not all([session_token, user_id, destination_cep]):
             return jsonify({"error": "Dados obrigatórios faltando"}), 400
@@ -577,7 +628,7 @@ def calculate_shipping_options():
 
         # Calcular opções de frete
         shipping_options = calculate_shipping_mock(
-            "01310-100", destination_cep, products  # CEP origem da loja
+            "01310-100", destination_cep, products, subtotal  # CEP origem da loja
         )
 
         if not shipping_options:
@@ -611,7 +662,6 @@ def apply_coupon():
         # Cupons de exemplo
         valid_coupons = {
             "DESCONTO10": {"type": "percentage", "value": 10, "min_value": 50},
-            "FRETE_GRATIS": {"type": "free_shipping", "value": 0, "min_value": 100},
             "PRIMEIRACOMPRA": {"type": "fixed", "value": 20, "min_value": 80},
         }
 

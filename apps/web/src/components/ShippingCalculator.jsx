@@ -237,7 +237,7 @@ const ShippingCalculator = ({
           </h5>
           <ul className="text-sm text-gray-600 space-y-1">
             <li>• Prazos calculados em dias úteis</li>
-            <li>• Frete grátis para compras acima de R$ 150,00</li>
+                            <li>• Frete grátis para compras acima de R$ 200,00 em Santa Maria</li>
             <li>• Rastreamento incluído em todas as modalidades</li>
             <li>• Seguro automático contra perdas e avarias</li>
           </ul>

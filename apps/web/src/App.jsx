@@ -36,6 +36,9 @@ const CustomerDashboard = lazy(() => import("./pages/CustomerDashboard"));
 const OrdersPage = lazy(() => import("./pages/OrdersPage"));
 const ProfilePage = lazy(() => import("./pages/ProfilePage"));
 const ContactPage = lazy(() => import("./pages/ContactPage"));
+const GamificacaoPage = lazy(() => import("./pages/GamificacaoPage"));
+const CursosPage = lazy(() => import("./pages/CursosPage"));
+const BlogPage = lazy(() => import("./pages/BlogPage"));
 const NotFoundPage = lazy(() => import("./pages/NotFoundPage"));
 
 // Admin pages - APENAS OS QUE EXISTEM
@@ -120,6 +123,9 @@ function App() {
                       {/* Content Routes - APENAS OS QUE EXISTEM */}
                       <Route path="/contato" element={<ContactPage />} />
                       <Route path="/sobre" element={<AboutPage />} />
+                      <Route path="/gamificacao" element={<GamificacaoPage />} />
+                      <Route path="/cursos" element={<CursosPage />} />
+                      <Route path="/blog" element={<BlogPage />} />
                       
                       {/* 404 */}
                       <Route path="*" element={<NotFoundPage />} />

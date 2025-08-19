@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { Truck, Clock, Package, AlertCircle, CheckCircle, Zap } from 'lucide-react';
 import './ShippingOptions.css';
 
 const ShippingOptions = ({
@@ -55,48 +56,46 @@ const ShippingOptions = ({
   const getShippingIcon = (service) => {
     switch (service.toLowerCase()) {
       case 'pac':
-        return (
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-            <rect x="1" y="3" width="15" height="13"></rect>
-            <polygon points="16,8 20,8 23,11 23,16 16,16"></polygon>
-            <circle cx="5.5" cy="18.5" r="2.5"></circle>
-            <circle cx="18.5" cy="18.5" r="2.5"></circle>
-          </svg>
-        );
+        return <Package size={20} />;
       case 'sedex':
-        return (
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-            <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"></path>
-          </svg>
-        );
+        return <Zap size={20} />;
       case 'jadlog':
-        return (
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-            <rect x="1" y="3" width="15" height="13"></rect>
-            <polygon points="16,8 20,8 23,11 23,16 16,16"></polygon>
-            <circle cx="5.5" cy="18.5" r="2.5"></circle>
-            <circle cx="18.5" cy="18.5" r="2.5"></circle>
-          </svg>
-        );
+        return <Truck size={20} />;
       default:
-        return (
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-            <rect x="1" y="3" width="15" height="13"></rect>
-            <polygon points="16,8 20,8 23,11 23,16 16,16"></polygon>
-            <circle cx="5.5" cy="18.5" r="2.5"></circle>
-            <circle cx="18.5" cy="18.5" r="2.5"></circle>
-          </svg>
-        );
+        return <Truck size={20} />;
+    }
+  };
+
+  const getShippingColor = (service) => {
+    switch (service.toLowerCase()) {
+      case 'pac':
+        return 'from-blue-500 to-blue-600';
+      case 'sedex':
+        return 'from-green-500 to-green-600';
+      case 'jadlog':
+        return 'from-purple-500 to-purple-600';
+      default:
+        return 'from-gray-500 to-gray-600';
     }
   };
 
   if (loading) {
     return (
       <div className="shipping-options">
-        <h2>Opções de Frete</h2>
+        <div className="options-header">
+          <div className="header-icon">
+            <Truck size={24} />
+          </div>
+          <div className="header-content">
+            <h2>Opções de Frete</h2>
+            <p>Calculando as melhores opções para sua entrega</p>
+          </div>
+        </div>
+        
         <div className="loading-state">
           <div className="loading-spinner large"></div>
           <p>Calculando opções de frete...</p>
+          <p className="loading-subtitle">Isso pode levar alguns segundos</p>
         </div>
       </div>
     );
@@ -105,15 +104,33 @@ const ShippingOptions = ({
   if (!options || options.length === 0) {
     return (
       <div className="shipping-options">
-        <h2>Opções de Frete</h2>
+        <div className="options-header">
+          <div className="header-icon">
+            <AlertCircle size={24} />
+          </div>
+          <div className="header-content">
+            <h2>Opções de Frete</h2>
+            <p>Não foi possível calcular o frete para este endereço</p>
+          </div>
+        </div>
+        
         <div className="no-options">
-          <p>Não foi possível calcular o frete para este endereço.</p>
-          <button className="btn btn-secondary" onClick={handleCalculateShipping}>
-            Calcular Frete
-          </button>
-          <button className="btn btn-secondary" onClick={onPrev}>
-            Voltar e Corrigir Endereço
-          </button>
+          <div className="error-message">
+            <AlertCircle size={48} />
+            <h3>Erro no Cálculo</h3>
+            <p>Verifique se o CEP está correto e tente novamente</p>
+          </div>
+          
+          <div className="action-buttons">
+            <button className="btn btn-secondary" onClick={handleCalculateShipping}>
+              <Truck size={16} />
+              Calcular Frete Novamente
+            </button>
+            <button className="btn btn-secondary" onClick={onPrev}>
+              <Package size={16} />
+              Voltar e Corrigir Endereço
+            </button>
+          </div>
         </div>
       </div>
     );
@@ -121,10 +138,15 @@ const ShippingOptions = ({
 
   return (
     <div className="shipping-options">
-      <h2>Opções de Frete</h2>
-      <p className="step-description">
-        Selecione a opção de entrega que melhor atende suas necessidades.
-      </p>
+      <div className="options-header">
+        <div className="header-icon">
+          <Truck size={24} />
+        </div>
+        <div className="header-content">
+          <h2>Opções de Frete</h2>
+          <p>Selecione a opção de entrega que melhor atende suas necessidades</p>
+        </div>
+      </div>
 
       <div className="shipping-list">
         {options.map((option) => (
@@ -140,11 +162,15 @@ const ShippingOptions = ({
                 value={option.id}
                 checked={selectedShipping?.id === option.id}
                 onChange={() => handleShippingSelect(option)}
+                id={`shipping-${option.id}`}
               />
+              <label htmlFor={`shipping-${option.id}`} className="radio-label"></label>
             </div>
 
             <div className="option-icon">
-              {getShippingIcon(option.service)}
+              <div className={`icon-wrapper ${getShippingColor(option.service)}`}>
+                {getShippingIcon(option.service)}
+              </div>
             </div>
 
             <div className="option-details">
@@ -156,15 +182,22 @@ const ShippingOptions = ({
               </div>
               
               <div className="delivery-info">
-                <span className="delivery-time">
-                  Entrega em {formatDeliveryTime(option.delivery_time)}
-                </span>
-                {option.service === 'PAC' && (
-                  <span className="service-note">• Econômico</span>
-                )}
-                {option.service === 'SEDEX' && (
-                  <span className="service-note">• Rápido</span>
-                )}
+                <div className="delivery-time">
+                  <Clock size={16} />
+                  <span>Entrega em {formatDeliveryTime(option.delivery_time)}</span>
+                </div>
+                
+                <div className="service-features">
+                  {option.service === 'PAC' && (
+                    <span className="feature-tag economy">• Econômico</span>
+                  )}
+                  {option.service === 'SEDEX' && (
+                    <span className="feature-tag fast">• Rápido</span>
+                  )}
+                  {option.service === 'JADLOG' && (
+                    <span className="feature-tag premium">• Premium</span>
+                  )}
+                </div>
               </div>
 
               {option.description && (
@@ -176,38 +209,49 @@ const ShippingOptions = ({
               <span className="price">
                 {option.price === 0 ? 'Grátis' : formatPrice(option.price)}
               </span>
+              {option.price > 0 && (
+                <span className="price-note">por pedido</span>
+              )}
             </div>
           </div>
         ))}
       </div>
 
-
       <div className="delivery-info-box">
-        <h3>Informações de Entrega</h3>
+        <div className="info-header">
+          <Package size={20} />
+          <h3>Informações de Entrega</h3>
+        </div>
+        
         <div className="info-grid">
           <div className="info-item">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
-              <line x1="16" y1="2" x2="16" y2="6"></line>
-              <line x1="8" y1="2" x2="8" y2="6"></line>
-              <line x1="3" y1="10" x2="21" y2="10"></line>
-            </svg>
-            <span>Entregas de segunda a sexta-feira</span>
+            <div className="info-icon">
+              <Clock size={16} />
+            </div>
+            <div className="info-content">
+              <h4>Horário de Entrega</h4>
+              <p>Segunda a sexta-feira, das 8h às 18h</p>
+            </div>
           </div>
+          
           <div className="info-item">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <circle cx="12" cy="12" r="10"></circle>
-              <polyline points="12,6 12,12 16,14"></polyline>
-            </svg>
-            <span>Horário comercial: 8h às 18h</span>
+            <div className="info-icon">
+              <CheckCircle size={16} />
+            </div>
+            <div className="info-content">
+              <h4>Rastreamento</h4>
+              <p>Código de rastreamento enviado por email</p>
+            </div>
           </div>
+          
           <div className="info-item">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <path d="M9 12l2 2 4-4"></path>
-              <path d="M21 12c-1 0-3-1-3-3s2-3 3-3 3 1 3 3-2 3-3 3"></path>
-              <path d="M3 12c1 0 3-1 3-3s-2-3-3-3-3 1-3 3 2 3 3 3"></path>
-            </svg>
-            <span>Rastreamento incluído</span>
+            <div className="info-icon">
+              <Truck size={16} />
+            </div>
+            <div className="info-content">
+              <h4>Segurança</h4>
+              <p>Entrega com assinatura e comprovante</p>
+            </div>
           </div>
         </div>
       </div>
@@ -218,6 +262,7 @@ const ShippingOptions = ({
           className="btn btn-secondary"
           onClick={onPrev}
         >
+          <Package size={16} />
           Voltar
         </button>
         
@@ -227,6 +272,7 @@ const ShippingOptions = ({
           onClick={handleNext}
           disabled={!selectedShipping}
         >
+          <Truck size={16} />
           Continuar para Pagamento
         </button>
       </div>

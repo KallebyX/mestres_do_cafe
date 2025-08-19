@@ -24,7 +24,7 @@ export const Header = () => {
   const navItems = [
     { label: 'Início', href: '/' },
     { label: 'Marketplace', href: '/marketplace' },
-    { label: 'Gamificação', href: '/gamificacao' },
+    { label: 'Clube dos Mestres', href: '/gamificacao' },
     { label: 'Cursos', href: '/cursos' },
     { label: 'Blog', href: '/blog' },
     { label: 'Sobre', href: '/sobre' },

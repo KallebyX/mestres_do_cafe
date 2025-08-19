@@ -182,7 +182,7 @@ const CartPage = () => {
                   {getTotalPrice() < 80 && (
                     <div className="bg-coffee-cream p-3 rounded-lg">
                       <p className="text-coffee-gray text-sm">
-                        Faltam R$ {(80 - getTotalPrice()).toFixed(2)} para frete grátis!
+                        Faltam R$ {(200 - getTotalPrice()).toFixed(2)} para frete grátis em Santa Maria!
                       </p>
                     </div>
                   )}
