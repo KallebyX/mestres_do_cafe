@@ -65,7 +65,23 @@ def get_database_url() -> str:
 
     # URL direta do banco (prioridade total)
     database_url = os.getenv("DATABASE_URL")
+    
     if database_url:
+        # Fix para Render: converter postgres:// para postgresql://
+        if database_url.startswith("postgres://"):
+            database_url = database_url.replace("postgres://", "postgresql://", 1)
+            logger.info("✅ URL do banco convertida de postgres:// para postgresql://")
+        return database_url
+
+    # Tentar montar URL a partir de variáveis separadas (backup)
+    db_host = os.getenv("DB_HOST")
+    if db_host:
+        db_user = os.getenv("DB_USER", "postgres")
+        db_password = os.getenv("DB_PASSWORD", "")
+        db_name = os.getenv("DB_NAME", "mestres_cafe")
+        db_port = os.getenv("DB_PORT", "5432")
+        database_url = f"postgresql://{db_user}:{db_password}@{db_host}:{db_port}/{db_name}"
+        logger.info(f"✅ URL do banco montada a partir de variáveis separadas")
         return database_url
 
     # BANCO ÚNICO E DEFINITIVO - Apenas PostgreSQL é permitido
