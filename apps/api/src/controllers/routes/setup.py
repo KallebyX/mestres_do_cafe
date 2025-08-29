@@ -5,7 +5,16 @@ import os
 
 setup_bp = Blueprint('setup', __name__)
 
-@setup_bp.route('/force-init', methods=['POST'])
+@setup_bp.route('/test', methods=['GET'])
+def test_endpoint():
+    """Endpoint simples para testar se a API está funcionando"""
+    return jsonify({
+        'status': 'success',
+        'message': 'Setup API is working',
+        'timestamp': datetime.utcnow().isoformat()
+    }), 200
+
+@setup_bp.route('/force-init', methods=['POST', 'GET'])
 def force_init_database():
     """Endpoint para forçar inicialização completa do banco"""
     try:
