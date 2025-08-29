@@ -34,7 +34,7 @@ print_error() {
 print_step "Setting up environment variables..."
 export FLASK_ENV=production
 export FLASK_DEBUG=0
-export PYTHONPATH="/opt/render/project/src/src"
+export PYTHONPATH="/opt/render/project/src/apps/api/src"
 print_success "Environment configured for production"
 
 # Step 2: Install Python dependencies

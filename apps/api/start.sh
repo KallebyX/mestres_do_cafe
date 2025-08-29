@@ -34,7 +34,7 @@ print_error() {
 print_step "Verifying environment..."
 export FLASK_ENV=production
 export FLASK_DEBUG=0
-export PYTHONPATH="/opt/render/project/src/src"
+export PYTHONPATH="/opt/render/project/src/apps/api/src"
 
 # Step 2: Check required environment variables
 print_step "Checking required environment variables..."
@@ -156,4 +156,4 @@ exec gunicorn \
     --worker-tmp-dir tmp \
     --forwarded-allow-ips="*" \
     --access-logformat '%({x-forwarded-for}i)s %(l)s %(u)s %(t)s "%(r)s" %(s)s %(b)s "%(f)s" "%(a)s" %(D)s' \
-    src.app:app
+    app:app

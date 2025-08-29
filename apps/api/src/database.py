@@ -47,12 +47,18 @@ def init_db(app) -> None:
     # Registrar contexto de aplicação
     with app.app_context():
         try:
-            # Testar conexão
-            db.engine.connect()
-            logger.info(f"✅ Conexão com PostgreSQL estabelecida com sucesso")
+            # Testar conexão apenas em produção
+            if app.config.get('ENV') == 'production' or os.environ.get("DATABASE_URL"):
+                db.engine.connect()
+                logger.info(f"✅ Conexão com PostgreSQL estabelecida com sucesso")
+            else:
+                logger.info(f"⚠️ Banco de dados não configurado - modo desenvolvimento")
         except SQLAlchemyError as e:
             logger.error(f"❌ Erro ao conectar com PostgreSQL: {e}")
-            raise
+            if app.config.get('ENV') == 'production':
+                raise
+            else:
+                logger.warning(f"⚠️ Continuando sem banco em desenvolvimento")
 
 
 def get_database_url() -> str:
@@ -84,9 +90,9 @@ def get_database_url() -> str:
         logger.info(f"✅ URL do banco montada a partir de variáveis separadas")
         return database_url
 
-    # BANCO ÚNICO E DEFINITIVO - Apenas PostgreSQL é permitido
-    # Fallback para desenvolvimento local PostgreSQL
-    return "postgresql://kalleby@localhost:5432/mestres_cafe"
+    # Para desenvolvimento sem banco configurado
+    logger.info(f"⚠️ Nenhuma configuração de banco encontrada")
+    return "postgresql://user:pass@localhost:5432/mestres_cafe"
 
 
 def configure_db_events() -> None:

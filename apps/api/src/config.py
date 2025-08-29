@@ -147,6 +147,16 @@ class ProductionConfig(Config):
     # Database PostgreSQL (Render fornece automaticamente)
     SQLALCHEMY_DATABASE_URI = os.environ.get("DATABASE_URL")
     
+    # Configure SQLAlchemy for production
+    SQLALCHEMY_ENGINE_OPTIONS = {
+        "pool_pre_ping": True,
+        "pool_recycle": 300,
+        "pool_size": 10,
+        "max_overflow": 20,
+        "pool_timeout": 30,
+        "echo": False
+    }
+    
     # Redis Cache (Render fornece automaticamente) 
     REDIS_URL = os.environ.get("REDIS_URL")
 

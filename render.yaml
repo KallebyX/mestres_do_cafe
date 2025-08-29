@@ -10,8 +10,8 @@ services:
     runtime: python
     plan: starter # ou free para começar
     region: oregon # ou sao-paulo se disponível
-    buildCommand: cd apps/api && ./build.sh
-    startCommand: cd apps/api && ./start.sh
+    buildCommand: cd apps/api && chmod +x build.sh && ./build.sh
+    startCommand: cd apps/api && chmod +x start.sh && ./start.sh
     rootDir: .
     envVars:
       - key: FLASK_ENV
