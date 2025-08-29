@@ -37,11 +37,10 @@ def debug_database():
     """Debug endpoint para verificar conexão com banco"""
     try:
         from src.database import db
-        from src.app import create_app
+        from flask import current_app
         
-        app = create_app('production')
-        
-        with app.app_context():
+        # Usar o app context atual em vez de criar novo
+        with current_app.app_context():
             # Tentar executar uma query simples
             result = db.session.execute(db.text('SELECT version()')).fetchone()
             
