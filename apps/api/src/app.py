@@ -34,6 +34,7 @@ try:
     from controllers.routes.admin import admin_bp
     from controllers.routes.admin_products import admin_products_bp
     from controllers.routes.coupons import coupons_bp
+    from controllers.routes.analytics import analytics_bp  # Analytics tracking
     from controllers.routes.notifications import notifications_bp  # REATIVADO: serviço implementado
     from controllers.routes.melhor_envio import melhor_envio_bp  # REATIVADO: serviço implementado
     
@@ -150,6 +151,7 @@ def create_app(config_name = None):
     app.register_blueprint(customers_bp, url_prefix="/api/customers")
     app.register_blueprint(orders_bp, url_prefix="/api/orders")
     app.register_blueprint(payments_bp, url_prefix="/api/payments")
+    app.register_blueprint(analytics_bp, url_prefix="/api/analytics")  # Analytics tracking
 
     # Registra blueprints de funcionalidades avançadas (somente os existentes)
     app.register_blueprint(coupons_bp, url_prefix="/api/coupons")

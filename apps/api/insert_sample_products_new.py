@@ -89,60 +89,43 @@ def insert_sample_products():
                     'flavor_notes': 'Mel, Cítricos, Acidez equilibrada'
                 }
             ]
-                'slug': 'arara-84',
-                'description': 'Café com corpo encorpado e notas de chocolate',
-                'price': 32.90,
-                'origin': 'Serra do Caparaó - ES',
-                'roast_level': 'Médio-escuro',
-                'sca_score': 84,
-                'stock_quantity': 75
-            },
-            {
-                'name': 'Bourbon Amarelo 82+',
-                'slug': 'bourbon-amarelo-82',
-                'description': 'Café suave com notas florais e cítricas',
-                'price': 27.90,
-                'origin': 'Minas Gerais',
-                'roast_level': 'Claro',
-                'sca_score': 82,
-                'stock_quantity': 120
-            }
-        ]
-        
-        # Inserir produtos
-        for product in sample_products:
-            product_id = str(uuid.uuid4())
-            cursor.execute("""
-                INSERT INTO products (
-                    id, name, slug, description, price, category_id, 
-                    origin, roast_level, sca_score, stock_quantity,
-                    is_active, is_featured, created_at
-                ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
-                ON CONFLICT (slug) DO NOTHING
-            """, (
-                product_id, product['name'], product['slug'], product['description'],
-                product['price'], category_id, product['origin'], product['roast_level'],
-                product['sca_score'], product['stock_quantity'], True, True, datetime.utcnow()
-            ))
-            print(f"✅ Produto '{product['name']}' inserido")
-        
-        # Commit das alterações
-        conn.commit()
-        print("✅ Todos os produtos inseridos com sucesso!")
-        
-        # Verificar se foram inseridos
-        cursor.execute("SELECT COUNT(*) FROM products")
-        count = cursor.fetchone()[0]
-        print(f"📊 Total de produtos no banco: {count}")
-        
-        cursor.close()
-        conn.close()
-        
+            
+            # Inserir produtos
+            for product_data in sample_products:
+                product = Product(
+                    id=str(uuid.uuid4()),
+                    name=product_data['name'],
+                    slug=product_data['slug'],
+                    description=product_data['description'],
+                    price=product_data['price'],
+                    origin=product_data['origin'],
+                    roast_level=product_data['roast_level'],
+                    sca_score=product_data['sca_score'],
+                    stock_quantity=product_data['stock_quantity'],
+                    is_featured=product_data['is_featured'],
+                    is_active=True,
+                    flavor_notes=product_data['flavor_notes'],
+                    category_id=category.id,
+                    category='Cafés Especiais',
+                    weight=250,  # 250g padrão
+                    track_inventory=True,
+                    requires_shipping=True,
+                    created_at=datetime.utcnow()
+                )
+                db.session.add(product)
+                print(f"✅ Produto '{product_data['name']}' criado")
+            
+            db.session.commit()
+            print("✅ Todos os produtos foram inseridos com sucesso!")
+            
+            return True
+                
     except Exception as e:
-        print(f"❌ Erro: {e}")
-        if 'conn' in locals():
-            conn.rollback()
-            conn.close()
+        print(f"❌ Erro ao inserir produtos: {e}")
+        import traceback
+        traceback.print_exc()
+        return False
 
-if __name__ == "__main__":
-    insert_sample_products()
+if __name__ == '__main__':
+    success = insert_sample_products()
+    sys.exit(0 if success else 1)

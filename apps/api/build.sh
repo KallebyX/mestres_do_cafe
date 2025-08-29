@@ -63,34 +63,24 @@ except ImportError as e:
 # Step 4: Database setup (only if DATABASE_URL is available)
 if [ ! -z "$DATABASE_URL" ]; then
     print_step "Setting up database..."
-    python -c "
-import os
-import sys
-sys.path.insert(0, 'src')
-
-try:
-    from src.database import db
-    from src.app import create_app
-    
-    app = create_app('production')
-    with app.app_context():
-        print('🗄️ Creating database tables...')
-        db.create_all()
-        print('✅ Database tables created successfully')
+    python create_tables.py
+    if [ $? -eq 0 ]; then
+        print_success "Database tables created successfully"
         
-        # Test database connection
-        result = db.session.execute(db.text('SELECT 1')).fetchone()
-        if result:
-            print('✅ Database connection test successful')
-        else:
-            print('❌ Database connection test failed')
-            sys.exit(1)
-            
-except Exception as e:
-    print(f'❌ Database setup error: {e}')
-    sys.exit(1)
-"
-    print_success "Database setup completed"
+        # Insert sample products
+        print_step "Inserting sample products..."
+        python insert_sample_products_new.py
+        if [ $? -eq 0 ]; then
+            print_success "Sample products inserted successfully"
+        else
+            print_warning "Failed to insert sample products (not critical)"
+        fi
+        
+        print_success "Database setup completed"
+    else
+        print_error "Database setup failed"
+        exit 1
+    fi
 else
     print_warning "DATABASE_URL not found, skipping database setup"
 fi

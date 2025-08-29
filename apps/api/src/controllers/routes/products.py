@@ -80,7 +80,8 @@ def get_products():
         is_featured = request.args.get("is_featured", type=lambda x: x.lower() == 'true')
         is_active = request.args.get("is_active", True, type=lambda x: x.lower() == 'true')
         limit = request.args.get("limit", type=int)
-        order_by = request.args.get("order_by", "created_at")
+        # Suportar both orderBy e order_by para compatibilidade
+        order_by = request.args.get("orderBy") or request.args.get("order_by", "created_at")
         ascending = request.args.get("ascending", False, type=lambda x: x.lower() == 'true')
 
         query = Product.query.filter_by(is_active = is_active)
