@@ -52,10 +52,34 @@ def force_init_database():
                 __tablename__ = 'product_categories'
                 
                 id = db.Column(db.String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
-                name = db.Column(db.String(100), nullable=False)
-                slug = db.Column(db.String(100), unique=True, nullable=False)
+                name = db.Column(db.String(255), nullable=False)
+                slug = db.Column(db.String(255), nullable=False, unique=True)
                 description = db.Column(db.Text)
+                parent_id = db.Column(db.String(36), db.ForeignKey('product_categories.id'), nullable=True)
                 is_active = db.Column(db.Boolean, default=True)
+                sort_order = db.Column(db.Integer, default=0)
+                created_at = db.Column(db.DateTime, default=datetime.utcnow)
+                updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+            # Reviews
+            class Review(db.Model):
+                __tablename__ = 'reviews'
+                
+                id = db.Column(db.String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
+                product_id = db.Column(db.String(36), nullable=False)
+                user_id = db.Column(db.String(36), nullable=True)
+                rating = db.Column(db.Integer, nullable=False)
+                title = db.Column(db.String(255))
+                comment = db.Column(db.Text)
+                is_verified = db.Column(db.Boolean, default=False)
+                is_approved = db.Column(db.Boolean, default=True)
+                is_featured = db.Column(db.Boolean, default=False)
+                helpful_count = db.Column(db.Integer, default=0)
+                not_helpful_count = db.Column(db.Integer, default=0)
+                pros = db.Column(db.JSON)
+                cons = db.Column(db.JSON)
+                images = db.Column(db.JSON)
+                recommend = db.Column(db.Boolean, default=True)
                 created_at = db.Column(db.DateTime, default=datetime.utcnow)
                 updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
             
@@ -134,6 +158,7 @@ def force_init_database():
             print("🔧 Criando tabelas...")
             
             # Dropar tabelas se existirem para recriar com schema correto
+            db.session.execute(db.text("DROP TABLE IF EXISTS reviews CASCADE"))
             db.session.execute(db.text("DROP TABLE IF EXISTS products CASCADE"))
             db.session.execute(db.text("DROP TABLE IF EXISTS product_categories CASCADE"))
             db.session.commit()

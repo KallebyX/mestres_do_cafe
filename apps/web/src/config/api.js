@@ -3,15 +3,15 @@ import axios from 'axios';
 // Configuração da API baseada no ambiente
 const API_CONFIG = {
   development: {
-    baseURL: import.meta.env.VITE_API_URL || 'http://localhost:5001',
+    baseURL: (import.meta.env.VITE_API_URL || 'http://localhost:5001') + '/api',
     timeout: 10000,
   },
   production: {
-    baseURL: import.meta.env.VITE_API_URL || 'https://mestres-cafe-api.onrender.com',
+    baseURL: (import.meta.env.VITE_API_URL || 'https://mestres-cafe-api.onrender.com') + '/api',
     timeout: 30000, // Maior timeout em produção devido a cold starts
   },
   staging: {
-    baseURL: import.meta.env.VITE_API_URL || 'https://mestres-cafe-api-staging.onrender.com',
+    baseURL: (import.meta.env.VITE_API_URL || 'https://mestres-cafe-api-staging.onrender.com') + '/api',
     timeout: 20000,
   }
 };

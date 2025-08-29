@@ -5,6 +5,74 @@ import os
 
 setup_bp = Blueprint('setup', __name__)
 
+@setup_bp.route('/create-reviews', methods=['GET'])
+def create_reviews_table():
+    """Cria a tabela reviews diretamente no banco"""
+    try:
+        import psycopg2
+        import os
+        
+        # Obter DATABASE_URL
+        database_url = os.environ.get('DATABASE_URL')
+        if not database_url:
+            return jsonify({
+                'status': 'error',
+                'message': 'DATABASE_URL não encontrada'
+            }), 500
+        
+        # Conectar ao banco
+        conn = psycopg2.connect(database_url)
+        cursor = conn.cursor()
+        
+        # SQL para criar a tabela reviews
+        create_table_sql = """
+        CREATE TABLE IF NOT EXISTS reviews (
+            id VARCHAR(36) PRIMARY KEY DEFAULT (gen_random_uuid()::text),
+            product_id VARCHAR(36) NOT NULL,
+            user_id VARCHAR(36),
+            rating INTEGER NOT NULL,
+            title VARCHAR(255),
+            comment TEXT,
+            is_verified BOOLEAN DEFAULT FALSE,
+            is_approved BOOLEAN DEFAULT TRUE,
+            is_featured BOOLEAN DEFAULT FALSE,
+            helpful_count INTEGER DEFAULT 0,
+            not_helpful_count INTEGER DEFAULT 0,
+            pros JSON,
+            cons JSON,
+            images JSON,
+            recommend BOOLEAN DEFAULT TRUE,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        );
+        """
+        
+        cursor.execute(create_table_sql)
+        conn.commit()
+        
+        # Verificar se foi criada
+        cursor.execute("""
+            SELECT COUNT(*) FROM information_schema.tables 
+            WHERE table_name = 'reviews'
+        """)
+        count = cursor.fetchone()[0]
+        
+        conn.close()
+        
+        return jsonify({
+            'status': 'success',
+            'message': 'Tabela reviews criada com sucesso',
+            'table_exists': count > 0,
+            'timestamp': datetime.utcnow().isoformat()
+        })
+        
+    except Exception as e:
+        return jsonify({
+            'status': 'error',
+            'message': f'Erro ao criar tabela reviews: {str(e)}',
+            'timestamp': datetime.utcnow().isoformat()
+        }), 500
+
 @setup_bp.route('/check-schema', methods=['GET'])
 def check_database_schema():
     """Endpoint para verificar o schema da tabela products"""

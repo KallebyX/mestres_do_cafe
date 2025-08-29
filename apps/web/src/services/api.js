@@ -129,7 +129,7 @@ export const authAPI = {
 export const productsAPI = {
   getAll: async (filters = {}) => {
     try {
-      const response = await api.get('/api/products', { params: filters });
+      const response = await api.get('/products', { params: filters });
       return { success: true, data: response.data };
     } catch (error) {
       return {
@@ -141,7 +141,7 @@ export const productsAPI = {
 
   getById: async (id) => {
     try {
-      const response = await api.get(`/api/products/${id}`);
+      const response = await api.get(`/products/${id}`);
       return { success: true, data: response.data };
     } catch (error) {
       return {
@@ -153,7 +153,7 @@ export const productsAPI = {
 
   create: async (productData) => {
     try {
-      const response = await api.post('/api/products', productData);
+      const response = await api.post('/products', productData);
       return { success: true, data: response.data };
     } catch (error) {
       return {
@@ -165,7 +165,7 @@ export const productsAPI = {
 
   update: async (id, productData) => {
     try {
-      const response = await api.put(`/api/products/${id}`, productData);
+      const response = await api.put(`/products/${id}`, productData);
       return { success: true, data: response.data };
     } catch (error) {
       return {
@@ -177,7 +177,7 @@ export const productsAPI = {
 
   delete: async (id) => {
     try {
-      const response = await api.delete(`/api/products/${id}`);
+      const response = await api.delete(`/products/${id}`);
       return { success: true, data: response.data };
     } catch (error) {
       return {
@@ -189,7 +189,7 @@ export const productsAPI = {
 
   getFeatured: async () => {
     try {
-      const response = await api.get('/api/products/featured');
+      const response = await api.get('/products/featured');
       return { success: true, data: response.data };
     } catch (error) {
       return {
@@ -201,7 +201,7 @@ export const productsAPI = {
 
   getByCategory: async (category) => {
     try {
-      const response = await api.get(`/api/products/category/${category}`);
+      const response = await api.get(`/products/category/${category}`);
       return { success: true, data: response.data };
     } catch (error) {
       return {
