@@ -36,6 +36,7 @@ try:
     from controllers.routes.coupons import coupons_bp
     from controllers.routes.analytics import analytics_bp  # Analytics tracking
     from controllers.routes.debug import debug_bp  # Debug endpoints
+    from controllers.routes.setup import setup_bp  # Setup endpoints
     from controllers.routes.notifications import notifications_bp  # REATIVADO: serviço implementado
     from controllers.routes.melhor_envio import melhor_envio_bp  # REATIVADO: serviço implementado
     
@@ -154,6 +155,7 @@ def create_app(config_name = None):
     app.register_blueprint(payments_bp, url_prefix="/api/payments")
     app.register_blueprint(analytics_bp, url_prefix="/api/analytics")  # Analytics tracking
     app.register_blueprint(debug_bp, url_prefix="/api/debug")  # Debug endpoints
+    app.register_blueprint(setup_bp, url_prefix="/api/setup")  # Setup endpoints
 
     # Registra blueprints de funcionalidades avançadas (somente os existentes)
     app.register_blueprint(coupons_bp, url_prefix="/api/coupons")
