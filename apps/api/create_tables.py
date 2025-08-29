@@ -18,26 +18,9 @@ def create_all_tables():
         from src.app import create_app
         from src.database import db
         
-        # Importar todos os modelos para garantir que sejam registrados
-        import src.models.products
-        import src.models.auth
-        import src.models.customers
-        import src.models.orders
-        import src.models.payments
-        import src.models.coupons
-        import src.models.analytics
-        import src.models.financial
-        import src.models.media
-        import src.models.notifications
-        import src.models.suppliers
-        import src.models.system
-        import src.models.tax
-        import src.models.vendors
-        import src.models.wishlist
-        
         print("🗄️ Iniciando criação de tabelas...")
         
-        # Criar aplicação
+        # Criar aplicação - a app já importa todos os modelos necessários
         app = create_app('production')
         
         with app.app_context():
