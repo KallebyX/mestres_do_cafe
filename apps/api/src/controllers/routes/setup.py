@@ -1,7 +1,49 @@
 from flask import Blueprint, jsonify
 from datetime import datetime
+import subprocess
+import os
 
 setup_bp = Blueprint('setup', __name__)
+
+@setup_bp.route('/force-init', methods=['POST'])
+def force_init_database():
+    """Endpoint para forçar inicialização completa do banco"""
+    try:
+        # Executar script de inicialização forçada
+        script_path = os.path.join(os.path.dirname(__file__), '..', '..', '..', 'force_init_db.py')
+        result = subprocess.run(['python', script_path], 
+                              capture_output=True, 
+                              text=True, 
+                              timeout=120)
+        
+        if result.returncode == 0:
+            return jsonify({
+                'status': 'success',
+                'message': 'Database initialized successfully',
+                'output': result.stdout,
+                'timestamp': datetime.utcnow().isoformat()
+            }), 200
+        else:
+            return jsonify({
+                'status': 'error',
+                'message': 'Database initialization failed',
+                'error': result.stderr,
+                'output': result.stdout,
+                'timestamp': datetime.utcnow().isoformat()
+            }), 500
+            
+    except subprocess.TimeoutExpired:
+        return jsonify({
+            'status': 'error',
+            'message': 'Database initialization timed out',
+            'timestamp': datetime.utcnow().isoformat()
+        }), 500
+    except Exception as e:
+        return jsonify({
+            'status': 'error',
+            'message': str(e),
+            'timestamp': datetime.utcnow().isoformat()
+        }), 500
 
 @setup_bp.route('/create-tables', methods=['POST'])
 def create_tables():

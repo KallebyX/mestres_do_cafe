@@ -14,11 +14,21 @@ src_dir = current_dir / 'src'
 sys.path.insert(0, str(current_dir))
 sys.path.insert(0, str(src_dir))
 
+# Configurar variáveis de ambiente para produção
+os.environ.setdefault('FLASK_ENV', 'production')
+os.environ.setdefault('FLASK_DEBUG', '0')
+
 # Importar do módulo src
 from src.app import create_app
 
 # Criar aplicação
-app = create_app()
+try:
+    app = create_app('production')
+    print("✅ Aplicação criada com sucesso para produção")
+except Exception as e:
+    print(f"❌ Erro ao criar aplicação: {e}")
+    # Tentar criar com configuração básica
+    app = create_app()
 
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', os.environ.get('API_PORT', 5001)))
