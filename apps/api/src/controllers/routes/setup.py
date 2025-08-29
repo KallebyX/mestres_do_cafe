@@ -5,6 +5,51 @@ import os
 
 setup_bp = Blueprint('setup', __name__)
 
+@setup_bp.route('/fix-reviews-types', methods=['GET'])
+def fix_reviews_types():
+    """Corrige os tipos de dados da tabela reviews"""
+    try:
+        import psycopg2
+        import os
+        
+        # Obter DATABASE_URL
+        database_url = os.environ.get('DATABASE_URL')
+        if not database_url:
+            return jsonify({
+                'status': 'error',
+                'message': 'DATABASE_URL não encontrada'
+            }), 500
+        
+        # Conectar ao banco
+        conn = psycopg2.connect(database_url)
+        cursor = conn.cursor()
+        
+        # SQL para alterar os tipos das colunas
+        alter_sql = """
+        ALTER TABLE reviews 
+        ALTER COLUMN product_id TYPE UUID USING product_id::UUID,
+        ALTER COLUMN user_id TYPE UUID USING user_id::UUID,
+        ALTER COLUMN id TYPE UUID USING id::UUID;
+        """
+        
+        cursor.execute(alter_sql)
+        conn.commit()
+        
+        conn.close()
+        
+        return jsonify({
+            'status': 'success',
+            'message': 'Tipos da tabela reviews corrigidos',
+            'timestamp': datetime.utcnow().isoformat()
+        })
+        
+    except Exception as e:
+        return jsonify({
+            'status': 'error',
+            'message': f'Erro ao corrigir tipos da tabela reviews: {str(e)}',
+            'timestamp': datetime.utcnow().isoformat()
+        }), 500
+
 @setup_bp.route('/create-reviews', methods=['GET'])
 def create_reviews_table():
     """Cria a tabela reviews diretamente no banco"""
