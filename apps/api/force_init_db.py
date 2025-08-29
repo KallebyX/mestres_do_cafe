@@ -132,6 +132,12 @@ def force_init_database():
             
             # Criar todas as tabelas
             print("🔧 Criando tabelas...")
+            
+            # Dropar tabelas se existirem para recriar com schema correto
+            db.session.execute(db.text("DROP TABLE IF EXISTS products CASCADE"))
+            db.session.execute(db.text("DROP TABLE IF EXISTS product_categories CASCADE"))
+            db.session.commit()
+            
             db.create_all()
             
             # Verificar tabelas criadas
