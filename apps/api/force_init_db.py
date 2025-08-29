@@ -74,6 +74,9 @@ def force_init_database():
                 category_id = db.Column(db.String(36), db.ForeignKey('product_categories.id'))
                 category = db.Column(db.String(100))  # Para compatibilidade
                 
+                # Fornecedor
+                supplier_id = db.Column(db.String(36))  # Para compatibilidade com o modelo real
+                
                 # Preços
                 price = db.Column(db.Numeric(10, 2), nullable=False)
                 cost_price = db.Column(db.Numeric(10, 2))
