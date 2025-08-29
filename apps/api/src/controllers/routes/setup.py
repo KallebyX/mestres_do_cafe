@@ -5,6 +5,44 @@ import os
 
 setup_bp = Blueprint('setup', __name__)
 
+@setup_bp.route('/check-schema', methods=['GET'])
+def check_database_schema():
+    """Endpoint para verificar o schema da tabela products"""
+    try:
+        from database import db
+        from sqlalchemy import text
+        
+        # Verificar estrutura da tabela products
+        result = db.session.execute(text("""
+            SELECT column_name, data_type, is_nullable 
+            FROM information_schema.columns 
+            WHERE table_name = 'products' 
+            ORDER BY ordinal_position
+        """))
+        
+        columns = []
+        for row in result:
+            columns.append({
+                'name': row[0],
+                'type': row[1],
+                'nullable': row[2]
+            })
+        
+        return jsonify({
+            'status': 'success',
+            'table': 'products',
+            'columns': columns,
+            'total_columns': len(columns),
+            'timestamp': datetime.utcnow().isoformat()
+        }), 200
+        
+    except Exception as e:
+        return jsonify({
+            'status': 'error',
+            'message': str(e),
+            'timestamp': datetime.utcnow().isoformat()
+        }), 500
+
 @setup_bp.route('/test', methods=['GET'])
 def test_endpoint():
     """Endpoint simples para testar se a API está funcionando"""
