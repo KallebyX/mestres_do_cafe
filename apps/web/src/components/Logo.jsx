@@ -41,18 +41,18 @@ const Logo = ({
     if (variant === 'dark') {
       // Para fundos escuros (footer)
       return [
-        '/logo-para-fundo-escuro.png',
-        '/assets/logo/logo-para-fundo-escuro.png',
-        '/logo-mestres-do-cafe.png', // fallback
-        '/assets/logo/logo-mestres-do-cafe.png'
+        '/logo-para-fundo-escuro.svg',
+        '/assets/logo/logo-para-fundo-escuro.svg',
+        '/logo-mestres-do-cafe.svg', // fallback
+        '/assets/logo/logo-mestres-do-cafe.svg'
       ];
     } else {
       // Para fundos claros (header)
       return [
-        '/logo-para-fundo-branco.png',
-        '/assets/logo/logo-para-fundo-branco.png',
-        '/logo-mestres-do-cafe.png', // fallback
-        '/assets/logo/logo-mestres-do-cafe.png'
+        '/logo-para-fundo-branco.svg',
+        '/assets/logo/logo-para-fundo-branco.svg',
+        '/logo-mestres-do-cafe.svg', // fallback
+        '/assets/logo/logo-mestres-do-cafe.svg'
       ];
     }
   };

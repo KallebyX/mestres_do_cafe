@@ -287,7 +287,7 @@ const PremiumHeroSection = () => {
                       : 'bg-gradient-to-br from-amber-100 via-orange-100 to-pink-100'
                   }`}>
                     <img
-                      src="/images/caneca-mestres-cafe.jpg"
+                      src="/caneca-mestres-cafe.svg"
                       alt="Mestres do Café - Cafés Especiais Premium"
                       className="w-full h-full object-cover hover:scale-110 transition-transform duration-700"
                       loading="lazy"
