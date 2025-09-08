@@ -34,7 +34,10 @@ def setup_render_database():
         # Importar dependências
         from src.app import create_app
         from src.database import db
-        from src.models import *
+        # Import models individually to avoid syntax error
+        from src.models.auth import User
+        from src.models.products import Product, ProductCategory
+        from src.models.reviews import Review
         
         # Criar aplicação
         logger.info("🔧 Criando aplicação Flask...")
