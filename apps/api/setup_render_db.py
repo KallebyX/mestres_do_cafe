@@ -23,13 +23,13 @@ def setup_render_database():
     try:
         logger.info("🚀 Iniciando setup do banco de dados para Render...")
         
-        # Verificar se DATABASE_URL está disponível
-        database_url = os.environ.get('DATABASE_URL')
+        # Verificar se DATABASE_URL ou NEON_DATABASE_URL está disponível
+        database_url = os.environ.get('NEON_DATABASE_URL') or os.environ.get('DATABASE_URL')
         if not database_url:
-            logger.error("❌ DATABASE_URL não encontrada")
+            logger.error("❌ NEON_DATABASE_URL ou DATABASE_URL não encontrada")
             return False
             
-        logger.info("✅ DATABASE_URL encontrada")
+        logger.info("✅ URL do banco encontrada")
         
         # Importar dependências
         from src.app import create_app
