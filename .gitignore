@@ -75,7 +75,7 @@ dist
 
 # Gatsby files
 .cache/
-public
+# public (commented out to allow static assets)
 
 # Vite build output
 dist-ssr

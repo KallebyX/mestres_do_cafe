@@ -1,0 +1,6 @@
+<svg width="200" height="200" viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg">
+<rect width="200" height="200" fill="#8B4513"/>
+<circle cx="100" cy="100" r="60" fill="#D2691E"/>
+<text x="100" y="110" font-family="Arial" font-size="16" fill="#FFFFFF" text-anchor="middle">☕ Café</text>
+<text x="100" y="130" font-family="Arial" font-size="12" fill="#FFFFFF" text-anchor="middle">Mestres</text>
+</svg>
