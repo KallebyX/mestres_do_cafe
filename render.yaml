@@ -70,7 +70,7 @@ services:
       - key: NODE_ENV
         value: production
       - key: VITE_API_URL
-        value: https://mestres-cafe-api.onrender.com
+        value: https://mestres-cafe-api.onrender.com/api
       - key: VITE_MERCADO_PAGO_PUBLIC_KEY
         sync: false
     pullRequestPreviewsEnabled: true
