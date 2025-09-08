@@ -62,28 +62,27 @@ except ImportError as e:
 
 # Step 4: Database setup (only if DATABASE_URL is available)
 if [ ! -z "$DATABASE_URL" ]; then
-    print_step "Setting up database with force initialization..."
-    python force_init_db.py
+    print_step "Setting up database with Render setup script..."
+    python setup_render_db.py
     if [ $? -eq 0 ]; then
-        print_success "Database force initialization completed successfully"
+        print_success "Database setup completed successfully"
     else
-        print_warning "Force database initialization failed, trying fallback methods..."
+        print_warning "Database setup failed, trying fallback methods..."
         
-        # Fallback to old method
-        python create_tables.py
+        # Fallback to force initialization
+        python force_init_db.py
         if [ $? -eq 0 ]; then
-            print_success "Database tables created with fallback method"
-            
-            # Insert sample products
-            print_step "Inserting sample products..."
-            python insert_sample_products_new.py
-            if [ $? -eq 0 ]; then
-                print_success "Sample products inserted successfully"
-            else
-                print_warning "Failed to insert sample products (not critical)"
-            fi
+            print_success "Database force initialization completed successfully"
         else
-            print_warning "Database setup failed but continuing build..."
+            print_warning "Force initialization failed, trying basic table creation..."
+            
+            # Final fallback
+            python create_tables.py
+            if [ $? -eq 0 ]; then
+                print_success "Database tables created with fallback method"
+            else
+                print_warning "Database setup failed but continuing build..."
+            fi
         fi
     fi
 else

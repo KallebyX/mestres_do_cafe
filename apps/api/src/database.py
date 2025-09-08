@@ -30,13 +30,25 @@ def init_db(app) -> None:
     database_url = get_database_url()
     app.config["SQLALCHEMY_DATABASE_URI"] = database_url
     app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
-    app.config["SQLALCHEMY_ENGINE_OPTIONS"] = {
-        "pool_pre_ping": True,
-        "pool_recycle": 300,
-        "pool_size": 10,
-        "max_overflow": 20,
-        "pool_timeout": 30,
-    }
+    
+    # Configurações otimizadas para PostgreSQL
+    if database_url.startswith("postgresql://"):
+        app.config["SQLALCHEMY_ENGINE_OPTIONS"] = {
+            "pool_pre_ping": True,
+            "pool_recycle": 300,
+            "pool_size": 10,
+            "max_overflow": 20,
+            "pool_timeout": 30,
+            "connect_args": {
+                "options": "-c timezone=utc"
+            }
+        }
+    else:
+        # Configurações para SQLite (desenvolvimento)
+        app.config["SQLALCHEMY_ENGINE_OPTIONS"] = {
+            "pool_pre_ping": True,
+            "pool_recycle": 300,
+        }
 
     # Inicializar SQLAlchemy
     db.init_app(app)
@@ -47,14 +59,38 @@ def init_db(app) -> None:
     # Registrar contexto de aplicação
     with app.app_context():
         try:
-            # Testar conexão apenas em produção
-            if app.config.get('ENV') == 'production' or os.environ.get("DATABASE_URL"):
-                db.engine.connect()
-                logger.info(f"✅ Conexão com PostgreSQL estabelecida com sucesso")
+            # Testar conexão
+            connection = db.engine.connect()
+            connection.close()
+            
+            if database_url.startswith("postgresql://"):
+                logger.info("✅ Conexão com PostgreSQL estabelecida com sucesso")
             else:
-                logger.info(f"⚠️ Banco de dados não configurado - modo desenvolvimento")
+                logger.info("✅ Conexão com SQLite estabelecida com sucesso")
+                
+            # Criar tabelas se não existirem (apenas em produção)
+            if app.config.get('ENV') == 'production' and database_url.startswith("postgresql://"):
+                try:
+                    # Verificar se as tabelas existem
+                    result = db.session.execute(text("""
+                        SELECT COUNT(*) 
+                        FROM information_schema.tables 
+                        WHERE table_schema = 'public' 
+                        AND table_name IN ('products', 'users', 'orders')
+                    """)).scalar()
+                    
+                    if result == 0:
+                        logger.info("🔧 Criando tabelas do banco de dados...")
+                        db.create_all()
+                        logger.info("✅ Tabelas criadas com sucesso")
+                    else:
+                        logger.info(f"✅ Banco já possui {result} tabelas principais")
+                        
+                except Exception as e:
+                    logger.warning(f"⚠️ Erro ao verificar/criar tabelas: {e}")
+                    
         except SQLAlchemyError as e:
-            logger.error(f"❌ Erro ao conectar com PostgreSQL: {e}")
+            logger.error(f"❌ Erro ao conectar com banco de dados: {e}")
             if app.config.get('ENV') == 'production':
                 raise
             else:
@@ -63,23 +99,35 @@ def init_db(app) -> None:
 
 def get_database_url() -> str:
     """
-    Obtém a URL de conexão do banco de dados (PostgreSQL ÚNICO)
+    Obtém a URL de conexão do banco de dados (PostgreSQL com suporte a Neon)
 
     Returns:
         str: URL de conexão do banco de dados
     """
 
-    # URL direta do banco (prioridade total)
+    # 1. Prioridade: Neon Database (recomendado)
+    neon_url = os.getenv("NEON_DATABASE_URL")
+    if neon_url:
+        logger.info("🌟 Usando Neon Database (recomendado)")
+        # Log da URL (sem senha) para debug
+        safe_url = neon_url.split('@')[1] if '@' in neon_url else neon_url
+        logger.info(f"🔗 Conectando ao Neon: postgresql://***@{safe_url}")
+        return neon_url
+
+    # 2. Fallback: DATABASE_URL (Render ou outros)
     database_url = os.getenv("DATABASE_URL")
-    
     if database_url:
         # Fix para Render: converter postgres:// para postgresql://
         if database_url.startswith("postgres://"):
             database_url = database_url.replace("postgres://", "postgresql://", 1)
             logger.info("✅ URL do banco convertida de postgres:// para postgresql://")
+        
+        # Log da URL (sem senha) para debug
+        safe_url = database_url.split('@')[1] if '@' in database_url else database_url
+        logger.info(f"🔗 Conectando ao banco: postgresql://***@{safe_url}")
         return database_url
 
-    # Tentar montar URL a partir de variáveis separadas (backup)
+    # 3. Tentar montar URL a partir de variáveis separadas (backup)
     db_host = os.getenv("DB_HOST")
     if db_host:
         db_user = os.getenv("DB_USER", "postgres")
@@ -90,9 +138,9 @@ def get_database_url() -> str:
         logger.info(f"✅ URL do banco montada a partir de variáveis separadas")
         return database_url
 
-    # Para desenvolvimento sem banco configurado
-    logger.info(f"⚠️ Nenhuma configuração de banco encontrada")
-    return "postgresql://user:pass@localhost:5432/mestres_cafe"
+    # 4. Para desenvolvimento sem banco configurado
+        logger.warning("⚠️ Nenhuma configuração de banco encontrada - usando SQLite local")
+    return "sqlite:///mestres_cafe_dev.db"
 
 
 def configure_db_events() -> None:

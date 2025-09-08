@@ -239,6 +239,86 @@ def create_tables():
             'timestamp': datetime.utcnow().isoformat()
         }), 500
 
+@setup_bp.route('/setup-render-db', methods=['POST', 'GET'])
+def setup_render_database():
+    """Endpoint para executar o setup completo do banco para Render"""
+    try:
+        # Executar script de setup do Render
+        script_path = os.path.join(os.path.dirname(__file__), '..', '..', '..', 'setup_render_db.py')
+        result = subprocess.run(['python', script_path], 
+                              capture_output=True, 
+                              text=True, 
+                              timeout=180)
+        
+        if result.returncode == 0:
+            return jsonify({
+                'status': 'success',
+                'message': 'Render database setup completed successfully',
+                'output': result.stdout,
+                'timestamp': datetime.utcnow().isoformat()
+            }), 200
+        else:
+            return jsonify({
+                'status': 'error',
+                'message': 'Render database setup failed',
+                'error': result.stderr,
+                'output': result.stdout,
+                'timestamp': datetime.utcnow().isoformat()
+            }), 500
+            
+    except subprocess.TimeoutExpired:
+        return jsonify({
+            'status': 'error',
+            'message': 'Render database setup timed out (3 minutes)',
+            'timestamp': datetime.utcnow().isoformat()
+        }), 500
+    except Exception as e:
+        return jsonify({
+            'status': 'error',
+            'message': str(e),
+            'timestamp': datetime.utcnow().isoformat()
+        }), 500
+
+@setup_bp.route('/migrate-to-neon', methods=['POST', 'GET'])
+def migrate_to_neon():
+    """Endpoint para migrar dados para Neon Database"""
+    try:
+        # Executar script de migração
+        script_path = os.path.join(os.path.dirname(__file__), '..', '..', '..', 'migrate_to_neon.py')
+        result = subprocess.run(['python', script_path], 
+                              capture_output=True, 
+                              text=True, 
+                              timeout=300)  # 5 minutos
+        
+        if result.returncode == 0:
+            return jsonify({
+                'status': 'success',
+                'message': 'Migration to Neon completed successfully',
+                'output': result.stdout,
+                'timestamp': datetime.utcnow().isoformat()
+            }), 200
+        else:
+            return jsonify({
+                'status': 'error',
+                'message': 'Migration to Neon failed',
+                'error': result.stderr,
+                'output': result.stdout,
+                'timestamp': datetime.utcnow().isoformat()
+            }), 500
+            
+    except subprocess.TimeoutExpired:
+        return jsonify({
+            'status': 'error',
+            'message': 'Migration to Neon timed out (5 minutes)',
+            'timestamp': datetime.utcnow().isoformat()
+        }), 500
+    except Exception as e:
+        return jsonify({
+            'status': 'error',
+            'message': str(e),
+            'timestamp': datetime.utcnow().isoformat()
+        }), 500
+
 @setup_bp.route('/insert-sample-data', methods=['POST'])
 def insert_sample_data():
     """Endpoint para inserir dados de exemplo"""

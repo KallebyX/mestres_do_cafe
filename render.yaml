@@ -16,10 +16,16 @@ services:
     envVars:
       - key: FLASK_ENV
         value: production
+      - key: FLASK_DEBUG
+        value: "0"
       - key: PYTHONPATH
         value: /opt/render/project/src/apps/api/src
       - key: PORT
         value: 5001
+      # Neon Database (recomendado - melhor performance)
+      - key: NEON_DATABASE_URL
+        sync: false  # Adicionar manualmente no dashboard
+      # Fallback: Render Database
       - key: DATABASE_URL
         fromDatabase:
           name: mestres-cafe-db
@@ -35,6 +41,13 @@ services:
         generateValue: true
       - key: CORS_ORIGINS
         value: https://mestres-cafe-web.onrender.com
+      # Configurações de banco de dados
+      - key: DB_POOL_SIZE
+        value: "10"
+      - key: DB_POOL_TIMEOUT
+        value: "30"
+      - key: DB_POOL_RECYCLE
+        value: "300"
       # APIs externas - adicionar via dashboard do Render
       - key: MERCADO_PAGO_ACCESS_TOKEN
         sync: false

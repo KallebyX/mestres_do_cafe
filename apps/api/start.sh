@@ -61,6 +61,7 @@ print_success "All required environment variables present"
 print_step "Testing database connection..."
 python -c "
 import sys
+import os
 sys.path.insert(0, 'src')
 
 try:
@@ -69,15 +70,34 @@ try:
     
     app = create_app('production')
     with app.app_context():
+        # Test basic connection
         result = db.session.execute(db.text('SELECT 1')).fetchone()
         if result:
             print('✅ Database connection successful')
+            
+            # Check if tables exist
+            try:
+                table_count = db.session.execute(db.text(\"\"\"
+                    SELECT COUNT(*) 
+                    FROM information_schema.tables 
+                    WHERE table_schema = 'public'
+                \"\"\")).scalar()
+                print(f'📋 Found {table_count} tables in database')
+                
+                if table_count == 0:
+                    print('⚠️ No tables found - database may need initialization')
+                else:
+                    print('✅ Database tables verified')
+                    
+            except Exception as e:
+                print(f'⚠️ Could not verify tables: {e}')
         else:
             print('❌ Database connection failed')
             sys.exit(1)
 except Exception as e:
     print(f'❌ Database connection error: {e}')
-    sys.exit(1)
+    # Don't exit on database error - let the app handle it
+    print('⚠️ Continuing startup despite database error...')
 "
 
 # Step 4: Pre-flight health check
