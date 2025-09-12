@@ -64,7 +64,7 @@ services:
     runtime: static
     plan: starter # ou free para começar
     region: oregon # ou sao-paulo se disponível
-    buildCommand: cd apps/web && npm install && npm run build:production
+    buildCommand: cd apps/web && chmod +x build-render.sh && ./build-render.sh
     rootDir: apps/web
     envVars:
       - key: NODE_ENV

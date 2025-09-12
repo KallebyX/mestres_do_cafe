@@ -132,6 +132,7 @@ services:
       VITE_API_URL: ${VITE_API_URL:-http://localhost:5001/api}
       VITE_APP_NAME: "Mestres do Café"
       VITE_MERCADO_PAGO_PUBLIC_KEY: ${MERCADO_PAGO_PUBLIC_KEY}
+      VITE_MERCADO_PAGO_ENVIRONMENT: ${MERCADO_PAGO_ENVIRONMENT:-sandbox}
       PORT: 3000
     volumes:
       - ./apps/web:/app

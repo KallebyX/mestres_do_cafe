@@ -7,7 +7,7 @@ const API_CONFIG = {
     timeout: 10000,
   },
   production: {
-    baseURL: import.meta.env.VITE_API_URL || 'https://mestres-cafe-api.onrender.com/api',
+    baseURL: import.meta.env.VITE_API_URL || '/api',
     timeout: 30000, // Maior timeout em produção devido a cold starts
   },
   staging: {

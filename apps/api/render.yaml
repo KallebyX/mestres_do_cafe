@@ -1,0 +1,62 @@
+# Mestres do Café - Configuração específica para Render (API)
+# Este arquivo define a configuração da API para deploy no Render
+
+services:
+  - type: web
+    name: mestres-cafe-api
+    runtime: python
+    plan: starter
+    region: oregon
+    buildCommand: |
+      cd apps/api
+      chmod +x build.sh
+      ./build.sh
+    startCommand: |
+      cd apps/api
+      chmod +x start.sh
+      ./start.sh
+    rootDir: .
+    envVars:
+      - key: FLASK_ENV
+        value: production
+      - key: FLASK_DEBUG
+        value: "0"
+      - key: PYTHONPATH
+        value: /opt/render/project/src/apps/api/src
+      - key: PORT
+        value: 5001
+      - key: SECRET_KEY
+        generateValue: true
+      - key: JWT_SECRET_KEY
+        generateValue: true
+      - key: CORS_ORIGINS
+        value: https://mestres-cafe-web.onrender.com
+      - key: DATABASE_URL
+        fromDatabase:
+          name: mestres-cafe-db
+          property: connectionString
+      - key: REDIS_URL
+        fromService:
+          type: redis
+          name: mestres-cafe-redis
+          property: connectionString
+      - key: MERCADO_PAGO_ACCESS_TOKEN
+        sync: false
+      - key: MERCADO_PAGO_PUBLIC_KEY
+        sync: false
+      - key: MERCADO_PAGO_ENVIRONMENT
+        value: production
+      - key: MELHOR_ENVIO_API_KEY
+        sync: false
+      - key: MELHOR_ENVIO_ENVIRONMENT
+        value: production
+    autoDeploy: true
+    healthCheckPath: /api/health
+
+databases:
+  - name: mestres-cafe-db
+    plan: starter
+    region: oregon
+    databaseName: mestres_cafe
+    user: mestres_cafe_user
+    postgresMajorVersion: "15"

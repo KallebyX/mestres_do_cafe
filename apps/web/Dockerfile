@@ -86,7 +86,9 @@ COPY --chown=nextjs:nodejs . .
 # Configurações de build
 ENV NODE_ENV=production \
     VITE_API_URL=/api \
-    VITE_APP_NAME="Mestres do Café"
+    VITE_APP_NAME="Mestres do Café" \
+    VITE_MERCADO_PAGO_PUBLIC_KEY=${MERCADO_PAGO_PUBLIC_KEY} \
+    VITE_MERCADO_PAGO_ENVIRONMENT=production
 
 # Mudar para usuário não-root para build
 USER nextjs

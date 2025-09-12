@@ -48,7 +48,7 @@ api.interceptors.response.use(
 export const authAPI = {
   login: async (credentials) => {
     try {
-      const response = await api.post('/api/auth/login', credentials);
+      const response = await api.post('/auth/login', credentials);
       return { success: true, data: response.data };
     } catch (error) {
       return { 
@@ -60,7 +60,7 @@ export const authAPI = {
 
   register: async (userData) => {
     try {
-      const response = await api.post('/api/auth/register', userData);
+      const response = await api.post('/auth/register', userData);
       return { success: true, data: response.data };
     } catch (error) {
       return { 
@@ -72,7 +72,7 @@ export const authAPI = {
 
   logout: async () => {
     try {
-      await api.post('/api/auth/logout');
+      await api.post('/auth/logout');
       localStorage.removeItem('authToken');
       localStorage.removeItem('access_token');
       localStorage.removeItem('user');
@@ -87,7 +87,7 @@ export const authAPI = {
 
   getCurrentUser: async () => {
     try {
-      const response = await api.get('/api/auth/me');
+      const response = await api.get('/auth/me');
       return { success: true, data: response.data };
     } catch (error) {
       return { 
@@ -99,7 +99,7 @@ export const authAPI = {
 
   resetPassword: async (email) => {
     try {
-      const response = await api.post('/api/auth/reset-password', { email });
+      const response = await api.post('/auth/reset-password', { email });
       return { success: true, data: response.data };
     } catch (error) {
       return { 
@@ -111,7 +111,7 @@ export const authAPI = {
 
   updateProfile: async (profileData) => {
     try {
-      const response = await api.put('/api/auth/profile', profileData);
+      const response = await api.put('/auth/profile', profileData);
       return { success: true, data: response.data };
     } catch (error) {
       return { 

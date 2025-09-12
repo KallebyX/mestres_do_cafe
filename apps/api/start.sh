@@ -1,179 +1,109 @@
 #!/bin/bash
 
-# Mestres do Café - API Start Script for Render
-# Script de inicialização para produção no Render
+# Mestres do Café - Script de Start para Render
+# Este script inicia a aplicação Flask em produção
 
 set -e
 
-echo "🚀 Starting Mestres do Café API server..."
+echo "🚀 Iniciando API no Render..."
 
-# Colors for output
+# Cores para output
 RED='\033[0;31m'
 GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
 BLUE='\033[0;34m'
 NC='\033[0m' # No Color
 
-print_step() {
-    echo -e "${BLUE}📋 $1${NC}"
+# Função para log colorido
+log() {
+    echo -e "${BLUE}[$(date +'%Y-%m-%d %H:%M:%S')]${NC} $1"
 }
 
-print_success() {
-    echo -e "${GREEN}✅ $1${NC}"
+error() {
+    echo -e "${RED}[ERROR]${NC} $1"
 }
 
-print_warning() {
-    echo -e "${YELLOW}⚠️  $1${NC}"
+success() {
+    echo -e "${GREEN}[SUCCESS]${NC} $1"
 }
 
-print_error() {
-    echo -e "${RED}❌ $1${NC}"
+warning() {
+    echo -e "${YELLOW}[WARNING]${NC} $1"
 }
 
-# Step 1: Environment verification
-print_step "Verifying environment..."
+# Configurar variáveis de ambiente
 export FLASK_ENV=production
 export FLASK_DEBUG=0
-export PYTHONPATH="/opt/render/project/src/apps/api/src"
+export PYTHONPATH=/opt/render/project/src/apps/api/src
 
-# Step 2: Check required environment variables
-print_step "Checking required environment variables..."
-REQUIRED_VARS=("DATABASE_URL" "SECRET_KEY" "JWT_SECRET_KEY")
-MISSING_VARS=()
-
-for var in "${REQUIRED_VARS[@]}"; do
-    if [ -z "${!var}" ]; then
-        MISSING_VARS+=("$var")
-    fi
-done
-
-if [ ${#MISSING_VARS[@]} -gt 0 ]; then
-    print_error "Missing required environment variables:"
-    for var in "${MISSING_VARS[@]}"; do
-        echo "  - $var"
-    done
-    exit 1
+# Verificar se a porta está definida
+if [ -z "$PORT" ]; then
+    export PORT=5001
+    warning "PORT não definida, usando 5001"
 fi
 
-print_success "All required environment variables present"
+log "Configurações:"
+log "  FLASK_ENV: $FLASK_ENV"
+log "  FLASK_DEBUG: $FLASK_DEBUG"
+log "  PORT: $PORT"
+log "  PYTHONPATH: $PYTHONPATH"
 
-# Step 3: Database connection test
-print_step "Testing database connection..."
+# Verificar se o banco de dados está acessível
+if [ -n "$DATABASE_URL" ]; then
+    log "DATABASE_URL configurada"
+else
+    warning "DATABASE_URL não configurada"
+fi
+
+if [ -n "$NEON_DATABASE_URL" ]; then
+    log "NEON_DATABASE_URL configurada"
+fi
+
+# Verificar se Redis está acessível
+if [ -n "$REDIS_URL" ]; then
+    log "REDIS_URL configurada"
+else
+    warning "REDIS_URL não configurada"
+fi
+
+# Aguardar um pouco para o banco de dados estar pronto
+log "Aguardando banco de dados..."
+sleep 5
+
+# Testar conexão com o banco
+log "Testando conexão com banco de dados..."
 python -c "
-import sys
 import os
-sys.path.insert(0, 'src')
-
-try:
-    from src.database import db
-    from src.app import create_app
-    
-    app = create_app('production')
-    with app.app_context():
-        # Test basic connection
-        result = db.session.execute(db.text('SELECT 1')).fetchone()
-        if result:
-            print('✅ Database connection successful')
-            
-            # Check if tables exist
-            try:
-                table_count = db.session.execute(db.text(\"\"\"
-                    SELECT COUNT(*) 
-                    FROM information_schema.tables 
-                    WHERE table_schema = 'public'
-                \"\"\")).scalar()
-                print(f'📋 Found {table_count} tables in database')
-                
-                if table_count == 0:
-                    print('⚠️ No tables found - database may need initialization')
-                else:
-                    print('✅ Database tables verified')
-                    
-            except Exception as e:
-                print(f'⚠️ Could not verify tables: {e}')
-        else:
-            print('❌ Database connection failed')
-            sys.exit(1)
-except Exception as e:
-    print(f'❌ Database connection error: {e}')
-    # Don't exit on database error - let the app handle it
-    print('⚠️ Continuing startup despite database error...')
-"
-
-# Step 4: Pre-flight health check
-print_step "Running pre-flight health check..."
-python -c "
 import sys
-sys.path.insert(0, 'src')
+sys.path.append('src')
 
 try:
-    from src.app import create_app
-    app = create_app('production')
-    
-    with app.test_client() as client:
-        response = client.get('/api/health')
-        if response.status_code == 200:
-            print('✅ Application health check passed')
-        else:
-            print(f'❌ Health check failed with status {response.status_code}')
-            sys.exit(1)
+    from database import db
+    from app import app
+    with app.app_context():
+        # Testar conexão simples
+        result = db.engine.execute('SELECT 1')
+        print('✅ Conexão com banco de dados OK')
 except Exception as e:
-    print(f'❌ Health check error: {e}')
-    sys.exit(1)
+    print(f'⚠️  Aviso: {e}')
+    print('Continuando mesmo assim...')
 "
 
-# Step 5: Configure Gunicorn settings
-print_step "Configuring Gunicorn settings..."
+# Iniciar a aplicação
+log "Iniciando aplicação Flask..."
 
-# Default values
-PORT=${PORT:-5001}
-WORKERS=${GUNICORN_WORKERS:-2}
-THREADS=${GUNICORN_THREADS:-4}
-TIMEOUT=${GUNICORN_TIMEOUT:-120}
-KEEPALIVE=${GUNICORN_KEEPALIVE:-2}
-MAX_REQUESTS=${GUNICORN_MAX_REQUESTS:-1000}
-MAX_REQUESTS_JITTER=${GUNICORN_MAX_REQUESTS_JITTER:-100}
-
-print_success "Gunicorn configured with:"
-echo "   - Port: $PORT"
-echo "   - Workers: $WORKERS"
-echo "   - Threads: $THREADS"
-echo "   - Timeout: ${TIMEOUT}s"
-echo "   - Keep-alive: ${KEEPALIVE}s"
-echo "   - Max requests: $MAX_REQUESTS"
-
-# Step 6: Create run-time directories
-print_step "Creating runtime directories..."
-mkdir -p logs uploads tmp
-chmod 755 logs uploads tmp
-
-# Step 7: Start the application
-print_step "Starting Gunicorn server..."
-echo ""
-echo "🎯 Mestres do Café API Server"
-echo "🌐 Port: $PORT"
-echo "🔧 Mode: Production"
-echo "🗄️  Database: PostgreSQL"
-echo "💾 Cache: Redis"
-echo ""
-
-# Execute Gunicorn with optimized settings
+# Usar Gunicorn para produção
 exec gunicorn \
     --bind 0.0.0.0:$PORT \
-    --workers $WORKERS \
-    --threads $THREADS \
+    --workers 2 \
     --worker-class sync \
-    --timeout $TIMEOUT \
-    --keepalive $KEEPALIVE \
-    --max-requests $MAX_REQUESTS \
-    --max-requests-jitter $MAX_REQUESTS_JITTER \
+    --worker-connections 1000 \
+    --max-requests 1000 \
+    --max-requests-jitter 100 \
+    --timeout 30 \
+    --keep-alive 2 \
+    --preload \
     --access-logfile - \
     --error-logfile - \
     --log-level info \
-    --capture-output \
-    --enable-stdio-inheritance \
-    --preload \
-    --worker-tmp-dir tmp \
-    --forwarded-allow-ips="*" \
-    --access-logformat '%({x-forwarded-for}i)s %(l)s %(u)s %(t)s "%(r)s" %(s)s %(b)s "%(f)s" "%(a)s" %(D)s' \
-    app:app
+    src.app:app
