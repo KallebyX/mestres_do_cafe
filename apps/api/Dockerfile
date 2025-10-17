@@ -4,7 +4,7 @@
 # =============================================================================
 # Stage 1: Base com dependências do sistema
 # =============================================================================
-FROM python:3.14.0rc1-slim as base
+FROM python:3.14.0-slim as base
 
 # Metadados
 LABEL maintainer="KallebyX"
