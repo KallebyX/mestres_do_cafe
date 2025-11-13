@@ -54,7 +54,11 @@ try:
     from controllers.routes.security import security_bp
     from controllers.routes.stock import stock_bp
 
-    
+    # Novos módulos implementados
+    from controllers.routes.blog import blog_bp
+    from controllers.routes.gamification import gamification_bp
+    from controllers.routes.newsletter import newsletter_bp
+    from controllers.routes.hr import hr_bp
 
     # from services.webhook_processor import webhook_processor  # REMOVIDO: depende de services/
     from middleware.error_handler import register_error_handlers
@@ -180,6 +184,35 @@ def create_app(config_name = None):
         logger.info("🎉 Sistema de pagamentos Mercado Pago ATIVADO!")
     except Exception as e:
         logger.warning(f"⚠️ Falha ao registrar Mercado Pago blueprint: {e}")
+
+    # 🎯 NOVOS MÓDULOS IMPLEMENTADOS
+    try:
+        app.register_blueprint(blog_bp, url_prefix="/api/blog")
+        logger.info("✅ Blueprint Blog registrado com sucesso!")
+        logger.info("📝 Sistema de Blog ATIVADO!")
+    except Exception as e:
+        logger.warning(f"⚠️ Falha ao registrar Blog blueprint: {e}")
+
+    try:
+        app.register_blueprint(gamification_bp, url_prefix="/api/gamification")
+        logger.info("✅ Blueprint Gamificação registrado com sucesso!")
+        logger.info("🎮 Sistema de Gamificação ATIVADO!")
+    except Exception as e:
+        logger.warning(f"⚠️ Falha ao registrar Gamificação blueprint: {e}")
+
+    try:
+        app.register_blueprint(newsletter_bp, url_prefix="/api/newsletter")
+        logger.info("✅ Blueprint Newsletter registrado com sucesso!")
+        logger.info("📧 Sistema de Newsletter ATIVADO!")
+    except Exception as e:
+        logger.warning(f"⚠️ Falha ao registrar Newsletter blueprint: {e}")
+
+    try:
+        app.register_blueprint(hr_bp, url_prefix="/api/hr")
+        logger.info("✅ Blueprint RH registrado com sucesso!")
+        logger.info("👔 Sistema de Recursos Humanos ATIVADO!")
+    except Exception as e:
+        logger.warning(f"⚠️ Falha ao registrar RH blueprint: {e}")
 
     # Rota principal removida - será tratada pelo catch-all para servir React
 
