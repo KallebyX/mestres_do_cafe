@@ -42,9 +42,10 @@ class User(db.Model):
 
     # Gamificação
     points = Column(Integer, default = 0)
-    level = Column(String(50), default="bronze")
+    level = Column(String(50), default="bronze")  # Nome do nível (deprecated, use gamification_level)
     total_spent = Column(DECIMAL(10, 2), default = 0.00)
     account_type = Column(String(50), default="individual")
+    gamification_level_id = Column(UUID(as_uuid = True), ForeignKey('gamification_levels.id'))
 
     # Preferências
     language = Column(String(5), default="pt-BR")
@@ -64,9 +65,16 @@ class User(db.Model):
     sessions = relationship("UserSession", back_populates="user")
     orders = relationship("Order", back_populates="user")
     cart_items = relationship("CartItem", back_populates="user")
-    # REMOVIDO: points_history e points_balance - modelos de gamificação não existem mais
+    gamification_level = relationship("GamificationLevel", back_populates="users")
+    # point_history criado automaticamente via backref no modelo UserPoint
+    # reward_redemptions criado automaticamente via backref no modelo RewardRedemption
     # notifications criado automaticamente via backref no modelo Notification
     # notification_preferences criado automaticamente via backref no modelo NotificationSubscription
+    # newsletter_subscriptions criado automaticamente via backref no modelo NewsletterSubscriber
+    # blog_posts criado automaticamente via backref no modelo BlogPost
+    # blog_comments criado automaticamente via backref no modelo BlogComment
+    # employee_profile criado automaticamente via backref no modelo Employee
+    # campaigns criado automaticamente via backref no modelo Campaign
     wishlists = relationship("Wishlist", back_populates="user")
 
     def __repr__(self):

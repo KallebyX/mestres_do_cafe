@@ -1,8 +1,9 @@
 """
-Modelos SQLAlchemy para o sistema Mestres do Café - LIMPO
+Modelos SQLAlchemy para o sistema Mestres do Café
 """
 
 from .auth import User, UserSession
+from .blog import BlogPost, BlogComment
 from .coupons import Coupon, CouponUsage
 from .customers import (
     Contact,
@@ -13,7 +14,23 @@ from .customers import (
     Lead,
 )
 from .financial import FinancialAccount, FinancialTransaction
+from .gamification import GamificationLevel, UserPoint, Reward, RewardRedemption
+from .hr import (
+    Department,
+    Position,
+    Employee,
+    TimeCard,
+    Payroll,
+    Benefit,
+    EmployeeBenefit,
+)
 from .media import MediaFile
+from .newsletter import (
+    NewsletterSubscriber,
+    NewsletterTemplate,
+    NewsletterCampaign,
+    Campaign,
+)
 from .notifications import (
     Notification,
     NotificationLog,
@@ -40,8 +57,37 @@ from .products import (
 )
 from .suppliers import PurchaseOrder, PurchaseOrderItem, Supplier
 from .system import AuditLog, SystemLog, SystemSetting
+from .tenancy import Tenant, TenantSubscription, TenantSettings
 from .vendors import Vendor, VendorCommission, VendorOrder, VendorProduct, VendorReview
 from .wishlist import Wishlist, WishlistItem, WishlistShare
+from .pdv import CashRegister, CashSession, CashMovement, Sale, SaleItem
+from .erp import (
+    PurchaseRequest,
+    PurchaseRequestItem,
+    SupplierContract,
+    ProductionOrder,
+    ProductionMaterial,
+    QualityControl,
+    MaterialRequirement,
+)
+from .financial_advanced import (
+    AccountsPayable,
+    AccountsReceivable,
+    CashFlow,
+    IncomeStatement,
+    BankReconciliation,
+    Budget,
+)
+from .crm_advanced import (
+    SalesPipeline,
+    PipelineStage,
+    Deal,
+    DealActivity,
+    DealNote,
+    SalesFunnel,
+    MarketingAutomation,
+    LeadScore,
+)
 
 __all__ = [
     # Auth
@@ -129,4 +175,44 @@ __all__ = [
     "SystemSetting",
     "SystemLog",
     "AuditLog",
+    # Reviews
+    "Review",
+    "ReviewHelpful",
+    "ReviewResponse",
+    # Pricing
+    "ProductPrice",
+    # Wishlist
+    "Wishlist",
+    "WishlistItem",
+    "WishlistShare",
+    # PDV (Point of Sale)
+    "CashRegister",
+    "CashSession",
+    "CashMovement",
+    "Sale",
+    "SaleItem",
+    # ERP Advanced
+    "PurchaseRequest",
+    "PurchaseRequestItem",
+    "SupplierContract",
+    "ProductionOrder",
+    "ProductionMaterial",
+    "QualityControl",
+    "MaterialRequirement",
+    # Financial Advanced
+    "AccountsPayable",
+    "AccountsReceivable",
+    "CashFlow",
+    "IncomeStatement",
+    "BankReconciliation",
+    "Budget",
+    # CRM Advanced
+    "SalesPipeline",
+    "PipelineStage",
+    "Deal",
+    "DealActivity",
+    "DealNote",
+    "SalesFunnel",
+    "MarketingAutomation",
+    "LeadScore",
 ]

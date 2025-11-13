@@ -54,7 +54,17 @@ try:
     from controllers.routes.security import security_bp
     from controllers.routes.stock import stock_bp
 
-    
+    # Novos módulos implementados
+    from controllers.routes.blog import blog_bp
+    from controllers.routes.gamification import gamification_bp
+    from controllers.routes.newsletter import newsletter_bp
+    from controllers.routes.hr import hr_bp
+
+    # Módulos avançados implementados
+    from controllers.routes.pdv import pdv_bp
+    from controllers.routes.erp import erp_bp
+    from controllers.routes.financial import financial_bp
+    from controllers.routes.crm import crm_bp
 
     # from services.webhook_processor import webhook_processor  # REMOVIDO: depende de services/
     from middleware.error_handler import register_error_handlers
@@ -181,6 +191,64 @@ def create_app(config_name = None):
     except Exception as e:
         logger.warning(f"⚠️ Falha ao registrar Mercado Pago blueprint: {e}")
 
+    # 🎯 NOVOS MÓDULOS IMPLEMENTADOS
+    try:
+        app.register_blueprint(blog_bp, url_prefix="/api/blog")
+        logger.info("✅ Blueprint Blog registrado com sucesso!")
+        logger.info("📝 Sistema de Blog ATIVADO!")
+    except Exception as e:
+        logger.warning(f"⚠️ Falha ao registrar Blog blueprint: {e}")
+
+    try:
+        app.register_blueprint(gamification_bp, url_prefix="/api/gamification")
+        logger.info("✅ Blueprint Gamificação registrado com sucesso!")
+        logger.info("🎮 Sistema de Gamificação ATIVADO!")
+    except Exception as e:
+        logger.warning(f"⚠️ Falha ao registrar Gamificação blueprint: {e}")
+
+    try:
+        app.register_blueprint(newsletter_bp, url_prefix="/api/newsletter")
+        logger.info("✅ Blueprint Newsletter registrado com sucesso!")
+        logger.info("📧 Sistema de Newsletter ATIVADO!")
+    except Exception as e:
+        logger.warning(f"⚠️ Falha ao registrar Newsletter blueprint: {e}")
+
+    try:
+        app.register_blueprint(hr_bp, url_prefix="/api/hr")
+        logger.info("✅ Blueprint RH registrado com sucesso!")
+        logger.info("👔 Sistema de Recursos Humanos ATIVADO!")
+    except Exception as e:
+        logger.warning(f"⚠️ Falha ao registrar RH blueprint: {e}")
+
+    # 🏪 MÓDULOS AVANÇADOS IMPLEMENTADOS
+    try:
+        app.register_blueprint(pdv_bp, url_prefix="/api/pdv")
+        logger.info("✅ Blueprint PDV registrado com sucesso!")
+        logger.info("💰 Sistema de PDV (Ponto de Venda) ATIVADO!")
+    except Exception as e:
+        logger.warning(f"⚠️ Falha ao registrar PDV blueprint: {e}")
+
+    try:
+        app.register_blueprint(erp_bp, url_prefix="/api/erp")
+        logger.info("✅ Blueprint ERP registrado com sucesso!")
+        logger.info("🏭 Sistema de ERP Avançado (Compras, MRP, Qualidade) ATIVADO!")
+    except Exception as e:
+        logger.warning(f"⚠️ Falha ao registrar ERP blueprint: {e}")
+
+    try:
+        app.register_blueprint(financial_bp, url_prefix="/api/financial")
+        logger.info("✅ Blueprint Financeiro registrado com sucesso!")
+        logger.info("💵 Sistema Financeiro Completo (AP/AR, DRE, Fluxo de Caixa) ATIVADO!")
+    except Exception as e:
+        logger.warning(f"⚠️ Falha ao registrar Financeiro blueprint: {e}")
+
+    try:
+        app.register_blueprint(crm_bp, url_prefix="/api/crm")
+        logger.info("✅ Blueprint CRM registrado com sucesso!")
+        logger.info("🎯 Sistema de CRM Avançado (Pipeline, Funil, Automações) ATIVADO!")
+    except Exception as e:
+        logger.warning(f"⚠️ Falha ao registrar CRM blueprint: {e}")
+
     # Rota principal removida - será tratada pelo catch-all para servir React
 
     # Health check
@@ -223,6 +291,9 @@ def create_app(config_name = None):
                     "media": "/api/media",
                     "financial": "/api/financial",
                     "hr": "/api/hr",
+                    "pdv": "/api/pdv",
+                    "erp": "/api/erp",
+                    "crm": "/api/crm",
                     "testimonials": "/api/testimonials",
                     "health": "/api/health",
                 },
