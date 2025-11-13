@@ -60,6 +60,12 @@ try:
     from controllers.routes.newsletter import newsletter_bp
     from controllers.routes.hr import hr_bp
 
+    # Módulos avançados implementados
+    from controllers.routes.pdv import pdv_bp
+    from controllers.routes.erp import erp_bp
+    from controllers.routes.financial import financial_bp
+    from controllers.routes.crm import crm_bp
+
     # from services.webhook_processor import webhook_processor  # REMOVIDO: depende de services/
     from middleware.error_handler import register_error_handlers
     from middleware.security import init_security_middleware
@@ -214,6 +220,35 @@ def create_app(config_name = None):
     except Exception as e:
         logger.warning(f"⚠️ Falha ao registrar RH blueprint: {e}")
 
+    # 🏪 MÓDULOS AVANÇADOS IMPLEMENTADOS
+    try:
+        app.register_blueprint(pdv_bp, url_prefix="/api/pdv")
+        logger.info("✅ Blueprint PDV registrado com sucesso!")
+        logger.info("💰 Sistema de PDV (Ponto de Venda) ATIVADO!")
+    except Exception as e:
+        logger.warning(f"⚠️ Falha ao registrar PDV blueprint: {e}")
+
+    try:
+        app.register_blueprint(erp_bp, url_prefix="/api/erp")
+        logger.info("✅ Blueprint ERP registrado com sucesso!")
+        logger.info("🏭 Sistema de ERP Avançado (Compras, MRP, Qualidade) ATIVADO!")
+    except Exception as e:
+        logger.warning(f"⚠️ Falha ao registrar ERP blueprint: {e}")
+
+    try:
+        app.register_blueprint(financial_bp, url_prefix="/api/financial")
+        logger.info("✅ Blueprint Financeiro registrado com sucesso!")
+        logger.info("💵 Sistema Financeiro Completo (AP/AR, DRE, Fluxo de Caixa) ATIVADO!")
+    except Exception as e:
+        logger.warning(f"⚠️ Falha ao registrar Financeiro blueprint: {e}")
+
+    try:
+        app.register_blueprint(crm_bp, url_prefix="/api/crm")
+        logger.info("✅ Blueprint CRM registrado com sucesso!")
+        logger.info("🎯 Sistema de CRM Avançado (Pipeline, Funil, Automações) ATIVADO!")
+    except Exception as e:
+        logger.warning(f"⚠️ Falha ao registrar CRM blueprint: {e}")
+
     # Rota principal removida - será tratada pelo catch-all para servir React
 
     # Health check
@@ -256,6 +291,9 @@ def create_app(config_name = None):
                     "media": "/api/media",
                     "financial": "/api/financial",
                     "hr": "/api/hr",
+                    "pdv": "/api/pdv",
+                    "erp": "/api/erp",
+                    "crm": "/api/crm",
                     "testimonials": "/api/testimonials",
                     "health": "/api/health",
                 },

@@ -60,6 +60,34 @@ from .system import AuditLog, SystemLog, SystemSetting
 from .tenancy import Tenant, TenantSubscription, TenantSettings
 from .vendors import Vendor, VendorCommission, VendorOrder, VendorProduct, VendorReview
 from .wishlist import Wishlist, WishlistItem, WishlistShare
+from .pdv import CashRegister, CashSession, CashMovement, Sale, SaleItem
+from .erp import (
+    PurchaseRequest,
+    PurchaseRequestItem,
+    SupplierContract,
+    ProductionOrder,
+    ProductionMaterial,
+    QualityControl,
+    MaterialRequirement,
+)
+from .financial_advanced import (
+    AccountsPayable,
+    AccountsReceivable,
+    CashFlow,
+    IncomeStatement,
+    BankReconciliation,
+    Budget,
+)
+from .crm_advanced import (
+    SalesPipeline,
+    PipelineStage,
+    Deal,
+    DealActivity,
+    DealNote,
+    SalesFunnel,
+    MarketingAutomation,
+    LeadScore,
+)
 
 __all__ = [
     # Auth
@@ -147,4 +175,44 @@ __all__ = [
     "SystemSetting",
     "SystemLog",
     "AuditLog",
+    # Reviews
+    "Review",
+    "ReviewHelpful",
+    "ReviewResponse",
+    # Pricing
+    "ProductPrice",
+    # Wishlist
+    "Wishlist",
+    "WishlistItem",
+    "WishlistShare",
+    # PDV (Point of Sale)
+    "CashRegister",
+    "CashSession",
+    "CashMovement",
+    "Sale",
+    "SaleItem",
+    # ERP Advanced
+    "PurchaseRequest",
+    "PurchaseRequestItem",
+    "SupplierContract",
+    "ProductionOrder",
+    "ProductionMaterial",
+    "QualityControl",
+    "MaterialRequirement",
+    # Financial Advanced
+    "AccountsPayable",
+    "AccountsReceivable",
+    "CashFlow",
+    "IncomeStatement",
+    "BankReconciliation",
+    "Budget",
+    # CRM Advanced
+    "SalesPipeline",
+    "PipelineStage",
+    "Deal",
+    "DealActivity",
+    "DealNote",
+    "SalesFunnel",
+    "MarketingAutomation",
+    "LeadScore",
 ]
