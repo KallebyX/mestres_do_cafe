@@ -1,0 +1,107 @@
+# Configuração do Prometheus - Mestres do Café
+# Coleta de métricas de todos os serviços
+
+global:
+  scrape_interval: 15s # Coletar métricas a cada 15 segundos
+  evaluation_interval: 15s # Avaliar regras a cada 15 segundos
+  scrape_timeout: 10s
+  external_labels:
+    cluster: 'mestres-do-cafe'
+    environment: 'production'
+
+# Alertmanager configuration
+alerting:
+  alertmanagers:
+    - static_configs:
+        - targets:
+            - alertmanager:9093
+
+# Regras de alerta
+rule_files:
+  - '/etc/prometheus/rules/*.yml'
+
+# Configuração de scraping
+scrape_configs:
+  # Prometheus itself
+  - job_name: 'prometheus'
+    static_configs:
+      - targets: ['localhost:9090']
+        labels:
+          service: 'prometheus'
+
+  # Flask API Backend
+  - job_name: 'api'
+    scrape_interval: 10s
+    metrics_path: '/metrics'
+    static_configs:
+      - targets: ['api:5001']
+        labels:
+          service: 'api'
+          app: 'mestres-do-cafe'
+    # Configuração para múltiplas instâncias
+    # - targets: ['api1:5001', 'api2:5001', 'api3:5001']
+
+  # PostgreSQL Database
+  - job_name: 'postgres'
+    static_configs:
+      - targets: ['postgres-exporter:9187']
+        labels:
+          service: 'postgres'
+          database: 'mestres_do_cafe'
+
+  # Redis Cache
+  - job_name: 'redis'
+    static_configs:
+      - targets: ['redis-exporter:9121']
+        labels:
+          service: 'redis'
+          cache: 'session'
+
+  # Nginx Web Server
+  - job_name: 'nginx'
+    static_configs:
+      - targets: ['nginx-exporter:9113']
+        labels:
+          service: 'nginx'
+          proxy: 'reverse-proxy'
+
+  # Node Exporter (métricas do sistema)
+  - job_name: 'node'
+    static_configs:
+      - targets: ['node-exporter:9100']
+        labels:
+          service: 'node-exporter'
+          hostname: 'mestres-host'
+
+  # Docker Container Metrics
+  - job_name: 'cadvisor'
+    scrape_interval: 10s
+    static_configs:
+      - targets: ['cadvisor:8080']
+        labels:
+          service: 'cadvisor'
+          monitor: 'containers'
+
+  # Blackbox Exporter (health checks externos)
+  - job_name: 'blackbox'
+    metrics_path: /probe
+    params:
+      module: [http_2xx]
+    static_configs:
+      - targets:
+          - https://mestres-do-cafe.com
+          - https://mestres-do-cafe.com/api/health
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: __param_target
+      - source_labels: [__param_target]
+        target_label: instance
+      - target_label: __address__
+        replacement: blackbox-exporter:9115
+
+# Remote write (opcional - para Grafana Cloud, Thanos, etc)
+# remote_write:
+#   - url: "https://prometheus-prod-10-prod-us-central-0.grafana.net/api/prom/push"
+#     basic_auth:
+#       username: "your-username"
+#       password: "your-api-key"
