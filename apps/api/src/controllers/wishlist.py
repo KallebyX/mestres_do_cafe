@@ -1,4 +1,5 @@
 from flask import Blueprint, request, jsonify
+from flask_jwt_extended import jwt_required, get_jwt_identity
 from database import db
 from models.wishlist import Wishlist, WishlistItem
 from models.products import Product
@@ -8,11 +9,12 @@ wishlist_bp = Blueprint('wishlist', __name__)
 
 
 @wishlist_bp.route('/', methods=['GET'])
+@jwt_required()
 def get_wishlist():
     """Obter lista de favoritos do usuário"""
     try:
-        # Por enquanto, usar user_id da query string para teste
-        user_id = request.args.get('user_id')
+        # Obter user_id do token JWT
+        user_id = get_jwt_identity()
         if not user_id:
             return create_error_response('user_id é obrigatório')
 
@@ -52,9 +54,13 @@ def get_wishlist():
 
 
 @wishlist_bp.route('/add', methods=['POST'])
+@jwt_required()
 def add_to_wishlist():
     """Adicionar produto aos favoritos"""
     try:
+        # Obter user_id do token JWT
+        user_id = get_jwt_identity()
+
         data = request.get_json()
         if not data:
             return jsonify({
@@ -62,7 +68,6 @@ def add_to_wishlist():
                 'error': 'Dados JSON não fornecidos'
             }), 400
 
-        user_id = data.get('user_id')
         if not user_id:
             return jsonify({
                 'success': False,
@@ -121,10 +126,12 @@ def add_to_wishlist():
 
 
 @wishlist_bp.route('/remove/<int:product_id>', methods=['DELETE'])
+@jwt_required()
 def remove_from_wishlist(product_id):
     """Remover produto dos favoritos"""
     try:
-        user_id = request.args.get('user_id')
+        # Obter user_id do token JWT
+        user_id = get_jwt_identity()
         if not user_id:
             return jsonify({
                 'success': False,
@@ -165,9 +172,13 @@ def remove_from_wishlist(product_id):
 
 
 @wishlist_bp.route('/toggle', methods=['POST'])
+@jwt_required()
 def toggle_wishlist():
     """Toggle produto na wishlist (adicionar/remover)"""
     try:
+        # Obter user_id do token JWT
+        user_id = get_jwt_identity()
+
         data = request.get_json()
         if not data:
             return jsonify({
@@ -175,7 +186,6 @@ def toggle_wishlist():
                 'error': 'Dados JSON não fornecidos'
             }), 400
 
-        user_id = data.get('user_id')
         if not user_id:
             return jsonify({
                 'success': False,

@@ -1,4 +1,5 @@
 from flask import Blueprint, jsonify, request, current_app
+from flask_jwt_extended import jwt_required, get_jwt_identity
 from functools import wraps
 import os
 
@@ -502,13 +503,16 @@ def get_product_reviews(product_id):
     })
 
 @reviews_bp.route('/add', methods=['POST'])
+@jwt_required()
 def add_review():
-    """Adicionar nova review"""
+    """Adicionar nova review - Requer autenticação JWT"""
+    user_id = get_jwt_identity()
     data = request.get_json() or {}
 
     return jsonify({
         'success': True,
         'message': 'Review adicionada com sucesso!',
         'review_id': 999,
+        'user_id': user_id,
         'data_received': data
     })

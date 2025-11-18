@@ -17,6 +17,8 @@ from middleware.error_handler import (
     ResourceAPIError,
     ValidationAPIError,
 )
+from middleware.rate_limiting import rate_limit
+from middleware.audit_logging import audit_action, create_audit_log
 from models import User, UserSession
 from schemas.auth import (
     LoginSchema,
@@ -136,6 +138,7 @@ def debug_database():
             'error': f'Erro no debug: {str(e)}'
         }), 500
 @auth_bp.route("/login", methods=["POST"])
+@rate_limit('auth_login')
 def login():
     try:
         # Validar dados de entrada
@@ -189,6 +192,11 @@ def login():
 
         if not password_valid:
             current_app.logger.warning(f"❌ Password verification failed for user {email}")
+            # Audit log para login falhado
+            create_audit_log('auth.failed_login', details={
+                'email': email,
+                'reason': 'invalid_password'
+            }, user_id=str(user.id) if user else None, success=False)
             raise AuthenticationAPIError("Credenciais inválidas")
 
         current_app.logger.info(f"✅ Password verification successful for user {email}")
@@ -215,6 +223,12 @@ def login():
 
         db.session.add(user_session)
         db.session.commit()
+
+        # Audit log para login bem-sucedido
+        create_audit_log('auth.login', details={
+            'email': user.email,
+            'user_id': str(user.id)
+        }, user_id=str(user.id), success=True)
 
         return jsonify(
             {
@@ -243,6 +257,7 @@ def login():
 
 
 @auth_bp.route("/register", methods=["POST"])
+@rate_limit('auth_register')
 def register():
     try:
         # Validar dados de entrada

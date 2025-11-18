@@ -69,6 +69,8 @@ try:
     # from services.webhook_processor import webhook_processor  # REMOVIDO: depende de services/
     from middleware.error_handler import register_error_handlers
     from middleware.security import init_security_middleware
+    from middleware.rate_limiting import init_rate_limiting
+    from middleware.audit_logging import init_audit_logging
     from utils.cache import init_cache_warmup
     from utils.logger import setup_logger
     from utils.monitoring import init_monitoring
@@ -136,6 +138,20 @@ def create_app(config_name = None):
 
     # Inicializa middleware de segurança
     init_security_middleware(app)
+
+    # Inicializa rate limiting
+    try:
+        init_rate_limiting(app)
+        logger.info("✅ Rate limiting inicializado com sucesso")
+    except Exception as e:
+        logger.warning(f"⚠️ Rate limiting falhou: {e}")
+
+    # Inicializa audit logging
+    try:
+        init_audit_logging(app)
+        logger.info("✅ Audit logging inicializado com sucesso")
+    except Exception as e:
+        logger.warning(f"⚠️ Audit logging falhou: {e}")
 
     # Inicializa cache warming
     try:

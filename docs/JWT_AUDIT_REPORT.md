@@ -1,20 +1,20 @@
 # Relatório de Auditoria de JWT
 
-**Data da auditoria**: Tue Nov 18 17:48:21 UTC 2025
+**Data da auditoria**: Tue Nov 18 20:51:54 UTC 2025
 
 ## Sumário Executivo
 
 - **Arquivos analisados**: 34
 - **Total de endpoints**: 336
-- **Protegidos com JWT**: 286 (85.1%)
+- **Protegidos com JWT**: 292 (86.9%)
 - **Públicos (by design)**: 13
-- **Gaps de segurança**: 37
+- **Gaps de segurança**: 31
 
 ⚠️ **STATUS**: Gaps de segurança identificados - ação requerida
 
 ## Gaps de Segurança Identificados
 
-Total de 37 endpoints sem proteção JWT:
+Total de 31 endpoints sem proteção JWT:
 
 ### `get_products()`
 
@@ -118,63 +118,56 @@ Total de 37 endpoints sem proteção JWT:
 
 - **Path**: `/`
 - **Methods**: GET
-- **Arquivo**: `apps/api/src/controllers/reviews_simple.py:46`
+- **Arquivo**: `apps/api/src/controllers/reviews_simple.py:47`
 - **Ação**: Adicionar `@jwt_required()` antes do route decorator
 
 ### `test_route()`
 
 - **Path**: `/test`
 - **Methods**: GET
-- **Arquivo**: `apps/api/src/controllers/reviews_simple.py:67`
+- **Arquivo**: `apps/api/src/controllers/reviews_simple.py:68`
 - **Ação**: Adicionar `@jwt_required()` antes do route decorator
 
 ### `get_product_review_stats()`
 
 - **Path**: `/product/<product_id>/stats`
 - **Methods**: GET
-- **Arquivo**: `apps/api/src/controllers/reviews_simple.py:78`
+- **Arquivo**: `apps/api/src/controllers/reviews_simple.py:79`
 - **Ação**: Adicionar `@jwt_required()` antes do route decorator
 
 ### `get_rating_distribution()`
 
 - **Path**: `/product/<product_id>/rating-distribution`
 - **Methods**: GET
-- **Arquivo**: `apps/api/src/controllers/reviews_simple.py:123`
+- **Arquivo**: `apps/api/src/controllers/reviews_simple.py:124`
 - **Ação**: Adicionar `@jwt_required()` antes do route decorator
 
 ### `get_engagement_metrics()`
 
 - **Path**: `/product/<product_id>/engagement`
 - **Methods**: GET
-- **Arquivo**: `apps/api/src/controllers/reviews_simple.py:167`
+- **Arquivo**: `apps/api/src/controllers/reviews_simple.py:168`
 - **Ação**: Adicionar `@jwt_required()` antes do route decorator
 
 ### `get_recent_reviews()`
 
 - **Path**: `/product/<product_id>/recent`
 - **Methods**: GET
-- **Arquivo**: `apps/api/src/controllers/reviews_simple.py:207`
+- **Arquivo**: `apps/api/src/controllers/reviews_simple.py:208`
 - **Ação**: Adicionar `@jwt_required()` antes do route decorator
 
 ### `get_featured_reviews()`
 
 - **Path**: `/product/<product_id>/featured`
 - **Methods**: GET
-- **Arquivo**: `apps/api/src/controllers/reviews_simple.py:308`
+- **Arquivo**: `apps/api/src/controllers/reviews_simple.py:309`
 - **Ação**: Adicionar `@jwt_required()` antes do route decorator
 
 ### `get_product_reviews()`
 
 - **Path**: `/product/<product_id>`
 - **Methods**: GET
-- **Arquivo**: `apps/api/src/controllers/reviews_simple.py:386`
-- **Ação**: Adicionar `@jwt_required()` antes do route decorator
-
-### `add_review()`
-
-- **Path**: `/add`
-- **Methods**: POST
-- **Arquivo**: `apps/api/src/controllers/reviews_simple.py:505`
+- **Arquivo**: `apps/api/src/controllers/reviews_simple.py:387`
 - **Ação**: Adicionar `@jwt_required()` antes do route decorator
 
 ### `checkout_home()`
@@ -212,13 +205,6 @@ Total de 37 endpoints sem proteção JWT:
 - **Arquivo**: `apps/api/src/controllers/routes/mercado_pago.py:779`
 - **Ação**: Adicionar `@jwt_required()` antes do route decorator
 
-### `update_order_status()`
-
-- **Path**: `/<order_id>/status`
-- **Methods**: PUT
-- **Arquivo**: `apps/api/src/controllers/routes/orders.py:281`
-- **Ação**: Adicionar `@jwt_required()` antes do route decorator
-
 ### `shipping_home()`
 
 - **Path**: `/`
@@ -245,34 +231,6 @@ Total de 37 endpoints sem proteção JWT:
 - **Path**: `/services`
 - **Methods**: GET
 - **Arquivo**: `apps/api/src/controllers/shipping.py:214`
-- **Ação**: Adicionar `@jwt_required()` antes do route decorator
-
-### `get_wishlist()`
-
-- **Path**: `/`
-- **Methods**: GET
-- **Arquivo**: `apps/api/src/controllers/wishlist.py:11`
-- **Ação**: Adicionar `@jwt_required()` antes do route decorator
-
-### `add_to_wishlist()`
-
-- **Path**: `/add`
-- **Methods**: POST
-- **Arquivo**: `apps/api/src/controllers/wishlist.py:55`
-- **Ação**: Adicionar `@jwt_required()` antes do route decorator
-
-### `remove_from_wishlist()`
-
-- **Path**: `/remove/<int:product_id>`
-- **Methods**: DELETE
-- **Arquivo**: `apps/api/src/controllers/wishlist.py:124`
-- **Ação**: Adicionar `@jwt_required()` antes do route decorator
-
-### `toggle_wishlist()`
-
-- **Path**: `/toggle`
-- **Methods**: POST
-- **Arquivo**: `apps/api/src/controllers/wishlist.py:168`
 - **Ação**: Adicionar `@jwt_required()` antes do route decorator
 
 ## Relatório Detalhado por Arquivo
@@ -378,11 +336,11 @@ Total de 37 endpoints sem proteção JWT:
 
 | Função | Path | Métodos | JWT | Linha |
 |--------|------|---------|-----|-------|
-| `debug_database` | `/debug-database` | GET | ✅ | 88 |
-| `login` | `/login` | POST | ❌ | 139 |
-| `register` | `/register` | POST | ❌ | 246 |
-| `get_current_user` | `/me` | GET | ✅ | 362 |
-| `logout` | `/logout` | POST | ✅ | 403 |
+| `debug_database` | `/debug-database` | GET | ✅ | 90 |
+| `login` | `/login` | POST | ❌ | 142 |
+| `register` | `/register` | POST | ❌ | 261 |
+| `get_current_user` | `/me` | GET | ✅ | 377 |
+| `logout` | `/logout` | POST | ✅ | 418 |
 
 </details>
 
@@ -813,12 +771,8 @@ Total de 37 endpoints sem proteção JWT:
 ### orders.py
 
 - Total de endpoints: 6
-- Protegidos: 5
-- Gaps: 1
-
-**Endpoints sem proteção:**
-
-- `/<order_id>/status` (PUT) - linha 281
+- Protegidos: 6
+- Gaps: 0
 
 <details>
 <summary>Ver todos os endpoints</summary>
@@ -828,9 +782,9 @@ Total de 37 endpoints sem proteção JWT:
 | `get_orders` | `/` | GET | ✅ | 16 |
 | `get_order` | `/<order_id>` | GET | ✅ | 61 |
 | `create_order` | `/` | POST | ✅ | 105 |
-| `update_order_status` | `/<order_id>/status` | PUT | ❌ | 281 |
-| `orders_analytics` | `/analytics` | GET | ✅ | 312 |
-| `performance_comparison` | `/performance-comparison` | GET | ✅ | 369 |
+| `update_order_status` | `/<order_id>/status` | PUT | ✅ | 282 |
+| `orders_analytics` | `/analytics` | GET | ✅ | 325 |
+| `performance_comparison` | `/performance-comparison` | GET | ✅ | 382 |
 
 </details>
 
@@ -986,36 +940,35 @@ Total de 37 endpoints sem proteção JWT:
 ### reviews_simple.py
 
 - Total de endpoints: 10
-- Protegidos: 0
-- Gaps: 9
+- Protegidos: 1
+- Gaps: 8
 
 **Endpoints sem proteção:**
 
-- `/` (GET) - linha 46
-- `/test` (GET) - linha 67
-- `/product/<product_id>/stats` (GET) - linha 78
-- `/product/<product_id>/rating-distribution` (GET) - linha 123
-- `/product/<product_id>/engagement` (GET) - linha 167
-- `/product/<product_id>/recent` (GET) - linha 207
-- `/product/<product_id>/featured` (GET) - linha 308
-- `/product/<product_id>` (GET) - linha 386
-- `/add` (POST) - linha 505
+- `/` (GET) - linha 47
+- `/test` (GET) - linha 68
+- `/product/<product_id>/stats` (GET) - linha 79
+- `/product/<product_id>/rating-distribution` (GET) - linha 124
+- `/product/<product_id>/engagement` (GET) - linha 168
+- `/product/<product_id>/recent` (GET) - linha 208
+- `/product/<product_id>/featured` (GET) - linha 309
+- `/product/<product_id>` (GET) - linha 387
 
 <details>
 <summary>Ver todos os endpoints</summary>
 
 | Função | Path | Métodos | JWT | Linha |
 |--------|------|---------|-----|-------|
-| `get_all_reviews` | `/` | GET | ❌ | 46 |
-| `test_route` | `/test` | GET | ❌ | 67 |
-| `debug_routes` | `/debug-routes` | GET | ❌ | 73 |
-| `get_product_review_stats` | `/product/<product_id>/stats` | GET | ❌ | 78 |
-| `get_rating_distribution` | `/product/<product_id>/rating-distribution` | GET | ❌ | 123 |
-| `get_engagement_metrics` | `/product/<product_id>/engagement` | GET | ❌ | 167 |
-| `get_recent_reviews` | `/product/<product_id>/recent` | GET | ❌ | 207 |
-| `get_featured_reviews` | `/product/<product_id>/featured` | GET | ❌ | 308 |
-| `get_product_reviews` | `/product/<product_id>` | GET | ❌ | 386 |
-| `add_review` | `/add` | POST | ❌ | 505 |
+| `get_all_reviews` | `/` | GET | ❌ | 47 |
+| `test_route` | `/test` | GET | ❌ | 68 |
+| `debug_routes` | `/debug-routes` | GET | ❌ | 74 |
+| `get_product_review_stats` | `/product/<product_id>/stats` | GET | ❌ | 79 |
+| `get_rating_distribution` | `/product/<product_id>/rating-distribution` | GET | ❌ | 124 |
+| `get_engagement_metrics` | `/product/<product_id>/engagement` | GET | ❌ | 168 |
+| `get_recent_reviews` | `/product/<product_id>/recent` | GET | ❌ | 208 |
+| `get_featured_reviews` | `/product/<product_id>/featured` | GET | ❌ | 309 |
+| `get_product_reviews` | `/product/<product_id>` | GET | ❌ | 387 |
+| `add_review` | `/add` | POST | ✅ | 507 |
 
 </details>
 
@@ -1128,25 +1081,18 @@ Total de 37 endpoints sem proteção JWT:
 ### wishlist.py
 
 - Total de endpoints: 4
-- Protegidos: 0
-- Gaps: 4
-
-**Endpoints sem proteção:**
-
-- `/` (GET) - linha 11
-- `/add` (POST) - linha 55
-- `/remove/<int:product_id>` (DELETE) - linha 124
-- `/toggle` (POST) - linha 168
+- Protegidos: 4
+- Gaps: 0
 
 <details>
 <summary>Ver todos os endpoints</summary>
 
 | Função | Path | Métodos | JWT | Linha |
 |--------|------|---------|-----|-------|
-| `get_wishlist` | `/` | GET | ❌ | 11 |
-| `add_to_wishlist` | `/add` | POST | ❌ | 55 |
-| `remove_from_wishlist` | `/remove/<int:product_id>` | DELETE | ❌ | 124 |
-| `toggle_wishlist` | `/toggle` | POST | ❌ | 168 |
+| `get_wishlist` | `/` | GET | ✅ | 13 |
+| `add_to_wishlist` | `/add` | POST | ✅ | 58 |
+| `remove_from_wishlist` | `/remove/<int:product_id>` | DELETE | ✅ | 130 |
+| `toggle_wishlist` | `/toggle` | POST | ✅ | 176 |
 
 </details>
 
@@ -1154,7 +1100,7 @@ Total de 37 endpoints sem proteção JWT:
 
 ### Ações Imediatas
 
-1. **Adicionar @jwt_required()** aos 37 endpoints identificados
+1. **Adicionar @jwt_required()** aos 31 endpoints identificados
 2. **Revisar permissões** - alguns endpoints podem precisar de `@admin_required()`
 3. **Implementar rate limiting** em endpoints públicos
 4. **Adicionar logs de auditoria** em endpoints sensíveis (admin, pagamentos, etc.)

@@ -278,8 +278,21 @@ def create_order():
 
 
 @orders_bp.route("/<order_id>/status", methods=["PUT"])
+@jwt_required()
 def update_order_status(order_id):
+    """Atualizar status do pedido - Requer autenticação JWT"""
     try:
+        # Verificar se o usuário está autenticado
+        user_id = get_jwt_identity()
+        user = User.query.get(user_id)
+
+        # Apenas admin pode alterar status de pedidos
+        if not user or not user.is_admin:
+            return jsonify({
+                "error": "Acesso negado. Apenas administradores podem alterar status de pedidos.",
+                "code": "ADMIN_REQUIRED"
+            }), 403
+
         data = request.get_json()
         new_status = data.get("status")
 
