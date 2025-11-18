@@ -1,20 +1,20 @@
 # Relatório de Auditoria de JWT
 
-**Data da auditoria**: Tue Nov 18 17:42:18 UTC 2025
+**Data da auditoria**: Tue Nov 18 17:48:21 UTC 2025
 
 ## Sumário Executivo
 
 - **Arquivos analisados**: 34
 - **Total de endpoints**: 336
-- **Protegidos com JWT**: 277 (82.4%)
+- **Protegidos com JWT**: 286 (85.1%)
 - **Públicos (by design)**: 13
-- **Gaps de segurança**: 46
+- **Gaps de segurança**: 37
 
 ⚠️ **STATUS**: Gaps de segurança identificados - ação requerida
 
 ## Gaps de Segurança Identificados
 
-Total de 46 endpoints sem proteção JWT:
+Total de 37 endpoints sem proteção JWT:
 
 ### `get_products()`
 
@@ -28,27 +28,6 @@ Total de 46 endpoints sem proteção JWT:
 - **Path**: `/<int:product_id>`
 - **Methods**: GET
 - **Arquivo**: `apps/api/src/controllers/products_controller.py:180`
-- **Ação**: Adicionar `@jwt_required()` antes do route decorator
-
-### `create_product()`
-
-- **Path**: `/`
-- **Methods**: POST
-- **Arquivo**: `apps/api/src/controllers/products_controller.py:188`
-- **Ação**: Adicionar `@jwt_required()` antes do route decorator
-
-### `update_product()`
-
-- **Path**: `/<int:product_id>`
-- **Methods**: PUT
-- **Arquivo**: `apps/api/src/controllers/products_controller.py:196`
-- **Ação**: Adicionar `@jwt_required()` antes do route decorator
-
-### `delete_product()`
-
-- **Path**: `/<int:product_id>`
-- **Methods**: DELETE
-- **Arquivo**: `apps/api/src/controllers/products_controller.py:204`
 - **Ação**: Adicionar `@jwt_required()` antes do route decorator
 
 ### `search_products()`
@@ -70,48 +49,6 @@ Total de 46 endpoints sem proteção JWT:
 - **Path**: `/category/<category>`
 - **Methods**: GET
 - **Arquivo**: `apps/api/src/controllers/products_controller.py:225`
-- **Ação**: Adicionar `@jwt_required()` antes do route decorator
-
-### `get_low_stock_products()`
-
-- **Path**: `/low-stock`
-- **Methods**: GET
-- **Arquivo**: `apps/api/src/controllers/products_controller.py:233`
-- **Ação**: Adicionar `@jwt_required()` antes do route decorator
-
-### `toggle_product_status()`
-
-- **Path**: `/<int:product_id>/toggle-status`
-- **Methods**: POST
-- **Arquivo**: `apps/api/src/controllers/products_controller.py:241`
-- **Ação**: Adicionar `@jwt_required()` antes do route decorator
-
-### `update_stock()`
-
-- **Path**: `/<int:product_id>/stock`
-- **Methods**: PUT
-- **Arquivo**: `apps/api/src/controllers/products_controller.py:249`
-- **Ação**: Adicionar `@jwt_required()` antes do route decorator
-
-### `bulk_create_products()`
-
-- **Path**: `/bulk`
-- **Methods**: POST
-- **Arquivo**: `apps/api/src/controllers/products_controller.py:264`
-- **Ação**: Adicionar `@jwt_required()` antes do route decorator
-
-### `bulk_update_products()`
-
-- **Path**: `/bulk`
-- **Methods**: PUT
-- **Arquivo**: `apps/api/src/controllers/products_controller.py:275`
-- **Ação**: Adicionar `@jwt_required()` antes do route decorator
-
-### `bulk_delete_products()`
-
-- **Path**: `/bulk`
-- **Methods**: DELETE
-- **Arquivo**: `apps/api/src/controllers/products_controller.py:286`
 - **Ação**: Adicionar `@jwt_required()` antes do route decorator
 
 ### `get_all_reviews()`
@@ -971,25 +908,16 @@ Total de 46 endpoints sem proteção JWT:
 ### products_controller.py
 
 - Total de endpoints: 15
-- Protegidos: 0
-- Gaps: 14
+- Protegidos: 9
+- Gaps: 5
 
 **Endpoints sem proteção:**
 
 - `/` (GET) - linha 173
 - `/<int:product_id>` (GET) - linha 180
-- `/` (POST) - linha 188
-- `/<int:product_id>` (PUT) - linha 196
-- `/<int:product_id>` (DELETE) - linha 204
 - `/search` (GET) - linha 211
 - `/featured` (GET) - linha 218
 - `/category/<category>` (GET) - linha 225
-- `/low-stock` (GET) - linha 233
-- `/<int:product_id>/toggle-status` (POST) - linha 241
-- `/<int:product_id>/stock` (PUT) - linha 249
-- `/bulk` (POST) - linha 264
-- `/bulk` (PUT) - linha 275
-- `/bulk` (DELETE) - linha 286
 
 <details>
 <summary>Ver todos os endpoints</summary>
@@ -998,19 +926,19 @@ Total de 46 endpoints sem proteção JWT:
 |--------|------|---------|-----|-------|
 | `get_products` | `/` | GET | ❌ | 173 |
 | `get_product` | `/<int:product_id>` | GET | ❌ | 180 |
-| `create_product` | `/` | POST | ❌ | 188 |
-| `update_product` | `/<int:product_id>` | PUT | ❌ | 196 |
-| `delete_product` | `/<int:product_id>` | DELETE | ❌ | 204 |
+| `create_product` | `/` | POST | ✅ | 188 |
+| `update_product` | `/<int:product_id>` | PUT | ✅ | 196 |
+| `delete_product` | `/<int:product_id>` | DELETE | ✅ | 204 |
 | `search_products` | `/search` | GET | ❌ | 211 |
 | `get_featured_products` | `/featured` | GET | ❌ | 218 |
 | `get_products_by_category` | `/category/<category>` | GET | ❌ | 225 |
-| `get_low_stock_products` | `/low-stock` | GET | ❌ | 233 |
-| `toggle_product_status` | `/<int:product_id>/toggle-status` | POST | ❌ | 241 |
-| `update_stock` | `/<int:product_id>/stock` | PUT | ❌ | 249 |
+| `get_low_stock_products` | `/low-stock` | GET | ✅ | 233 |
+| `toggle_product_status` | `/<int:product_id>/toggle-status` | POST | ✅ | 241 |
+| `update_stock` | `/<int:product_id>/stock` | PUT | ✅ | 249 |
 | `get_product_categories` | `/categories` | GET | ❌ | 256 |
-| `bulk_create_products` | `/bulk` | POST | ❌ | 264 |
-| `bulk_update_products` | `/bulk` | PUT | ❌ | 275 |
-| `bulk_delete_products` | `/bulk` | DELETE | ❌ | 286 |
+| `bulk_create_products` | `/bulk` | POST | ✅ | 264 |
+| `bulk_update_products` | `/bulk` | PUT | ✅ | 275 |
+| `bulk_delete_products` | `/bulk` | DELETE | ✅ | 286 |
 
 </details>
 
@@ -1226,7 +1154,7 @@ Total de 46 endpoints sem proteção JWT:
 
 ### Ações Imediatas
 
-1. **Adicionar @jwt_required()** aos 46 endpoints identificados
+1. **Adicionar @jwt_required()** aos 37 endpoints identificados
 2. **Revisar permissões** - alguns endpoints podem precisar de `@admin_required()`
 3. **Implementar rate limiting** em endpoints públicos
 4. **Adicionar logs de auditoria** em endpoints sensíveis (admin, pagamentos, etc.)

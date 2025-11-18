@@ -61,8 +61,8 @@ def parse_route_file(file_path: str) -> Dict:
                 else:
                     methods = ['GET']  # Default
 
-                # Verificar se tem @jwt_required
-                has_jwt = any('@jwt_required' in d for d in decorators_stack)
+                # Verificar se tem @jwt_required ou decorators equivalentes
+                has_jwt = any('@jwt_required' in d or '@require_auth' in d or '@require_admin' in d for d in decorators_stack)
 
                 # Verificar se é debug_only
                 is_debug_only = any('@debug_only' in d for d in decorators_stack)
