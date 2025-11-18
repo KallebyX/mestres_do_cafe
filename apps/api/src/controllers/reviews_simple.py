@@ -1,6 +1,31 @@
-from flask import Blueprint, jsonify, request
+from flask import Blueprint, jsonify, request, current_app
+from functools import wraps
+import os
 
 reviews_bp = Blueprint('reviews', __name__)
+
+
+def debug_only(f):
+    """
+    Decorator que protege endpoints de debug.
+    Retorna 404 em produção para ocultar existência dos endpoints.
+    Permite apenas em development e staging.
+    """
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        env = current_app.config.get('ENV', 'production')
+        flask_env = os.environ.get('FLASK_ENV', 'production')
+
+        # Permitir apenas em development ou staging
+        if env not in ['development', 'staging'] and flask_env not in ['development', 'staging']:
+            # Retornar 404 ao invés de 403 para não revelar que o endpoint existe
+            return jsonify({
+                'error': 'Not found',
+                'message': 'The requested endpoint does not exist'
+            }), 404
+
+        return f(*args, **kwargs)
+    return decorated_function
 
 def get_product_name(product_id):
     """Helper function to get product name by ID"""
@@ -44,6 +69,7 @@ def test_route():
     return jsonify({'message': 'Rota de teste funcionando! - UPDATED', 'success': True})
 
 @reviews_bp.route('/debug-routes', methods=['GET'])
+@debug_only
 def debug_routes():
     """Debug endpoint to test if new routes work"""
     return jsonify({'message': 'New debug route working!', 'success': True})

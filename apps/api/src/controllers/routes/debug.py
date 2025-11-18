@@ -1,10 +1,36 @@
-from flask import Blueprint, jsonify
+from flask import Blueprint, jsonify, current_app
 import os
 from datetime import datetime
+from functools import wraps
 
 debug_bp = Blueprint('debug', __name__)
 
+
+def debug_only(f):
+    """
+    Decorator que protege endpoints de debug.
+    Retorna 404 em produção para ocultar existência dos endpoints.
+    Permite apenas em development e staging.
+    """
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        env = current_app.config.get('ENV', 'production')
+        flask_env = os.environ.get('FLASK_ENV', 'production')
+
+        # Permitir apenas em development ou staging
+        if env not in ['development', 'staging'] and flask_env not in ['development', 'staging']:
+            # Retornar 404 ao invés de 403 para não revelar que o endpoint existe
+            return jsonify({
+                'error': 'Not found',
+                'message': 'The requested endpoint does not exist'
+            }), 404
+
+        return f(*args, **kwargs)
+    return decorated_function
+
+
 @debug_bp.route('/env', methods=['GET'])
+@debug_only
 def debug_env():
     """Debug endpoint para verificar variáveis de ambiente"""
     try:
@@ -79,6 +105,7 @@ def get_env_recommendations(env_vars):
     return recommendations
 
 @debug_bp.route('/database', methods=['GET'])
+@debug_only
 def debug_database():
     """Debug endpoint para verificar conexão com banco"""
     try:

@@ -1,13 +1,38 @@
 import re
 import unicodedata
 import uuid
+import os
+from functools import wraps
 
-from flask import Blueprint, jsonify, request
+from flask import Blueprint, jsonify, request, current_app
 
 from database import db
 from models import Product, ProductCategory, ProductPrice
 
 products_bp = Blueprint("products", __name__)
+
+
+def debug_only(f):
+    """
+    Decorator que protege endpoints de debug.
+    Retorna 404 em produção para ocultar existência dos endpoints.
+    Permite apenas em development e staging.
+    """
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        env = current_app.config.get('ENV', 'production')
+        flask_env = os.environ.get('FLASK_ENV', 'production')
+
+        # Permitir apenas em development ou staging
+        if env not in ['development', 'staging'] and flask_env not in ['development', 'staging']:
+            # Retornar 404 ao invés de 403 para não revelar que o endpoint existe
+            return jsonify({
+                'error': 'Not found',
+                'message': 'The requested endpoint does not exist'
+            }), 404
+
+        return f(*args, **kwargs)
+    return decorated_function
 
 
 def convert_to_uuid(id_string):
@@ -255,6 +280,7 @@ def get_products():
 
 
 @products_bp.route("/debug-uuid/<product_id>", methods=["GET"])
+@debug_only
 def debug_uuid_product(product_id):
     """Endpoint de debug para testar UUID"""
     try:
@@ -283,6 +309,7 @@ def debug_uuid_product(product_id):
 
 
 @products_bp.route("/debug-search", methods=["GET"])
+@debug_only
 def debug_products():
     """Endpoint de debug para testar busca"""
     try:
