@@ -1,4 +1,5 @@
 from flask import Blueprint, jsonify, current_app
+from flask_jwt_extended import jwt_required, get_jwt_identity
 import os
 from datetime import datetime
 from functools import wraps
@@ -31,6 +32,7 @@ def debug_only(f):
 
 @debug_bp.route('/env', methods=['GET'])
 @debug_only
+@jwt_required()
 def debug_env():
     """Debug endpoint para verificar variáveis de ambiente"""
     try:
@@ -106,6 +108,7 @@ def get_env_recommendations(env_vars):
 
 @debug_bp.route('/database', methods=['GET'])
 @debug_only
+@jwt_required()
 def debug_database():
     """Debug endpoint para verificar conexão com banco"""
     try:

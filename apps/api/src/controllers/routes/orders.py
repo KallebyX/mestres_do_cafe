@@ -1,4 +1,5 @@
 from flask import Blueprint, jsonify, request
+from flask_jwt_extended import jwt_required, get_jwt_identity
 from sqlalchemy import func
 from sqlalchemy.orm import joinedload, selectinload
 
@@ -11,6 +12,7 @@ orders_bp = Blueprint("orders", __name__)
 
 
 @orders_bp.route("/", methods=["GET"])
+@jwt_required()
 def get_orders():
     try:
         user_id = request.args.get("user_id")
@@ -55,6 +57,7 @@ def get_orders():
 
 
 @orders_bp.route("/<order_id>", methods=["GET"])
+@jwt_required()
 def get_order(order_id):
     try:
         # Query otimizada com eager loading de relações
@@ -98,6 +101,7 @@ def get_order(order_id):
 
 
 @orders_bp.route("/", methods=["POST"])
+@jwt_required()
 def create_order():
     try:
         data = request.get_json()
@@ -304,6 +308,7 @@ def update_order_status(order_id):
 
 # Endpoint adicional para análise de pedidos
 @orders_bp.route("/analytics", methods=["GET"])
+@jwt_required()
 def orders_analytics():
     """Análise otimizada de pedidos sem N+1"""
     try:
@@ -360,6 +365,7 @@ def orders_analytics():
 
 # Endpoint para testar performance
 @orders_bp.route("/performance-comparison", methods=["GET"])
+@jwt_required()
 def performance_comparison():
     """Comparar performance com e sem eager loading"""
     import time

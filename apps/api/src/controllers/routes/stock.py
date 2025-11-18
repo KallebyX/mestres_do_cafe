@@ -3,6 +3,7 @@ Controlador para gerenciamento de estoque
 """
 
 from flask import Blueprint, jsonify, request
+from flask_jwt_extended import jwt_required, get_jwt_identity
 from sqlalchemy import func
 from datetime import datetime
 
@@ -14,6 +15,7 @@ stock_bp = Blueprint("stock", __name__)
 
 
 @stock_bp.route("", methods=["GET"])
+@jwt_required()
 def get_stock():
     """Listar status do estoque"""
     try:
@@ -89,6 +91,7 @@ def get_stock():
 
 
 @stock_bp.route("/<product_id>", methods=["GET"])
+@jwt_required()
 def get_product_stock(product_id):
     """Obter detalhes do estoque de um produto"""
     try:
@@ -134,6 +137,7 @@ def get_product_stock(product_id):
 
 
 @stock_bp.route("/<product_id>/adjust", methods=["POST"])
+@jwt_required()
 def adjust_stock(product_id):
     """Ajustar estoque de um produto"""
     try:
@@ -218,6 +222,7 @@ def adjust_stock(product_id):
 
 
 @stock_bp.route("/movements", methods=["GET"])
+@jwt_required()
 def get_stock_movements():
     """Listar movimentações de estoque"""
     try:
@@ -262,6 +267,7 @@ def get_stock_movements():
 
 
 @stock_bp.route("/alerts", methods=["GET"])
+@jwt_required()
 def get_stock_alerts():
     """Obter alertas de estoque"""
     try:

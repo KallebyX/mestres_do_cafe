@@ -542,6 +542,7 @@ def refund_payment():
 # ========== CHECKOUT TRANSPARENTE ENDPOINTS ========== #
 
 @mercado_pago_bp.route('/transparent/create-card-token', methods=['POST'])
+@jwt_required()
 def create_card_token():
     """
     Cria token de cartão para Checkout Transparente
@@ -581,6 +582,7 @@ def create_card_token():
 
 @mercado_pago_bp.route('/transparent/process-payment', methods=['POST'])
 @validate_mercado_pago_payment
+@jwt_required()
 def process_transparent_payment():
     """
     Processa pagamento através do Checkout Transparente
@@ -709,6 +711,7 @@ def process_transparent_payment():
 
 
 @mercado_pago_bp.route('/transparent/validate-payment', methods=['POST'])
+@jwt_required()
 def validate_payment_data():
     """
     Valida dados de pagamento antes do processamento
@@ -739,6 +742,7 @@ def validate_payment_data():
 
 
 @mercado_pago_bp.route('/transparent/installments', methods=['GET'])
+@jwt_required()
 def get_installments():
     """
     Obtém opções de parcelamento para um método de pagamento

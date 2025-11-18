@@ -1,4 +1,5 @@
 from flask import Blueprint, jsonify, request
+from flask_jwt_extended import jwt_required, get_jwt_identity
 
 from models import Order, User
 
@@ -6,6 +7,7 @@ dashboard_bp = Blueprint("dashboard", __name__)
 
 
 @dashboard_bp.route("/user/<user_id>", methods=["GET"])
+@jwt_required()
 def get_user_dashboard(user_id):
     try:
         user = User.query.get(user_id)
@@ -73,6 +75,7 @@ def get_user_dashboard(user_id):
 
 
 @dashboard_bp.route("/user/<user_id>/progress", methods=["GET"])
+@jwt_required()
 def get_user_progress(user_id):
     try:
         user = User.query.get(user_id)
@@ -124,6 +127,7 @@ def get_user_progress(user_id):
 
 
 @dashboard_bp.route("/user/<user_id>/recommendations", methods=["GET"])
+@jwt_required()
 def get_user_recommendations(user_id):
     try:
         user = User.query.get(user_id)

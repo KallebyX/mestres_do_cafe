@@ -22,6 +22,7 @@ gamification_bp = Blueprint('gamification', __name__)
 # ================ NÍVEIS ================
 
 @gamification_bp.route('/levels', methods=['GET'])
+@jwt_required()
 def get_levels():
     """Listar todos os níveis de gamificação"""
     try:
@@ -139,6 +140,7 @@ def add_points_manual():
 # ================ RECOMPENSAS ================
 
 @gamification_bp.route('/rewards', methods=['GET'])
+@jwt_required()
 def get_rewards():
     """Listar recompensas disponíveis"""
     try:
@@ -264,6 +266,7 @@ def get_my_redemptions():
 # ================ LEADERBOARD ================
 
 @gamification_bp.route('/leaderboard', methods=['GET'])
+@jwt_required()
 def get_leaderboard():
     """Ranking de usuários por pontos"""
     try:

@@ -20,6 +20,7 @@ newsletter_bp = Blueprint('newsletter', __name__)
 # ================ INSCRIÇÕES ================
 
 @newsletter_bp.route('/subscribe', methods=['POST'])
+@jwt_required()
 def subscribe():
     """Inscrever-se na newsletter (público)"""
     try:
@@ -72,6 +73,7 @@ def subscribe():
 
 
 @newsletter_bp.route('/unsubscribe', methods=['POST'])
+@jwt_required()
 def unsubscribe():
     """Cancelar inscrição"""
     try:

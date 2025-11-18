@@ -84,6 +84,7 @@ def generate_unique_username(email):
 
 @auth_bp.route("/debug-database", methods=["GET"])
 @debug_only
+@jwt_required()
 def debug_database():
     """Endpoint temporário para debug - descobrir que banco a API runtime está usando"""
     try:

@@ -1,4 +1,5 @@
 from flask import Blueprint, jsonify, request
+from flask_jwt_extended import jwt_required, get_jwt_identity
 from datetime import datetime
 import logging
 
@@ -6,6 +7,7 @@ analytics_bp = Blueprint('analytics', __name__)
 logger = logging.getLogger(__name__)
 
 @analytics_bp.route('/track', methods=['POST'])
+@jwt_required()
 def track_event():
     """Track a single analytics event"""
     try:
@@ -28,6 +30,7 @@ def track_event():
         }), 500
 
 @analytics_bp.route('/track/batch', methods=['POST'])
+@jwt_required()
 def track_batch_events():
     """Track multiple analytics events"""
     try:

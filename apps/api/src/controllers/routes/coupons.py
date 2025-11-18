@@ -1,6 +1,7 @@
 from datetime import datetime
 
 from flask import Blueprint, jsonify, request
+from flask_jwt_extended import jwt_required, get_jwt_identity
 
 from database import db
 from models.coupons import Coupon, CouponUsage
@@ -9,6 +10,7 @@ coupons_bp = Blueprint("coupons", __name__, url_prefix="/api/coupons")
 
 
 @coupons_bp.route("/", methods=["GET"])
+@jwt_required()
 def get_coupons():
     """Lista todos os cupons"""
     try:
@@ -46,6 +48,7 @@ def get_coupons():
 
 
 @coupons_bp.route("/", methods=["POST"])
+@jwt_required()
 def create_coupon():
     """Cria um novo cupom"""
     try:
@@ -98,6 +101,7 @@ def create_coupon():
 
 
 @coupons_bp.route("/<coupon_id>", methods=["GET"])
+@jwt_required()
 def get_coupon(coupon_id):
     """Obtém detalhes de um cupom"""
     try:
@@ -112,6 +116,7 @@ def get_coupon(coupon_id):
 
 
 @coupons_bp.route("/<coupon_id>", methods=["PUT"])
+@jwt_required()
 def update_coupon(coupon_id):
     """Atualiza um cupom"""
     try:
@@ -164,6 +169,7 @@ def update_coupon(coupon_id):
 
 
 @coupons_bp.route("/validate/<code>", methods=["POST"])
+@jwt_required()
 def validate_coupon(code):
     """Valida um cupom para uso"""
     try:
@@ -236,6 +242,7 @@ def validate_coupon(code):
 
 
 @coupons_bp.route("/apply", methods=["POST"])
+@jwt_required()
 def apply_coupon():
     """Aplica um cupom a um pedido"""
     try:
@@ -288,6 +295,7 @@ def apply_coupon():
 
 
 @coupons_bp.route("/analytics", methods=["GET"])
+@jwt_required()
 def get_coupons_analytics():
     """Estatísticas dos cupons"""
     try:
@@ -338,6 +346,7 @@ def get_coupons_analytics():
 
 
 @coupons_bp.route("/<coupon_id>/usage", methods=["GET"])
+@jwt_required()
 def get_coupon_usage(coupon_id):
     """Lista uso de um cupom específico"""
     try:

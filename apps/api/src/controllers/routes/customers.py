@@ -1,4 +1,5 @@
 from flask import Blueprint, request, jsonify
+from flask_jwt_extended import jwt_required, get_jwt_identity
 from models.customers import Customer, CustomerAddress
 from database import db
 from datetime import datetime
@@ -21,6 +22,7 @@ def convert_to_uuid(id_string):
 # ===========================================
 
 @customers_bp.route('/types', methods=['GET'])
+@jwt_required()
 def get_customer_types():
     """Lista tipos de cliente (PF/CNPJ)"""
     try:
@@ -50,6 +52,7 @@ def get_customer_types():
 # ===========================================
 
 @customers_bp.route('/', methods=['GET'])
+@jwt_required()
 def get_customers():
     """Lista todos os clientes com informações expandidas"""
     try:
@@ -91,6 +94,7 @@ def get_customers():
 
 
 @customers_bp.route('/', methods=['POST'])
+@jwt_required()
 def create_customer():
     """Cria um novo cliente com suporte a PF/CNPJ"""
     try:
@@ -161,6 +165,7 @@ def create_customer():
 
 
 @customers_bp.route('/<customer_id>', methods=['GET'])
+@jwt_required()
 def get_customer(customer_id):
     """Obtém detalhes completos de um cliente"""
     try:
@@ -230,6 +235,7 @@ def get_customer(customer_id):
 
 
 @customers_bp.route('/<customer_id>', methods=['PUT'])
+@jwt_required()
 def update_customer(customer_id):
     """Atualiza dados de um cliente"""
     try:
@@ -293,6 +299,7 @@ def update_customer(customer_id):
 # ===========================================
 
 @customers_bp.route('/<customer_id>/addresses', methods=['GET'])
+@jwt_required()
 def get_customer_addresses(customer_id):
     """Lista endereços de um cliente"""
     try:
@@ -319,6 +326,7 @@ def get_customer_addresses(customer_id):
 
 
 @customers_bp.route('/<customer_id>/addresses', methods=['POST'])
+@jwt_required()
 def add_customer_address(customer_id):
     """Adiciona endereço a um cliente"""
     try:
@@ -373,6 +381,7 @@ def add_customer_address(customer_id):
 # ===========================================
 
 @customers_bp.route('/analytics/overview', methods=['GET'])
+@jwt_required()
 def get_customers_analytics():
     """Obtém estatísticas gerais dos clientes"""
     try:
