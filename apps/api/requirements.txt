@@ -49,3 +49,5 @@ psutil==5.9.5
 # Development/Testing (opcional)
 pytest==7.4.2
 pytest-flask==1.2.0
+pytest-cov==4.1.0
+pytest-mock==3.12.0

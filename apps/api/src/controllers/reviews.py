@@ -24,6 +24,100 @@ def get_reviews_raw():
 
 reviews_bp = Blueprint('reviews', __name__)
 
+
+def check_admin_permission(user_id: str) -> tuple[bool, dict]:
+    """
+    Verificar se usuário tem permissão de administrador
+
+    Returns:
+        tuple: (has_permission: bool, error_response: dict or None)
+    """
+    try:
+        user = User.query.get(user_id)
+
+        if not user:
+            return False, {
+                'success': False,
+                'error': 'Usuário não encontrado'
+            }
+
+        # Verificar se é admin
+        if hasattr(user, 'is_admin') and user.is_admin:
+            return True, None
+
+        # Verificar role (se existir)
+        if hasattr(user, 'role') and user.role in ['admin', 'moderator', 'manager']:
+            return True, None
+
+        # Verificar lista de permissões (se existir)
+        if hasattr(user, 'permissions'):
+            required_permissions = ['manage_reviews', 'moderate_content', 'admin_access']
+            user_permissions = user.permissions if isinstance(user.permissions, list) else []
+
+            if any(perm in user_permissions for perm in required_permissions):
+                return True, None
+
+        return False, {
+            'success': False,
+            'error': 'Acesso negado. Apenas administradores podem realizar esta ação.',
+            'code': 'INSUFFICIENT_PERMISSIONS'
+        }
+
+    except Exception as e:
+        return False, {
+            'success': False,
+            'error': f'Erro ao verificar permissões: {str(e)}'
+        }
+
+
+def check_company_permission(user_id: str) -> tuple[bool, dict]:
+    """
+    Verificar se usuário tem permissão de empresa (pode responder reviews)
+
+    Returns:
+        tuple: (has_permission: bool, error_response: dict or None)
+    """
+    try:
+        user = User.query.get(user_id)
+
+        if not user:
+            return False, {
+                'success': False,
+                'error': 'Usuário não encontrado'
+            }
+
+        # Admins sempre podem responder
+        if hasattr(user, 'is_admin') and user.is_admin:
+            return True, None
+
+        # Verificar se é representante da empresa
+        if hasattr(user, 'is_company_rep') and user.is_company_rep:
+            return True, None
+
+        # Verificar role
+        if hasattr(user, 'role') and user.role in ['admin', 'manager', 'support', 'company_rep']:
+            return True, None
+
+        # Verificar permissões específicas
+        if hasattr(user, 'permissions'):
+            allowed_permissions = ['respond_reviews', 'manage_reviews', 'admin_access']
+            user_permissions = user.permissions if isinstance(user.permissions, list) else []
+
+            if any(perm in user_permissions for perm in allowed_permissions):
+                return True, None
+
+        return False, {
+            'success': False,
+            'error': 'Acesso negado. Apenas representantes da empresa podem responder avaliações.',
+            'code': 'COMPANY_ACCESS_REQUIRED'
+        }
+
+    except Exception as e:
+        return False, {
+            'success': False,
+            'error': f'Erro ao verificar permissões: {str(e)}'
+        }
+
 @reviews_bp.route('/', methods=['GET'])
 def get_all_reviews():
     """Obter todas as reviews"""
@@ -479,8 +573,10 @@ def add_company_response(review_id):
         user_id = get_jwt_identity()
         data = request.get_json()
 
-        # TODO: Verificar se usuário tem permissão de empresa/admin
-        # Por enquanto, qualquer usuário logado pode responder
+        # Verificar permissões de empresa/admin
+        has_permission, error_response = check_company_permission(user_id)
+        if not has_permission:
+            return jsonify(error_response), 403
 
         # Verificar se review existe
         review = Review.query.get_or_404(review_id)
@@ -639,8 +735,10 @@ def moderate_review(review_id):
         user_id = get_jwt_identity()
         data = request.get_json()
 
-        # TODO: Verificar se usuário tem permissão de moderador/admin
-        # Por enquanto, qualquer usuário logado pode moderar
+        # Verificar permissões de moderador/admin
+        has_permission, error_response = check_admin_permission(user_id)
+        if not has_permission:
+            return jsonify(error_response), 403
 
         # Verificar se review existe
         review = Review.query.get_or_404(review_id)

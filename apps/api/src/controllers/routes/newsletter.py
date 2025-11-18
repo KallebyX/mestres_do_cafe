@@ -58,7 +58,9 @@ def subscribe():
         db.session.add(subscriber)
         db.session.commit()
 
-        # TODO: Enviar email de verificação
+        # Enviar email de verificação
+        _send_verification_email(subscriber.email, token)
+
         return jsonify({
             'success': True,
             'message': 'Inscrição realizada! Verifique seu email.',
@@ -257,7 +259,8 @@ def send_campaign(campaign_id):
 
         db.session.commit()
 
-        # TODO: Implementar envio real (background job)
+        # Enviar campanha em background
+        _send_campaign_async(campaign.id)
 
         return jsonify({
             'success': True,
@@ -298,3 +301,200 @@ def get_campaign_stats(campaign_id):
         }), 200
     except Exception as e:
         return jsonify({'success': False, 'error': str(e)}), 500
+
+
+# ================ FUNÇÕES AUXILIARES ================
+
+def _send_verification_email(email: str, token: str):
+    """Enviar email de verificação para novo inscrito"""
+    try:
+        from services.notification_service import NotificationService
+
+        notification_service = NotificationService()
+
+        # Construir link de verificação
+        verification_link = f"{request.host_url}api/newsletter/verify?token={token}"
+
+        # Template do email
+        subject = "Confirme sua inscrição - Mestres do Café"
+        html_body = f"""
+        <html>
+        <body style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+            <div style="background-color: #FF6B35; padding: 20px; text-align: center;">
+                <h1 style="color: white; margin: 0;">☕ Mestres do Café</h1>
+            </div>
+
+            <div style="padding: 30px; background-color: #f9f9f9;">
+                <h2 style="color: #333;">Confirme sua inscrição</h2>
+
+                <p style="color: #666; line-height: 1.6;">
+                    Olá! Obrigado por se inscrever na nossa newsletter.
+                </p>
+
+                <p style="color: #666; line-height: 1.6;">
+                    Para confirmar sua inscrição e começar a receber nossas novidades,
+                    promoções exclusivas e dicas sobre café, clique no botão abaixo:
+                </p>
+
+                <div style="text-align: center; margin: 30px 0;">
+                    <a href="{verification_link}"
+                       style="background-color: #FF6B35; color: white; padding: 15px 40px;
+                              text-decoration: none; border-radius: 5px; display: inline-block;
+                              font-weight: bold;">
+                        Confirmar Inscrição
+                    </a>
+                </div>
+
+                <p style="color: #999; font-size: 12px;">
+                    Se você não se inscreveu, ignore este email.
+                </p>
+
+                <p style="color: #999; font-size: 12px;">
+                    Ou copie e cole este link no navegador:<br>
+                    <a href="{verification_link}" style="color: #FF6B35;">{verification_link}</a>
+                </p>
+            </div>
+
+            <div style="background-color: #333; color: white; padding: 20px; text-align: center; font-size: 12px;">
+                <p>© 2025 Mestres do Café. Todos os direitos reservados.</p>
+            </div>
+        </body>
+        </html>
+        """
+
+        plain_body = f"""
+        Confirme sua inscrição - Mestres do Café
+
+        Olá! Obrigado por se inscrever na nossa newsletter.
+
+        Para confirmar sua inscrição, acesse o link abaixo:
+        {verification_link}
+
+        Se você não se inscreveu, ignore este email.
+
+        ---
+        © 2025 Mestres do Café
+        """
+
+        # Enviar via notification service
+        success = notification_service.email_provider.send_email(
+            to_email=email,
+            subject=subject,
+            html_body=html_body,
+            plain_body=plain_body
+        )
+
+        if success:
+            logger.info(f"Email de verificação enviado para {email}")
+        else:
+            logger.warning(f"Falha ao enviar email de verificação para {email}")
+
+        return success
+
+    except Exception as e:
+        logger.error(f"Erro ao enviar email de verificação: {str(e)}")
+        return False
+
+
+def _send_campaign_async(campaign_id: str):
+    """
+    Enviar campanha de newsletter em background
+
+    Em produção, usar Celery/RQ para processar de forma assíncrona.
+    Por enquanto, processa de forma síncrona com controle de rate.
+    """
+    try:
+        import threading
+        from time import sleep
+
+        def send_campaign_worker():
+            """Worker para enviar campanha"""
+            try:
+                from services.notification_service import NotificationService
+                from flask import current_app
+
+                # Precisamos de app context para queries do banco
+                with current_app.app_context():
+                    campaign = NewsletterCampaign.query.get(campaign_id)
+                    if not campaign:
+                        logger.error(f"Campanha {campaign_id} não encontrada")
+                        return
+
+                    # Buscar assinantes ativos
+                    subscribers = NewsletterSubscriber.query.filter_by(status='active').all()
+
+                    if not subscribers:
+                        campaign.status = 'sent'
+                        campaign.total_sent = 0
+                        db.session.commit()
+                        return
+
+                    notification_service = NotificationService()
+
+                    sent_count = 0
+                    failed_count = 0
+
+                    # Enviar para cada assinante (com rate limiting)
+                    for subscriber in subscribers:
+                        try:
+                            # Renderizar template com dados do assinante
+                            html_body = campaign.html_content
+                            plain_body = campaign.plain_content or "Versão sem HTML não disponível"
+
+                            # Personalizar com nome do assinante se disponível
+                            if subscriber.first_name:
+                                html_body = html_body.replace('{{name}}', subscriber.first_name)
+                                plain_body = plain_body.replace('{{name}}', subscriber.first_name)
+                            else:
+                                html_body = html_body.replace('{{name}}', 'Cliente')
+                                plain_body = plain_body.replace('{{name}}', 'Cliente')
+
+                            # Adicionar link de unsubscribe
+                            unsubscribe_link = f"{request.host_url}api/newsletter/unsubscribe?email={subscriber.email}"
+                            html_body = html_body.replace('{{unsubscribe_link}}', unsubscribe_link)
+                            plain_body += f"\n\nPara cancelar sua inscrição: {unsubscribe_link}"
+
+                            # Enviar email
+                            success = notification_service.email_provider.send_email(
+                                to_email=subscriber.email,
+                                subject=campaign.subject,
+                                html_body=html_body,
+                                plain_body=plain_body
+                            )
+
+                            if success:
+                                sent_count += 1
+                            else:
+                                failed_count += 1
+
+                            # Rate limiting: 10 emails/segundo
+                            sleep(0.1)
+
+                        except Exception as e:
+                            logger.error(f"Erro ao enviar para {subscriber.email}: {str(e)}")
+                            failed_count += 1
+
+                    # Atualizar campanha
+                    campaign.status = 'sent'
+                    campaign.total_sent = sent_count
+                    campaign.total_failed = failed_count
+                    db.session.commit()
+
+                    logger.info(f"Campanha {campaign_id} enviada: {sent_count} sucesso, {failed_count} falhas")
+
+            except Exception as e:
+                logger.error(f"Erro no worker de campanha {campaign_id}: {str(e)}")
+
+        # Iniciar worker em thread separada
+        thread = threading.Thread(target=send_campaign_worker, daemon=True)
+        thread.start()
+
+        logger.info(f"Worker de campanha {campaign_id} iniciado")
+
+    except Exception as e:
+        logger.error(f"Erro ao iniciar envio de campanha {campaign_id}: {str(e)}")
+
+
+# Importar logger
+import logging
+logger = logging.getLogger(__name__)
