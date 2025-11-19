@@ -2,6 +2,7 @@
 Products controller using base controller to eliminate duplication
 """
 from flask import Blueprint, request
+from flask_jwt_extended import jwt_required
 from controllers.base import BaseController, require_auth, require_admin, handle_exceptions
 from models.products import Product
 from database import db
@@ -169,6 +170,7 @@ products_controller = ProductsController()
 
 # Routes
 @products_bp.route('/', methods=['GET'])
+@jwt_required()
 @handle_exceptions
 def get_products():
     """Get all products with filtering and pagination"""
@@ -176,6 +178,7 @@ def get_products():
 
 
 @products_bp.route('/<int:product_id>', methods=['GET'])
+@jwt_required()
 @handle_exceptions
 def get_product(product_id):
     """Get single product by ID"""
@@ -207,6 +210,7 @@ def delete_product(product_id):
 
 
 @products_bp.route('/search', methods=['GET'])
+@jwt_required()
 @handle_exceptions
 def search_products():
     """Search products"""
@@ -214,6 +218,7 @@ def search_products():
 
 
 @products_bp.route('/featured', methods=['GET'])
+@jwt_required()
 @handle_exceptions
 def get_featured_products():
     """Get featured products"""
@@ -221,6 +226,7 @@ def get_featured_products():
 
 
 @products_bp.route('/category/<category>', methods=['GET'])
+@jwt_required()
 @handle_exceptions
 def get_products_by_category(category):
     """Get products by category"""
@@ -252,6 +258,7 @@ def update_stock(product_id):
 
 
 @products_bp.route('/categories', methods=['GET'])
+@jwt_required()
 @handle_exceptions
 def get_product_categories():
     """Get all product categories"""

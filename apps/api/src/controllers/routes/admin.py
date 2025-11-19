@@ -3,8 +3,10 @@ Controlador para funcionalidades administrativas
 """
 
 from datetime import datetime, timedelta
+from functools import wraps
 
 from flask import Blueprint, jsonify, request
+from flask_jwt_extended import jwt_required, get_jwt_identity
 from sqlalchemy import func
 
 from database import db
@@ -14,7 +16,42 @@ from utils.logger import logger
 admin_bp = Blueprint("admin", __name__)
 
 
+def admin_required():
+    """
+    Decorator que verifica se o usuário é admin.
+    Deve ser usado APÓS @jwt_required()
+    """
+    def wrapper(fn):
+        @wraps(fn)
+        def decorator(*args, **kwargs):
+            user_id = get_jwt_identity()
+            user = User.query.get(user_id)
+
+            if not user:
+                logger.warning(f"Admin access attempt by non-existent user: {user_id}")
+                return jsonify({
+                    'success': False,
+                    'error': 'Usuário não encontrado'
+                }), 404
+
+            if not user.is_admin:
+                logger.warning(f"Admin access denied for user: {user.email} (ID: {user_id})")
+                return jsonify({
+                    'success': False,
+                    'error': 'Acesso negado. Apenas administradores podem acessar este recurso.',
+                    'code': 'INSUFFICIENT_PERMISSIONS'
+                }), 403
+
+            logger.info(f"Admin access granted for user: {user.email} (ID: {user_id}) - Endpoint: {request.endpoint}")
+            return fn(*args, **kwargs)
+
+        return decorator
+    return wrapper
+
+
 @admin_bp.route("/dashboard", methods=["GET"])
+@jwt_required()
+@admin_required()
 def get_dashboard():
     """Dashboard administrativo com métricas principais"""
     try:
@@ -192,6 +229,8 @@ def get_dashboard():
 
 
 @admin_bp.route("/orders", methods=["GET"])
+@jwt_required()
+@admin_required()
 def get_orders():
     """Listar pedidos para administração"""
     try:
@@ -231,6 +270,8 @@ def get_orders():
 
 
 @admin_bp.route("/orders", methods=["POST"])
+@jwt_required()
+@admin_required()
 def create_admin_order():
     """Criar novo pedido via admin"""
     try:
@@ -328,6 +369,8 @@ def create_admin_order():
 
 
 @admin_bp.route("/orders/<order_id>", methods=["PUT"])
+@jwt_required()
+@admin_required()
 def update_admin_order(order_id):
     """Atualizar pedido via admin"""
     try:
@@ -437,6 +480,8 @@ def update_admin_order(order_id):
 
 
 @admin_bp.route("/orders/<order_id>", methods=["DELETE"])
+@jwt_required()
+@admin_required()
 def delete_admin_order(order_id):
     """Deletar pedido via admin (cancelar)"""
     try:
@@ -474,6 +519,8 @@ def delete_admin_order(order_id):
 
 
 @admin_bp.route("/orders/<order_id>/update-status", methods=["POST"])
+@jwt_required()
+@admin_required()
 def update_order_status(order_id):
     """Atualizar status do pedido"""
     try:
@@ -538,6 +585,8 @@ def update_order_status(order_id):
 
 
 @admin_bp.route("/stats", methods=["GET"])
+@jwt_required()
+@admin_required()
 def get_admin_stats():
     """Estatísticas administrativas principais"""
     try:
@@ -596,6 +645,8 @@ def get_admin_stats():
 
 
 @admin_bp.route("/users", methods=["GET"])
+@jwt_required()
+@admin_required()
 def get_admin_users():
     """Listar usuários para administração"""
     try:
@@ -639,6 +690,8 @@ def get_admin_users():
 
 
 @admin_bp.route("/users", methods=["POST"])
+@jwt_required()
+@admin_required()
 def create_admin_user():
     """Criar novo usuário via admin"""
     try:
@@ -741,6 +794,8 @@ def create_admin_user():
 
 
 @admin_bp.route("/users/<user_id>", methods=["PUT"])
+@jwt_required()
+@admin_required()
 def update_admin_user(user_id):
     """Atualizar usuário via admin"""
     try:
@@ -839,6 +894,8 @@ def update_admin_user(user_id):
 
 
 @admin_bp.route("/users/<user_id>", methods=["DELETE"])
+@jwt_required()
+@admin_required()
 def delete_admin_user(user_id):
     """Deletar usuário via admin (soft delete)"""
     try:
@@ -872,6 +929,8 @@ def delete_admin_user(user_id):
 
 
 @admin_bp.route("/users/<user_id>/toggle-status", methods=["POST"])
+@jwt_required()
+@admin_required()
 def toggle_user_status(user_id):
     """Alternar status ativo/inativo do usuário"""
     try:
@@ -940,6 +999,8 @@ def toggle_user_status(user_id):
 
 
 @admin_bp.route("/products", methods=["GET"])
+@jwt_required()
+@admin_required()
 def get_admin_products():
     """Listar TODOS os produtos para administração (incluindo marketplace)"""
     try:
@@ -998,6 +1059,8 @@ def get_admin_products():
 
 
 @admin_bp.route("/products", methods=["POST"])
+@jwt_required()
+@admin_required()
 def create_admin_product():
     """Criar novo produto via admin"""
     try:
@@ -1163,6 +1226,8 @@ def create_admin_product():
 
 
 @admin_bp.route("/products/<product_id>", methods=["PUT"])
+@jwt_required()
+@admin_required()
 def update_admin_product(product_id):
     """Atualizar produto via admin"""
     try:
@@ -1312,6 +1377,8 @@ def update_admin_product(product_id):
 
 
 @admin_bp.route("/products/<product_id>", methods=["DELETE"])
+@jwt_required()
+@admin_required()
 def delete_admin_product(product_id):
     """Deletar produto via admin (soft delete)"""
     try:
@@ -1345,6 +1412,8 @@ def delete_admin_product(product_id):
 
 
 @admin_bp.route("/products/<product_id>/toggle-status", methods=["POST"])
+@jwt_required()
+@admin_required()
 def toggle_product_status(product_id):
     """Alternar status ativo/inativo do produto"""
     try:
@@ -1410,6 +1479,8 @@ def toggle_product_status(product_id):
 
 
 @admin_bp.route("/blog/posts", methods=["GET"])
+@jwt_required()
+@admin_required()
 def get_admin_blog_posts():
     """Listar posts do blog para administração"""
     try:
@@ -1475,6 +1546,8 @@ def get_admin_blog_posts():
 
 
 @admin_bp.route("/blog/posts", methods=["POST"])
+@jwt_required()
+@admin_required()
 def create_admin_blog_post():
     """Criar novo post do blog via admin"""
     try:
@@ -1569,6 +1642,8 @@ def create_admin_blog_post():
 
 
 @admin_bp.route("/blog/posts/<post_id>", methods=["PUT"])
+@jwt_required()
+@admin_required()
 def update_admin_blog_post(post_id):
     """Atualizar post do blog via admin"""
     try:
@@ -1660,6 +1735,8 @@ def update_admin_blog_post(post_id):
 
 
 @admin_bp.route("/blog/posts/<post_id>", methods=["DELETE"])
+@jwt_required()
+@admin_required()
 def delete_admin_blog_post(post_id):
     """Deletar post do blog via admin"""
     try:
@@ -1688,6 +1765,8 @@ def delete_admin_blog_post(post_id):
 
 
 @admin_bp.route("/blog/posts/<post_id>/toggle-status", methods=["POST"])
+@jwt_required()
+@admin_required()
 def toggle_blog_post_status(post_id):
     """Alternar status publicado/rascunho do post"""
     try:
@@ -1722,6 +1801,8 @@ def toggle_blog_post_status(post_id):
 
 
 @admin_bp.route("/analytics/top-products-revenue", methods=["GET"])
+@jwt_required()
+@admin_required()
 def get_top_products_revenue():
     """Analytics de produtos com maior receita"""
     try:
@@ -1786,6 +1867,8 @@ def get_top_products_revenue():
 
 
 @admin_bp.route("/summary", methods=["GET"])
+@jwt_required()
+@admin_required()
 def get_admin_summary():
     """Resumo administrativo geral"""
     try:
@@ -1834,6 +1917,8 @@ def get_admin_summary():
 
 
 @admin_bp.route("/customers", methods=["GET"])
+@jwt_required()
+@admin_required()
 def get_customers():
     """Listar clientes para administração"""
     try:
@@ -1867,6 +1952,8 @@ def get_customers():
 
 
 @admin_bp.route("/leads", methods=["GET"])
+@jwt_required()
+@admin_required()
 def get_leads():
     """Listar leads para administração"""
     try:
@@ -1911,6 +1998,8 @@ def get_leads():
 
 
 @admin_bp.route("/blog/categories", methods=["GET"])
+@jwt_required()
+@admin_required()
 def get_blog_categories():
     """Obter todas as categorias do blog para admin"""
     try:
@@ -1938,6 +2027,8 @@ def get_blog_categories():
 
 
 @admin_bp.route("/blog/categories", methods=["POST"])
+@jwt_required()
+@admin_required()
 def create_blog_category():
     """Criar nova categoria do blog"""
     try:
@@ -1992,6 +2083,8 @@ def create_blog_category():
 
 
 @admin_bp.route("/blog/categories/<category_id>", methods=["PUT"])
+@jwt_required()
+@admin_required()
 def update_blog_category(category_id):
     """Atualizar categoria do blog"""
     try:
@@ -2053,6 +2146,8 @@ def update_blog_category(category_id):
 
 
 @admin_bp.route("/blog/categories/<category_id>", methods=["DELETE"])
+@jwt_required()
+@admin_required()
 def delete_blog_category(category_id):
     """Deletar categoria do blog"""
     try:
@@ -2094,6 +2189,8 @@ def delete_blog_category(category_id):
 
 
 @admin_bp.route("/dashboard/sales", methods=["GET"])
+@jwt_required()
+@admin_required()
 def get_dashboard_sales():
     """Dashboard específico de vendas"""
     try:
@@ -2142,6 +2239,8 @@ def get_dashboard_sales():
 
 
 @admin_bp.route("/dashboard/products", methods=["GET"])
+@jwt_required()
+@admin_required()
 def get_dashboard_products():
     """Dashboard específico de produtos"""
     try:
@@ -2173,6 +2272,8 @@ def get_dashboard_products():
 
 
 @admin_bp.route("/dashboard/customers", methods=["GET"])
+@jwt_required()
+@admin_required()
 def get_dashboard_customers():
     """Dashboard específico de clientes"""
     try:
@@ -2198,6 +2299,8 @@ def get_dashboard_customers():
 
 
 @admin_bp.route("/dashboard/financial", methods=["GET"])
+@jwt_required()
+@admin_required()
 def get_dashboard_financial():
     """Dashboard específico financeiro"""
     try:
@@ -2228,6 +2331,8 @@ def get_dashboard_financial():
 
 
 @admin_bp.route("/analytics", methods=["GET"])
+@jwt_required()
+@admin_required()
 def get_admin_analytics():
     """Analytics gerais administrativos"""
     try:
@@ -2355,6 +2460,8 @@ def get_admin_analytics():
 
 
 @admin_bp.route("/analytics/blog", methods=["GET"])
+@jwt_required()
+@admin_required()
 def get_blog_analytics():
     """Analytics do blog"""
     try:
@@ -2432,6 +2539,8 @@ def get_blog_analytics():
 
 
 @admin_bp.route("/analytics/sales", methods=["GET"])
+@jwt_required()
+@admin_required()
 def get_sales_analytics():
     """Analytics de vendas"""
     try:
@@ -2512,6 +2621,8 @@ def get_sales_analytics():
 
 
 @admin_bp.route("/analytics/products", methods=["GET"])
+@jwt_required()
+@admin_required()
 def get_products_analytics():
     """Analytics de produtos"""
     try:
@@ -2581,6 +2692,8 @@ def get_products_analytics():
 
 
 @admin_bp.route("/analytics/customers", methods=["GET"])
+@jwt_required()
+@admin_required()
 def get_customers_analytics():
     """Analytics de clientes"""
     try:
@@ -2658,6 +2771,8 @@ def get_customers_analytics():
 
 
 @admin_bp.route("/orders/<order_id>/documents", methods=["GET"])
+@jwt_required()
+@admin_required()
 def get_order_documents(order_id):
     """Obtém documentos de um pedido"""
     try:

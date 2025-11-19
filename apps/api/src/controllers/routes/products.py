@@ -1,13 +1,39 @@
 import re
 import unicodedata
 import uuid
+import os
+from functools import wraps
 
-from flask import Blueprint, jsonify, request
+from flask import Blueprint, jsonify, request, current_app
+from flask_jwt_extended import jwt_required, get_jwt_identity
 
 from database import db
 from models import Product, ProductCategory, ProductPrice
 
 products_bp = Blueprint("products", __name__)
+
+
+def debug_only(f):
+    """
+    Decorator que protege endpoints de debug.
+    Retorna 404 em produção para ocultar existência dos endpoints.
+    Permite apenas em development e staging.
+    """
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        env = current_app.config.get('ENV', 'production')
+        flask_env = os.environ.get('FLASK_ENV', 'production')
+
+        # Permitir apenas em development ou staging
+        if env not in ['development', 'staging'] and flask_env not in ['development', 'staging']:
+            # Retornar 404 ao invés de 403 para não revelar que o endpoint existe
+            return jsonify({
+                'error': 'Not found',
+                'message': 'The requested endpoint does not exist'
+            }), 404
+
+        return f(*args, **kwargs)
+    return decorated_function
 
 
 def convert_to_uuid(id_string):
@@ -69,6 +95,7 @@ def generate_search_variations(text):
 
 
 @products_bp.route("/", methods=["GET"])
+@jwt_required()
 def get_products():
     try:
         page = request.args.get("page", 1, type = int)
@@ -255,6 +282,8 @@ def get_products():
 
 
 @products_bp.route("/debug-uuid/<product_id>", methods=["GET"])
+@debug_only
+@jwt_required()
 def debug_uuid_product(product_id):
     """Endpoint de debug para testar UUID"""
     try:
@@ -283,6 +312,8 @@ def debug_uuid_product(product_id):
 
 
 @products_bp.route("/debug-search", methods=["GET"])
+@debug_only
+@jwt_required()
 def debug_products():
     """Endpoint de debug para testar busca"""
     try:
@@ -331,6 +362,7 @@ def debug_products():
 
 
 @products_bp.route("/by-id/<product_id>", methods=["GET"])
+@jwt_required()
 def get_product_by_id(product_id):
     """Endpoint alternativo para buscar produto por ID"""
     try:
@@ -416,6 +448,7 @@ def get_product_by_id(product_id):
 
 
 @products_bp.route("/<product_id>", methods=["GET"])
+@jwt_required()
 def get_product(product_id):
     try:
         product_uuid = convert_to_uuid(product_id)
@@ -500,6 +533,7 @@ def get_product(product_id):
 
 
 @products_bp.route("/categories", methods=["GET"])
+@jwt_required()
 def get_categories():
     try:
         categories = ProductCategory.query.filter_by(is_active = True).all()
@@ -523,6 +557,7 @@ def get_categories():
 
 
 @products_bp.route("/featured", methods=["GET"])
+@jwt_required()
 def get_featured_products():
     try:
         # Produtos em destaque (com maior pontuação SCA)
@@ -564,6 +599,7 @@ def get_featured_products():
 
 
 @products_bp.route("/search", methods=["GET"])
+@jwt_required()
 def search_products():
     try:
         query = request.args.get("q", "")

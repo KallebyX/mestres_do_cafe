@@ -1,0 +1,208 @@
+# Regras de Alerta - Mestres do Café
+# Alertas para problemas críticos e degradação de performance
+
+groups:
+  - name: api_alerts
+    interval: 30s
+    rules:
+      # API está down
+      - alert: APIDown
+        expr: up{job="api"} == 0
+        for: 1m
+        labels:
+          severity: critical
+          team: backend
+        annotations:
+          summary: "API está offline"
+          description: "A API {{ $labels.instance }} está offline há mais de 1 minuto."
+
+      # Taxa de erro alta
+      - alert: HighErrorRate
+        expr: rate(http_requests_total{status=~"5.."}[5m]) > 0.05
+        for: 5m
+        labels:
+          severity: warning
+          team: backend
+        annotations:
+          summary: "Taxa de erro alta na API"
+          description: "Taxa de erros 5xx acima de 5% nos últimos 5 minutos em {{ $labels.instance }}."
+
+      # Latência alta
+      - alert: HighLatency
+        expr: http_request_duration_seconds{quantile="0.95"} > 2
+        for: 5m
+        labels:
+          severity: warning
+          team: backend
+        annotations:
+          summary: "Latência alta na API"
+          description: "P95 de latência acima de 2s em {{ $labels.instance }}."
+
+      # Uso de memória alto
+      - alert: HighMemoryUsage
+        expr: (process_resident_memory_bytes / 1024 / 1024 / 1024) > 2
+        for: 5m
+        labels:
+          severity: warning
+          team: infra
+        annotations:
+          summary: "Uso de memória alto"
+          description: "API {{ $labels.instance }} usando mais de 2GB de RAM."
+
+  - name: database_alerts
+    interval: 30s
+    rules:
+      # Database está down
+      - alert: DatabaseDown
+        expr: up{job="postgres"} == 0
+        for: 1m
+        labels:
+          severity: critical
+          team: dba
+        annotations:
+          summary: "Banco de dados está offline"
+          description: "PostgreSQL está offline há mais de 1 minuto."
+
+      # Conexões do banco altas
+      - alert: HighDatabaseConnections
+        expr: pg_stat_activity_count > 80
+        for: 5m
+        labels:
+          severity: warning
+          team: dba
+        annotations:
+          summary: "Muitas conexões no banco"
+          description: "Mais de 80 conexões ativas no PostgreSQL."
+
+      # Disco cheio
+      - alert: DatabaseDiskFull
+        expr: (pg_database_size_bytes / 1024 / 1024 / 1024) > 20
+        for: 10m
+        labels:
+          severity: critical
+          team: dba
+        annotations:
+          summary: "Banco de dados com pouco espaço"
+          description: "Banco de dados usando mais de 20GB de espaço."
+
+  - name: redis_alerts
+    interval: 30s
+    rules:
+      # Redis está down
+      - alert: RedisDown
+        expr: up{job="redis"} == 0
+        for: 1m
+        labels:
+          severity: critical
+          team: infra
+        annotations:
+          summary: "Redis está offline"
+          description: "Redis está offline há mais de 1 minuto."
+
+      # Memória do Redis alta
+      - alert: RedisMemoryHigh
+        expr: redis_memory_used_bytes / redis_memory_max_bytes > 0.9
+        for: 5m
+        labels:
+          severity: warning
+          team: infra
+        annotations:
+          summary: "Uso de memória do Redis alto"
+          description: "Redis usando mais de 90% da memória configurada."
+
+  - name: nginx_alerts
+    interval: 30s
+    rules:
+      # Nginx está down
+      - alert: NginxDown
+        expr: up{job="nginx"} == 0
+        for: 1m
+        labels:
+          severity: critical
+          team: infra
+        annotations:
+          summary: "Nginx está offline"
+          description: "Nginx está offline há mais de 1 minuto."
+
+      # Taxa de erro alta no nginx
+      - alert: NginxHighErrorRate
+        expr: rate(nginx_http_requests_total{status=~"5.."}[5m]) > 10
+        for: 5m
+        labels:
+          severity: warning
+          team: infra
+        annotations:
+          summary: "Taxa de erro alta no Nginx"
+          description: "Nginx com mais de 10 erros 5xx por segundo."
+
+  - name: system_alerts
+    interval: 30s
+    rules:
+      # CPU alta
+      - alert: HighCPU
+        expr: 100 - (avg by (instance) (irate(node_cpu_seconds_total{mode="idle"}[5m])) * 100) > 80
+        for: 10m
+        labels:
+          severity: warning
+          team: infra
+        annotations:
+          summary: "Uso de CPU alto"
+          description: "CPU acima de 80% em {{ $labels.instance }} por mais de 10 minutos."
+
+      # Memória alta
+      - alert: HighMemory
+        expr: (node_memory_MemTotal_bytes - node_memory_MemAvailable_bytes) / node_memory_MemTotal_bytes > 0.9
+        for: 10m
+        labels:
+          severity: critical
+          team: infra
+        annotations:
+          summary: "Uso de memória alto"
+          description: "Memória acima de 90% em {{ $labels.instance }}."
+
+      # Disco cheio
+      - alert: DiskFull
+        expr: (node_filesystem_avail_bytes / node_filesystem_size_bytes) < 0.1
+        for: 10m
+        labels:
+          severity: critical
+          team: infra
+        annotations:
+          summary: "Espaço em disco baixo"
+          description: "Menos de 10% de espaço livre em {{ $labels.instance }}."
+
+      # Muitos file descriptors abertos
+      - alert: HighFileDescriptors
+        expr: process_open_fds / process_max_fds > 0.8
+        for: 5m
+        labels:
+          severity: warning
+          team: infra
+        annotations:
+          summary: "Muitos file descriptors abertos"
+          description: "Mais de 80% dos file descriptors em uso em {{ $labels.instance }}."
+
+  - name: business_alerts
+    interval: 1m
+    rules:
+      # Taxa de checkout muito baixa
+      - alert: LowCheckoutRate
+        expr: rate(checkout_completed_total[1h]) < 0.01
+        for: 30m
+        labels:
+          severity: warning
+          team: product
+        annotations:
+          summary: "Taxa de checkout baixa"
+          description: "Menos de 1 checkout completado por hora nas últimas 30 minutos."
+
+      # Pagamentos falhando
+      - alert: HighPaymentFailureRate
+        expr: rate(payment_failed_total[10m]) / rate(payment_attempted_total[10m]) > 0.2
+        for: 10m
+        labels:
+          severity: critical
+          team: product
+        annotations:
+          summary: "Taxa de falha de pagamento alta"
+          description: "Mais de 20% dos pagamentos estão falhando."

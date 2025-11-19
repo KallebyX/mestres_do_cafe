@@ -4,6 +4,7 @@ Endpoints para gestão de segurança, auditoria e monitoramento
 """
 
 from flask import Blueprint, jsonify, request, g
+from flask_jwt_extended import jwt_required, get_jwt_identity
 from middleware.security import (
     rate_limiter,
     csrf_protection,
@@ -18,6 +19,7 @@ security_logger = StructuredLogger('security')
 
 @security_bp.route('/audit/requests', methods=['GET'])
 @rate_limit("api")
+@jwt_required()
 def audit_requests():
     """Auditoria de requests recentes"""
     try:
@@ -36,6 +38,7 @@ def audit_requests():
 
 @security_bp.route('/blocked-ips', methods=['GET'])
 @rate_limit("api")
+@jwt_required()
 def get_blocked_ips():
     """Lista IPs bloqueados"""
     try:
@@ -66,6 +69,7 @@ def get_blocked_ips():
 @security_bp.route('/unblock-ip', methods=['POST'])
 @rate_limit("auth")
 @validate_input()
+@jwt_required()
 def unblock_ip():
     """Remove IP da lista de bloqueados (admin apenas)"""
     try:
@@ -101,6 +105,7 @@ def unblock_ip():
 
 @security_bp.route('/rate-limits', methods=['GET'])
 @rate_limit("api")
+@jwt_required()
 def get_rate_limits():
     """Obtém configurações atuais de rate limiting"""
     try:
@@ -119,6 +124,7 @@ def get_rate_limits():
 
 @security_bp.route('/security-report', methods=['GET'])
 @rate_limit("api")
+@jwt_required()
 def security_report():
     """Relatório de segurança resumido"""
     try:

@@ -11,6 +11,7 @@ import uuid
 from datetime import datetime, timedelta
 
 from flask import Blueprint, jsonify, request
+from flask_jwt_extended import jwt_required, get_jwt_identity
 
 from database import db
 from models.auth import User
@@ -24,6 +25,7 @@ checkout_bp = Blueprint("checkout", __name__, url_prefix="/api/checkout")
 
 
 @checkout_bp.route("/", methods=["GET"])
+@jwt_required()
 def checkout_home():
     """Informações sobre o sistema de checkout"""
     return jsonify(
@@ -47,6 +49,7 @@ def checkout_home():
 
 
 @checkout_bp.route("/session", methods=["POST"])
+@jwt_required()
 def create_checkout_session():
     """Criar sessão de checkout"""
     try:
@@ -130,6 +133,7 @@ def create_checkout_session():
 
 
 @checkout_bp.route("/validate", methods=["POST"])
+@jwt_required()
 def validate_checkout():
     """Validar dados de checkout"""
     try:
@@ -181,6 +185,7 @@ def validate_checkout():
 
 
 @checkout_bp.route("/process", methods=["POST"])
+@jwt_required()
 def process_checkout():
     """Processar checkout e criar pedido"""
     try:
@@ -255,6 +260,7 @@ def process_checkout():
 
 
 @checkout_bp.route("/success", methods=["GET"])
+@jwt_required()
 def checkout_success():
     """Página de sucesso do checkout"""
     try:
@@ -283,6 +289,7 @@ def checkout_success():
 
 
 @checkout_bp.route("/cancel", methods=["POST"])
+@jwt_required()
 def cancel_checkout():
     """Cancelar checkout"""
     try:
@@ -489,6 +496,7 @@ def is_santa_maria_cep(cep):
 
 
 @checkout_bp.route("/start", methods=["POST"])
+@jwt_required()
 def start_checkout():
     """Inicia o processo de checkout"""
     try:
@@ -587,6 +595,7 @@ def start_checkout():
 
 
 @checkout_bp.route("/validate-cep", methods=["POST"])
+@jwt_required()
 def validate_cep_route():
     """Valida CEP e retorna dados do endereço"""
     try:
@@ -609,6 +618,7 @@ def validate_cep_route():
 
 
 @checkout_bp.route("/shipping-options", methods=["POST"])
+@jwt_required()
 def calculate_shipping_options():
     """Calcula opções de frete"""
     try:
@@ -647,6 +657,7 @@ def calculate_shipping_options():
 
 
 @checkout_bp.route("/apply-coupon", methods=["POST"])
+@jwt_required()
 def apply_coupon():
     """Aplica cupom de desconto"""
     try:
@@ -703,6 +714,7 @@ def apply_coupon():
 
 
 @checkout_bp.route("/complete", methods=["POST"])
+@jwt_required()
 def complete_checkout():
     """Finaliza o checkout criando o pedido"""
     try:
@@ -848,6 +860,7 @@ def complete_checkout():
 
 
 @checkout_bp.route("/payment-methods", methods=["GET"])
+@jwt_required()
 def get_payment_methods():
     """Retorna métodos de pagamento disponíveis"""
     try:
@@ -897,6 +910,7 @@ def get_payment_methods():
 
 
 @checkout_bp.route("/abandoned-carts", methods=["GET"])
+@jwt_required()
 def get_abandoned_carts():
     """Lista carrinhos abandonados para recuperação"""
     try:

@@ -20,6 +20,7 @@ blog_bp = Blueprint('blog', __name__)
 # ============================================
 
 @blog_bp.route('/posts', methods=['GET'])
+@jwt_required()
 def get_posts():
     """
     Listar posts do blog (público)
@@ -78,6 +79,7 @@ def get_posts():
 
 
 @blog_bp.route('/posts/<post_id>', methods=['GET'])
+@jwt_required()
 def get_post(post_id):
     """Obter detalhes de um post"""
     try:
@@ -100,6 +102,7 @@ def get_post(post_id):
 
 
 @blog_bp.route('/posts/slug/<slug>', methods=['GET'])
+@jwt_required()
 def get_post_by_slug(slug):
     """Obter post por slug"""
     try:
@@ -298,6 +301,7 @@ def delete_post(post_id):
 
 
 @blog_bp.route('/posts/<post_id>/like', methods=['POST'])
+@jwt_required()
 def like_post(post_id):
     """Curtir post"""
     try:
@@ -323,6 +327,7 @@ def like_post(post_id):
 # ============================================
 
 @blog_bp.route('/posts/<post_id>/comments', methods=['GET'])
+@jwt_required()
 def get_comments(post_id):
     """Listar comentários de um post"""
     try:
@@ -454,6 +459,7 @@ def delete_comment(comment_id):
 # ============================================
 
 @blog_bp.route('/categories', methods=['GET'])
+@jwt_required()
 def get_categories():
     """Listar categorias disponíveis"""
     try:
@@ -475,6 +481,7 @@ def get_categories():
 
 
 @blog_bp.route('/tags', methods=['GET'])
+@jwt_required()
 def get_tags():
     """Listar tags disponíveis"""
     try:

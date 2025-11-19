@@ -99,6 +99,7 @@ def get_cart():
 
 
 @cart_bp.route("/items", methods=["GET"])
+@jwt_required()
 def get_cart_items():
     """Listar itens do carrinho do usuário"""
     try:
@@ -553,6 +554,7 @@ def clear_cart():
 
 
 @cart_bp.route("/count", methods=["GET"])
+@jwt_required()
 def get_cart_count():
     """Obter quantidade de itens no carrinho"""
     try:
@@ -582,6 +584,7 @@ def get_cart_count():
 
 
 @cart_bp.route("/admin/all", methods=["GET"])
+@jwt_required()
 def get_all_carts():
     """Listar todos os carrinhos (admin)"""
     try:
@@ -659,6 +662,7 @@ def get_all_carts():
 
 
 @cart_bp.route("/admin/user/<user_id>", methods=["GET"])
+@jwt_required()
 def get_user_cart(user_id):
     """Obter carrinho de um usuário específico (admin)"""
     try:

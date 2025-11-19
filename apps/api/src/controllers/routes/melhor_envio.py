@@ -38,6 +38,7 @@ class TrackShipmentSchema(Schema):
 
 
 @melhor_envio_bp.route('/calculate', methods=['POST'])
+@jwt_required()
 def calculate_shipping():
     """
     Calcula opções de frete
@@ -72,6 +73,7 @@ def calculate_shipping():
 
 
 @melhor_envio_bp.route('/order/<order_id>', methods=['GET'])
+@jwt_required()
 def get_order_shipping(order_id):
     """
     Obtém informações de frete de um pedido
@@ -192,6 +194,7 @@ def create_shipment():
 
 
 @melhor_envio_bp.route('/track/<tracking_code>', methods=['GET'])
+@jwt_required()
 def track_shipment(tracking_code):
     """
     Rastreia uma entrega
@@ -256,6 +259,7 @@ def cancel_shipment(shipment_id):
 
 
 @melhor_envio_bp.route('/agencies', methods=['GET'])
+@jwt_required()
 def get_agencies():
     """
     Obtém agências disponíveis
@@ -284,6 +288,7 @@ def get_agencies():
 
 
 @melhor_envio_bp.route('/webhook', methods=['POST'])
+@jwt_required()
 def webhook():
     """
     Webhook para receber notificações do Melhor Envio
@@ -310,6 +315,7 @@ def webhook():
 
 
 @melhor_envio_bp.route('/callback', methods=['GET'])
+@jwt_required()
 def oauth_callback():
     """
     Callback para autenticação OAuth2

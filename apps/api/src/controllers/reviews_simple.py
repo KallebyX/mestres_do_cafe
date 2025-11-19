@@ -1,6 +1,32 @@
-from flask import Blueprint, jsonify, request
+from flask import Blueprint, jsonify, request, current_app
+from flask_jwt_extended import jwt_required, get_jwt_identity
+from functools import wraps
+import os
 
 reviews_bp = Blueprint('reviews', __name__)
+
+
+def debug_only(f):
+    """
+    Decorator que protege endpoints de debug.
+    Retorna 404 em produção para ocultar existência dos endpoints.
+    Permite apenas em development e staging.
+    """
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        env = current_app.config.get('ENV', 'production')
+        flask_env = os.environ.get('FLASK_ENV', 'production')
+
+        # Permitir apenas em development ou staging
+        if env not in ['development', 'staging'] and flask_env not in ['development', 'staging']:
+            # Retornar 404 ao invés de 403 para não revelar que o endpoint existe
+            return jsonify({
+                'error': 'Not found',
+                'message': 'The requested endpoint does not exist'
+            }), 404
+
+        return f(*args, **kwargs)
+    return decorated_function
 
 def get_product_name(product_id):
     """Helper function to get product name by ID"""
@@ -18,6 +44,7 @@ def get_product_name(product_id):
         return "Café Premium"
 
 @reviews_bp.route('/', methods=['GET'])
+@jwt_required()
 def get_all_reviews():
     """Obter todas as reviews"""
     return jsonify({
@@ -39,16 +66,20 @@ def get_all_reviews():
     })
 
 @reviews_bp.route('/test', methods=['GET'])
+@jwt_required()
 def test_route():
     """Teste simples"""
     return jsonify({'message': 'Rota de teste funcionando! - UPDATED', 'success': True})
 
 @reviews_bp.route('/debug-routes', methods=['GET'])
+@jwt_required()
+@debug_only
 def debug_routes():
     """Debug endpoint to test if new routes work"""
     return jsonify({'message': 'New debug route working!', 'success': True})
 
 @reviews_bp.route('/product/<product_id>/stats', methods=['GET'])
+@jwt_required()
 def get_product_review_stats(product_id):
     """Obter estatísticas de reviews de um produto"""
     # Dados de seed para testes
@@ -94,6 +125,7 @@ def get_product_review_stats(product_id):
     })
 
 @reviews_bp.route('/product/<product_id>/rating-distribution', methods=['GET'])
+@jwt_required()
 def get_rating_distribution(product_id):
     """Obter distribuição de ratings de um produto"""
     # Usar mesma lógica do stats para consistência
@@ -138,6 +170,7 @@ def get_rating_distribution(product_id):
     })
 
 @reviews_bp.route('/product/<product_id>/engagement', methods=['GET'])
+@jwt_required()
 def get_engagement_metrics(product_id):
     """Obter métricas de engajamento de um produto"""
     # Usar mesma base de dados que stats
@@ -178,6 +211,7 @@ def get_engagement_metrics(product_id):
     })
 
 @reviews_bp.route('/product/<product_id>/recent', methods=['GET'])
+@jwt_required()
 def get_recent_reviews(product_id):
     """Obter reviews recentes de um produto"""
     limit = request.args.get('limit', 5, type = int)
@@ -279,6 +313,7 @@ def get_recent_reviews(product_id):
     })
 
 @reviews_bp.route('/product/<product_id>/featured', methods=['GET'])
+@jwt_required()
 def get_featured_reviews(product_id):
     """Obter reviews em destaque de um produto"""
     limit = request.args.get('limit', 3, type = int)
@@ -357,6 +392,7 @@ def get_featured_reviews(product_id):
     })
 
 @reviews_bp.route('/product/<product_id>', methods=['GET'])
+@jwt_required()
 def get_product_reviews(product_id):
     """Obter reviews de um produto específico"""
     page = request.args.get('page', 1, type = int)
@@ -476,13 +512,16 @@ def get_product_reviews(product_id):
     })
 
 @reviews_bp.route('/add', methods=['POST'])
+@jwt_required()
 def add_review():
-    """Adicionar nova review"""
+    """Adicionar nova review - Requer autenticação JWT"""
+    user_id = get_jwt_identity()
     data = request.get_json() or {}
 
     return jsonify({
         'success': True,
         'message': 'Review adicionada com sucesso!',
         'review_id': 999,
+        'user_id': user_id,
         'data_received': data
     })

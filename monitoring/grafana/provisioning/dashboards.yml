@@ -1,0 +1,18 @@
+# Provisionamento de Dashboards do Grafana
+# Carrega automaticamente dashboards na inicialização
+
+apiVersion: 1
+
+providers:
+  - name: 'Mestres do Café Dashboards'
+    org_id: 1
+    orgId: 1
+    folder: 'Mestres do Café'
+    folderUid: mestres-do-cafe
+    type: file
+    disableDeletion: false
+    updateIntervalSeconds: 30
+    allowUiUpdates: true
+    options:
+      path: /etc/grafana/provisioning/dashboards
+      foldersFromFilesStructure: true

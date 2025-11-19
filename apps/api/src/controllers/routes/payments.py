@@ -3,6 +3,7 @@ import uuid
 from datetime import datetime
 
 from flask import Blueprint, jsonify, request
+from flask_jwt_extended import jwt_required, get_jwt_identity
 
 from database import db
 from models.orders import Order
@@ -12,6 +13,7 @@ payments_bp = Blueprint("payments", __name__)
 
 
 @payments_bp.route("/", methods=["GET"])
+@jwt_required()
 def payments_home():
     """Informações sobre o sistema de pagamentos"""
     return jsonify({
@@ -80,6 +82,7 @@ class PaymentGateway:
 
 
 @payments_bp.route("/process", methods=["POST"])
+@jwt_required()
 def process_payment():
     """Processa pagamento para um pedido"""
     try:
@@ -155,6 +158,7 @@ def process_payment():
 
 
 @payments_bp.route("/<payment_id>", methods=["GET"])
+@jwt_required()
 def get_payment(payment_id):
     """Busca detalhes de um pagamento"""
     try:
@@ -185,6 +189,7 @@ def get_payment(payment_id):
 
 
 @payments_bp.route("/order/<order_id>", methods=["GET"])
+@jwt_required()
 def get_order_payments(order_id):
     """Busca todos os pagamentos de um pedido"""
     try:
@@ -210,6 +215,7 @@ def get_order_payments(order_id):
 
 
 @payments_bp.route("/methods", methods=["GET"])
+@jwt_required()
 def get_payment_methods():
     """Lista métodos de pagamento disponíveis"""
     return jsonify(
@@ -249,6 +255,7 @@ def get_payment_methods():
 
 
 @payments_bp.route("/webhook", methods=["POST"])
+@jwt_required()
 def payment_webhook():
     """Webhook para receber notificações de pagamento"""
     try:
@@ -286,6 +293,7 @@ def payment_webhook():
 
 
 @payments_bp.route("/refund/<payment_id>", methods=["POST"])
+@jwt_required()
 def refund_payment(payment_id):
     """Processa reembolso de um pagamento"""
     try:

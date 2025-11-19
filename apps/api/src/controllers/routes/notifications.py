@@ -8,6 +8,7 @@ from typing import Any, Dict, List
 from controllers.base import require_admin, require_auth
 from database import db
 from flask import Blueprint, g, jsonify, request
+from flask_jwt_extended import jwt_required, get_jwt_identity
 from models.notifications import (
     Notification,
     NotificationLog,
@@ -25,6 +26,7 @@ notifications_bp = Blueprint("notifications", __name__, url_prefix="/api/notific
 
 @notifications_bp.route("/", methods=["GET"])
 @require_auth
+@jwt_required()
 def get_user_notifications():
     """Obter notificações do usuário logado"""
     try:
@@ -78,6 +80,7 @@ def get_user_notifications():
 
 @notifications_bp.route("/<int:notification_id>/read", methods=["POST"])
 @require_auth
+@jwt_required()
 def mark_notification_as_read(notification_id: int):
     """Marcar notificação como lida"""
     try:
@@ -107,6 +110,7 @@ def mark_notification_as_read(notification_id: int):
 
 @notifications_bp.route("/read-all", methods=["POST"])
 @require_auth
+@jwt_required()
 def mark_all_as_read():
     """Marcar todas as notificações como lidas"""
     try:
@@ -132,6 +136,7 @@ def mark_all_as_read():
 
 @notifications_bp.route("/<int:notification_id>", methods=["DELETE"])
 @require_auth
+@jwt_required()
 def delete_notification(notification_id: int):
     """Deletar notificação do usuário"""
     try:
@@ -155,6 +160,7 @@ def delete_notification(notification_id: int):
 
 @notifications_bp.route("/preferences", methods=["GET"])
 @require_auth
+@jwt_required()
 def get_notification_preferences():
     """Obter preferências de notificação do usuário"""
     try:
@@ -183,6 +189,7 @@ def get_notification_preferences():
 
 @notifications_bp.route("/preferences", methods=["POST"])
 @require_auth
+@jwt_required()
 def update_notification_preferences():
     """Atualizar preferências de notificação"""
     try:
@@ -228,6 +235,7 @@ def update_notification_preferences():
 
 @notifications_bp.route("/send", methods=["POST"])
 @require_admin
+@jwt_required()
 def send_notification():
     """Enviar notificação para usuário específico (admin only)"""
     try:
@@ -267,6 +275,7 @@ def send_notification():
 
 @notifications_bp.route("/broadcast", methods=["POST"])
 @require_admin
+@jwt_required()
 def broadcast_notification():
     """Enviar notificação para todos os usuários (broadcast)"""
     try:
@@ -330,6 +339,7 @@ def broadcast_notification():
 
 @notifications_bp.route("/admin/templates", methods=["GET"])
 @require_admin
+@jwt_required()
 def get_notification_templates():
     """Listar todos os templates de notificação"""
     try:
@@ -343,6 +353,7 @@ def get_notification_templates():
 
 @notifications_bp.route("/admin/templates", methods=["POST"])
 @require_admin
+@jwt_required()
 def create_notification_template():
     """Criar novo template de notificação"""
     try:
@@ -384,6 +395,7 @@ def create_notification_template():
 
 @notifications_bp.route("/admin/logs", methods=["GET"])
 @require_admin
+@jwt_required()
 def get_notification_logs():
     """Obter logs de notificações enviadas"""
     try:
@@ -475,6 +487,7 @@ def get_notification_logs():
 
 @notifications_bp.route("/admin/stats", methods=["GET"])
 @require_admin
+@jwt_required()
 def get_notification_stats():
     """Obter estatísticas detalhadas de notificações"""
     try:
@@ -548,6 +561,7 @@ def get_notification_stats():
 
 # Health check para notificações
 @notifications_bp.route("/health", methods=["GET"])
+@jwt_required()
 def notifications_health():
     """Health check do sistema de notificações"""
     try:

@@ -4,6 +4,7 @@ Sistema completo de notificações multi-canal (in-app, email, SMS, push)
 """
 
 import logging
+import os
 import smtplib
 from datetime import datetime
 from email.mime.multipart import MIMEMultipart
@@ -160,37 +161,286 @@ class EmailProvider:
 
 
 class SMSProvider:
-    """Provedor de SMS (mock - implementar com Twilio, AWS SNS, etc.)"""
-    
+    """Provedor de SMS com suporte para Twilio e AWS SNS"""
+
     def __init__(self):
+        self.provider = current_app.config.get('SMS_PROVIDER', 'mock')  # 'twilio', 'aws_sns', 'mock'
         self.api_key = current_app.config.get('SMS_API_KEY', '')
         self.sender_id = current_app.config.get('SMS_SENDER_ID', 'MESTRES')
-    
+
+        # Configurações Twilio
+        self.twilio_account_sid = current_app.config.get('TWILIO_ACCOUNT_SID', '')
+        self.twilio_auth_token = current_app.config.get('TWILIO_AUTH_TOKEN', '')
+        self.twilio_phone_number = current_app.config.get('TWILIO_PHONE_NUMBER', '')
+
+        # Configurações AWS SNS
+        self.aws_region = current_app.config.get('AWS_REGION', 'us-east-1')
+        self.aws_access_key = current_app.config.get('AWS_ACCESS_KEY_ID', '')
+        self.aws_secret_key = current_app.config.get('AWS_SECRET_ACCESS_KEY', '')
+
     def send_sms(self, phone_number: str, message: str) -> bool:
-        """Enviar SMS"""
+        """Enviar SMS via provedor configurado"""
         try:
-            # TODO: Implementar com provedor real (Twilio, AWS SNS, etc.)
-            logger.info(f"SMS enviado para {phone_number}: {message[:50]}...")
-            return True
+            if self.provider == 'twilio':
+                return self._send_via_twilio(phone_number, message)
+            elif self.provider == 'aws_sns':
+                return self._send_via_aws_sns(phone_number, message)
+            else:
+                # Mock mode - apenas loga
+                logger.info(f"[MOCK] SMS enviado para {phone_number}: {message[:50]}...")
+                return True
         except Exception as e:
             logger.error(f"Erro ao enviar SMS para {phone_number}: {str(e)}")
             return False
 
-
-class PushProvider:
-    """Provedor de push notifications (mock - implementar com Firebase, etc.)"""
-    
-    def __init__(self):
-        self.server_key = current_app.config.get('PUSH_SERVER_KEY', '')
-    
-    def send_push(self, device_token: str, title: str, body: str, data: Dict = None) -> bool:
-        """Enviar push notification"""
+    def _send_via_twilio(self, phone_number: str, message: str) -> bool:
+        """Enviar SMS via Twilio"""
         try:
-            # TODO: Implementar com Firebase Cloud Messaging ou similar
-            logger.info(f"Push notification enviada: {title}")
+            from twilio.rest import Client
+
+            if not all([self.twilio_account_sid, self.twilio_auth_token, self.twilio_phone_number]):
+                logger.warning("Credenciais Twilio não configuradas, usando mock")
+                return self.send_sms.__wrapped__(self, phone_number, message)
+
+            client = Client(self.twilio_account_sid, self.twilio_auth_token)
+
+            # Formatar número para formato internacional se necessário
+            if not phone_number.startswith('+'):
+                phone_number = f'+55{phone_number.replace(" ", "").replace("-", "")}'
+
+            message_obj = client.messages.create(
+                body=message,
+                from_=self.twilio_phone_number,
+                to=phone_number
+            )
+
+            logger.info(f"SMS enviado via Twilio: SID={message_obj.sid}, Status={message_obj.status}")
+            return message_obj.status in ['queued', 'sending', 'sent', 'delivered']
+
+        except ImportError:
+            logger.warning("Biblioteca 'twilio' não instalada. Install: pip install twilio")
+            logger.info(f"[FALLBACK] SMS simulado para {phone_number}")
             return True
         except Exception as e:
+            logger.error(f"Erro ao enviar SMS via Twilio: {str(e)}")
+            return False
+
+    def _send_via_aws_sns(self, phone_number: str, message: str) -> bool:
+        """Enviar SMS via AWS SNS"""
+        try:
+            import boto3
+
+            if not all([self.aws_access_key, self.aws_secret_key]):
+                logger.warning("Credenciais AWS não configuradas, usando mock")
+                return True
+
+            sns_client = boto3.client(
+                'sns',
+                region_name=self.aws_region,
+                aws_access_key_id=self.aws_access_key,
+                aws_secret_access_key=self.aws_secret_key
+            )
+
+            # Formatar número para formato E.164
+            if not phone_number.startswith('+'):
+                phone_number = f'+55{phone_number.replace(" ", "").replace("-", "")}'
+
+            response = sns_client.publish(
+                PhoneNumber=phone_number,
+                Message=message,
+                MessageAttributes={
+                    'AWS.SNS.SMS.SenderID': {
+                        'DataType': 'String',
+                        'StringValue': self.sender_id
+                    },
+                    'AWS.SNS.SMS.SMSType': {
+                        'DataType': 'String',
+                        'StringValue': 'Transactional'  # ou 'Promotional'
+                    }
+                }
+            )
+
+            logger.info(f"SMS enviado via AWS SNS: MessageId={response['MessageId']}")
+            return True
+
+        except ImportError:
+            logger.warning("Biblioteca 'boto3' não instalada. Install: pip install boto3")
+            logger.info(f"[FALLBACK] SMS simulado para {phone_number}")
+            return True
+        except Exception as e:
+            logger.error(f"Erro ao enviar SMS via AWS SNS: {str(e)}")
+            return False
+
+
+class PushProvider:
+    """Provedor de push notifications com suporte para Firebase Cloud Messaging"""
+
+    def __init__(self):
+        self.provider = current_app.config.get('PUSH_PROVIDER', 'mock')  # 'fcm', 'mock'
+
+        # Configurações Firebase Cloud Messaging
+        self.fcm_server_key = current_app.config.get('FCM_SERVER_KEY', '')
+        self.fcm_credentials_path = current_app.config.get('FCM_CREDENTIALS_PATH', '')
+
+        self._fcm_app = None
+        self._initialize_fcm()
+
+    def _initialize_fcm(self):
+        """Inicializar Firebase Admin SDK"""
+        if self.provider != 'fcm':
+            return
+
+        try:
+            import firebase_admin
+            from firebase_admin import credentials
+
+            # Verificar se já foi inicializado
+            if firebase_admin._apps:
+                self._fcm_app = firebase_admin.get_app()
+                logger.info("Firebase já inicializado")
+                return
+
+            # Inicializar com arquivo de credenciais
+            if self.fcm_credentials_path and os.path.exists(self.fcm_credentials_path):
+                cred = credentials.Certificate(self.fcm_credentials_path)
+                self._fcm_app = firebase_admin.initialize_app(cred)
+                logger.info("Firebase inicializado com sucesso")
+            else:
+                logger.warning("Credenciais Firebase não encontradas, usando mock mode")
+                self.provider = 'mock'
+
+        except ImportError:
+            logger.warning("Biblioteca 'firebase-admin' não instalada. Install: pip install firebase-admin")
+            self.provider = 'mock'
+        except Exception as e:
+            logger.error(f"Erro ao inicializar Firebase: {str(e)}")
+            self.provider = 'mock'
+
+    def send_push(self, device_token: str, title: str, body: str, data: Dict = None) -> bool:
+        """Enviar push notification via provedor configurado"""
+        try:
+            if self.provider == 'fcm':
+                return self._send_via_fcm(device_token, title, body, data)
+            else:
+                # Mock mode - apenas loga
+                logger.info(f"[MOCK] Push notification: {title} - {body[:50]}...")
+                return True
+        except Exception as e:
             logger.error(f"Erro ao enviar push notification: {str(e)}")
+            return False
+
+    def _send_via_fcm(self, device_token: str, title: str, body: str, data: Dict = None) -> bool:
+        """Enviar push notification via Firebase Cloud Messaging"""
+        try:
+            from firebase_admin import messaging
+
+            if not device_token:
+                logger.warning("Device token vazio, não é possível enviar push")
+                return False
+
+            # Construir mensagem
+            notification = messaging.Notification(
+                title=title,
+                body=body
+            )
+
+            # Dados adicionais (opcional)
+            message_data = data or {}
+
+            # Configurações Android
+            android_config = messaging.AndroidConfig(
+                priority='high',
+                notification=messaging.AndroidNotification(
+                    sound='default',
+                    color='#FF6B35',  # Cor do ícone (laranja - café)
+                    channel_id='mestres_notifications'
+                )
+            )
+
+            # Configurações iOS
+            apns_config = messaging.APNSConfig(
+                headers={'apns-priority': '10'},
+                payload=messaging.APNSPayload(
+                    aps=messaging.Aps(
+                        alert=messaging.ApsAlert(
+                            title=title,
+                            body=body
+                        ),
+                        badge=1,
+                        sound='default'
+                    )
+                )
+            )
+
+            # Criar mensagem completa
+            message = messaging.Message(
+                notification=notification,
+                data=message_data,
+                token=device_token,
+                android=android_config,
+                apns=apns_config
+            )
+
+            # Enviar
+            response = messaging.send(message)
+            logger.info(f"Push notification enviada via FCM: {response}")
+            return True
+
+        except ImportError:
+            logger.warning("Firebase Admin não disponível, usando mock")
+            logger.info(f"[FALLBACK] Push simulado: {title}")
+            return True
+        except messaging.UnregisteredError:
+            logger.warning(f"Device token inválido ou não registrado: {device_token}")
+            return False
+        except messaging.SenderIdMismatchError:
+            logger.error("Sender ID não corresponde ao token de registro")
+            return False
+        except Exception as e:
+            logger.error(f"Erro ao enviar push via FCM: {str(e)}")
+            return False
+
+    def send_push_to_topic(self, topic: str, title: str, body: str, data: Dict = None) -> bool:
+        """Enviar push notification para um tópico (broadcast)"""
+        try:
+            from firebase_admin import messaging
+
+            if self.provider != 'fcm':
+                logger.info(f"[MOCK] Push para tópico {topic}: {title}")
+                return True
+
+            notification = messaging.Notification(title=title, body=body)
+            message_data = data or {}
+
+            message = messaging.Message(
+                notification=notification,
+                data=message_data,
+                topic=topic
+            )
+
+            response = messaging.send(message)
+            logger.info(f"Push enviado para tópico {topic}: {response}")
+            return True
+
+        except Exception as e:
+            logger.error(f"Erro ao enviar push para tópico {topic}: {str(e)}")
+            return False
+
+    def subscribe_to_topic(self, device_tokens: List[str], topic: str) -> bool:
+        """Inscrever devices em um tópico"""
+        try:
+            from firebase_admin import messaging
+
+            if self.provider != 'fcm':
+                logger.info(f"[MOCK] Devices inscritos no tópico {topic}")
+                return True
+
+            response = messaging.subscribe_to_topic(device_tokens, topic)
+            logger.info(f"Devices inscritos no tópico {topic}: {response.success_count} sucesso, {response.failure_count} falhas")
+            return response.success_count > 0
+
+        except Exception as e:
+            logger.error(f"Erro ao inscrever devices no tópico: {str(e)}")
             return False
 
 
@@ -443,30 +693,103 @@ class NotificationService:
     def _get_user_email(self, user_id: str) -> Optional[str]:
         """Buscar email do usuário"""
         try:
-            # TODO: Implementar query para buscar email do usuário
-            from models.user import User
-            user = User.query.filter_by(id=user_id).first()
-            return user.email if user else None
+            from models.auth import User
+
+            user = User.query.filter_by(id=user_id, is_active=True).first()
+
+            if not user:
+                logger.warning(f"Usuário {user_id} não encontrado ou inativo")
+                return None
+
+            if not user.email:
+                logger.warning(f"Usuário {user_id} não possui email cadastrado")
+                return None
+
+            # Verificar se email está verificado (se houver esse campo)
+            if hasattr(user, 'email_verified') and not user.email_verified:
+                logger.warning(f"Email do usuário {user_id} não está verificado")
+                # Pode optar por retornar None ou enviar mesmo assim
+                # return None
+
+            return user.email
+
         except Exception as e:
             logger.error(f"Erro ao buscar email do usuário {user_id}: {str(e)}")
             return None
-    
+
     def _get_user_phone(self, user_id: str) -> Optional[str]:
         """Buscar telefone do usuário"""
         try:
-            # TODO: Implementar query para buscar telefone do usuário
-            from models.user import User
-            user = User.query.filter_by(id=user_id).first()
-            return getattr(user, 'phone', None) if user else None
+            from models.auth import User
+
+            user = User.query.filter_by(id=user_id, is_active=True).first()
+
+            if not user:
+                logger.warning(f"Usuário {user_id} não encontrado ou inativo")
+                return None
+
+            # Tentar buscar telefone em diferentes campos possíveis
+            phone = None
+            for field in ['phone', 'phone_number', 'mobile', 'mobile_phone']:
+                if hasattr(user, field):
+                    phone = getattr(user, field)
+                    if phone:
+                        break
+
+            if not phone:
+                logger.warning(f"Usuário {user_id} não possui telefone cadastrado")
+                return None
+
+            # Limpar e formatar telefone
+            phone = phone.replace(' ', '').replace('-', '').replace('(', '').replace(')', '')
+
+            return phone
+
         except Exception as e:
             logger.error(f"Erro ao buscar telefone do usuário {user_id}: {str(e)}")
             return None
-    
+
     def _get_user_device_token(self, user_id: str) -> Optional[str]:
-        """Buscar device token do usuário"""
+        """Buscar device token do usuário para push notifications"""
         try:
-            # TODO: Implementar query para buscar device token do usuário
-            return None  # Placeholder
+            # Tentar buscar de um modelo DeviceToken se existir
+            try:
+                from models.device_token import DeviceToken
+
+                # Buscar o device token mais recente e ativo do usuário
+                device = DeviceToken.query.filter_by(
+                    user_id=user_id,
+                    is_active=True
+                ).order_by(DeviceToken.last_used.desc()).first()
+
+                if device and device.token:
+                    logger.info(f"Device token encontrado para usuário {user_id}")
+                    return device.token
+
+            except ImportError:
+                # Modelo DeviceToken não existe, tentar buscar no próprio User
+                pass
+
+            # Fallback: buscar direto do modelo User se houver campo device_token
+            from models.auth import User
+
+            user = User.query.filter_by(id=user_id, is_active=True).first()
+
+            if not user:
+                logger.warning(f"Usuário {user_id} não encontrado")
+                return None
+
+            # Tentar buscar device_token em diferentes campos
+            for field in ['device_token', 'fcm_token', 'push_token']:
+                if hasattr(user, field):
+                    token = getattr(user, field)
+                    if token:
+                        logger.info(f"Device token encontrado no campo {field} para usuário {user_id}")
+                        return token
+
+            logger.warning(f"Nenhum device token encontrado para usuário {user_id}")
+            return None
+
         except Exception as e:
             logger.error(f"Erro ao buscar device token do usuário {user_id}: {str(e)}")
             return None

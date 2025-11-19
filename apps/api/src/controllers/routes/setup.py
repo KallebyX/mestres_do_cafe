@@ -1,4 +1,5 @@
 from flask import Blueprint, jsonify
+from flask_jwt_extended import jwt_required, get_jwt_identity
 from datetime import datetime
 import subprocess
 import os
@@ -6,6 +7,7 @@ import os
 setup_bp = Blueprint('setup', __name__)
 
 @setup_bp.route('/fix-reviews-types', methods=['GET'])
+@jwt_required()
 def fix_reviews_types():
     """Corrige os tipos de dados da tabela reviews"""
     try:
@@ -51,6 +53,7 @@ def fix_reviews_types():
         }), 500
 
 @setup_bp.route('/create-reviews', methods=['GET'])
+@jwt_required()
 def create_reviews_table():
     """Cria a tabela reviews diretamente no banco"""
     try:
@@ -119,6 +122,7 @@ def create_reviews_table():
         }), 500
 
 @setup_bp.route('/check-schema', methods=['GET'])
+@jwt_required()
 def check_database_schema():
     """Endpoint para verificar o schema da tabela products"""
     try:
@@ -157,6 +161,7 @@ def check_database_schema():
         }), 500
 
 @setup_bp.route('/test', methods=['GET'])
+@jwt_required()
 def test_endpoint():
     """Endpoint simples para testar se a API está funcionando"""
     return jsonify({
@@ -166,6 +171,7 @@ def test_endpoint():
     }), 200
 
 @setup_bp.route('/force-init', methods=['POST', 'GET'])
+@jwt_required()
 def force_init_database():
     """Endpoint para forçar inicialização completa do banco"""
     try:
@@ -206,6 +212,7 @@ def force_init_database():
         }), 500
 
 @setup_bp.route('/create-tables', methods=['POST'])
+@jwt_required()
 def create_tables():
     """Endpoint para criar tabelas manualmente"""
     try:
@@ -240,6 +247,7 @@ def create_tables():
         }), 500
 
 @setup_bp.route('/setup-render-db', methods=['POST', 'GET'])
+@jwt_required()
 def setup_render_database():
     """Endpoint para executar o setup completo do banco para Render"""
     try:
@@ -280,6 +288,7 @@ def setup_render_database():
         }), 500
 
 @setup_bp.route('/migrate-to-neon', methods=['POST', 'GET'])
+@jwt_required()
 def migrate_to_neon():
     """Endpoint para migrar dados para Neon Database"""
     try:
@@ -320,6 +329,7 @@ def migrate_to_neon():
         }), 500
 
 @setup_bp.route('/insert-sample-data', methods=['POST'])
+@jwt_required()
 def insert_sample_data():
     """Endpoint para inserir dados de exemplo"""
     try:
