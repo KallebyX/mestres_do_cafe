@@ -25,6 +25,7 @@ checkout_bp = Blueprint("checkout", __name__, url_prefix="/api/checkout")
 
 
 @checkout_bp.route("/", methods=["GET"])
+@jwt_required()
 def checkout_home():
     """Informações sobre o sistema de checkout"""
     return jsonify(
@@ -594,6 +595,7 @@ def start_checkout():
 
 
 @checkout_bp.route("/validate-cep", methods=["POST"])
+@jwt_required()
 def validate_cep_route():
     """Valida CEP e retorna dados do endereço"""
     try:
@@ -858,6 +860,7 @@ def complete_checkout():
 
 
 @checkout_bp.route("/payment-methods", methods=["GET"])
+@jwt_required()
 def get_payment_methods():
     """Retorna métodos de pagamento disponíveis"""
     try:

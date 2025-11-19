@@ -460,6 +460,7 @@ def get_payment_status(payment_id):
 
 
 @mercado_pago_bp.route('/payment-methods', methods=['GET'])
+@jwt_required()
 def get_payment_methods():
     """
     Obtém métodos de pagamento disponíveis
@@ -776,6 +777,7 @@ def get_installments():
 
 
 @mercado_pago_bp.route('/transparent/payment-methods', methods=['GET'])
+@jwt_required()
 def get_transparent_payment_methods():
     """
     Obtém métodos de pagamento disponíveis para Checkout Transparente (DEMO MODE)

@@ -44,6 +44,7 @@ def get_product_name(product_id):
         return "Café Premium"
 
 @reviews_bp.route('/', methods=['GET'])
+@jwt_required()
 def get_all_reviews():
     """Obter todas as reviews"""
     return jsonify({
@@ -65,6 +66,7 @@ def get_all_reviews():
     })
 
 @reviews_bp.route('/test', methods=['GET'])
+@jwt_required()
 def test_route():
     """Teste simples"""
     return jsonify({'message': 'Rota de teste funcionando! - UPDATED', 'success': True})
@@ -76,6 +78,7 @@ def debug_routes():
     return jsonify({'message': 'New debug route working!', 'success': True})
 
 @reviews_bp.route('/product/<product_id>/stats', methods=['GET'])
+@jwt_required()
 def get_product_review_stats(product_id):
     """Obter estatísticas de reviews de um produto"""
     # Dados de seed para testes
@@ -121,6 +124,7 @@ def get_product_review_stats(product_id):
     })
 
 @reviews_bp.route('/product/<product_id>/rating-distribution', methods=['GET'])
+@jwt_required()
 def get_rating_distribution(product_id):
     """Obter distribuição de ratings de um produto"""
     # Usar mesma lógica do stats para consistência
@@ -165,6 +169,7 @@ def get_rating_distribution(product_id):
     })
 
 @reviews_bp.route('/product/<product_id>/engagement', methods=['GET'])
+@jwt_required()
 def get_engagement_metrics(product_id):
     """Obter métricas de engajamento de um produto"""
     # Usar mesma base de dados que stats
@@ -205,6 +210,7 @@ def get_engagement_metrics(product_id):
     })
 
 @reviews_bp.route('/product/<product_id>/recent', methods=['GET'])
+@jwt_required()
 def get_recent_reviews(product_id):
     """Obter reviews recentes de um produto"""
     limit = request.args.get('limit', 5, type = int)
@@ -306,6 +312,7 @@ def get_recent_reviews(product_id):
     })
 
 @reviews_bp.route('/product/<product_id>/featured', methods=['GET'])
+@jwt_required()
 def get_featured_reviews(product_id):
     """Obter reviews em destaque de um produto"""
     limit = request.args.get('limit', 3, type = int)
@@ -384,6 +391,7 @@ def get_featured_reviews(product_id):
     })
 
 @reviews_bp.route('/product/<product_id>', methods=['GET'])
+@jwt_required()
 def get_product_reviews(product_id):
     """Obter reviews de um produto específico"""
     page = request.args.get('page', 1, type = int)

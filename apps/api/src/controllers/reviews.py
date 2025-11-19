@@ -119,6 +119,7 @@ def check_company_permission(user_id: str) -> tuple[bool, dict]:
         }
 
 @reviews_bp.route('/', methods=['GET'])
+@jwt_required()
 def get_all_reviews():
     """Obter todas as reviews"""
     return jsonify({
@@ -151,6 +152,7 @@ def get_all_reviews():
     })
 
 @reviews_bp.route('/product/<int:product_id>', methods=['GET'])
+@jwt_required()
 def get_product_reviews(product_id):
     """Obter todas as avaliações de um produto com filtros avançados"""
     try:
@@ -270,6 +272,7 @@ def get_product_reviews(product_id):
         }), 500
 
 @reviews_bp.route('/product/<int:product_id>/stats', methods=['GET'])
+@jwt_required()
 def get_product_review_stats(product_id):
     """Obter estatísticas de avaliações de um produto"""
     try:
@@ -630,6 +633,7 @@ def add_company_response(review_id):
         }), 500
 
 @reviews_bp.route('/product/<int:product_id>/featured', methods=['GET'])
+@jwt_required()
 def get_product_featured_reviews(product_id):
     """Obter avaliações em destaque de um produto específico"""
     try:
@@ -671,6 +675,7 @@ def get_product_featured_reviews(product_id):
         }), 500
 
 @reviews_bp.route('/featured', methods=['GET'])
+@jwt_required()
 def get_featured_reviews():
     """Obter avaliações em destaque (todas)"""
     try:
@@ -777,6 +782,7 @@ def moderate_review(review_id):
         }), 500
 
 @reviews_bp.route('/product/<int:product_id>/recent', methods=['GET'])
+@jwt_required()
 def get_product_recent_reviews(product_id):
     """Obter avaliações recentes de um produto"""
     try:
@@ -817,6 +823,7 @@ def get_product_recent_reviews(product_id):
         }), 500
 
 @reviews_bp.route('/product/<int:product_id>/rating-distribution', methods=['GET'])
+@jwt_required()
 def get_product_rating_distribution(product_id):
     """Obter distribuição detalhada de ratings de um produto"""
     try:
@@ -864,6 +871,7 @@ def get_product_rating_distribution(product_id):
         }), 500
 
 @reviews_bp.route('/product/<int:product_id>/engagement', methods=['GET'])
+@jwt_required()
 def get_product_engagement_metrics(product_id):
     """Obter métricas de engajamento das avaliações de um produto"""
     try:
@@ -915,6 +923,7 @@ def get_product_engagement_metrics(product_id):
         }), 500
 
 @reviews_bp.route('/product/<int:product_id>/enhanced-stats', methods=['GET'])
+@jwt_required()
 def get_enhanced_product_review_stats(product_id):
     """Obter estatísticas avançadas de avaliações de um produto"""
     try:

@@ -9,6 +9,7 @@ shipping_bp = Blueprint('shipping', __name__)
 
 
 @shipping_bp.route('/', methods=['GET'])
+@jwt_required()
 def shipping_home():
     """Informações sobre o serviço de frete"""
     return jsonify({
@@ -49,6 +50,7 @@ def format_cep(cep):
     return f"{cep[:5]}-{cep[5:]}"
 
 @shipping_bp.route('/calculate', methods=['POST'])
+@jwt_required()
 def calculate_shipping():
     """Calcular frete para um produto"""
     try:
@@ -159,6 +161,7 @@ def calculate_shipping_mock(origin_cep, destination_cep, weight, dimensions):
     return shipping_options
 
 @shipping_bp.route('/cep/<cep>', methods=['GET'])
+@jwt_required()
 def get_cep_info(cep):
     """Buscar informações de CEP"""
     try:
@@ -211,6 +214,7 @@ def get_cep_info(cep):
         }), 500
 
 @shipping_bp.route('/services', methods=['GET'])
+@jwt_required()
 def get_shipping_services():
     """Listar serviços de frete disponíveis"""
     try:
