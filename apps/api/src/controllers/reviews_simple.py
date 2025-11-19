@@ -72,6 +72,7 @@ def test_route():
     return jsonify({'message': 'Rota de teste funcionando! - UPDATED', 'success': True})
 
 @reviews_bp.route('/debug-routes', methods=['GET'])
+@jwt_required()
 @debug_only
 def debug_routes():
     """Debug endpoint to test if new routes work"""

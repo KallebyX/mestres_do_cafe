@@ -258,6 +258,7 @@ def update_stock(product_id):
 
 
 @products_bp.route('/categories', methods=['GET'])
+@jwt_required()
 @handle_exceptions
 def get_product_categories():
     """Get all product categories"""

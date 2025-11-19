@@ -459,6 +459,7 @@ def delete_comment(comment_id):
 # ============================================
 
 @blog_bp.route('/categories', methods=['GET'])
+@jwt_required()
 def get_categories():
     """Listar categorias disponíveis"""
     try:

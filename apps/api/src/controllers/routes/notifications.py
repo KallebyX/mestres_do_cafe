@@ -561,6 +561,7 @@ def get_notification_stats():
 
 # Health check para notificações
 @notifications_bp.route("/health", methods=["GET"])
+@jwt_required()
 def notifications_health():
     """Health check do sistema de notificações"""
     try:

@@ -55,6 +55,7 @@ def track_batch_events():
         }), 500
 
 @analytics_bp.route('/health', methods=['GET'])
+@jwt_required()
 def analytics_health():
     """Analytics service health check"""
     return jsonify({

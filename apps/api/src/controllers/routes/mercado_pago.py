@@ -326,6 +326,7 @@ def process_payment():
 
 
 @mercado_pago_bp.route('/webhook', methods=['GET'])
+@jwt_required()
 def webhook_test():
     """
     Endpoint de teste GET para verificar se o webhook está acessível
@@ -340,6 +341,7 @@ def webhook_test():
 
 
 @mercado_pago_bp.route('/webhook', methods=['POST'])
+@jwt_required()
 def webhook():
     """
     Webhook robusto para receber notificações do Mercado Pago

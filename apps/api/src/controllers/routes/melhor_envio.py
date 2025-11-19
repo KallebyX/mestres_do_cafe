@@ -288,6 +288,7 @@ def get_agencies():
 
 
 @melhor_envio_bp.route('/webhook', methods=['POST'])
+@jwt_required()
 def webhook():
     """
     Webhook para receber notificações do Melhor Envio

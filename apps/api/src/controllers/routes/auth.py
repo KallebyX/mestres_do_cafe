@@ -138,6 +138,7 @@ def debug_database():
             'error': f'Erro no debug: {str(e)}'
         }), 500
 @auth_bp.route("/login", methods=["POST"])
+@jwt_required()
 @rate_limit('auth_login')
 def login():
     try:
@@ -257,6 +258,7 @@ def login():
 
 
 @auth_bp.route("/register", methods=["POST"])
+@jwt_required()
 @rate_limit('auth_register')
 def register():
     try:

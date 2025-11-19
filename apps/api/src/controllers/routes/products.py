@@ -533,6 +533,7 @@ def get_product(product_id):
 
 
 @products_bp.route("/categories", methods=["GET"])
+@jwt_required()
 def get_categories():
     try:
         categories = ProductCategory.query.filter_by(is_active = True).all()

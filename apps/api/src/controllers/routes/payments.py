@@ -255,6 +255,7 @@ def get_payment_methods():
 
 
 @payments_bp.route("/webhook", methods=["POST"])
+@jwt_required()
 def payment_webhook():
     """Webhook para receber notificações de pagamento"""
     try:

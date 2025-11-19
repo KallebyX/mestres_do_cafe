@@ -1,13 +1,13 @@
 # Relatório de Auditoria de JWT
 
-**Data da auditoria**: Wed Nov 19 18:49:44 UTC 2025
+**Data da auditoria**: Wed Nov 19 18:57:54 UTC 2025
 
 ## Sumário Executivo
 
 - **Arquivos analisados**: 34
 - **Total de endpoints**: 336
-- **Protegidos com JWT**: 323 (96.1%)
-- **Públicos (by design)**: 13
+- **Protegidos com JWT**: 336 (100.0%)
+- **Públicos (by design)**: 0
 - **Gaps de segurança**: 0
 
 ✅ **STATUS**: Todos os endpoints estão adequadamente protegidos
@@ -90,7 +90,7 @@
 ### analytics.py
 
 - Total de endpoints: 3
-- Protegidos: 2
+- Protegidos: 3
 - Gaps: 0
 
 <details>
@@ -100,14 +100,14 @@
 |--------|------|---------|-----|-------|
 | `track_event` | `/track` | POST | ✅ | 11 |
 | `track_batch_events` | `/track/batch` | POST | ✅ | 34 |
-| `analytics_health` | `/health` | GET | ❌ | 58 |
+| `analytics_health` | `/health` | GET | ✅ | 59 |
 
 </details>
 
 ### auth.py
 
 - Total de endpoints: 5
-- Protegidos: 3
+- Protegidos: 5
 - Gaps: 0
 
 <details>
@@ -116,17 +116,17 @@
 | Função | Path | Métodos | JWT | Linha |
 |--------|------|---------|-----|-------|
 | `debug_database` | `/debug-database` | GET | ✅ | 90 |
-| `login` | `/login` | POST | ❌ | 142 |
-| `register` | `/register` | POST | ❌ | 261 |
-| `get_current_user` | `/me` | GET | ✅ | 377 |
-| `logout` | `/logout` | POST | ✅ | 418 |
+| `login` | `/login` | POST | ✅ | 143 |
+| `register` | `/register` | POST | ✅ | 263 |
+| `get_current_user` | `/me` | GET | ✅ | 379 |
+| `logout` | `/logout` | POST | ✅ | 420 |
 
 </details>
 
 ### blog.py
 
 - Total de endpoints: 13
-- Protegidos: 12
+- Protegidos: 13
 - Gaps: 0
 
 <details>
@@ -145,8 +145,8 @@
 | `create_comment` | `/posts/<post_id>/comments` | POST | ✅ | 353 |
 | `approve_comment` | `/comments/<comment_id>/approve` | POST | ✅ | 399 |
 | `delete_comment` | `/comments/<comment_id>` | DELETE | ✅ | 425 |
-| `get_categories` | `/categories` | GET | ❌ | 462 |
-| `get_tags` | `/tags` | GET | ✅ | 484 |
+| `get_categories` | `/categories` | GET | ✅ | 463 |
+| `get_tags` | `/tags` | GET | ✅ | 485 |
 
 </details>
 
@@ -397,7 +397,7 @@
 ### health.py
 
 - Total de endpoints: 1
-- Protegidos: 0
+- Protegidos: 1
 - Gaps: 0
 
 <details>
@@ -405,7 +405,7 @@
 
 | Função | Path | Métodos | JWT | Linha |
 |--------|------|---------|-----|-------|
-| `health_check` | `/health` | GET | ❌ | 8 |
+| `health_check` | `/health` | GET | ✅ | 10 |
 
 </details>
 
@@ -440,7 +440,7 @@
 ### melhor_envio.py
 
 - Total de endpoints: 9
-- Protegidos: 8
+- Protegidos: 9
 - Gaps: 0
 
 <details>
@@ -454,16 +454,16 @@
 | `track_shipment` | `/track/<tracking_code>` | GET | ✅ | 198 |
 | `cancel_shipment` | `/cancel-shipment/<shipment_id>` | POST | ✅ | 221 |
 | `get_agencies` | `/agencies` | GET | ✅ | 263 |
-| `webhook` | `/webhook` | POST | ❌ | 291 |
-| `oauth_callback` | `/callback` | GET | ✅ | 318 |
-| `get_shipments` | `/orders` | GET | ✅ | 352 |
+| `webhook` | `/webhook` | POST | ✅ | 292 |
+| `oauth_callback` | `/callback` | GET | ✅ | 319 |
+| `get_shipments` | `/orders` | GET | ✅ | 353 |
 
 </details>
 
 ### mercado_pago.py
 
 - Total de endpoints: 12
-- Protegidos: 10
+- Protegidos: 12
 - Gaps: 0
 
 <details>
@@ -473,16 +473,16 @@
 |--------|------|---------|-----|-------|
 | `create_preference` | `/create-preference` | POST | ✅ | 57 |
 | `process_payment` | `/process-payment` | POST | ✅ | 197 |
-| `webhook_test` | `/webhook` | GET | ❌ | 329 |
-| `webhook` | `/webhook` | POST | ❌ | 343 |
-| `get_payment_status` | `/payment/<payment_id>` | GET | ✅ | 405 |
-| `get_payment_methods` | `/payment-methods` | GET | ✅ | 464 |
-| `refund_payment` | `/refund` | POST | ✅ | 487 |
-| `create_card_token` | `/transparent/create-card-token` | POST | ✅ | 547 |
-| `process_transparent_payment` | `/transparent/process-payment` | POST | ✅ | 587 |
-| `validate_payment_data` | `/transparent/validate-payment` | POST | ✅ | 716 |
-| `get_installments` | `/transparent/installments` | GET | ✅ | 747 |
-| `get_transparent_payment_methods` | `/transparent/payment-methods` | GET | ✅ | 781 |
+| `webhook_test` | `/webhook` | GET | ✅ | 330 |
+| `webhook` | `/webhook` | POST | ✅ | 345 |
+| `get_payment_status` | `/payment/<payment_id>` | GET | ✅ | 407 |
+| `get_payment_methods` | `/payment-methods` | GET | ✅ | 466 |
+| `refund_payment` | `/refund` | POST | ✅ | 489 |
+| `create_card_token` | `/transparent/create-card-token` | POST | ✅ | 549 |
+| `process_transparent_payment` | `/transparent/process-payment` | POST | ✅ | 589 |
+| `validate_payment_data` | `/transparent/validate-payment` | POST | ✅ | 718 |
+| `get_installments` | `/transparent/installments` | GET | ✅ | 749 |
+| `get_transparent_payment_methods` | `/transparent/payment-methods` | GET | ✅ | 783 |
 
 </details>
 
@@ -512,7 +512,7 @@
 ### notifications.py
 
 - Total de endpoints: 13
-- Protegidos: 12
+- Protegidos: 13
 - Gaps: 0
 
 <details>
@@ -532,7 +532,7 @@
 | `create_notification_template` | `/admin/templates` | POST | ✅ | 357 |
 | `get_notification_logs` | `/admin/logs` | GET | ✅ | 399 |
 | `get_notification_stats` | `/admin/stats` | GET | ✅ | 491 |
-| `notifications_health` | `/health` | GET | ❌ | 564 |
+| `notifications_health` | `/health` | GET | ✅ | 565 |
 
 </details>
 
@@ -559,7 +559,7 @@
 ### payments.py
 
 - Total de endpoints: 7
-- Protegidos: 6
+- Protegidos: 7
 - Gaps: 0
 
 <details>
@@ -572,8 +572,8 @@
 | `get_payment` | `/<payment_id>` | GET | ✅ | 162 |
 | `get_order_payments` | `/order/<order_id>` | GET | ✅ | 193 |
 | `get_payment_methods` | `/methods` | GET | ✅ | 219 |
-| `payment_webhook` | `/webhook` | POST | ❌ | 258 |
-| `refund_payment` | `/refund/<payment_id>` | POST | ✅ | 296 |
+| `payment_webhook` | `/webhook` | POST | ✅ | 259 |
+| `refund_payment` | `/refund/<payment_id>` | POST | ✅ | 297 |
 
 </details>
 
@@ -608,7 +608,7 @@
 ### products.py
 
 - Total de endpoints: 8
-- Protegidos: 7
+- Protegidos: 8
 - Gaps: 0
 
 <details>
@@ -621,16 +621,16 @@
 | `debug_products` | `/debug-search` | GET | ✅ | 317 |
 | `get_product_by_id` | `/by-id/<product_id>` | GET | ✅ | 366 |
 | `get_product` | `/<product_id>` | GET | ✅ | 452 |
-| `get_categories` | `/categories` | GET | ❌ | 536 |
-| `get_featured_products` | `/featured` | GET | ✅ | 560 |
-| `search_products` | `/search` | GET | ✅ | 602 |
+| `get_categories` | `/categories` | GET | ✅ | 537 |
+| `get_featured_products` | `/featured` | GET | ✅ | 561 |
+| `search_products` | `/search` | GET | ✅ | 603 |
 
 </details>
 
 ### products_controller.py
 
 - Total de endpoints: 15
-- Protegidos: 14
+- Protegidos: 15
 - Gaps: 0
 
 <details>
@@ -649,10 +649,10 @@
 | `get_low_stock_products` | `/low-stock` | GET | ✅ | 239 |
 | `toggle_product_status` | `/<int:product_id>/toggle-status` | POST | ✅ | 247 |
 | `update_stock` | `/<int:product_id>/stock` | PUT | ✅ | 255 |
-| `get_product_categories` | `/categories` | GET | ❌ | 262 |
-| `bulk_create_products` | `/bulk` | POST | ✅ | 270 |
-| `bulk_update_products` | `/bulk` | PUT | ✅ | 281 |
-| `bulk_delete_products` | `/bulk` | DELETE | ✅ | 292 |
+| `get_product_categories` | `/categories` | GET | ✅ | 263 |
+| `bulk_create_products` | `/bulk` | POST | ✅ | 271 |
+| `bulk_update_products` | `/bulk` | PUT | ✅ | 282 |
+| `bulk_delete_products` | `/bulk` | DELETE | ✅ | 293 |
 
 </details>
 
@@ -688,7 +688,7 @@
 ### reviews_simple.py
 
 - Total de endpoints: 10
-- Protegidos: 9
+- Protegidos: 10
 - Gaps: 0
 
 <details>
@@ -698,14 +698,14 @@
 |--------|------|---------|-----|-------|
 | `get_all_reviews` | `/` | GET | ✅ | 48 |
 | `test_route` | `/test` | GET | ✅ | 70 |
-| `debug_routes` | `/debug-routes` | GET | ❌ | 76 |
-| `get_product_review_stats` | `/product/<product_id>/stats` | GET | ✅ | 82 |
-| `get_rating_distribution` | `/product/<product_id>/rating-distribution` | GET | ✅ | 128 |
-| `get_engagement_metrics` | `/product/<product_id>/engagement` | GET | ✅ | 173 |
-| `get_recent_reviews` | `/product/<product_id>/recent` | GET | ✅ | 214 |
-| `get_featured_reviews` | `/product/<product_id>/featured` | GET | ✅ | 316 |
-| `get_product_reviews` | `/product/<product_id>` | GET | ✅ | 395 |
-| `add_review` | `/add` | POST | ✅ | 515 |
+| `debug_routes` | `/debug-routes` | GET | ✅ | 77 |
+| `get_product_review_stats` | `/product/<product_id>/stats` | GET | ✅ | 83 |
+| `get_rating_distribution` | `/product/<product_id>/rating-distribution` | GET | ✅ | 129 |
+| `get_engagement_metrics` | `/product/<product_id>/engagement` | GET | ✅ | 174 |
+| `get_recent_reviews` | `/product/<product_id>/recent` | GET | ✅ | 215 |
+| `get_featured_reviews` | `/product/<product_id>/featured` | GET | ✅ | 317 |
+| `get_product_reviews` | `/product/<product_id>` | GET | ✅ | 396 |
+| `add_review` | `/add` | POST | ✅ | 516 |
 
 </details>
 
