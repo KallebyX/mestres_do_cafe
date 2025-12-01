@@ -431,13 +431,13 @@ export const toggleUserStatusAdmin = async (userId, isActive) => {
  */
 export const updateOrderStatusAdmin = async (orderId, status) => {
   try {
-    const response = await apiRequest(`/api/admin/orders/${orderId}/status`, {
-      method: 'PUT',
+    const response = await apiRequest(`/api/admin/orders/${orderId}/update-status`, {
+      method: 'POST',
       body: { status }
     });
     return response;
   } catch (error) {
-    console.error('❌ Erro em updateOrderStatusAdmin:', error);
+    console.error('Erro em updateOrderStatusAdmin:', error);
     return {
       success: false,
       error: error.message || 'Erro ao atualizar status do pedido'

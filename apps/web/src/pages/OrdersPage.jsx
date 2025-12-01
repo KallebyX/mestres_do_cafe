@@ -2,99 +2,141 @@ import React, { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import ShippingTracker from '../components/ShippingTracker';
-import { Package, Truck, Eye, X } from 'lucide-react';
+import { Package, Truck, Eye, X, RefreshCw } from 'lucide-react';
+import { ordersAPI } from '../services/api';
 
 const OrdersPage = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
-  
+
   const [orders, setOrders] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [selectedOrder, setSelectedOrder] = useState(null);
   const [filter, setFilter] = useState('all'); // all, pending, completed, cancelled
   const [trackingModal, setTrackingModal] = useState(null);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
     if (!user) {
       navigate('/login');
       return;
     }
-    
+
     loadOrders();
   }, [user, navigate]);
 
   const loadOrders = async () => {
     setIsLoading(true);
+    setError(null);
     try {
-      // Dados simulados de pedidos do usuário
-      const simulatedOrders = [
-        {
-          id: 'ORD-001',
-          date: '2024-01-20',
-          status: 'completed',
-          total: 89.50,
-          items: [
-            {
-              name: 'Café Santos Premium 250g',
-              quantity: 2,
-              price: 25.50
-            },
-            {
-              name: 'Café Bourbon Amarelo 500g',
-              quantity: 1,
-              price: 38.50
-            }
-          ],
-          shipping: {
-            method: 'Entrega Expressa',
-            address: 'Rua das Flores, 123 - São Paulo, SP',
-            tracking: 'BR123456789'
-          }
-        },
-        {
-          id: 'ORD-002',
-          date: '2024-01-25',
-          status: 'pending',
-          total: 127.00,
-          items: [
-            {
-              name: 'Café Catuaí Vermelho 1kg',
-              quantity: 1,
-              price: 65.00
-            },
-            {
-              name: 'Café Arábica Especial 500g',
-              quantity: 2,
-              price: 31.00
-            }
-          ],
-          shipping: {
-            method: 'Entrega Padrão',
-            address: 'Rua das Flores, 123 - São Paulo, SP',
-            tracking: null
-          }
-        }
-      ];
+      // Buscar pedidos do usuário logado usando a API real
+      const result = await ordersAPI.getAll({ user_id: user.id });
 
-      setOrders(simulatedOrders);
+      if (result.success && result.data) {
+        // Processar os pedidos da API para o formato esperado pelo componente
+        const ordersData = result.data.orders || [];
+
+        const processedOrders = await Promise.all(
+          ordersData.map(async (order) => {
+            // Buscar detalhes do pedido se necessário
+            let orderDetails = order;
+            if (!order.items || order.items.length === 0) {
+              const detailResult = await ordersAPI.getById(order.id);
+              if (detailResult.success && detailResult.data?.order) {
+                orderDetails = detailResult.data.order;
+              }
+            }
+
+            // Processar endereço de entrega (pode vir como string JSON)
+            let shippingAddress = orderDetails.shipping_address;
+            if (typeof shippingAddress === 'string') {
+              try {
+                shippingAddress = JSON.parse(shippingAddress);
+              } catch {
+                shippingAddress = { street: shippingAddress };
+              }
+            }
+
+            const addressString = shippingAddress
+              ? `${shippingAddress.street || ''}, ${shippingAddress.number || ''} - ${shippingAddress.city || ''}, ${shippingAddress.state || ''}`
+              : 'Endereço não disponível';
+
+            return {
+              id: order.order_number || order.id,
+              orderId: order.id,
+              date: order.created_at,
+              status: mapOrderStatus(order.status),
+              paymentStatus: order.payment_status,
+              total: parseFloat(order.total_amount) || 0,
+              items: (orderDetails.items || []).map(item => ({
+                name: item.product_name || 'Produto',
+                quantity: item.quantity || 1,
+                price: parseFloat(item.unit_price) || 0,
+                image: item.product_image
+              })),
+              shipping: {
+                method: getShippingMethodName(order.shipping_method),
+                address: addressString,
+                tracking: order.tracking_code || null
+              }
+            };
+          })
+        );
+
+        setOrders(processedOrders);
+      } else {
+        console.warn('Nenhum pedido encontrado ou erro na API:', result.error);
+        setOrders([]);
+      }
     } catch (error) {
-      console.error('❌ Erro ao carregar pedidos:', error);
+      console.error('Erro ao carregar pedidos:', error);
+      setError('Erro ao carregar seus pedidos. Tente novamente.');
       setOrders([]);
     } finally {
       setIsLoading(false);
     }
   };
 
+  // Mapear status do backend para o frontend
+  const mapOrderStatus = (status) => {
+    const statusMap = {
+      'pending': 'pending',
+      'processing': 'processing',
+      'shipped': 'shipped',
+      'delivered': 'completed',
+      'completed': 'completed',
+      'cancelled': 'cancelled',
+      'refunded': 'cancelled'
+    };
+    return statusMap[status] || status || 'pending';
+  };
+
+  // Nome amigável para método de envio
+  const getShippingMethodName = (method) => {
+    const methodNames = {
+      'pac': 'PAC - Correios',
+      'sedex': 'SEDEX - Correios',
+      'local': 'Entrega Local',
+      'express': 'Entrega Expressa',
+      'standard': 'Entrega Padrão'
+    };
+    return methodNames[method?.toLowerCase()] || method || 'Entrega Padrão';
+  };
+
   const getStatusInfo = (status) => {
     switch (status) {
       case 'pending':
         return { label: 'Pendente', color: 'bg-yellow-100 text-yellow-800' };
+      case 'processing':
+        return { label: 'Processando', color: 'bg-blue-100 text-blue-800' };
+      case 'shipped':
+        return { label: 'Enviado', color: 'bg-purple-100 text-purple-800' };
       case 'completed':
         return { label: 'Entregue', color: 'bg-green-100 text-green-800' };
       case 'cancelled':
         return { label: 'Cancelado', color: 'bg-red-100 text-red-800' };
       default:
-        return { label: 'Desconhecido', color: 'bg-gray-100 text-gray-800' };
+        return { label: status || 'Desconhecido', color: 'bg-gray-100 text-gray-800' };
     }
   };
 
@@ -104,7 +146,7 @@ const OrdersPage = () => {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-coffee-white font-montserrat">
+      <div className="min-h-screen bg-coffee-white font-montserrat py-12">
         <div className="max-w-4xl mx-auto text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-coffee-gold mx-auto mb-4"></div>
           <p className="text-coffee-gray">Carregando seus pedidos...</p>
@@ -113,22 +155,50 @@ const OrdersPage = () => {
     );
   }
 
+  if (error) {
+    return (
+      <div className="min-h-screen bg-coffee-white font-montserrat py-12">
+        <div className="max-w-4xl mx-auto text-center">
+          <div className="w-32 h-32 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-8">
+            <X className="w-16 h-16 text-red-500" />
+          </div>
+
+          <h1 className="font-cormorant font-bold text-4xl text-coffee-intense mb-4">
+            Erro ao carregar pedidos
+          </h1>
+
+          <p className="text-coffee-gray text-lg mb-8">
+            {error}
+          </p>
+
+          <button
+            onClick={loadOrders}
+            className="btn-primary inline-flex items-center px-8 py-3 gap-2"
+          >
+            <RefreshCw className="w-5 h-5" />
+            Tentar Novamente
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   if (orders.length === 0) {
     return (
-      <div className="min-h-screen bg-coffee-white font-montserrat">
+      <div className="min-h-screen bg-coffee-white font-montserrat py-12">
         <div className="max-w-4xl mx-auto text-center">
           <div className="w-32 h-32 bg-coffee-cream rounded-full flex items-center justify-center mx-auto mb-8">
-            <span className="text-coffee-gold text-6xl">📦</span>
+            <Package className="w-16 h-16 text-coffee-gold" />
           </div>
-          
+
           <h1 className="font-cormorant font-bold text-4xl text-coffee-intense mb-4">
             Nenhum pedido encontrado
           </h1>
-          
+
           <p className="text-coffee-gray text-lg mb-8">
             Você ainda não fez nenhum pedido. Que tal explorar nossos cafés especiais?
           </p>
-          
+
           <button
             onClick={() => navigate('/marketplace')}
             className="btn-primary inline-flex items-center px-8 py-3"
@@ -154,12 +224,12 @@ const OrdersPage = () => {
 
         {/* Filtros */}
         <div className="mb-8">
-          <div className="flex space-x-4 justify-center">
+          <div className="flex flex-wrap gap-2 justify-center">
             <button
               onClick={() => setFilter('all')}
-              className={`px-6 py-2 rounded-full transition-colors ${
-                filter === 'all' 
-                  ? 'bg-coffee-gold text-coffee-white' 
+              className={`px-4 py-2 rounded-full transition-colors text-sm ${
+                filter === 'all'
+                  ? 'bg-coffee-gold text-coffee-white'
                   : 'bg-coffee-cream text-coffee-gray hover:bg-coffee-gold/20'
               }`}
             >
@@ -167,23 +237,55 @@ const OrdersPage = () => {
             </button>
             <button
               onClick={() => setFilter('pending')}
-              className={`px-6 py-2 rounded-full transition-colors ${
-                filter === 'pending' 
-                  ? 'bg-coffee-gold text-coffee-white' 
+              className={`px-4 py-2 rounded-full transition-colors text-sm ${
+                filter === 'pending'
+                  ? 'bg-coffee-gold text-coffee-white'
                   : 'bg-coffee-cream text-coffee-gray hover:bg-coffee-gold/20'
               }`}
             >
               Pendentes ({orders.filter(o => o.status === 'pending').length})
             </button>
             <button
+              onClick={() => setFilter('processing')}
+              className={`px-4 py-2 rounded-full transition-colors text-sm ${
+                filter === 'processing'
+                  ? 'bg-coffee-gold text-coffee-white'
+                  : 'bg-coffee-cream text-coffee-gray hover:bg-coffee-gold/20'
+              }`}
+            >
+              Processando ({orders.filter(o => o.status === 'processing').length})
+            </button>
+            <button
+              onClick={() => setFilter('shipped')}
+              className={`px-4 py-2 rounded-full transition-colors text-sm ${
+                filter === 'shipped'
+                  ? 'bg-coffee-gold text-coffee-white'
+                  : 'bg-coffee-cream text-coffee-gray hover:bg-coffee-gold/20'
+              }`}
+            >
+              Enviados ({orders.filter(o => o.status === 'shipped').length})
+            </button>
+            <button
               onClick={() => setFilter('completed')}
-              className={`px-6 py-2 rounded-full transition-colors ${
-                filter === 'completed' 
-                  ? 'bg-coffee-gold text-coffee-white' 
+              className={`px-4 py-2 rounded-full transition-colors text-sm ${
+                filter === 'completed'
+                  ? 'bg-coffee-gold text-coffee-white'
                   : 'bg-coffee-cream text-coffee-gray hover:bg-coffee-gold/20'
               }`}
             >
               Entregues ({orders.filter(o => o.status === 'completed').length})
+            </button>
+          </div>
+
+          {/* Botão de refresh */}
+          <div className="flex justify-center mt-4">
+            <button
+              onClick={loadOrders}
+              disabled={isLoading}
+              className="flex items-center gap-2 text-coffee-gray hover:text-coffee-gold transition-colors text-sm"
+            >
+              <RefreshCw className={`w-4 h-4 ${isLoading ? 'animate-spin' : ''}`} />
+              Atualizar
             </button>
           </div>
         </div>

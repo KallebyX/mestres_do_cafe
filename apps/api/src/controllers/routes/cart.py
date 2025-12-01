@@ -195,12 +195,8 @@ def add_to_cart():
                 "message": "product_id é obrigatório"
             }), 400
 
-        # 🔥 CORREÇÃO: Para produtos com preços por peso, precisa especificar o preço
-        if not product_price_id and not weight:
-            return jsonify({
-                "success": False,
-                "message": "product_price_id ou weight é obrigatório para produtos com preços variados"
-            }), 400
+        # 🔥 CORREÇÃO: Verificar se o produto tem preços por peso antes de exigir
+        # Se não tiver preços específicos, permitir adicionar com preço padrão
 
         # Validar quantidade
         if quantity <= 0:
@@ -221,7 +217,13 @@ def add_to_cart():
         product_price = None
         unit_price = float(product.price)  # Preço padrão
         weight_selected = weight
-        
+
+        # Verificar se o produto tem preços por peso configurados
+        has_weight_prices = ProductPrice.query.filter_by(
+            product_id=product_id,
+            is_active=True
+        ).count() > 0
+
         if product_price_id:
             product_price = ProductPrice.query.filter_by(
                 id=product_price_id,
@@ -245,6 +247,17 @@ def add_to_cart():
             if product_price:
                 unit_price = float(product_price.price)
                 weight_selected = product_price.weight
+        elif has_weight_prices:
+            # Produto tem preços por peso mas nenhum foi especificado
+            # Usar o primeiro preço disponível como padrão
+            product_price = ProductPrice.query.filter_by(
+                product_id=product_id,
+                is_active=True
+            ).first()
+            if product_price:
+                unit_price = float(product_price.price)
+                weight_selected = product_price.weight
+        # Se não tem preços por peso, usar preço padrão do produto (já definido acima)
 
         # 🔒 CORREÇÃO DE RACE CONDITION - Usar transação atômica para carrinho
         import logging

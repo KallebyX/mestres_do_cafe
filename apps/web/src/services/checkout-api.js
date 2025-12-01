@@ -1,12 +1,23 @@
-const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:5001';
+// Usar variável Vite em vez de CRA
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5001/api';
 
 class CheckoutAPI {
+  // Função auxiliar para obter o token JWT
+  getAuthToken() {
+    return localStorage.getItem('auth_token');
+  }
+
   async makeRequest(endpoint, options = {}) {
-    const url = `${API_BASE_URL}${endpoint}`;
-    
+    // Remover /api do endpoint se o baseURL já incluir
+    const cleanEndpoint = endpoint.replace(/^\/api/, '');
+    const url = `${API_BASE_URL}${cleanEndpoint}`;
+
+    // Adicionar token de autenticação JWT
+    const token = this.getAuthToken();
     const defaultOptions = {
       headers: {
         'Content-Type': 'application/json',
+        ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
         ...options.headers,
       },
       ...options,
@@ -14,12 +25,12 @@ class CheckoutAPI {
 
     try {
       const response = await fetch(url, defaultOptions);
-      
+
       if (!response.ok) {
         const errorData = await response.json();
         throw new Error(errorData.error || `HTTP ${response.status}: ${response.statusText}`);
       }
-      
+
       return await response.json();
     } catch (error) {
       console.error(`Erro na requisição para ${endpoint}:`, error);
