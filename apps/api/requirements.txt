@@ -40,7 +40,7 @@ itsdangerous==2.1.2
 
 # Production Dependencies
 certifi==2023.7.22
-urllib3==2.0.4
+urllib3==2.6.0
 
 # Monitoring & Logging
 sentry-sdk[flask]==1.32.0
