@@ -1,0 +1,80 @@
+# Vercel Ignore File - Reduce serverless function size
+# This file specifies patterns for files/directories to exclude from deployment
+
+# Frontend - Built separately and served as static files
+apps/web/node_modules
+apps/web/.cache
+apps/web/coverage
+apps/web/*.log
+
+# Test files - Not needed in production
+apps/api/tests
+apps/api/conftest.py
+**/test_*.py
+**/*_test.py
+**/__pycache__
+**/*.pyc
+**/*.pyo
+**/*.pyd
+.pytest_cache
+.coverage
+htmlcov
+
+# Development files
+*.md
+!README.md
+docs
+.github
+.kilocode
+*.sh
+!deploy-production.sh
+
+# Python development
+*.egg-info
+*.egg
+.eggs
+venv
+.venv
+env
+.env.local
+.env.development
+
+# IDE and editor files
+.idea
+.vscode
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Git
+.git
+.gitignore
+
+# Build artifacts
+dist
+build
+*.log
+
+# Cache and temp files
+.cache
+tmp
+temp
+*.tmp
+
+# Database files (local development)
+*.db
+*.sqlite
+*.sqlite3
+instance
+
+# Root level scripts not needed for deployment
+generate_env.py
+insert_sample_data.py
+populate_neon_correct.py
+populate_neon_db.py
+diagnostic_complete.sh
+docker-dev.sh
+test-render-deploy.sh
+verify_deploy.sh
+scripts
