@@ -1,15 +1,10 @@
 import {
   ArrowRight,
   Award,
-  CheckCircle,
   Coffee,
-  Heart,
-  Play,
-  Shield,
-  Sparkles,
+  Leaf,
+  MapPin,
   Star,
-  Trophy,
-  Users
 } from 'lucide-react';
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
@@ -18,369 +13,212 @@ import { useTheme } from '../contexts/ThemeContext';
 
 const PremiumHeroSection = () => {
   const [isVisible, setIsVisible] = useState(false);
-  const [currentTestimonial, setCurrentTestimonial] = useState(0);
   const { isDark } = useTheme();
 
   useEffect(() => {
     setIsVisible(true);
-    
-    // Rotação automática de depoimentos
-    const interval = setInterval(() => {
-      setCurrentTestimonial((prev) => (prev + 1) % testimonials.length);
-    }, 4000);
-    
-    return () => clearInterval(interval);
   }, []);
 
-  const certifications = [
-    { name: "SCA Certified", icon: <Award className="w-4 h-4" />, color: "text-amber-600" },
-    { name: "Organic", icon: <Shield className="w-4 h-4" />, color: "text-green-600" },
-    { name: "Fair Trade", icon: <Heart className="w-4 h-4" />, color: "text-red-500" },
-    { name: "BSCA", icon: <Trophy className="w-4 h-4" />, color: "text-blue-600" }
-  ];
-
-  const testimonials = [
-    {
-      quote: "O melhor café que já experimentei. Cada xícara é uma experiência única!",
-      author: "Maria Silva",
-      role: "Barista Profissional",
-      rating: 5
-    },
-    {
-      quote: "Qualidade excepcional. Transformou minha rotina matinal completamente.",
-      author: "João Santos",
-      role: "Coffee Lover",
-      rating: 5
-    },
-    {
-      quote: "Nunca imaginei que café pudesse ter tantas nuances de sabor. Impressionante!",
-      author: "Ana Costa",
-      role: "Sommelier de Café",
-      rating: 5
-    }
-  ];
-
-  const stats = [
-    { number: "95%", label: "Clientes Satisfeitos", icon: <Users className="w-5 h-5" /> },
-    { number: "85+", label: "Pontuação SCA", icon: <Award className="w-5 h-5" /> },
-    { number: "50+", label: "Cafés Especiais", icon: <Coffee className="w-5 h-5" /> },
-    { number: "5★", label: "Avaliação Média", icon: <Star className="w-5 h-5" /> }
+  const highlights = [
+    { icon: <Award className="w-5 h-5" />, text: "SCA 85+" },
+    { icon: <Leaf className="w-5 h-5" />, text: "100% Arabica" },
+    { icon: <MapPin className="w-5 h-5" />, text: "Minas Gerais" },
   ];
 
   return (
-    <section className={`relative min-h-screen overflow-hidden ${
+    <section className={`relative min-h-[90vh] overflow-hidden ${
       isDark
         ? 'bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900'
-        : 'bg-gradient-to-br from-amber-50 via-orange-50 to-pink-50'
+        : 'bg-gradient-to-br from-amber-50 via-orange-50/50 to-white'
     }`}>
-      {/* Background Elements */}
-      <div className="absolute inset-0">
-        {/* Gradient Orbs */}
-        <div className={`absolute top-1/4 right-1/4 w-96 h-96 rounded-full blur-3xl animate-pulse ${
-          isDark
-            ? 'bg-gradient-to-br from-orange-500/20 to-amber-500/20'
-            : 'bg-gradient-to-br from-amber-200/40 to-pink-200/40'
-        }`}></div>
-        <div className={`absolute bottom-1/4 left-1/4 w-80 h-80 rounded-full blur-3xl animate-pulse ${
-          isDark
-            ? 'bg-gradient-to-br from-amber-500/20 to-orange-500/20'
-            : 'bg-gradient-to-br from-yellow-200/40 to-orange-200/40'
-        }`} style={{ animationDelay: '1s' }}></div>
-        
-        {/* Coffee Bean Shapes */}
-        <div className={`absolute top-20 left-10 w-3 h-3 rounded-full animate-float ${
-          isDark ? 'bg-brand-brown/40' : 'bg-brand-brown/20'
-        }`}></div>
-        <div className={`absolute top-40 right-20 w-2 h-2 rounded-full animate-float ${
-          isDark ? 'bg-brand-brown/50' : 'bg-brand-brown/30'
-        }`} style={{ animationDelay: '2s' }}></div>
-        <div className={`absolute bottom-32 left-20 w-4 h-4 rounded-full animate-float ${
-          isDark ? 'bg-brand-brown/30' : 'bg-brand-brown/15'
-        }`} style={{ animationDelay: '3s' }}></div>
+      {/* Subtle Background Pattern */}
+      <div className="absolute inset-0 opacity-[0.03]">
+        <div className="absolute inset-0" style={{
+          backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23b58150' fill-opacity='1'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`,
+        }} />
       </div>
 
-      <div className="relative container mx-auto px-4 py-12 lg:py-20 z-10">
+      <div className="relative container mx-auto px-4 sm:px-6 lg:px-8 py-16 lg:py-24 z-10">
         <div className="max-w-7xl mx-auto">
-          <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-center">
-            
+          <div className="grid lg:grid-cols-2 gap-12 lg:gap-20 items-center min-h-[70vh]">
+
             {/* Content Side */}
-            <div className={`space-y-8 ${isVisible ? 'animate-fade-in-up' : 'opacity-0'}`}>
-              
-              {/* Certifications Badge */}
-              <div className="flex flex-wrap gap-3 justify-center lg:justify-start">
-                {certifications.map((cert, index) => (
-                  <div
-                    key={cert.name}
-                    className={`flex items-center gap-2 px-3 py-2 backdrop-blur-sm rounded-full shadow-lg transform transition-all duration-300 hover:scale-105 ${isVisible ? 'animate-fade-in-up' : 'opacity-0'} ${
-                      isDark ? 'bg-gray-800/80' : 'bg-white/80'
-                    }`}
-                    style={{ animationDelay: `${index * 0.1}s` }}
-                  >
-                    <span className={cert.color}>{cert.icon}</span>
-                    <span className={`text-sm font-semibold ${
-                      isDark ? 'text-gray-300' : 'text-gray-700'
-                    }`}>{cert.name}</span>
-                  </div>
-                ))}
+            <div className={`space-y-8 text-center lg:text-left ${isVisible ? 'animate-fade-in-up' : 'opacity-0'}`}>
+
+              {/* Badge */}
+              <div className="inline-flex items-center gap-2 px-4 py-2 bg-brand-brown/10 rounded-full">
+                <div className="flex items-center gap-0.5">
+                  {[...Array(5)].map((_, i) => (
+                    <Star key={i} className="w-3.5 h-3.5 text-amber-500 fill-current" />
+                  ))}
+                </div>
+                <span className={`text-sm font-medium ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>
+                  +500 clientes satisfeitos
+                </span>
               </div>
 
               {/* Main Headline */}
-              <div className="text-center lg:text-left space-y-4">
-                <h1 className={`text-4xl sm:text-5xl lg:text-6xl xl:text-7xl font-bold leading-tight ${isVisible ? 'animate-fade-in-up animation-delay-200' : 'opacity-0'}`}>
-                  <span className={`block font-serif mb-2 ${
-                    isDark ? 'text-gray-100' : 'text-gray-800'
-                  }`}>
-                    Desperte Seus
+              <div className="space-y-4">
+                <h1 className="text-4xl sm:text-5xl lg:text-6xl xl:text-7xl font-bold leading-[1.1] tracking-tight">
+                  <span className={`block ${isDark ? 'text-white' : 'text-gray-900'}`}>
+                    Cafe Especial
                   </span>
-                  <span className="block text-transparent bg-clip-text bg-gradient-to-r from-amber-600 via-orange-600 to-orange-700 font-serif">
-                    Sentidos
+                  <span className="block text-brand-brown">
+                    Direto da Origem
                   </span>
                 </h1>
-                
-                <p className={`text-xl lg:text-2xl mb-6 leading-relaxed max-w-2xl mx-auto lg:mx-0 ${isVisible ? 'animate-fade-in-up animation-delay-400' : 'opacity-0'} ${
-                  isDark ? 'text-gray-300' : 'text-gray-600'
+
+                <p className={`text-lg lg:text-xl max-w-xl mx-auto lg:mx-0 leading-relaxed ${
+                  isDark ? 'text-gray-400' : 'text-gray-600'
                 }`}>
-                  Cafés especiais que contam histórias únicas do grão à xícara
+                  Selecionamos os melhores graos das montanhas de Minas Gerais.
+                  Torragem artesanal semanal para o maximo frescor e sabor.
                 </p>
-
-                <div className={`flex items-center justify-center lg:justify-start gap-3 ${isVisible ? 'animate-fade-in-up animation-delay-600' : 'opacity-0'}`}>
-                  <div className={`flex items-center gap-2 px-4 py-2 rounded-full ${
-                    isDark ? 'bg-brand-brown/20' : 'bg-brand-brown/10'
-                  }`}>
-                    <Sparkles className="w-5 h-5 text-brand-brown" />
-                    <span className="text-lg font-bold text-brand-brown">
-                      Pontuação SCA 85+
-                    </span>
-                  </div>
-                  <div className="flex items-center gap-1">
-                    {[...Array(5)].map((_, i) => (
-                      <Star key={i} className="w-5 h-5 text-yellow-400 fill-current" />
-                    ))}
-                    <span className={`ml-2 text-lg font-semibold ${
-                      isDark ? 'text-gray-300' : 'text-gray-700'
-                    }`}>4.9/5</span>
-                  </div>
-                </div>
               </div>
 
-              {/* CTA Buttons */}
-              <div className={`flex flex-col sm:flex-row gap-4 justify-center lg:justify-start ${isVisible ? 'animate-fade-in-up animation-delay-800' : 'opacity-0'}`}>
-                <Link to="/marketplace" className="group">
-                  <Button 
-                    size="lg"
-                    className="w-full sm:w-auto bg-gradient-to-r from-brand-brown to-orange-600 hover:from-brand-brown/90 hover:to-orange-700 text-white px-8 py-6 text-lg font-bold shadow-2xl hover:shadow-3xl transform hover:-translate-y-2 transition-all duration-300 rounded-2xl group-hover:scale-105"
-                  >
-                    <div className="flex items-center gap-3">
-                      <Coffee className="w-6 h-6" />
-                      Explorar Cafés Especiais
-                      <ArrowRight className="w-6 h-6 group-hover:translate-x-1 transition-transform" />
-                    </div>
-                  </Button>
-                </Link>
-
-                <Link to="/sobre" className="group">
-                  <Button
-                    size="lg"
-                    variant="outline"
-                    className="w-full sm:w-auto border-2 border-brand-brown text-brand-brown hover:bg-brand-brown hover:text-white px-8 py-6 text-lg font-bold shadow-lg hover:shadow-xl transform hover:-translate-y-1 transition-all duration-300 rounded-2xl group-hover:scale-105"
-                  >
-                    <div className="flex items-center gap-3">
-                      <Play className="w-6 h-6 group-hover:scale-110 transition-transform" />
-                      Nossa História
-                    </div>
-                  </Button>
-                </Link>
-              </div>
-
-              {/* Social Proof Stats */}
-              <div className={`grid grid-cols-2 lg:grid-cols-4 gap-4 ${isVisible ? 'animate-fade-in-up animation-delay-1000' : 'opacity-0'}`}>
-                {stats.map((stat, index) => (
+              {/* Highlights */}
+              <div className="flex flex-wrap items-center justify-center lg:justify-start gap-4">
+                {highlights.map((item, index) => (
                   <div
-                    key={stat.label}
-                    className={`text-center p-4 backdrop-blur-sm rounded-2xl shadow-lg hover:shadow-xl transform hover:-translate-y-1 transition-all duration-300 ${
-                      isDark ? 'bg-gray-800/60' : 'bg-white/60'
+                    key={index}
+                    className={`flex items-center gap-2 px-4 py-2.5 rounded-xl border transition-all duration-300 ${
+                      isDark
+                        ? 'bg-gray-800/50 border-gray-700 text-gray-300'
+                        : 'bg-white/80 border-gray-200 text-gray-700 shadow-sm'
                     }`}
                   >
-                    <div className="flex items-center justify-center mb-2 text-brand-brown">
-                      {stat.icon}
-                    </div>
-                    <div className="text-2xl font-bold text-brand-brown font-serif">
-                      {stat.number}
-                    </div>
-                    <div className={`text-sm font-medium ${
-                      isDark ? 'text-gray-400' : 'text-gray-600'
-                    }`}>
-                      {stat.label}
-                    </div>
+                    <span className="text-brand-brown">{item.icon}</span>
+                    <span className="text-sm font-semibold">{item.text}</span>
                   </div>
                 ))}
               </div>
 
-              {/* Testimonial Carousel */}
-              <div className={`backdrop-blur-sm rounded-2xl p-6 shadow-xl ${isVisible ? 'animate-fade-in-up animation-delay-1200' : 'opacity-0'} ${
-                isDark ? 'bg-gray-800/80' : 'bg-white/80'
-              }`}>
-                <div className="flex items-center gap-4 mb-4">
-                  <div className="flex items-center gap-1">
-                    {[...Array(5)].map((_, i) => (
-                      <Star key={i} className="w-4 h-4 text-yellow-400 fill-current" />
-                    ))}
-                  </div>
-                  <span className={`text-sm ${
-                    isDark ? 'text-gray-400' : 'text-gray-500'
-                  }`}>Depoimento verificado</span>
-                </div>
-                
-                <blockquote className={`text-lg italic mb-4 transition-all duration-500 ${
-                  isDark ? 'text-gray-300' : 'text-gray-700'
-                }`}>
-                  &ldquo;{testimonials[currentTestimonial].quote}&rdquo;
-                </blockquote>
-                
-                <div className="flex items-center gap-3">
-                  <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
-                    isDark ? 'bg-brand-brown/30' : 'bg-brand-brown/20'
-                  }`}>
-                    <span className="text-brand-brown font-bold">
-                      {testimonials[currentTestimonial].author.charAt(0)}
-                    </span>
-                  </div>
-                  <div>
-                    <div className={`font-semibold ${
-                      isDark ? 'text-gray-200' : 'text-gray-800'
-                    }`}>
-                      {testimonials[currentTestimonial].author}
-                    </div>
-                    <div className={`text-sm ${
-                      isDark ? 'text-gray-400' : 'text-gray-600'
-                    }`}>
-                      {testimonials[currentTestimonial].role}
-                    </div>
-                  </div>
-                </div>
+              {/* CTA Buttons */}
+              <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start pt-4">
+                <Link to="/marketplace">
+                  <Button
+                    size="lg"
+                    className="w-full sm:w-auto bg-brand-brown hover:bg-brand-brown/90 text-white px-8 py-6 text-base font-semibold shadow-lg hover:shadow-xl transition-all duration-300 rounded-xl group"
+                  >
+                    Explorar Cafes
+                    <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                  </Button>
+                </Link>
 
-                {/* Testimonial Indicators */}
-                <div className="flex justify-center gap-2 mt-4">
-                  {testimonials.map((_, index) => (
-                    <button
-                      key={index}
-                      onClick={() => setCurrentTestimonial(index)}
-                      className={`w-2 h-2 rounded-full transition-all duration-300 ${
-                        index === currentTestimonial
-                          ? 'bg-brand-brown w-8'
-                          : isDark ? 'bg-gray-600' : 'bg-gray-300'
-                      }`}
-                    />
-                  ))}
+                <Link to="/sobre">
+                  <Button
+                    size="lg"
+                    variant="outline"
+                    className={`w-full sm:w-auto px-8 py-6 text-base font-semibold rounded-xl transition-all duration-300 ${
+                      isDark
+                        ? 'border-gray-600 text-gray-300 hover:bg-gray-800'
+                        : 'border-gray-300 text-gray-700 hover:bg-gray-50'
+                    }`}
+                  >
+                    Nossa Historia
+                  </Button>
+                </Link>
+              </div>
+
+              {/* Trust Indicators */}
+              <div className={`flex items-center justify-center lg:justify-start gap-6 pt-4 ${
+                isDark ? 'text-gray-500' : 'text-gray-400'
+              }`}>
+                <div className="flex items-center gap-2">
+                  <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M9 12L11 14L15 10M21 12C21 16.9706 16.9706 21 12 21C7.02944 21 3 16.9706 3 12C3 7.02944 7.02944 3 12 3C16.9706 3 21 7.02944 21 12Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                  </svg>
+                  <span className="text-sm">Frete gratis +R$200</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M9 12L11 14L15 10M21 12C21 16.9706 16.9706 21 12 21C7.02944 21 3 16.9706 3 12C3 7.02944 7.02944 3 12 3C16.9706 3 21 7.02944 21 12Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                  </svg>
+                  <span className="text-sm">Pagamento seguro</span>
                 </div>
               </div>
             </div>
 
             {/* Visual Side */}
-            <div className={`relative ${isVisible ? 'animate-fade-in-up animation-delay-400' : 'opacity-0'}`}>
-              <div className="relative">
+            <div className={`relative ${isVisible ? 'animate-fade-in-up' : 'opacity-0'}`} style={{ animationDelay: '200ms' }}>
+              <div className="relative max-w-lg mx-auto lg:max-w-none">
+
                 {/* Main Image Container */}
-                <div className="relative w-full max-w-lg mx-auto lg:max-w-none">
-                  <div className={`aspect-square rounded-3xl shadow-2xl overflow-hidden transform rotate-3 hover:rotate-0 transition-transform duration-500 ${
-                    isDark
-                      ? 'bg-gradient-to-br from-gray-700 via-gray-600 to-gray-800'
-                      : 'bg-gradient-to-br from-amber-100 via-orange-100 to-pink-100'
+                <div className={`relative aspect-square rounded-3xl overflow-hidden shadow-2xl ${
+                  isDark
+                    ? 'bg-gradient-to-br from-gray-800 to-gray-900'
+                    : 'bg-gradient-to-br from-amber-100 to-orange-100'
+                }`}>
+                  <img
+                    src="/caneca-mestres-cafe.svg"
+                    alt="Cafe Especial Mestres do Cafe"
+                    className="w-full h-full object-cover"
+                    loading="eager"
+                    onError={(e) => {
+                      e.target.style.display = 'none';
+                      e.target.nextSibling.style.display = 'flex';
+                    }}
+                  />
+                  <div className={`hidden w-full h-full items-center justify-center ${
+                    isDark ? 'bg-gray-800' : 'bg-amber-50'
                   }`}>
-                    <img
-                      src="/caneca-mestres-cafe.svg"
-                      alt="Mestres do Café - Cafés Especiais Premium"
-                      className="w-full h-full object-cover hover:scale-110 transition-transform duration-700"
-                      loading="lazy"
-                      onError={(e) => {
-                        e.target.style.display = 'none';
-                        e.target.nextSibling.style.display = 'flex';
-                      }}
-                    />
-                    <div className={`hidden w-full h-full items-center justify-center flex-col ${
-                      isDark
-                        ? 'bg-gradient-to-br from-gray-700 to-gray-800'
-                        : 'bg-gradient-to-br from-amber-100 to-orange-100'
-                    }`}>
-                      <div className={`w-32 h-32 rounded-3xl flex items-center justify-center mb-6 ${
-                        isDark ? 'bg-brand-brown/30' : 'bg-brand-brown/20'
-                      }`}>
-                        <Coffee className="w-20 h-20 text-brand-brown" />
-                      </div>
-                      <h3 className="text-2xl font-bold text-brand-brown font-serif">
-                        Mestres do Café
-                      </h3>
-                    </div>
+                    <Coffee className="w-32 h-32 text-brand-brown/40" />
                   </div>
 
-                  {/* Floating Elements */}
-                  <div className={`absolute -top-4 -right-4 backdrop-blur-sm rounded-2xl p-4 shadow-xl animate-float ${
-                    isDark ? 'bg-gray-800/90' : 'bg-white/90'
-                  }`}>
-                    <div className="flex items-center gap-2">
-                      <CheckCircle className="w-6 h-6 text-green-500" />
-                      <div>
-                        <div className={`text-sm font-bold ${
-                          isDark ? 'text-gray-200' : 'text-gray-800'
-                        }`}>Certificado SCA</div>
-                        <div className={`text-xs ${
-                          isDark ? 'text-gray-400' : 'text-gray-600'
-                        }`}>85+ Pontos</div>
-                      </div>
-                    </div>
-                  </div>
+                  {/* Decorative gradient overlay */}
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/10 to-transparent" />
+                </div>
 
-                  <div className={`absolute -bottom-4 -left-4 backdrop-blur-sm rounded-2xl p-4 shadow-xl animate-float ${
-                    isDark ? 'bg-gray-800/90' : 'bg-white/90'
-                  }`} style={{ animationDelay: '1s' }}>
-                    <div className="flex items-center gap-2">
-                      <Trophy className="w-6 h-6 text-amber-500" />
-                      <div>
-                        <div className={`text-sm font-bold ${
-                          isDark ? 'text-gray-200' : 'text-gray-800'
-                        }`}>Premio BSCA</div>
-                        <div className={`text-xs ${
-                          isDark ? 'text-gray-400' : 'text-gray-600'
-                        }`}>2024</div>
-                      </div>
+                {/* Floating Card - SCA Score */}
+                <div className={`absolute -top-4 -right-4 lg:top-8 lg:-right-8 p-4 rounded-2xl shadow-xl ${
+                  isDark ? 'bg-gray-800 border border-gray-700' : 'bg-white'
+                }`}>
+                  <div className="flex items-center gap-3">
+                    <div className="w-12 h-12 rounded-xl bg-brand-brown/10 flex items-center justify-center">
+                      <Award className="w-6 h-6 text-brand-brown" />
                     </div>
-                  </div>
-
-                  <div className="absolute top-1/2 -right-8 bg-gradient-to-r from-brand-brown to-orange-600 text-white rounded-2xl p-4 shadow-xl animate-float" style={{ animationDelay: '2s' }}>
-                    <div className="text-center">
-                      <div className="text-2xl font-bold font-serif">500+</div>
-                      <div className="text-xs">Clientes Felizes</div>
+                    <div>
+                      <p className={`text-2xl font-bold ${isDark ? 'text-white' : 'text-gray-900'}`}>85+</p>
+                      <p className={`text-xs font-medium ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>Pontos SCA</p>
                     </div>
                   </div>
                 </div>
 
-                {/* Background Decorative Elements */}
-                <div className="absolute inset-0 -z-10">
-                  <div className={`absolute top-8 left-8 w-20 h-20 rounded-full blur-xl animate-pulse ${
-                    isDark
-                      ? 'bg-gradient-to-br from-orange-500/20 to-amber-500/20'
-                      : 'bg-gradient-to-br from-amber-200/30 to-orange-200/30'
-                  }`}></div>
-                  <div className={`absolute bottom-8 right-8 w-32 h-32 rounded-full blur-xl animate-pulse ${
-                    isDark
-                      ? 'bg-gradient-to-br from-amber-500/20 to-orange-500/20'
-                      : 'bg-gradient-to-br from-pink-200/30 to-orange-200/30'
-                  }`} style={{ animationDelay: '1.5s' }}></div>
+                {/* Floating Card - Fresh Roast */}
+                <div className={`absolute -bottom-4 -left-4 lg:bottom-8 lg:-left-8 p-4 rounded-2xl shadow-xl ${
+                  isDark ? 'bg-gray-800 border border-gray-700' : 'bg-white'
+                }`}>
+                  <div className="flex items-center gap-3">
+                    <div className="w-12 h-12 rounded-xl bg-green-500/10 flex items-center justify-center">
+                      <Leaf className="w-6 h-6 text-green-600" />
+                    </div>
+                    <div>
+                      <p className={`text-sm font-bold ${isDark ? 'text-white' : 'text-gray-900'}`}>Torra Fresca</p>
+                      <p className={`text-xs ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>Semanal</p>
+                    </div>
+                  </div>
                 </div>
+
               </div>
             </div>
           </div>
         </div>
       </div>
 
-      {/* Scroll Indicator */}
-      <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 animate-bounce">
-        <div className={`w-6 h-10 border-2 rounded-full flex justify-center ${
-          isDark ? 'border-brand-brown/70' : 'border-brand-brown/50'
-        }`}>
-          <div className={`w-1 h-3 rounded-full mt-2 animate-pulse ${
-            isDark ? 'bg-brand-brown/70' : 'bg-brand-brown/50'
-          }`}></div>
-        </div>
+      {/* Bottom Wave/Divider */}
+      <div className="absolute bottom-0 left-0 right-0">
+        <svg
+          viewBox="0 0 1440 120"
+          fill="none"
+          xmlns="http://www.w3.org/2000/svg"
+          className={`w-full h-auto ${isDark ? 'text-gray-900' : 'text-white'}`}
+          preserveAspectRatio="none"
+        >
+          <path
+            d="M0 120L60 110C120 100 240 80 360 70C480 60 600 60 720 65C840 70 960 80 1080 85C1200 90 1320 90 1380 90L1440 90V120H1380C1320 120 1200 120 1080 120C960 120 840 120 720 120C600 120 480 120 360 120C240 120 120 120 60 120H0V120Z"
+            fill="currentColor"
+          />
+        </svg>
       </div>
     </section>
   );
