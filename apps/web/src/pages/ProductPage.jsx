@@ -231,22 +231,52 @@ const ProductPage = () => {
             {/* Galeria de Imagens */}
             <div className="space-y-4">
               {/* Imagem Principal */}
-              <div className="aspect-square bg-gradient-coffee/10 rounded-lg flex items-center justify-center">
-                <Coffee className="w-32 h-32 text-coffee-gold" />
+              <div className="aspect-square bg-gradient-to-br from-amber-50 to-orange-50 rounded-2xl overflow-hidden shadow-lg">
+                {product.images && product.images[activeImageIndex] ? (
+                  <img
+                    src={product.images[activeImageIndex]}
+                    alt={product.name}
+                    className="w-full h-full object-cover hover:scale-105 transition-transform duration-500"
+                    onError={(e) => {
+                      e.target.style.display = 'none';
+                      e.target.nextSibling.style.display = 'flex';
+                    }}
+                  />
+                ) : null}
+                <div
+                  className={`w-full h-full items-center justify-center bg-gradient-to-br from-amber-50 to-orange-100 ${
+                    product.images && product.images[activeImageIndex] ? 'hidden' : 'flex'
+                  }`}
+                >
+                  <Coffee className="w-32 h-32 text-brand-brown/40" />
+                </div>
               </div>
-              
+
               {/* Thumbnails */}
               {product.images && product.images.length > 1 && (
-                <div className="grid grid-cols-4 gap-2">
+                <div className="grid grid-cols-4 gap-3">
                   {product.images.map((image, index) => (
                     <button
                       key={index}
                       onClick={() => setActiveImageIndex(index)}
-                      className={`aspect-square bg-gradient-coffee/10 rounded-lg flex items-center justify-center transition-all ${
-                        activeImageIndex === index ? 'ring-2 ring-coffee-gold' : ''
+                      className={`aspect-square rounded-xl overflow-hidden transition-all duration-200 ${
+                        activeImageIndex === index
+                          ? 'ring-2 ring-brand-brown ring-offset-2'
+                          : 'opacity-70 hover:opacity-100'
                       }`}
                     >
-                      <Coffee className="w-8 h-8 text-coffee-gold" />
+                      <img
+                        src={image}
+                        alt={`${product.name} - ${index + 1}`}
+                        className="w-full h-full object-cover"
+                        onError={(e) => {
+                          e.target.style.display = 'none';
+                          e.target.nextSibling.style.display = 'flex';
+                        }}
+                      />
+                      <div className="hidden w-full h-full items-center justify-center bg-amber-50">
+                        <Coffee className="w-8 h-8 text-brand-brown/40" />
+                      </div>
                     </button>
                   ))}
                 </div>
@@ -497,7 +527,7 @@ const ProductPage = () => {
           {/* Produtos Relacionados */}
           {relatedProducts.length > 0 && (
             <div>
-              <h2 className="font-cormorant font-bold text-3xl text-coffee-intense text-center mb-12">
+              <h2 className="font-heading font-bold text-3xl text-brand-dark text-center mb-12">
                 Produtos Relacionados
               </h2>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -505,26 +535,43 @@ const ProductPage = () => {
                   <Link
                     key={relatedProduct.id}
                     to={`/produto/${relatedProduct.id}`}
-                    className="card hover:shadow-gold hover:transform hover:scale-105 transition-all duration-300"
+                    className="group bg-white rounded-2xl shadow-md hover:shadow-xl overflow-hidden transition-all duration-300 hover:-translate-y-1"
                   >
-                    <div className="aspect-square bg-gradient-coffee/10 flex items-center justify-center rounded-t-lg">
-                      <Coffee className="w-12 h-12 text-coffee-gold" />
+                    <div className="aspect-square bg-gradient-to-br from-amber-50 to-orange-50 overflow-hidden">
+                      {relatedProduct.images && relatedProduct.images[0] ? (
+                        <img
+                          src={relatedProduct.images[0]}
+                          alt={relatedProduct.name}
+                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                          onError={(e) => {
+                            e.target.style.display = 'none';
+                            e.target.nextSibling.style.display = 'flex';
+                          }}
+                        />
+                      ) : null}
+                      <div
+                        className={`w-full h-full items-center justify-center ${
+                          relatedProduct.images && relatedProduct.images[0] ? 'hidden' : 'flex'
+                        }`}
+                      >
+                        <Coffee className="w-16 h-16 text-brand-brown/30" />
+                      </div>
                     </div>
-                    <div className="p-4">
-                      <h3 className="font-cormorant font-bold text-coffee-intense text-lg mb-2 line-clamp-2">
+                    <div className="p-5">
+                      <h3 className="font-heading font-bold text-brand-dark text-lg mb-2 line-clamp-2 group-hover:text-brand-brown transition-colors">
                         {relatedProduct.name}
                       </h3>
-                      <p className="text-coffee-gray text-sm mb-3 line-clamp-2">
+                      <p className="text-gray-600 text-sm mb-3 line-clamp-2">
                         {relatedProduct.description}
                       </p>
                       <div className="flex items-center justify-between">
-                        <span className="font-cormorant font-bold text-xl text-coffee-gold">
+                        <span className="font-bold text-xl text-brand-brown">
                           R$ {relatedProduct.price.toFixed(2).replace('.', ',')}
                         </span>
                         {relatedProduct.rating && (
                           <div className="flex items-center gap-1">
-                            <Star className="w-4 h-4 text-yellow-400 fill-current" />
-                            <span className="text-yellow-600 text-sm">{relatedProduct.rating}</span>
+                            <Star className="w-4 h-4 text-amber-400 fill-current" />
+                            <span className="text-amber-600 text-sm font-medium">{relatedProduct.rating}</span>
                           </div>
                         )}
                       </div>

@@ -240,6 +240,23 @@ export const getProductById = async (productId) => {
   }
 };
 
+/**
+ * Alias para getProductById - compatibilidade com imports genéricos
+ * @param {string} table - Nome da tabela (deve ser 'products')
+ * @param {number|string} id - ID do registro
+ */
+export const getById = async (table, id) => {
+  if (table === 'products') {
+    return getProductById(id);
+  }
+
+  console.warn(`⚠️ getById: tabela '${table}' não suportada. Use 'products'.`);
+  return {
+    success: false,
+    error: `Tabela '${table}' não implementada. Este projeto usa apenas Flask API + PostgreSQL.`
+  };
+};
+
 // =============================================
 // FUNÇÕES ADMINISTRATIVAS ESPECÍFICAS
 // =============================================
