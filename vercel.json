@@ -6,9 +6,12 @@
   "outputDirectory": "apps/web/dist",
   "installCommand": "cd apps/web && npm install",
   "functions": {
-    "api/**/*.py": {
+    "api/index.py": {
       "runtime": "@vercel/python@4.3.1",
-      "maxDuration": 30
+      "maxDuration": 30,
+      "memory": 1024,
+      "includeFiles": "api/**,apps/api/src/**,requirements.txt",
+      "excludeFiles": "{apps/web/**,apps/api/tests/**,docs/**,.github/**,**/*.md,**/__pycache__/**,**/*.pyc,**/*.pyo,*.sh,scripts/**,.git/**,.kilocode/**,**/*.sqlite,**/*.db}"
     }
   },
   "rewrites": [
