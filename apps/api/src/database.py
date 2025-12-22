@@ -1,5 +1,6 @@
 """
-Database configuration for SQLAlchemy with PostgreSQL
+Database configuration for SQLAlchemy with Neon PostgreSQL (Serverless)
+Optimized for Vercel serverless functions
 """
 
 import logging
@@ -21,6 +22,7 @@ db = SQLAlchemy()
 def init_db(app) -> None:
     """
     Inicializa o banco de dados SQLAlchemy com a aplicação Flask
+    Otimizado para Neon PostgreSQL Serverless
 
     Args:
         app: Instância da aplicação Flask
@@ -30,21 +32,22 @@ def init_db(app) -> None:
     database_url = get_database_url()
     app.config["SQLALCHEMY_DATABASE_URI"] = database_url
     app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
-    
-    # Configurações otimizadas para PostgreSQL
-    if database_url.startswith("postgresql://"):
+
+    # Configurações otimizadas para Neon PostgreSQL Serverless
+    if database_url and database_url.startswith("postgresql"):
         app.config["SQLALCHEMY_ENGINE_OPTIONS"] = {
             "pool_pre_ping": True,
-            "pool_recycle": 300,
-            "pool_size": 10,
-            "max_overflow": 20,
-            "pool_timeout": 30,
+            "pool_recycle": 60,  # Neon: conexões podem fechar rapidamente
+            "pool_size": 1,  # Serverless: manter pool pequeno
+            "max_overflow": 2,  # Serverless: limitar conexões extras
+            "pool_timeout": 10,  # Timeout mais curto para serverless
             "connect_args": {
-                "options": "-c timezone=utc"
+                "options": "-c timezone=utc",
+                "sslmode": "require"  # Neon requer SSL
             }
         }
     else:
-        # Configurações para SQLite (desenvolvimento)
+        # Configurações para SQLite (desenvolvimento local)
         app.config["SQLALCHEMY_ENGINE_OPTIONS"] = {
             "pool_pre_ping": True,
             "pool_recycle": 300,

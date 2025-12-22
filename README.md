@@ -1,241 +1,192 @@
-# 🚀 Mestres do Café - Sistema E-commerce & ERP
+# Mestres do Cafe - Sistema E-commerce & ERP
 
-Sistema completo de e-commerce e ERP para torrefação artesanal de café, com integração de pagamentos (Mercado Pago), frete (Melhor Envio) e gestão completa.
+Sistema completo de e-commerce e ERP para torrefacao artesanal de cafe, com integracao de pagamentos (Mercado Pago), frete (Melhor Envio) e armazenamento de imagens (AWS S3).
 
-## 📋 Características Principais
-
-### Frontend (React + Vite)
-- **E-commerce Completo**: Catálogo de produtos, carrinho, checkout
-- **Sistema de Avaliações**: Reviews de produtos com rating
-- **Dashboard Admin**: Gestão de produtos, pedidos, clientes
-- **Analytics**: Dashboards com gráficos e métricas
-- **Design Responsivo**: Mobile-first com Tailwind CSS
-- **PWA Ready**: Funciona offline e pode ser instalado
-
-### Backend (Flask + PostgreSQL)
-- **API RESTful**: Endpoints completos para todas funcionalidades
-- **Autenticação JWT**: Sistema seguro com tokens
-- **Integração Mercado Pago**: Pagamentos PIX, cartão, boleto
-- **Integração Melhor Envio**: Cálculo de frete e rastreamento
-- **Sistema de Cache**: Redis para otimização
-- **WebHooks**: Processamento assíncrono de eventos
-
-### Funcionalidades
-- ✅ Catálogo de produtos com filtros
-- ✅ Carrinho de compras
-- ✅ Sistema de cupons
-- ✅ Múltiplos métodos de pagamento
-- ✅ Cálculo de frete automático
-- ✅ Rastreamento de pedidos
-- ✅ Sistema de notificações
-- ✅ Gestão de estoque
-- ✅ Relatórios e analytics
-- ✅ Sistema de reviews
-- ✅ Blog integrado
-- ✅ Newsletter
-
-## 🛠️ Stack Tecnológica
+## Stack Tecnologica
 
 ### Frontend
-- React 18
-- Vite 5
-- Tailwind CSS
-- React Router DOM
-- React Query
-- React Hook Form
-- Recharts (gráficos)
+- React 18 + Vite 5
+- Tailwind CSS + Radix UI
+- React Router DOM 6
+- TanStack Query
 - Axios
 
 ### Backend
-- Python 3.9+
-- Flask 2.3
-- SQLAlchemy (ORM)
-- PostgreSQL
-- Redis (cache)
-- Gunicorn (produção)
+- Python 3.9+ / Flask 2.3
+- SQLAlchemy + PostgreSQL (Neon)
 - JWT Extended
+- Mercado Pago SDK
+- Boto3 (AWS S3)
 
 ### Infraestrutura
-- Render (deploy)
-- PostgreSQL (banco de dados)
-- Redis (cache e sessões)
-- GitHub (versionamento)
+- **Deploy**: Vercel (Serverless)
+- **Database**: Neon PostgreSQL (Serverless)
+- **Storage**: AWS S3 (Imagens)
+- **Pagamentos**: Mercado Pago
+- **Frete**: Melhor Envio
 
-## 🚀 Instalação Local
+## Deploy no Vercel
 
-### Pré-requisitos
-- Python 3.9+
-- Node.js 18+
-- PostgreSQL 15+
-- Redis (opcional)
+### 1. Preparacao
 
-### 1. Clone o repositório
 ```bash
-git clone https://github.com/seu-usuario/mestres_do_cafe.git
+# Clone o repositorio
+git clone https://github.com/KallebyX/mestres_do_cafe.git
 cd mestres_do_cafe
+
+# Copie o arquivo de ambiente
+cp .env.example .env
 ```
 
-### 2. Configure o Backend
+### 2. Configure o Neon Database
+
+1. Acesse [Neon Console](https://console.neon.tech)
+2. Crie um novo projeto
+3. Copie a connection string
+4. Adicione ao Vercel como `DATABASE_URL`
+
+### 3. Configure o AWS S3
+
+1. Crie um bucket no [AWS S3](https://console.aws.amazon.com/s3)
+2. Configure CORS no bucket:
+```json
+[
+  {
+    "AllowedHeaders": ["*"],
+    "AllowedMethods": ["GET", "PUT", "POST", "DELETE"],
+    "AllowedOrigins": ["*"],
+    "ExposeHeaders": []
+  }
+]
+```
+3. Crie credenciais IAM com permissoes S3
+4. Adicione as variaveis ao Vercel
+
+### 4. Deploy no Vercel
 
 ```bash
-# Instale as dependências
+# Instale Vercel CLI
+npm i -g vercel
+
+# Deploy
+vercel
+
+# Configure variaveis de ambiente no dashboard
+```
+
+Ou conecte o repositorio diretamente no [Vercel Dashboard](https://vercel.com/new).
+
+### Variaveis de Ambiente (Vercel)
+
+```env
+# Obrigatorias
+SECRET_KEY=your-secret-key-min-32-chars
+JWT_SECRET_KEY=your-jwt-secret-key-min-32-chars
+DATABASE_URL=postgresql://user:pass@ep-xxx.neon.tech/db?sslmode=require
+
+# AWS S3
+AWS_ACCESS_KEY_ID=your-access-key
+AWS_SECRET_ACCESS_KEY=your-secret-key
+AWS_S3_BUCKET=mestres-do-cafe-images
+AWS_REGION=sa-east-1
+
+# Mercado Pago
+MERCADO_PAGO_ACCESS_TOKEN=your-token
+MERCADO_PAGO_PUBLIC_KEY=your-public-key
+
+# Melhor Envio
+MELHOR_ENVIO_API_KEY=your-api-key
+```
+
+## Desenvolvimento Local
+
+### Backend
+
+```bash
 cd apps/api
 pip install -r requirements.txt
-
-# Configure as variáveis de ambiente
-cp ../../.env.example ../../.env
-# Edite o arquivo .env com suas configurações
-
-# Crie o banco de dados
-createdb mestres_cafe
-
-# Inicie o servidor
-python app.py
+python src/app.py
 ```
 
-### 3. Configure o Frontend
+### Frontend
 
 ```bash
-# Em outro terminal
 cd apps/web
 npm install
-
-# Inicie o servidor de desenvolvimento
 npm run dev
 ```
 
-### 4. Acesse o sistema
+### URLs Locais
 - Frontend: http://localhost:3000
-- API: http://localhost:5002/api/health
-- Admin: http://localhost:3000/admin
+- API: http://localhost:5001/api/health
 
-## 📦 Deploy no Render
-
-### Deploy Rápido (via render.yaml)
-
-1. Fork este repositório
-2. Conecte no Render
-3. Crie um Blueprint e selecione o repositório
-4. Configure as variáveis de ambiente necessárias
-5. Deploy automático será iniciado
-
-### Deploy Manual
-
-Siga o guia completo em [DEPLOY_RENDER.md](DEPLOY_RENDER.md)
-
-## 🔐 Variáveis de Ambiente
-
-### Essenciais
-```env
-# Segurança
-SECRET_KEY=sua-chave-secreta-32-chars
-JWT_SECRET_KEY=sua-jwt-key-32-chars
-
-# Database
-DATABASE_URL=postgresql://usuario:senha@localhost:5432/mestres_cafe
-
-# APIs Externas
-MERCADO_PAGO_ACCESS_TOKEN=seu-token
-MELHOR_ENVIO_API_KEY=sua-api-key
-```
-
-Veja [.env.example](.env.example) para lista completa.
-
-## 📚 Documentação
-
-- [Guia de Deploy](DEPLOY_RENDER.md)
-- [API Documentation](docs/api.md) *(em breve)*
-- [Frontend Components](docs/components.md) *(em breve)*
-- [Database Schema](docs/database.md) *(em breve)*
-
-## 🧪 Testes
-
-```bash
-# Backend
-cd apps/api
-pytest
-
-# Frontend
-cd apps/web
-npm test
-```
-
-## 📊 Estrutura do Projeto
+## Estrutura do Projeto
 
 ```
 mestres_do_cafe/
+├── api/                    # Vercel Serverless entry point
+│   └── index.py
 ├── apps/
 │   ├── api/                # Backend Flask
-│   │   ├── src/
-│   │   │   ├── app.py       # Aplicação principal
-│   │   │   ├── config.py    # Configurações
-│   │   │   ├── database.py  # Conexão DB
-│   │   │   ├── controllers/ # Rotas/Endpoints
-│   │   │   ├── models/      # Modelos SQLAlchemy
-│   │   │   ├── services/    # Lógica de negócio
-│   │   │   └── utils/       # Utilitários
-│   │   ├── requirements.txt
-│   │   ├── Dockerfile
-│   │   ├── build.sh
-│   │   └── start.sh
-│   │
-│   └── web/                 # Frontend React
-│       ├── src/
-│       │   ├── App.jsx      # Componente principal
-│       │   ├── components/  # Componentes React
-│       │   ├── pages/       # Páginas/Rotas
-│       │   ├── services/    # Serviços/API calls
-│       │   ├── contexts/    # Context API
-│       │   └── config/      # Configurações
-│       ├── package.json
-│       └── vite.config.js
-│
-├── render.yaml              # Config Render
-├── .env.example             # Variáveis exemplo
-└── README.md                # Este arquivo
+│   │   └── src/
+│   │       ├── app.py
+│   │       ├── config.py
+│   │       ├── database.py
+│   │       ├── controllers/
+│   │       ├── models/
+│   │       └── services/
+│   └── web/                # Frontend React
+│       └── src/
+│           ├── components/
+│           ├── pages/
+│           └── services/
+├── vercel.json
+├── requirements.txt
+└── .env.example
 ```
 
-## 🤝 Contribuindo
+## APIs Integradas
 
-1. Fork o projeto
-2. Crie uma feature branch (`git checkout -b feature/AmazingFeature`)
-3. Commit suas mudanças (`git commit -m 'Add AmazingFeature'`)
-4. Push para a branch (`git push origin feature/AmazingFeature`)
-5. Abra um Pull Request
+### Mercado Pago
+- PIX, Cartao de Credito, Boleto
+- Webhooks para atualizacao de status
+- Checkout Pro integrado
 
-## 📝 Licença
+### Melhor Envio
+- Calculo de frete multi-transportadoras
+- Geracao de etiquetas
+- Rastreamento de envios
 
-Este projeto está sob licença MIT. Veja [LICENSE](LICENSE) para mais detalhes.
+### AWS S3
+- Upload de imagens de produtos
+- Armazenamento seguro
+- CDN integrado
 
-## 👥 Equipe
+## Endpoints Principais
 
-- **Desenvolvimento**: Sistema desenvolvido para Mestres do Café
-- **Stack**: Python/Flask + React/Vite
-- **Deploy**: Otimizado para Render
+```
+GET    /api/health          # Health check
+GET    /api/products        # Lista produtos
+POST   /api/auth/login      # Login
+POST   /api/cart/add        # Adicionar ao carrinho
+POST   /api/checkout        # Finalizar compra
+POST   /api/media/upload    # Upload de imagem (S3)
+```
 
-## 📞 Suporte
+## Testes
 
-- Email: suporte@mestresdocafe.com.br
-- Issues: [GitHub Issues](https://github.com/seu-usuario/mestres_do_cafe/issues)
+```bash
+# Backend
+cd apps/api && pytest
 
-## 🎯 Roadmap
+# Frontend
+cd apps/web && npm test
+```
 
-- [x] MVP E-commerce
-- [x] Integração Mercado Pago
-- [x] Integração Melhor Envio
-- [x] Dashboard Admin
-- [ ] App Mobile (React Native)
-- [ ] Sistema de Assinaturas
-- [ ] Marketplace Multi-vendor
-- [ ] IA para Recomendações
-- [ ] Sistema de Pontos/Gamificação
+## Licenca
 
-## 🏆 Status do Projeto
-
-![Version](https://img.shields.io/badge/version-1.0.0-blue.svg)
-![Status](https://img.shields.io/badge/status-production%20ready-green.svg)
-![License](https://img.shields.io/badge/license-MIT-green.svg)
+MIT License
 
 ---
 
-**Desenvolvido com ☕ e 💜 para Mestres do Café**
+Desenvolvido para Mestres do Cafe

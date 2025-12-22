@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-// Configuração da API baseada no ambiente
+// Configuracao da API baseada no ambiente - Vercel + Neon
 const API_CONFIG = {
   development: {
     baseURL: import.meta.env.VITE_API_URL || 'http://localhost:5001/api',
@@ -8,11 +8,11 @@ const API_CONFIG = {
   },
   production: {
     baseURL: import.meta.env.VITE_API_URL || '/api',
-    timeout: 30000, // Maior timeout em produção devido a cold starts
+    timeout: 30000, // Maior timeout em producao devido a cold starts do Vercel
   },
   staging: {
-    baseURL: import.meta.env.VITE_API_URL || 'https://mestres-cafe-api-staging.onrender.com/api',
-    timeout: 20000,
+    baseURL: import.meta.env.VITE_API_URL || '/api',
+    timeout: 25000,
   }
 };
 

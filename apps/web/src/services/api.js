@@ -714,9 +714,75 @@ export const reportsAPI = {
       const response = await api.post('/admin/reports/generate', { type: reportType, filters });
       return { success: true, data: response.data };
     } catch (error) {
-      return { 
-        success: false, 
-        error: error.response?.data?.error || 'Erro ao gerar relatório' 
+      return {
+        success: false,
+        error: error.response?.data?.error || 'Erro ao gerar relatório'
+      };
+    }
+  }
+};
+
+// =============================================
+// SERVICOS DE MIDIA/S3
+// =============================================
+
+export const mediaAPI = {
+  upload: async (file, folder = 'products') => {
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+      formData.append('folder', folder);
+
+      const response = await api.post('/media/upload', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' }
+      });
+      return { success: true, data: response.data };
+    } catch (error) {
+      return {
+        success: false,
+        error: error.response?.data?.error || 'Erro ao fazer upload da imagem'
+      };
+    }
+  },
+
+  uploadMultiple: async (files, folder = 'products') => {
+    try {
+      const formData = new FormData();
+      files.forEach(file => formData.append('files', file));
+      formData.append('folder', folder);
+
+      const response = await api.post('/media/upload/multiple', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' }
+      });
+      return { success: true, data: response.data };
+    } catch (error) {
+      return {
+        success: false,
+        error: error.response?.data?.error || 'Erro ao fazer upload das imagens'
+      };
+    }
+  },
+
+  delete: async (key) => {
+    try {
+      const response = await api.delete('/media/delete', { data: { key } });
+      return { success: true, data: response.data };
+    } catch (error) {
+      return {
+        success: false,
+        error: error.response?.data?.error || 'Erro ao deletar imagem'
+      };
+    }
+  },
+
+  list: async (prefix = '', limit = 50) => {
+    try {
+      const response = await api.get('/media/list', { params: { prefix, limit } });
+      return { success: true, data: response.data };
+    } catch (error) {
+      return {
+        success: false,
+        error: error.response?.data?.error || 'Erro ao listar imagens'
       };
     }
   }

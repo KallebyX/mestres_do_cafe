@@ -138,98 +138,83 @@ class DevelopmentConfig(Config):
 
 
 class ProductionConfig(Config):
-    """Configuração de produção"""
+    """Configuracao de producao - Vercel + Neon"""
 
     DEBUG = False
     TESTING = False
     ENV = "production"
 
-    # Database PostgreSQL (Render fornece automaticamente)
-    SQLALCHEMY_DATABASE_URI = os.environ.get("DATABASE_URL")
-    
-    # Configure SQLAlchemy for production
+    # Database - Neon PostgreSQL Serverless
+    SQLALCHEMY_DATABASE_URI = os.environ.get("DATABASE_URL") or os.environ.get("NEON_DATABASE_URL")
+
+    # SQLAlchemy otimizado para Neon Serverless
     SQLALCHEMY_ENGINE_OPTIONS = {
         "pool_pre_ping": True,
-        "pool_recycle": 300,
-        "pool_size": 10,
-        "max_overflow": 20,
-        "pool_timeout": 30,
+        "pool_recycle": 60,  # Neon: conexoes fecham rapidamente
+        "pool_size": 1,  # Serverless: pool pequeno
+        "max_overflow": 2,  # Serverless: limitar conexoes extras
+        "pool_timeout": 10,
         "echo": False
     }
-    
-    # Redis Cache (Render fornece automaticamente) 
-    REDIS_URL = os.environ.get("REDIS_URL")
+
+    # AWS S3 Configuration
+    AWS_S3_BUCKET = os.environ.get("AWS_S3_BUCKET", "mestres-do-cafe-images")
+    AWS_REGION = os.environ.get("AWS_REGION", "sa-east-1")
 
     @classmethod
     def init_app(cls, app):
-        """Inicializar configurações da aplicação"""
+        """Inicializar configuracoes da aplicacao"""
         Config.init_app(app)
 
-        # Validar configurações críticas para produção
+        # Validar configuracoes criticas para producao
         required_vars = ["SECRET_KEY", "JWT_SECRET_KEY"]
         missing_vars = [var for var in required_vars if not os.environ.get(var)]
-        
-        if missing_vars:
-            raise ValueError(
-                f"Variáveis obrigatórias em produção ausentes: {missing_vars}"
-            )
-            
-        # DATABASE_URL será fornecida automaticamente pelo Render
-        if not os.environ.get("DATABASE_URL"):
-            app.logger.warning("DATABASE_URL não configurada - será fornecida pelo Render")
 
-    # CORS restritivo para Render
+        if missing_vars:
+            # Em Vercel, gerar secrets temporarios se nao configurados
+            import secrets as sec_module
+            for var in missing_vars:
+                secret_value = sec_module.token_urlsafe(32)
+                os.environ[var] = secret_value
+                app.config[var] = secret_value
+                app.logger.warning(f"Generated temporary {var} for production")
+
+        # Verificar DATABASE_URL
+        if not os.environ.get("DATABASE_URL") and not os.environ.get("NEON_DATABASE_URL"):
+            app.logger.warning("DATABASE_URL ou NEON_DATABASE_URL nao configurada")
+
+    # CORS para Vercel
     CORS_ORIGINS = (
         os.environ.get("CORS_ORIGINS", "").split(",")
         if os.environ.get("CORS_ORIGINS")
         else [
-            "https://mestres-cafe-web.onrender.com",
-            "https://mestres-cafe-web-*.onrender.com",
+            "https://*.vercel.app",
+            "https://mestres-do-cafe.vercel.app",
+            "https://mestresdocafe.com.br",
+            "https://www.mestresdocafe.com.br",
         ]
     )
 
-    # Headers de segurança obrigatórios
+    # Headers de seguranca obrigatorios
     SECURITY_HEADERS = {
-        "Strict-Transport-Security": "max-age = 31536000; includeSubDomains; preload",
+        "Strict-Transport-Security": "max-age=31536000; includeSubDomains; preload",
         "X-Content-Type-Options": "nosniff",
         "X-Frame-Options": "DENY",
-        "X-XSS-Protection": "1; mode = block",
+        "X-XSS-Protection": "1; mode=block",
         "Referrer-Policy": "strict-origin-when-cross-origin",
         "Content-Security-Policy": (
             "default-src 'self'; "
-            "script-src 'self' 'unsafe-inline' https://js.stripe.com; "
+            "script-src 'self' 'unsafe-inline' https://sdk.mercadopago.com; "
             "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; "
             "font-src 'self' https://fonts.gstatic.com; "
-            "img-src 'self' data: https:; "
-            "connect-src 'self' https://api.stripe.com https://viacep.com.br; "
-            "frame-src https://js.stripe.com;"
+            "img-src 'self' data: https: blob:; "
+            "connect-src 'self' https://api.mercadopago.com https://api.melhorenvio.com.br https://viacep.com.br https://*.s3.amazonaws.com; "
+            "frame-src https://www.mercadopago.com.br;"
         ),
     }
 
-    # Rate limiting agressivo
-    RATELIMIT_STORAGE_URL = os.environ.get("REDIS_URL", "redis://localhost:6379")
-    RATELIMIT_DEFAULT = "100 per hour"
-
-    @classmethod
-    def init_app(cls, app):
-        Config.init_app(app)
-
-        # Configurar logging seguro
-        import logging
-        from logging.handlers import RotatingFileHandler
-
-        if not app.debug:
-            file_handler = RotatingFileHandler(
-                "logs/mestres_cafe.log", maxBytes = 10240000, backupCount = 10
-            )
-            file_handler.setFormatter(
-                logging.Formatter(
-                    "%(asctime)s %(levelname)s: %(message)s [in %(pathname)s:%(lineno)d]"
-                )
-            )
-            file_handler.setLevel(logging.INFO)
-            app.logger.addHandler(file_handler)
-            app.logger.setLevel(logging.INFO)
+    # Rate limiting
+    RATELIMIT_DEFAULT = "200 per hour"
 
 
 class TestingConfig(Config):

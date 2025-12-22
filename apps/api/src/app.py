@@ -35,8 +35,6 @@ try:
     from controllers.routes.admin_products import admin_products_bp
     from controllers.routes.coupons import coupons_bp
     from controllers.routes.analytics import analytics_bp  # Analytics tracking
-    from controllers.routes.debug import debug_bp  # Debug endpoints
-    from controllers.routes.setup import setup_bp  # Setup endpoints
     from controllers.routes.notifications import notifications_bp  # REATIVADO: serviço implementado
     from controllers.routes.melhor_envio import melhor_envio_bp  # REATIVADO: serviço implementado
     
@@ -65,6 +63,7 @@ try:
     from controllers.routes.erp import erp_bp
     from controllers.routes.financial import financial_bp
     from controllers.routes.crm import crm_bp
+    from controllers.routes.media import media_bp
 
     # from services.webhook_processor import webhook_processor  # REMOVIDO: depende de services/
     from middleware.error_handler import register_error_handlers
@@ -180,8 +179,6 @@ def create_app(config_name = None):
     app.register_blueprint(orders_bp, url_prefix="/api/orders")
     app.register_blueprint(payments_bp, url_prefix="/api/payments")
     app.register_blueprint(analytics_bp, url_prefix="/api/analytics")  # Analytics tracking
-    app.register_blueprint(debug_bp, url_prefix="/api/debug")  # Debug endpoints
-    app.register_blueprint(setup_bp, url_prefix="/api/setup")  # Setup endpoints
 
     # Registra blueprints de funcionalidades avançadas (somente os existentes)
     app.register_blueprint(coupons_bp, url_prefix="/api/coupons")
@@ -264,6 +261,14 @@ def create_app(config_name = None):
         logger.info("🎯 Sistema de CRM Avançado (Pipeline, Funil, Automações) ATIVADO!")
     except Exception as e:
         logger.warning(f"⚠️ Falha ao registrar CRM blueprint: {e}")
+
+    # 📸 MEDIA/S3 UPLOAD SYSTEM
+    try:
+        app.register_blueprint(media_bp, url_prefix="/api/media")
+        logger.info("✅ Blueprint Media registrado com sucesso!")
+        logger.info("📸 Sistema de Upload S3 ATIVADO!")
+    except Exception as e:
+        logger.warning(f"⚠️ Falha ao registrar Media blueprint: {e}")
 
     # Rota principal removida - será tratada pelo catch-all para servir React
 
