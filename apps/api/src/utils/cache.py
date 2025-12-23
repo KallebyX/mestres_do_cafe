@@ -1,4 +1,3 @@
-import redis
 import json
 import pickle
 import hashlib
@@ -6,6 +5,14 @@ from datetime import datetime, timedelta
 from functools import wraps
 from flask import current_app
 from typing import Any, Optional, Union, Dict, List
+
+# Optional Redis import - fallback to in-memory cache if not available
+try:
+    import redis
+    REDIS_AVAILABLE = True
+except ImportError:
+    redis = None
+    REDIS_AVAILABLE = False
 
 class CacheManager:
     """Gerenciador de cache com Redis"""
@@ -18,6 +25,9 @@ class CacheManager:
     @property
     def redis_client(self):
         """Lazy initialization do cliente Redis"""
+        if not REDIS_AVAILABLE:
+            return None
+
         if self._redis_client is None:
             try:
                 # Try to get the Redis URL from app config if available
