@@ -50,8 +50,7 @@ def create_app_for_db():
 
     database_url = get_database_url()
     if not database_url:
-        logger.info("Usando SQLite para desenvolvimento local")
-        database_url = "sqlite:///mestres_cafe_dev.db"
+        raise RuntimeError("DATABASE_URL não configurada - impossível inicializar banco")
 
     app.config['SQLALCHEMY_DATABASE_URI'] = database_url
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
@@ -307,7 +306,16 @@ def main():
         safe_url = database_url.split('@')[-1] if '@' in database_url else database_url
         logger.info(f"📍 Conectando ao banco: ***@{safe_url}")
     else:
-        logger.info("📍 Usando SQLite local para desenvolvimento")
+        # Skip database initialization if no PostgreSQL URL is configured
+        # This happens during Vercel build when DATABASE_URL isn't set
+        # SQLite is not available in Vercel's serverless Python runtime
+        logger.warning("⚠️ Nenhuma URL de banco de dados PostgreSQL configurada")
+        logger.info("⏭️ Pulando inicialização do banco de dados durante o build")
+        logger.info("ℹ️ O banco será inicializado na primeira requisição com DATABASE_URL configurada")
+        logger.info("=" * 60)
+        logger.info("✅ BUILD CONCLUÍDO (sem inicialização de banco)")
+        logger.info("=" * 60)
+        sys.exit(0)
 
     # Passo 1: Criar tabelas
     logger.info("\n📋 Passo 1: Criando estrutura do banco...")
