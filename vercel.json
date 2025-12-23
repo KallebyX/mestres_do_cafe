@@ -2,7 +2,7 @@
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "version": 2,
   "framework": "vite",
-  "buildCommand": "cd apps/web && npm install && npm run build:production",
+  "buildCommand": "pip install -r requirements.txt && PYTHONPATH=apps/api/src python scripts/init_database.py && cd apps/web && npm install && npm run build:production",
   "outputDirectory": "apps/web/dist",
   "installCommand": "cd apps/web && npm install",
   "functions": {

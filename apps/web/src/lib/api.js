@@ -461,3 +461,65 @@ export const updateOrderStatusAdmin = async (orderId, status) => {
     };
   }
 };
+
+// =============================================
+// FUNÇÕES DE CONFIGURAÇÕES DO SISTEMA (SETTINGS)
+// =============================================
+
+/**
+ * API de Configurações do Sistema
+ */
+export const settingsAPI = {
+  // Status geral das integrações
+  getIntegrationStatus: async () => {
+    return await apiRequest('/admin/settings/status');
+  },
+
+  // Todas as configurações
+  getAllSettings: async () => {
+    return await apiRequest('/admin/settings/');
+  },
+
+  // Logs de auditoria
+  getAuditLogs: async (page = 1, perPage = 50) => {
+    return await apiRequest(`/admin/settings/audit-logs?page=${page}&per_page=${perPage}`);
+  },
+
+  // Mercado Pago
+  getMercadoPagoSettings: async () => {
+    return await apiRequest('/admin/settings/mercado-pago');
+  },
+
+  updateMercadoPagoSettings: async (data) => {
+    return await apiRequest('/admin/settings/mercado-pago', {
+      method: 'POST',
+      body: data
+    });
+  },
+
+  testMercadoPagoConnection: async (environment = 'sandbox') => {
+    return await apiRequest('/admin/settings/mercado-pago/test', {
+      method: 'POST',
+      body: { environment }
+    });
+  },
+
+  // Melhor Envio
+  getMelhorEnvioSettings: async () => {
+    return await apiRequest('/admin/settings/melhor-envio');
+  },
+
+  updateMelhorEnvioSettings: async (data) => {
+    return await apiRequest('/admin/settings/melhor-envio', {
+      method: 'POST',
+      body: data
+    });
+  },
+
+  testMelhorEnvioConnection: async (environment = 'sandbox') => {
+    return await apiRequest('/admin/settings/melhor-envio/test', {
+      method: 'POST',
+      body: { environment }
+    });
+  }
+};
