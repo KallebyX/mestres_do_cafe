@@ -97,7 +97,7 @@ class UserPoint(db.Model):
     admin_note = Column(Text)  # Nota do admin (para pontos manuais)
 
     # Metadados
-    metadata = Column(JSONB)  # Dados adicionais
+    extra_data = Column(JSONB)  # Dados adicionais
 
     # Expiração
     expires_at = Column(DateTime(timezone=True))  # Pontos podem expirar
@@ -131,7 +131,7 @@ class UserPoint(db.Model):
             'reference_id': str(self.reference_id) if self.reference_id else None,
             'description': self.description,
             'admin_note': self.admin_note,
-            'metadata': self.metadata,
+            'extra_data': self.extra_data,
             'expires_at': self.expires_at.isoformat() if self.expires_at else None,
             'is_expired': self.is_expired,
             'created_at': self.created_at.isoformat(),
