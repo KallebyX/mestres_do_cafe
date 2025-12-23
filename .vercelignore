@@ -77,4 +77,7 @@ diagnostic_complete.sh
 docker-dev.sh
 test-render-deploy.sh
 verify_deploy.sh
-scripts
+
+# Scripts directory - exclude shell scripts but keep init_database.py for build
+scripts/*.sh
+scripts/init-db.sql
