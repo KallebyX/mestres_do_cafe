@@ -71,26 +71,35 @@ def init_db(app) -> None:
             else:
                 logger.info("✅ Conexão com SQLite estabelecida com sucesso")
                 
-            # Criar tabelas se não existirem (apenas em produção)
-            if app.config.get('ENV') == 'production' and database_url.startswith("postgresql://"):
+            # Criar tabelas se não existirem (sempre verificar)
+            if database_url.startswith("postgresql"):
                 try:
                     # Verificar se as tabelas existem
                     result = db.session.execute(text("""
-                        SELECT COUNT(*) 
-                        FROM information_schema.tables 
-                        WHERE table_schema = 'public' 
+                        SELECT COUNT(*)
+                        FROM information_schema.tables
+                        WHERE table_schema = 'public'
                         AND table_name IN ('products', 'users', 'orders')
                     """)).scalar()
-                    
-                    if result == 0:
+
+                    if result < 3:
                         logger.info("🔧 Criando tabelas do banco de dados...")
                         db.create_all()
                         logger.info("✅ Tabelas criadas com sucesso")
+
+                        # Criar super admin se não existir
+                        _create_default_admin()
                     else:
                         logger.info(f"✅ Banco já possui {result} tabelas principais")
-                        
+
                 except Exception as e:
                     logger.warning(f"⚠️ Erro ao verificar/criar tabelas: {e}")
+                    # Tentar criar tabelas mesmo assim
+                    try:
+                        db.create_all()
+                        _create_default_admin()
+                    except Exception as create_error:
+                        logger.error(f"❌ Falha ao criar tabelas: {create_error}")
                     
         except SQLAlchemyError as e:
             logger.error(f"❌ Erro ao conectar com banco de dados: {e}")
@@ -282,6 +291,73 @@ def health_check() -> dict:
             "connection": "failed",
             "error": str(e),
         }
+
+
+def _create_default_admin() -> None:
+    """
+    Cria o super admin padrão se não existir.
+    Chamado automaticamente durante a inicialização do banco.
+    """
+    try:
+        import bcrypt
+        from models import User
+
+        # Verificar se já existe um admin
+        admin = User.query.filter_by(email='admin@mestresdocafe.com.br').first()
+        if admin:
+            logger.info("ℹ️ Super admin já existe")
+            return
+
+        # Criar hash da senha usando bcrypt (mesmo método da API)
+        password = 'MestresCafe2024!'
+        password_hash = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
+
+        admin = User(
+            email='admin@mestresdocafe.com.br',
+            username='admin',
+            name='Super Administrador',
+            first_name='Super',
+            last_name='Administrador',
+            password_hash=password_hash,
+            is_admin=True,
+            is_active=True,
+            role='admin',
+            points=0,
+            level='bronze'
+        )
+        db.session.add(admin)
+
+        # Criar também um usuário de teste
+        test_user = User.query.filter_by(email='teste@pato.com').first()
+        if not test_user:
+            test_password = '123456'
+            test_hash = bcrypt.hashpw(test_password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
+
+            test_user = User(
+                email='teste@pato.com',
+                username='teste',
+                name='Usuário de Teste',
+                first_name='Usuário',
+                last_name='de Teste',
+                password_hash=test_hash,
+                is_admin=False,
+                is_active=True,
+                role='customer',
+                points=0,
+                level='bronze'
+            )
+            db.session.add(test_user)
+            logger.info("✅ Usuário de teste criado: teste@pato.com / 123456")
+
+        db.session.commit()
+        logger.info("✅ Super admin criado: admin@mestresdocafe.com.br / MestresCafe2024!")
+
+    except Exception as e:
+        logger.error(f"❌ Erro ao criar admin padrão: {e}")
+        try:
+            db.session.rollback()
+        except:
+            pass
 
 
 # Aliases para compatibilidade
