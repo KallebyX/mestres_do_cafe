@@ -7,6 +7,7 @@ import {
   Edit,
   Package,
   Plus,
+  Settings,
   ShoppingCart,
   Trash2,
   Truck,
@@ -17,6 +18,7 @@ import ProductModal from '../components/ProductModal';
 import UserModal from '../components/UserModal';
 import AdminDashboardBase from '../components/admin/AdminDashboardBase';
 import ShippingAdmin from '../components/ShippingAdmin';
+import AdminSettings from '../components/AdminSettings';
 import {
   CommonStatCards,
   DataTable,
@@ -97,7 +99,8 @@ const AdminDashboard = () => {
     { id: 'orders', label: 'Pedidos', icon: ShoppingCart, badge: orders.length },
     { id: 'shipping', label: 'Envios', icon: Truck },
     { id: 'blog', label: 'Blog', icon: BookOpen, badge: blogPosts.length },
-    { id: 'analytics', label: 'Analytics', icon: Activity }
+    { id: 'analytics', label: 'Analytics', icon: Activity },
+    { id: 'settings', label: 'Configurações', icon: Settings }
   ];
 
   // Load dashboard data
@@ -1225,6 +1228,11 @@ const AdminDashboard = () => {
     return <ShippingAdmin />;
   };
 
+  // Render settings tab
+  const renderSettingsTab = () => {
+    return <AdminSettings />;
+  };
+
   // Render tab content based on active tab
   const renderTabContent = () => {
     switch (activeTab) {
@@ -1242,6 +1250,8 @@ const AdminDashboard = () => {
         return renderBlogTab();
       case 'analytics':
         return renderAnalyticsTab();
+      case 'settings':
+        return renderSettingsTab();
       default:
         return renderOverviewTab();
     }

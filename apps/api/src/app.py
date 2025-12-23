@@ -64,6 +64,7 @@ try:
     from controllers.routes.financial import financial_bp
     from controllers.routes.crm import crm_bp
     from controllers.routes.media import media_bp
+    from controllers.routes.settings import settings_bp
 
     # from services.webhook_processor import webhook_processor  # REMOVIDO: depende de services/
     from middleware.error_handler import register_error_handlers
@@ -269,6 +270,14 @@ def create_app(config_name = None):
         logger.info("📸 Sistema de Upload S3 ATIVADO!")
     except Exception as e:
         logger.warning(f"⚠️ Falha ao registrar Media blueprint: {e}")
+
+    # ⚙️ SETTINGS/ADMIN CONFIG SYSTEM
+    try:
+        app.register_blueprint(settings_bp, url_prefix="/api/admin/settings")
+        logger.info("✅ Blueprint Settings registrado com sucesso!")
+        logger.info("⚙️ Sistema de Configurações Admin ATIVADO!")
+    except Exception as e:
+        logger.warning(f"⚠️ Falha ao registrar Settings blueprint: {e}")
 
     # Rota principal removida - será tratada pelo catch-all para servir React
 
