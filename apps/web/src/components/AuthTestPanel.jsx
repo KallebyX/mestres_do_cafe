@@ -18,7 +18,7 @@ const AuthTestPanel = () => {
 
     // Test 1: API Connection
     try {
-      const response = await fetch('http://localhost:5000/api/health');
+      const response = await fetch('/api/health');
       const data = await response.json();
       if (data.status === 'OK') {
         addTestResult('Conexão API', true, 'Servidor respondendo');
@@ -158,7 +158,7 @@ const AuthTestPanel = () => {
         <div className="mt-3 p-3 bg-gray-100 rounded text-xs font-mono">
           <div>Token: {authAPI.getToken() ? '✅ Presente' : '❌ Ausente'}</div>
           <div>LocalStorage User: {localStorage.getItem('user') ? '✅ Presente' : '❌ Ausente'}</div>
-          <div>API URL: http://localhost:5000</div>
+          <div>API URL: {window.location.origin}/api</div>
           <div>Frontend URL: {window.location.origin}</div>
         </div>
       </details>
