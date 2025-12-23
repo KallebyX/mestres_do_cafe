@@ -138,7 +138,6 @@ def debug_database():
             'error': f'Erro no debug: {str(e)}'
         }), 500
 @auth_bp.route("/login", methods=["POST"])
-@jwt_required()
 @rate_limit('auth_login')
 def login():
     try:
@@ -258,7 +257,6 @@ def login():
 
 
 @auth_bp.route("/register", methods=["POST"])
-@jwt_required()
 @rate_limit('auth_register')
 def register():
     try:
@@ -434,3 +432,203 @@ def logout():
     except Exception as e:
         current_app.logger.error(f"Erro no logout: {str(e)}")
         return jsonify({"success": True, "message": "Logout realizado com sucesso"})
+
+
+@auth_bp.route("/init-database", methods=["POST"])
+def init_database():
+    """
+    Endpoint para inicializar o banco de dados e criar o super admin.
+    Deve ser chamado uma única vez após o deploy no Vercel.
+    Protegido por um secret key para evitar acesso não autorizado.
+    """
+    try:
+        # Verificar secret key para proteção
+        request_data = request.get_json(silent=True) or {}
+        secret_key = request_data.get("secret_key") or request.headers.get("X-Init-Secret")
+
+        expected_secret = os.environ.get("INIT_SECRET_KEY", "mestres-cafe-init-2024")
+
+        if secret_key != expected_secret:
+            return jsonify({
+                "success": False,
+                "error": "Secret key inválida ou não fornecida"
+            }), 403
+
+        results = {
+            "tables_created": False,
+            "admin_created": False,
+            "test_user_created": False,
+            "categories_created": False,
+            "existing_users": 0,
+            "messages": []
+        }
+
+        # Criar todas as tabelas
+        try:
+            db.create_all()
+            results["tables_created"] = True
+            results["messages"].append("✅ Tabelas criadas/verificadas com sucesso")
+            current_app.logger.info("✅ Tabelas do banco de dados criadas/verificadas")
+        except Exception as e:
+            results["messages"].append(f"❌ Erro ao criar tabelas: {str(e)}")
+            current_app.logger.error(f"❌ Erro ao criar tabelas: {str(e)}")
+
+        # Verificar quantos usuários existem
+        try:
+            results["existing_users"] = User.query.count()
+            results["messages"].append(f"📊 Usuários existentes: {results['existing_users']}")
+        except Exception as e:
+            results["messages"].append(f"⚠️ Erro ao contar usuários: {str(e)}")
+
+        # Criar super admin se não existir
+        try:
+            admin = User.query.filter_by(email='admin@mestresdocafe.com.br').first()
+            if not admin:
+                admin = User(
+                    email='admin@mestresdocafe.com.br',
+                    username='admin',
+                    name='Super Administrador',
+                    first_name='Super',
+                    last_name='Administrador',
+                    password_hash=hash_password('MestresCafe2024!'),
+                    is_admin=True,
+                    is_active=True,
+                    role='admin',
+                    points=0,
+                    level='bronze'
+                )
+                db.session.add(admin)
+                db.session.commit()
+                results["admin_created"] = True
+                results["messages"].append("✅ Super admin criado: admin@mestresdocafe.com.br / MestresCafe2024!")
+                current_app.logger.info("✅ Super admin criado com sucesso")
+            else:
+                results["messages"].append("ℹ️ Super admin já existe")
+                current_app.logger.info("ℹ️ Super admin já existe")
+        except Exception as e:
+            db.session.rollback()
+            results["messages"].append(f"❌ Erro ao criar admin: {str(e)}")
+            current_app.logger.error(f"❌ Erro ao criar admin: {str(e)}")
+
+        # Criar usuário de teste se não existir
+        try:
+            test_user = User.query.filter_by(email='teste@pato.com').first()
+            if not test_user:
+                test_user = User(
+                    email='teste@pato.com',
+                    username='teste',
+                    name='Usuário de Teste',
+                    first_name='Usuário',
+                    last_name='de Teste',
+                    password_hash=hash_password('123456'),
+                    is_admin=False,
+                    is_active=True,
+                    role='customer',
+                    points=0,
+                    level='bronze'
+                )
+                db.session.add(test_user)
+                db.session.commit()
+                results["test_user_created"] = True
+                results["messages"].append("✅ Usuário de teste criado: teste@pato.com / 123456")
+                current_app.logger.info("✅ Usuário de teste criado com sucesso")
+            else:
+                results["messages"].append("ℹ️ Usuário de teste já existe")
+        except Exception as e:
+            db.session.rollback()
+            results["messages"].append(f"❌ Erro ao criar usuário de teste: {str(e)}")
+            current_app.logger.error(f"❌ Erro ao criar usuário de teste: {str(e)}")
+
+        # Criar categorias básicas se não existirem
+        try:
+            from models import ProductCategory
+            categories_data = [
+                {'name': 'Café em Grãos', 'slug': 'cafe-em-graos', 'description': 'Grãos de café especiais'},
+                {'name': 'Café Moído', 'slug': 'cafe-moido', 'description': 'Café moído pronto para preparo'},
+                {'name': 'Cápsulas', 'slug': 'capsulas', 'description': 'Cápsulas compatíveis'},
+                {'name': 'Acessórios', 'slug': 'acessorios', 'description': 'Acessórios para café'},
+                {'name': 'Kits', 'slug': 'kits', 'description': 'Kits especiais'},
+            ]
+
+            categories_created = 0
+            for cat_data in categories_data:
+                existing = ProductCategory.query.filter_by(slug=cat_data['slug']).first()
+                if not existing:
+                    category = ProductCategory(**cat_data)
+                    db.session.add(category)
+                    categories_created += 1
+
+            if categories_created > 0:
+                db.session.commit()
+                results["categories_created"] = True
+                results["messages"].append(f"✅ {categories_created} categorias criadas")
+            else:
+                results["messages"].append("ℹ️ Categorias já existem")
+        except Exception as e:
+            db.session.rollback()
+            results["messages"].append(f"⚠️ Erro ao criar categorias: {str(e)}")
+
+        # Contar usuários finais
+        try:
+            final_count = User.query.count()
+            results["final_user_count"] = final_count
+            results["messages"].append(f"📊 Total de usuários após init: {final_count}")
+        except Exception:
+            pass
+
+        return jsonify({
+            "success": True,
+            "message": "Inicialização do banco de dados concluída",
+            "results": results
+        }), 200
+
+    except Exception as e:
+        current_app.logger.error(f"❌ Erro geral na inicialização: {str(e)}")
+        return jsonify({
+            "success": False,
+            "error": f"Erro na inicialização: {str(e)}"
+        }), 500
+
+
+@auth_bp.route("/reset-password-admin", methods=["POST"])
+def reset_password_admin():
+    """
+    Endpoint para resetar a senha do admin (para emergências).
+    Protegido por um secret key.
+    """
+    try:
+        request_data = request.get_json(silent=True) or {}
+        secret_key = request_data.get("secret_key") or request.headers.get("X-Init-Secret")
+
+        expected_secret = os.environ.get("INIT_SECRET_KEY", "mestres-cafe-init-2024")
+
+        if secret_key != expected_secret:
+            return jsonify({
+                "success": False,
+                "error": "Secret key inválida"
+            }), 403
+
+        email = request_data.get("email", "admin@mestresdocafe.com.br")
+        new_password = request_data.get("new_password", "MestresCafe2024!")
+
+        user = User.query.filter_by(email=email).first()
+        if not user:
+            return jsonify({
+                "success": False,
+                "error": f"Usuário {email} não encontrado"
+            }), 404
+
+        user.password_hash = hash_password(new_password)
+        db.session.commit()
+
+        return jsonify({
+            "success": True,
+            "message": f"Senha do usuário {email} resetada com sucesso"
+        }), 200
+
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({
+            "success": False,
+            "error": f"Erro ao resetar senha: {str(e)}"
+        }), 500

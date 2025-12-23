@@ -168,11 +168,16 @@ def init_database():
             return False
 
 
+def hash_password(password):
+    """Hash password using bcrypt - mesmo método usado na API"""
+    import bcrypt
+    return bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
+
+
 def seed_initial_data():
     """Popula dados iniciais necessários para o sistema funcionar"""
     from database import db
     from models import User, SystemSetting, ProductCategory, GamificationLevel
-    from werkzeug.security import generate_password_hash
 
     app = create_app_for_db()
 
@@ -186,9 +191,11 @@ def seed_initial_data():
                 admin = User(
                     name='Administrador',
                     email='admin@mestresdocafe.com.br',
-                    password_hash=generate_password_hash('MestresCafe2024!'),
+                    username='admin',
+                    password_hash=hash_password('MestresCafe2024!'),
                     is_admin=True,
-                    is_active=True
+                    is_active=True,
+                    role='admin'
                 )
                 db.session.add(admin)
                 logger.info("✅ Usuário admin criado: admin@mestresdocafe.com.br")
