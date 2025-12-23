@@ -16,19 +16,27 @@ from marshmallow import ValidationError
 import jwt
 from typing import Dict, Any, Optional, Tuple
 
-# Criar diretório de logs se não existir
-logs_dir = 'logs'
-if not os.path.exists(logs_dir):
-    os.makedirs(logs_dir, exist_ok=True)
+# Detecta ambiente serverless (Vercel/AWS Lambda)
+IS_SERVERLESS = os.environ.get('VERCEL') or os.environ.get('AWS_LAMBDA_FUNCTION_NAME')
 
 # Configuração de logging
+log_handlers = [logging.StreamHandler(sys.stdout)]
+
+# Adiciona file handler apenas se não estiver em ambiente serverless
+if not IS_SERVERLESS:
+    logs_dir = 'logs'
+    try:
+        if not os.path.exists(logs_dir):
+            os.makedirs(logs_dir, exist_ok=True)
+        log_handlers.append(logging.FileHandler('logs/error.log'))
+    except OSError:
+        # Ignora erros de filesystem (read-only)
+        pass
+
 logging.basicConfig(
-    level = logging.INFO,
+    level=logging.INFO,
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-    handlers=[
-        logging.FileHandler('logs/error.log'),
-        logging.StreamHandler(sys.stdout)
-    ]
+    handlers=log_handlers
 )
 
 logger = logging.getLogger(__name__)
