@@ -67,7 +67,7 @@ class Tenant(db.Model):
     features = Column(JSONB)  # Lista de features habilitadas
 
     # Metadados
-    metadata = Column(JSONB)  # Dados adicionais customizados
+    extra_data = Column(JSONB)  # Dados adicionais customizados
 
     # Timestamps
     created_at = Column(DateTime(timezone=True), default=datetime.utcnow, nullable=False)
@@ -123,7 +123,7 @@ class Tenant(db.Model):
             'current_orders_month': self.current_orders_month,
             'current_storage_mb': self.current_storage_mb,
             'features': self.features,
-            'metadata': self.metadata,
+            'extra_data': self.extra_data,
             'created_at': self.created_at.isoformat(),
             'updated_at': self.updated_at.isoformat() if self.updated_at else None
         }
@@ -173,7 +173,7 @@ class TenantSubscription(db.Model):
     external_subscription_id = Column(String(200))  # ID no gateway (Stripe, Mercado Pago, etc)
 
     # Metadados
-    metadata = Column(JSONB)
+    extra_data = Column(JSONB)
 
     # Timestamps
     created_at = Column(DateTime(timezone=True), default=datetime.utcnow)
@@ -221,7 +221,7 @@ class TenantSubscription(db.Model):
             'last_payment_amount': float(self.last_payment_amount) if self.last_payment_amount else 0,
             'last_payment_status': self.last_payment_status,
             'external_subscription_id': self.external_subscription_id,
-            'metadata': self.metadata,
+            'extra_data': self.extra_data,
             'created_at': self.created_at.isoformat(),
             'updated_at': self.updated_at.isoformat() if self.updated_at else None
         }
@@ -299,7 +299,7 @@ class TenantSettings(db.Model):
     social_links = Column(JSONB)  # Facebook, Instagram, Twitter, etc
 
     # Metadados adicionais
-    metadata = Column(JSONB)
+    extra_data = Column(JSONB)
 
     # Timestamps
     created_at = Column(DateTime(timezone=True), default=datetime.utcnow)
@@ -342,7 +342,7 @@ class TenantSettings(db.Model):
             'session_timeout_minutes': self.session_timeout_minutes,
             'integrations': self.integrations,
             'social_links': self.social_links,
-            'metadata': self.metadata,
+            'extra_data': self.extra_data,
             'created_at': self.created_at.isoformat(),
             'updated_at': self.updated_at.isoformat() if self.updated_at else None
         }

@@ -209,7 +209,7 @@ class NewsletterCampaign(db.Model):
     bounce_rate = Column(Integer, default=0)  # Percentual
 
     # Metadados
-    metadata = Column(JSONB)  # Dados adicionais
+    extra_data = Column(JSONB)  # Dados adicionais
 
     # A/B Testing
     ab_test_variant = Column(String(10))  # A, B, C
@@ -268,7 +268,7 @@ class NewsletterCampaign(db.Model):
             'open_rate': self.open_rate,
             'click_rate': self.click_rate,
             'bounce_rate': self.bounce_rate,
-            'metadata': self.metadata,
+            'extra_data': self.extra_data,
             'ab_test_variant': self.ab_test_variant,
             'ab_test_parent_id': str(self.ab_test_parent_id) if self.ab_test_parent_id else None,
             'created_at': self.created_at.isoformat(),
@@ -311,7 +311,7 @@ class Campaign(db.Model):
     revenue = Column(Integer, default=0)  # Em centavos
 
     # Metadados
-    metadata = Column(JSONB)
+    extra_data = Column(JSONB)
 
     # Timestamps
     created_at = Column(DateTime(timezone=True), default=datetime.utcnow)
@@ -353,7 +353,7 @@ class Campaign(db.Model):
             'clicks': self.clicks,
             'conversions': self.conversions,
             'revenue': self.revenue,
-            'metadata': self.metadata,
+            'extra_data': self.extra_data,
             'created_at': self.created_at.isoformat(),
             'updated_at': self.updated_at.isoformat() if self.updated_at else None,
             'created_by': str(self.created_by) if self.created_by else None
