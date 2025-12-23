@@ -12,7 +12,14 @@ from functools import wraps
 from threading import Lock
 from typing import Any, Dict, List, Optional
 
-import psutil
+# psutil is optional - not available in Vercel serverless environment
+try:
+    import psutil
+    PSUTIL_AVAILABLE = True
+except ImportError:
+    psutil = None
+    PSUTIL_AVAILABLE = False
+
 from flask import current_app, g, request
 
 from .cache import cache_manager
@@ -54,6 +61,27 @@ class MetricsCollector:
     def get_system_metrics(self) -> Dict[str, Any]:
         """Obtém métricas do sistema"""
         try:
+            # psutil not available in serverless environment
+            if not PSUTIL_AVAILABLE:
+                return {
+                    "timestamp": datetime.now().isoformat(),
+                    "cpu": {"percent": 0, "count": 1},
+                    "memory": {
+                        "total": 0,
+                        "available": 0,
+                        "percent": 0,
+                        "used": 0,
+                    },
+                    "disk": {
+                        "total": 0,
+                        "used": 0,
+                        "free": 0,
+                        "percent": 0,
+                    },
+                    "cache": cache_manager.get_stats(),
+                    "note": "System metrics unavailable in serverless environment",
+                }
+
             # CPU não-blocante (usa cache se medido recentemente)
             cpu_percent = psutil.cpu_percent(interval = None)
             memory = psutil.virtual_memory()
