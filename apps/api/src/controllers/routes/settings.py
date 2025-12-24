@@ -11,7 +11,7 @@ from flask_jwt_extended import jwt_required, get_jwt_identity
 
 from database import db
 from models.system import SystemSetting, AuditLog
-from models.user import User
+from models.auth import User
 
 settings_bp = Blueprint("settings", __name__)
 
