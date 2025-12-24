@@ -73,9 +73,15 @@ class Config:
     @staticmethod
     def init_app(app):
         """Inicializar configurações da aplicação"""
-        # Criar diretório de uploads se não existir
-        upload_path = Path(app.root_path) / app.config["UPLOAD_FOLDER"]
-        upload_path.mkdir(parents = True, exist_ok = True)
+        # Criar diretório de uploads se não existir (skip em ambientes read-only como Vercel)
+        # Em Vercel/serverless, usamos S3 para uploads, então não precisamos de diretório local
+        if not os.environ.get("VERCEL"):
+            try:
+                upload_path = Path(app.root_path) / app.config["UPLOAD_FOLDER"]
+                upload_path.mkdir(parents = True, exist_ok = True)
+            except OSError as e:
+                # Filesystem read-only (comum em serverless)
+                app.logger.warning(f"Could not create upload directory: {e}")
 
         # Validar variáveis obrigatórias (Supabase não é obrigatório em desenvolvimento)
         required_vars = [
@@ -143,6 +149,9 @@ class ProductionConfig(Config):
     DEBUG = False
     TESTING = False
     ENV = "production"
+
+    # Use /tmp for uploads in serverless (only writable directory in Vercel)
+    UPLOAD_FOLDER = "/tmp/uploads"
 
     # Database - Neon PostgreSQL Serverless
     SQLALCHEMY_DATABASE_URI = os.environ.get("DATABASE_URL") or os.environ.get("NEON_DATABASE_URL")
