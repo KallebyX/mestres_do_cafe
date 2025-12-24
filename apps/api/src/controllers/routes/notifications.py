@@ -298,7 +298,7 @@ def broadcast_notification():
 
         # Enviar para todos os usuários ativos
         # TODO: Implementar query para usuários ativos
-        from models.user import User  # Assumindo que existe um model User
+        from models.auth import User
 
         users = User.query.filter_by(is_active = True).all()
 
