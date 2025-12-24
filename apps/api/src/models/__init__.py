@@ -88,6 +88,30 @@ from .crm_advanced import (
     MarketingAutomation,
     LeadScore,
 )
+from .fiscal import (
+    EmpresaEmissora,
+    ContadorResponsavel,
+    CertificadoDigital,
+    SerieFiscal,
+    DocumentoFiscal,
+    ItemDocumentoFiscal,
+    PagamentoDocumentoFiscal,
+    EventoDocumentoFiscal,
+    CartaCorrecao,
+    InutilizacaoNumeracao,
+    LogComunicacaoSefaz,
+    ConfiguracaoSefaz,
+    ContingenciaFiscal,
+    AuditoriaFiscal,
+)
+from .tax import (
+    NCMCode,
+    CFOPCode,
+    ICMSRate,
+    ProductTax,
+    TaxCalculation,
+    TaxExemption,
+)
 
 __all__ = [
     # Auth
@@ -215,4 +239,26 @@ __all__ = [
     "SalesFunnel",
     "MarketingAutomation",
     "LeadScore",
+    # Fiscal / NF-e / NFC-e
+    "EmpresaEmissora",
+    "ContadorResponsavel",
+    "CertificadoDigital",
+    "SerieFiscal",
+    "DocumentoFiscal",
+    "ItemDocumentoFiscal",
+    "PagamentoDocumentoFiscal",
+    "EventoDocumentoFiscal",
+    "CartaCorrecao",
+    "InutilizacaoNumeracao",
+    "LogComunicacaoSefaz",
+    "ConfiguracaoSefaz",
+    "ContingenciaFiscal",
+    "AuditoriaFiscal",
+    # Tax
+    "NCMCode",
+    "CFOPCode",
+    "ICMSRate",
+    "ProductTax",
+    "TaxCalculation",
+    "TaxExemption",
 ]
