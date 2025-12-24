@@ -173,9 +173,8 @@ class ProductionConfig(Config):
     @classmethod
     def init_app(cls, app):
         """Inicializar configuracoes da aplicacao"""
-        Config.init_app(app)
-
-        # Validar configuracoes criticas para producao
+        # Generate temporary secrets BEFORE calling Config.init_app to avoid validation error
+        # This is needed because Config.init_app validates that secrets exist
         required_vars = ["SECRET_KEY", "JWT_SECRET_KEY"]
         missing_vars = [var for var in required_vars if not os.environ.get(var)]
 
@@ -187,6 +186,9 @@ class ProductionConfig(Config):
                 os.environ[var] = secret_value
                 app.config[var] = secret_value
                 app.logger.warning(f"Generated temporary {var} for production")
+
+        # Now call parent init_app - secrets are already set
+        Config.init_app(app)
 
         # Verificar DATABASE_URL
         if not os.environ.get("DATABASE_URL") and not os.environ.get("NEON_DATABASE_URL"):
