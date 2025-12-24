@@ -13,9 +13,5 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'apps', 'api', 
 from app import create_app
 
 # Create the app for Vercel
+# Vercel's Python runtime will automatically detect this WSGI app
 app = create_app('production')
-
-# Vercel handler
-def handler(request):
-    """Handle incoming requests for Vercel"""
-    return app(request.environ, request.start_response)
