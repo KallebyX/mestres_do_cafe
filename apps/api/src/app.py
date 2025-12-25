@@ -435,31 +435,95 @@ def create_app(config_name = None):
     return app
 
 
-def seed_initial_data():
-    """Popula o banco com dados iniciais"""
-    try:
-        # Verifica se já existem dados
-        # if Product.query.first(): # This line is removed as Product model is no longer imported
-        #     print("✅ Dados iniciais já existem")
-        #     return
+def seed_initial_data(app):
+    """Popula o banco com dados iniciais - cria super admin e tabelas"""
+    from database import db
+    from models import User
+    import bcrypt
 
-        print(
-            "✅ Seed data temporariamente desabilitado - aguardando correção do modelo"
-        )
+    def hash_password(password):
+        return bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
+
+    try:
+        with app.app_context():
+            # Criar tabelas se não existirem
+            db.create_all()
+            app.logger.info("✅ Tabelas do banco criadas/verificadas")
+
+            # Criar super admin se não existir
+            admin = User.query.filter_by(email='admin@mestresdocafe.com.br').first()
+            if not admin:
+                admin = User(
+                    email='admin@mestresdocafe.com.br',
+                    username='admin',
+                    name='Super Administrador',
+                    first_name='Super',
+                    last_name='Administrador',
+                    password_hash=hash_password('MestresCafe2024!'),
+                    is_admin=True,
+                    is_active=True,
+                    role='admin',
+                    points=0,
+                    level='bronze'
+                )
+                db.session.add(admin)
+                db.session.commit()
+                app.logger.info("✅ Super admin criado: admin@mestresdocafe.com.br / MestresCafe2024!")
+            else:
+                app.logger.info("ℹ️ Super admin já existe")
+
+            # Criar usuário de teste se não existir
+            test_user = User.query.filter_by(email='teste@pato.com').first()
+            if not test_user:
+                test_user = User(
+                    email='teste@pato.com',
+                    username='teste',
+                    name='Usuário de Teste',
+                    first_name='Usuário',
+                    last_name='de Teste',
+                    password_hash=hash_password('123456'),
+                    is_admin=False,
+                    is_active=True,
+                    role='customer',
+                    points=0,
+                    level='bronze'
+                )
+                db.session.add(test_user)
+                db.session.commit()
+                app.logger.info("✅ Usuário de teste criado: teste@pato.com / 123456")
+
+            # Criar categorias básicas
+            try:
+                from models import ProductCategory
+                categories_data = [
+                    {'name': 'Café em Grãos', 'slug': 'cafe-em-graos', 'description': 'Grãos de café especiais'},
+                    {'name': 'Café Moído', 'slug': 'cafe-moido', 'description': 'Café moído pronto para preparo'},
+                    {'name': 'Cápsulas', 'slug': 'capsulas', 'description': 'Cápsulas compatíveis'},
+                    {'name': 'Acessórios', 'slug': 'acessorios', 'description': 'Acessórios para café'},
+                    {'name': 'Kits', 'slug': 'kits', 'description': 'Kits especiais'},
+                ]
+                for cat_data in categories_data:
+                    existing = ProductCategory.query.filter_by(slug=cat_data['slug']).first()
+                    if not existing:
+                        category = ProductCategory(**cat_data)
+                        db.session.add(category)
+                db.session.commit()
+                app.logger.info("✅ Categorias básicas criadas/verificadas")
+            except Exception as e:
+                db.session.rollback()
+                app.logger.warning(f"⚠️ Erro ao criar categorias: {e}")
 
     except Exception as e:
-        print(f"❌ Erro ao verificar dados iniciais: {e}")
+        app.logger.error(f"❌ Erro ao verificar dados iniciais: {e}")
 
 
 # Cria a aplicação
 app = create_app()
 
+# Seed initial data on startup
+seed_initial_data(app)
+
 if __name__ == "__main__":
-    with app.app_context():
-        # Cria as tabelas
-        # db.create_all() # This line is removed as Supabase is used
-        # Popula dados iniciais
-        seed_initial_data()
 
     # Configurações do servidor
     port = int(os.environ.get("PORT", os.environ.get("API_PORT", 5001)))
